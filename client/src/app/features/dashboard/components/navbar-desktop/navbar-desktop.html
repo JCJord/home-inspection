@@ -1,11 +1,26 @@
 <nav class="desktop-nav">
   <div class="logo">
-    <i class="fas fa-home"></i> Inspectly
+    <lucide-icon [img]="icons.House" [size]="28" />
+    Inspectly
   </div>
   <ul class="nav-links">
-    <li><a href="#" class="active"><i class="fas fa-chart-line"></i> Dashboard</a></li>
-    <li><a href="#"><i class="fas fa-clipboard-check"></i> Inspections</a></li>
-    <li><a href="#"><i class="fas fa-users"></i> Clients</a></li>
-    <li><a href="#"><i class="fas fa-cog"></i> Settings</a></li>
+    <li>
+      <a routerLink="/dashboard/home" routerLinkActive="active">
+        <lucide-icon [img]="icons.House" [size]="20" />
+        Home
+      </a>
+    </li>
+    <li>
+      <a routerLink="/dashboard/inspections" routerLinkActive="active">
+        <lucide-icon [img]="icons.ClipboardList" [size]="20" />
+        Inspections
+      </a>
+    </li>
+    <li>
+      <a routerLink="/dashboard/profile" routerLinkActive="active">
+        <lucide-icon [img]="icons.UserCircle" [size]="20" />
+        Profile
+      </a>
+    </li>
   </ul>
 </nav>

@@ -19,8 +19,8 @@
     align-items: center;
     gap: 0.75rem;
 
-    i {
-      font-size: 1.75rem;
+    lucide-icon {
+      flex-shrink: 0;
     }
   }
 
@@ -44,10 +44,9 @@
         font-weight: 500;
         transition: all 0.2s ease;
 
-        i {
-          font-size: 1.25rem;
-          width: 1.5rem;
-          text-align: center;
+        lucide-icon {
+          flex-shrink: 0;
+          transition: transform 0.2s ease;
         }
 
         &:hover,
