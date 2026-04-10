@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { RegisterRequestDto } from '../dtos/register-request.dto';
+import { LoginRequestDto } from '../dtos/login-request.dto';
 import { AuthResponse } from '../interfaces/auth-response.interface';
 import { Inspector } from '../interfaces/inspector.interface';
 
@@ -18,7 +19,7 @@ export class AuthService {
   currentUser = signal<Pick<Inspector, 'id' | 'email' | 'name'> | null>(
     JSON.parse(localStorage.getItem('current_user') || 'null')
   );
-  
+
   // --- Computed ---
   isAuthenticated = computed(() => !!this.token());
 
@@ -29,6 +30,17 @@ export class AuthService {
    */
   register(dto: RegisterRequestDto): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.apiUrl}/register`, dto).pipe(
+      tap((response) => this.setSession(response))
+    );
+  }
+
+  /**
+   * Logs in an existing inspector.
+   * @param dto Login credentials
+   * @returns Observable with user info and access token
+   */
+  login(dto: LoginRequestDto): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.apiUrl}/login`, dto).pipe(
       tap((response) => this.setSession(response))
     );
   }
