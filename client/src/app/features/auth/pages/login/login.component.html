@@ -1,0 +1,26 @@
+<div class="auth-container">
+  <div class="auth-card">
+    <div class="auth-header">
+      <h1>Welcome Back</h1>
+      <p>Log in to your account to continue</p>
+    </div>
+
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="auth-form">
+      <app-text-input name="email" label="Email Address" placeholder="Enter your email" type="email"></app-text-input>
+
+      <app-password-input name="password" label="Password" placeholder="Enter your password"></app-password-input>
+
+      <div class="form-actions">
+        <a routerLink="/auth/forgot-password" class="forgot-password">Forgot Password?</a>
+      </div>
+
+      <app-button type="submit" variant="solid" [full]="true" [disabled]="loginForm.invalid">
+        Sign In
+      </app-button>
+    </form>
+
+    <div class="auth-footer">
+      <p>Don't have an account? <a routerLink="/auth/register">Create one</a></p>
+    </div>
+  </div>
+</div>

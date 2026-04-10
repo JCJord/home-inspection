@@ -1,0 +1,30 @@
+<div class="auth-container">
+  <div class="auth-card">
+    <div class="auth-header">
+      <!-- <div class="logo">
+        <i class="fas fa-user-plus"></i>
+      </div> -->
+      <h1>Create Account</h1>
+      <p>Join us and start managing your inspections</p>
+    </div>
+
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="auth-form">
+      <app-text-input name="fullName" label="Full Name" placeholder="Enter your full name"></app-text-input>
+
+      <app-text-input name="email" label="Email Address" placeholder="Enter your email" type="email"></app-text-input>
+
+      <app-password-input name="password" label="Password" placeholder="Choose a strong password"></app-password-input>
+
+      <app-password-input name="confirmPassword" label="Confirm Password"
+        placeholder="Repeat your password"></app-password-input>
+
+      <app-button type="submit" variant="solid" [full]="true" [isLoading]="isLoading()" [disabled]="registerForm.invalid">
+        Sign Up
+      </app-button>
+    </form>
+
+    <div class="auth-footer">
+      <p>Already have an account? <a routerLink="/auth/login">Log in here</a></p>
+    </div>
+  </div>
+</div>
