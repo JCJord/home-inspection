@@ -20,7 +20,7 @@ export const DASHBOARD_ROUTES: Routes = [
       },
       {
         path: 'profile',
-        loadComponent: () => import('./pages/home/home.component').then(m => m.HomeComponent), // placeholder
+        loadChildren: () => import('../profile/profile.routes').then(m => m.PROFILE_ROUTES),
       },
     ],
   },
