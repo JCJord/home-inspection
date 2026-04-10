@@ -1,9 +1,4 @@
-@use '../../../../../assets/styles/variables' as *;
-
-.dashboard-container {
-  min-height: 100vh;
-  background-color: $color-bg;
-}
+@use 'variables' as *;
 
 .dashboard-header {
   display: flex;
@@ -14,20 +9,23 @@
   border-bottom: 1px solid $color-border;
   box-shadow: 0 2px 4px rgba($color-text, 0.05);
 
-  .logo {
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: $color-primary-dark;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+  .header-title {
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: $color-text;
+      margin: 0;
+    }
   }
 }
 
 .dashboard-content {
-  padding: 3rem 2rem;
-  max-width: 1200px;
-  margin: 0 auto;
+  padding: 2rem;
+  flex: 1;
+  
+  @media (min-width: 768px) {
+    padding: 3rem 2rem;
+  }
 }
 
 .welcome-card {
@@ -37,6 +35,11 @@
   border: 1px solid $color-border;
   box-shadow: 0 4px 6px rgba($color-text, 0.05);
   max-width: 600px;
+  margin: 0 auto;
+  
+  @media (min-width: 768px) {
+    margin: 0; // Align left on desktop
+  }
 
   h2 {
     margin-top: 0;
@@ -51,7 +54,7 @@
     margin-bottom: 0.75rem;
 
     &.email-text {
-      color: $color-text-light;
+      color: $color-text-muted;
       display: flex;
       align-items: center;
       gap: 0.5rem;
