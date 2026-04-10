@@ -1,0 +1,7 @@
+<main class="dashboard-content">
+  <div class="welcome-card">
+    <h2>Welcome, {{ authService.currentUser()?.name || 'Inspector' }}!</h2>
+    <p>You have successfully authenticated and reached the dashboard.</p>
+    <p class="email-text">{{ authService.currentUser()?.email }}</p>
+  </div>
+</main>
