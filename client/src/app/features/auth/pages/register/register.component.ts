@@ -1,9 +1,12 @@
-import { Component } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AbstractControl, FormControl, FormGroup, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
+import { finalize } from 'rxjs';
 import { TextInputComponent, PasswordInputComponent } from '../../../../shared';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
+import { AuthService } from '../../../../core/services/auth.service';
+import { RegisterRequestDto } from '../../../../core/dtos/register-request.dto';
 
 /**
  * Custom validator to check if password and confirmPassword fields match.
@@ -42,6 +45,11 @@ export const passwordMatchValidator: ValidatorFn = (control: AbstractControl): V
   styleUrl: './register.component.scss',
 })
 export class RegisterComponent {
+  private authService = inject(AuthService);
+  private router = inject(Router);
+
+  isLoading = signal(false);
+
   registerForm = new FormGroup({
     fullName: new FormControl('', {
       nonNullable: true,
@@ -63,8 +71,28 @@ export class RegisterComponent {
 
   onSubmit() {
     if (this.registerForm.valid) {
-      console.log('Register attempt:', this.registerForm.getRawValue());
-      // Service call will go here later
+      this.isLoading.set(true);
+      const formValue = this.registerForm.getRawValue();
+      
+      const registerDto: RegisterRequestDto = {
+        name: formValue.fullName,
+        email: formValue.email,
+        password: formValue.password
+      };
+
+      this.authService.register(registerDto)
+        .pipe(finalize(() => this.isLoading.set(false)))
+        .subscribe({
+          next: (response) => {
+            console.log('Registration successful:', response);
+            // Store token and redirect later
+            // this.router.navigate(['/']); 
+          },
+          error: (error) => {
+            console.error('Registration error:', error);
+            // Handle specific backend errors (e.g., ConflictException)
+          }
+        });
     } else {
       this.registerForm.markAllAsTouched();
     }
