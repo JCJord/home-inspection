@@ -1,1 +1,11 @@
-<router-outlet />
+@if (authService.isAuthenticated()) {
+  <div class="app-layout">
+    <app-navbar-desktop class="desktop-only"></app-navbar-desktop>
+    <div class="app-main">
+      <router-outlet></router-outlet>
+    </div>
+    <app-navbar-mobile class="mobile-only"></app-navbar-mobile>
+  </div>
+} @else {
+  <router-outlet></router-outlet>
+}

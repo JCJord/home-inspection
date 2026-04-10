@@ -1,0 +1,142 @@
+<div class="profile-container">
+  @if (isLoading()) {
+    <div class="loading-state">
+      <app-spinner [size]="40" class="spinner-primary"></app-spinner>
+      <p>Loading your profile...</p>
+    </div>
+  } @else {
+    <div class="profile-header">
+      <div class="header-content">
+        <div class="title-with-status">
+          <h1>My Profile</h1>
+          <div class="auto-save-status">
+            @if (isSaving()) {
+              <div class="status-indicator saving">
+                <app-spinner [size]="14"></app-spinner>
+                <span>Saving...</span>
+              </div>
+            } @else if (lastSavedAt()) {
+              <div class="status-indicator saved">
+                <lucide-icon [img]="icons.CheckCircle2" [size]="14"></lucide-icon>
+                <span>Saved at {{ lastSavedAt() | date:'HH:mm:ss' }}</span>
+              </div>
+            } @else {
+              <div class="status-indicator idle">
+                <span>All changes saved</span>
+              </div>
+            }
+          </div>
+        </div>
+        <p class="subtitle">Manage your account information and preferences</p>
+      </div>
+
+      @if (message()) {
+        <div class="alert" [ngClass]="'alert-' + message()?.type">
+          <div class="alert-content">
+            <lucide-icon [img]="message()?.type === 'success' ? icons.BadgeCheck : icons.FileText" [size]="18"></lucide-icon>
+            <span>{{ message()?.text }}</span>
+          </div>
+          <button type="button" class="close-alert" (click)="message.set(null)">
+            &times;
+          </button>
+        </div>
+      }
+    </div>
+
+    <div class="profile-grid">
+      <!-- Left Column: Avatar & Subscription -->
+      <div class="side-panel">
+        <div class="card logo-card">
+          <div class="logo-preview-wrapper">
+            <div class="logo-preview">
+              @if (logoPreview()) {
+                <img [src]="logoPreview()" alt="Logo" />
+              } @else {
+                <div class="logo-placeholder">
+                  <lucide-icon [img]="icons.Building" [size]="48"></lucide-icon>
+                </div>
+              }
+              
+              <label class="upload-badge" [class.uploading]="isUploading()">
+                @if (isUploading()) {
+                  <app-spinner [size]="16"></app-spinner>
+                } @else {
+                  <lucide-icon [img]="icons.Camera" [size]="16"></lucide-icon>
+                }
+                <input type="file" (change)="onFileSelected($event)" accept="image/*" hidden [disabled]="isUploading()">
+              </label>
+            </div>
+            <h3>{{ profile()?.name }}</h3>
+            <p class="inspector-email">{{ profile()?.email }}</p>
+          </div>
+        </div>
+
+        <div class="card subscription-card">
+          <div class="card-header">
+            <lucide-icon [img]="icons.BadgeCheck" [size]="20"></lucide-icon>
+            <h3>Subscription</h3>
+          </div>
+          <div class="subscription-details">
+            <div class="tier" [attr.data-tier]="profile()?.subscription_status">
+              {{ profile()?.subscription_status | titlecase }}
+            </div>
+            <div class="usage">
+              <span class="label">Usage</span>
+              <div class="progress-bar">
+                <div class="progress" [style.width.%]="(profile()?.free_inspections_used || 0) * 10"></div>
+              </div>
+              <p class="usage-text">{{ profile()?.free_inspections_used || 0 }} / 10 free inspections used</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Form -->
+      <div class="main-panel">
+        <form [formGroup]="profileForm" class="profile-form">
+          <div class="card">
+            <div class="card-header">
+              <lucide-icon [img]="icons.User" [size]="20"></lucide-icon>
+              <h3>Personal Information</h3>
+            </div>
+            
+            <div class="form-grid">
+              <app-text-input
+                name="name"
+                label="Full Name"
+                placeholder="John Doe"
+              ></app-text-input>
+
+              <app-text-input
+                name="phone"
+                label="Phone Number"
+                placeholder="+1 (555) 000-0000"
+              ></app-text-input>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <lucide-icon [img]="icons.Building" [size]="20"></lucide-icon>
+              <h3>Company Details</h3>
+            </div>
+            
+            <div class="form-grid">
+              <app-text-input
+                name="company_name"
+                label="Company Name"
+                placeholder="Inspectly Services"
+              ></app-text-input>
+
+              <app-text-input
+                name="license_number"
+                label="License Number"
+                placeholder="ABC-123456"
+              ></app-text-input>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+</div>

@@ -1,28 +1,9 @@
 @use 'variables' as *;
 
-.dashboard-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1.25rem 2rem;
-  background-color: white;
-  border-bottom: 1px solid $color-border;
-  box-shadow: 0 2px 4px rgba($color-text, 0.05);
-
-  .header-title {
-    h1 {
-      font-size: 1.5rem;
-      font-weight: 700;
-      color: $color-text;
-      margin: 0;
-    }
-  }
-}
-
 .dashboard-content {
   padding: 2rem;
   flex: 1;
-  
+
   @media (min-width: 768px) {
     padding: 3rem 2rem;
   }
@@ -36,9 +17,9 @@
   box-shadow: 0 4px 6px rgba($color-text, 0.05);
   max-width: 600px;
   margin: 0 auto;
-  
+
   @media (min-width: 768px) {
-    margin: 0; // Align left on desktop
+    margin: 0;
   }
 
   h2 {
@@ -55,9 +36,6 @@
 
     &.email-text {
       color: $color-text-muted;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
       margin-top: 1.5rem;
     }
   }

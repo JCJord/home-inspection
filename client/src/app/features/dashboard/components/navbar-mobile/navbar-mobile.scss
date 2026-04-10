@@ -1,0 +1,69 @@
+@use 'variables' as *;
+
+.mobile-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background-color: $color-surface;
+  border-top: 1px solid $color-border;
+  padding: 0.5rem 1rem;
+  box-shadow: 0 -2px 16px rgba(0, 0, 0, 0.08);
+  z-index: 1000;
+  padding-bottom: calc(0.5rem + env(safe-area-inset-bottom));
+
+  .nav-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+
+    li {
+      flex: 1;
+
+      a {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.5rem;
+        color: $color-text-muted;
+        text-decoration: none;
+        transition: color 0.2s ease;
+        border-radius: 0.75rem;
+        position: relative;
+
+        span {
+          font-size: 0.65rem;
+          font-weight: 500;
+          letter-spacing: 0.02em;
+        }
+
+        lucide-icon {
+          transition: transform 0.2s ease;
+        }
+
+        &:hover {
+          color: $color-primary;
+
+          lucide-icon {
+            transform: translateY(-2px);
+          }
+        }
+
+        &.active {
+          color: $color-primary;
+
+          lucide-icon {
+            transform: translateY(-2px);
+          }
+        }
+
+
+      }
+    }
+  }
+}
