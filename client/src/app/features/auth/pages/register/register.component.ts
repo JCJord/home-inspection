@@ -90,7 +90,10 @@ export class RegisterComponent {
           },
           error: (error) => {
             console.error('Registration error:', error);
-            // Handle specific backend errors (e.g., ConflictException)
+            
+            if (error.status === 409) {
+              this.registerForm.get('email')?.setErrors({ emailExists: true });
+            }
           }
         });
     } else {

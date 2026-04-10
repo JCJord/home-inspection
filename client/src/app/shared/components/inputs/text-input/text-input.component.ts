@@ -64,6 +64,7 @@ export class TextInputComponent {
 
     if (errors['required']) return 'This field is required';
     if (errors['email']) return 'Invalid email address';
+    if (errors['emailExists']) return 'This email is already registered';
     if (errors['minlength']) return `Minimum length is ${errors['minlength'].requiredLength} characters`;
     if (errors['maxlength']) return `Maximum length is ${errors['maxlength'].requiredLength} characters`;
     if (errors['pattern']) return 'Invalid format';
