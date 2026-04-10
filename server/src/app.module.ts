@@ -4,15 +4,18 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { InspectorsModule } from './inspectors/inspectors.module';
 import { DatabaseModule } from './database/database.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     DatabaseModule,
     InspectorsModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
 export class AppModule {}
+
 

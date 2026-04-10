@@ -6,7 +6,7 @@ import { InspectorsRepository } from './inspectors.repository';
 
 @Injectable()
 export class InspectorsService {
-  constructor(private readonly inspectorsRepository: InspectorsRepository) {}
+  constructor(private readonly inspectorsRepository: InspectorsRepository) { }
 
   async create(createInspectorDto: CreateInspectorDto): Promise<Inspector> {
     return await this.inspectorsRepository.create(createInspectorDto);
@@ -22,6 +22,10 @@ export class InspectorsService {
       throw new NotFoundException(`Inspector with ID ${id} not found`);
     }
     return inspector;
+  }
+
+  async findByEmail(email: string): Promise<Inspector | null> {
+    return await this.inspectorsRepository.findByEmail(email);
   }
 
   async update(
