@@ -1,9 +1,31 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, FormControl, FormGroup, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { TextInputComponent, PasswordInputComponent } from '../../../../shared';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
+
+/**
+ * Custom validator to check if password and confirmPassword fields match.
+ */
+export const passwordMatchValidator: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
+  const password = control.get('password');
+  const confirmPassword = control.get('confirmPassword');
+
+  if (!password || !confirmPassword) return null;
+
+  if (confirmPassword.errors && !confirmPassword.errors['passwordMismatch']) {
+    return null;
+  }
+
+  if (password.value !== confirmPassword.value) {
+    confirmPassword.setErrors({ passwordMismatch: true });
+    return { passwordMismatch: true };
+  } else {
+    confirmPassword.setErrors(null);
+    return null;
+  }
+};
 
 @Component({
   selector: 'app-register',
@@ -37,7 +59,7 @@ export class RegisterComponent {
       nonNullable: true,
       validators: [Validators.required],
     }),
-  });
+  }, { validators: passwordMatchValidator });
 
   onSubmit() {
     if (this.registerForm.valid) {

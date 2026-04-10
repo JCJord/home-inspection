@@ -72,6 +72,7 @@ export class PasswordInputComponent {
     if (errors['minlength']) return `Minimum length is ${errors['minlength'].requiredLength} characters`;
     if (errors['maxlength']) return `Maximum length is ${errors['maxlength'].requiredLength} characters`;
     if (errors['pattern']) return 'Invalid format';
+    if (errors['passwordMismatch']) return 'Passwords do not match';
 
     return 'Invalid password';
   }
