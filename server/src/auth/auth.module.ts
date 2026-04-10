@@ -4,10 +4,11 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { InspectorsModule } from '../inspectors/inspectors.module';
+import { forwardRef } from '@nestjs/common';
 
 @Module({
   imports: [
-    InspectorsModule,
+    forwardRef(() => InspectorsModule),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -21,6 +22,6 @@ import { InspectorsModule } from '../inspectors/inspectors.module';
   ],
   controllers: [AuthController],
   providers: [AuthService],
-  exports: [AuthService],
+  exports: [AuthService, JwtModule],
 })
 export class AuthModule {}

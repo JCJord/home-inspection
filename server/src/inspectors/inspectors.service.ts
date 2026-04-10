@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateInspectorDto } from './dto/create-inspector.dto';
 import { UpdateInspectorDto } from './dto/update-inspector.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 import { Inspector } from './inspector.entity';
 import { InspectorsRepository } from './inspectors.repository';
 
@@ -40,6 +41,27 @@ export class InspectorsService {
       throw new NotFoundException(`Inspector with ID ${id} not found`);
     }
     return inspector;
+  }
+
+  async getProfile(id: string): Promise<Inspector> {
+    const inspector = await this.findOne(id);
+    const { password_hash, ...result } = inspector;
+    return result as Inspector;
+  }
+
+  async updateProfile(
+    id: string,
+    updateProfileDto: UpdateProfileDto,
+  ): Promise<Inspector> {
+    const inspector = await this.update(id, updateProfileDto as UpdateInspectorDto);
+    const { password_hash, ...result } = inspector;
+    return result as Inspector;
+  }
+
+  async uploadLogo(id: string, logoUrl: string): Promise<Inspector> {
+    const inspector = await this.update(id, { logo_url: logoUrl } as UpdateInspectorDto);
+    const { password_hash, ...result } = inspector;
+    return result as Inspector;
   }
 
   async remove(id: string): Promise<void> {
