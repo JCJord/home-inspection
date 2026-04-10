@@ -1,9 +1,15 @@
 import { Component } from '@angular/core';
+import { RouterLink, RouterLinkActive } from '@angular/router';
+import { LucideAngularModule, Home, ClipboardList, UserCircle } from 'lucide-angular';
 
 @Component({
   selector: 'app-navbar-mobile',
-  imports: [],
+  standalone: true,
+  imports: [RouterLink, RouterLinkActive, LucideAngularModule],
+  providers: [{ provide: 'lucideIcons', useValue: { Home, ClipboardList, UserCircle } }],
   templateUrl: './navbar-mobile.html',
   styleUrl: './navbar-mobile.scss',
 })
-export class NavbarMobile {}
+export class NavbarMobile {
+  readonly icons = { Home, ClipboardList, UserCircle };
+}
