@@ -1,0 +1,71 @@
+@use 'variables' as *;
+
+:host {
+  display: block;
+  &.w-full {
+    width: 100%;
+  }
+}
+
+.app-button {
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.3s ease-in-out;
+  cursor: pointer;
+  border: 2px solid transparent;
+  outline: none;
+  white-space: nowrap;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  // Variants
+  &--solid {
+    background-color: $color-primary;
+    color: white;
+
+    &:hover:not(:disabled) {
+      background-color: $color-primary-dark;
+      box-shadow: 0 4px 12px $color-primary-glow;
+      transform: translateY(-1px);
+    }
+
+    &:active:not(:disabled) {
+      transform: translateY(0);
+    }
+  }
+
+  &--outline {
+    background-color: transparent;
+    border-color: $color-primary;
+    color: $color-primary;
+
+    &:hover:not(:disabled) {
+      background-color: $color-primary;
+      color: white;
+      box-shadow: 0 4px 12px $color-primary-glow;
+    }
+  }
+
+  // Sizes
+  &--sm {
+    padding: 6px 14px;
+    font-size: 12px;
+  }
+
+  &--md {
+    padding: 10px 20px;
+    font-size: 14px;
+  }
+
+  &--lg {
+    padding: 14px 28px;
+    font-size: 16px;
+  }
+
+  &--full {
+    width: 100%;
+  }
+}

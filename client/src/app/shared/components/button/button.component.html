@@ -1,0 +1,19 @@
+<button
+  [type]="type()"
+  [disabled]="disabled() || isLoading()"
+  class="app-button flex items-center justify-center transition-all duration-300"
+  [class.app-button--solid]="variant() === 'solid'"
+  [class.app-button--outline]="variant() === 'outline'"
+  [class.app-button--sm]="size() === 'sm'"
+  [class.app-button--md]="size() === 'md'"
+  [class.app-button--lg]="size() === 'lg'"
+  [class.app-button--full]="full()"
+>
+  @if (isLoading()) {
+    <app-spinner [size]="spinnerSize()"></app-spinner>
+  } @else {
+    <div class="flex items-center justify-center gap-2">
+      <ng-content></ng-content>
+    </div>
+  }
+</button>
