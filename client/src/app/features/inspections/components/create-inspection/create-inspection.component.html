@@ -4,6 +4,13 @@
   </div>
 
   <form [formGroup]="inspectionForm" (ngSubmit)="onSubmit()" class="form-body">
+    @if (errorMessage()) {
+    <div class="form-error-banner">
+      <lucide-icon [name]="icons.AlertCircle" [size]="18" class="mr-2"></lucide-icon>
+      <span>{{ errorMessage() }}</span>
+    </div>
+    }
+
     <div class="form-grid">
       <app-text-input name="address" label="Property Address" placeholder="123 Main St, City, State"></app-text-input>
 
@@ -23,8 +30,11 @@
     </div>
 
     <div class="form-actions flex justify-between mt-6">
-      <app-button variant="outline" (click)="close.emit()">Cancel</app-button>
-      <app-button type="submit" [disabled]="inspectionForm.invalid" variant="solid">Create Inspection</app-button>
+      <app-button variant="outline" (click)="close.emit()" [disabled]="isLoading()">Cancel</app-button>
+      <app-button type="submit" [disabled]="inspectionForm.invalid || isLoading()" [isLoading]="isLoading()"
+        variant="solid">
+        Create Inspection
+      </app-button>
     </div>
   </form>
 </div>

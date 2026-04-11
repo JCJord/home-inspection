@@ -1,9 +1,10 @@
-import { Component, EventEmitter, Output, inject } from '@angular/core';
+import { Component, EventEmitter, Output, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { TextInputComponent } from '../../../../shared/components/inputs/text-input/text-input.component';
-import { LucideAngularModule, X } from 'lucide-angular';
+import { LucideAngularModule, X, AlertCircle } from 'lucide-angular';
+import { InspectionsService } from '../../../../core/services/inspections.service';
 
 @Component({
   selector: 'app-create-inspection',
@@ -14,11 +15,15 @@ import { LucideAngularModule, X } from 'lucide-angular';
 })
 export class CreateInspectionComponent {
   private fb = inject(FormBuilder);
+  private inspectionsService = inject(InspectionsService);
 
   @Output() close = new EventEmitter<void>();
   @Output() created = new EventEmitter<any>();
 
-  readonly icons = { X };
+  isLoading = signal<boolean>(false);
+  errorMessage = signal<string | null>(null);
+
+  readonly icons = { X, AlertCircle };
 
   inspectionForm: FormGroup = this.fb.group({
     address: ['', [Validators.required]],
@@ -29,8 +34,22 @@ export class CreateInspectionComponent {
   });
 
   onSubmit(): void {
-    if (this.inspectionForm.valid) {
-      this.created.emit(this.inspectionForm.value);
+    if (this.inspectionForm.valid && !this.isLoading()) {
+      this.isLoading.set(true);
+      this.errorMessage.set(null);
+
+      this.inspectionsService.createInspection(this.inspectionForm.value).subscribe({
+        next: (response) => {
+          this.isLoading.set(false);
+          this.created.emit(response);
+          this.inspectionForm.reset();
+        },
+        error: (err) => {
+          console.error('Failed to create inspection', err);
+          this.errorMessage.set(err.error?.message || 'An unexpected error occurred. Please try again.');
+          this.isLoading.set(false);
+        }
+      });
     } else {
       this.inspectionForm.markAllAsTouched();
     }

@@ -4,12 +4,13 @@ import { InspectionsService } from '../../../../core/services/inspections.servic
 import { Inspection } from '../../../../core/models/inspection.interface';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { ClipboardList, LucideAngularModule, Plus, RefreshCw } from 'lucide-angular';
-import { CreateInspectionComponent } from '../create-inspection/create-inspection.component';
+import { CreateInspectionComponent } from '../../components/create-inspection/create-inspection.component';
+import { InspectionCardComponent } from '../../components/inspection-card/inspection-card.component';
 
 @Component({
   selector: 'app-inspections',
   standalone: true,
-  imports: [CommonModule, ButtonComponent, LucideAngularModule, CreateInspectionComponent],
+  imports: [CommonModule, ButtonComponent, LucideAngularModule, CreateInspectionComponent, InspectionCardComponent],
   templateUrl: './inspections.component.html',
   styleUrl: './inspections.component.scss',
 })
@@ -48,9 +49,8 @@ export class InspectionsComponent implements OnInit {
     this.isFormOpen.set(false);
   }
 
-  onInspectionCreated(data: any): void {
-    console.log('Inspection created (mock):', data);
+  onInspectionCreated(data: Inspection): void {
     this.closeForm();
-    // For now, we only log as requested by the user
+    this.loadInspections();
   }
 }

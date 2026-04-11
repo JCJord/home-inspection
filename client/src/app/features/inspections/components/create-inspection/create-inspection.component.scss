@@ -46,6 +46,24 @@
   }
 }
 
+.form-error-banner {
+  background: rgba($color-error, 0.1);
+  color: $color-error;
+  padding: 1rem;
+  border-radius: 0.75rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: 1px solid rgba($color-error, 0.2);
+  animation: slideDown 0.3s ease-out;
+
+  lucide-icon {
+    flex-shrink: 0;
+  }
+}
+
 .form-body {
   padding: 2rem;
   margin: 0;
@@ -88,6 +106,18 @@
   from {
     opacity: 0;
     transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
   }
 
   to {

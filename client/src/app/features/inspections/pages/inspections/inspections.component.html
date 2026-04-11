@@ -20,9 +20,7 @@
     } @else if (inspections().length > 0) {
     <div class="inspections-list">
       @for (inspection of inspections(); track inspection.id) {
-      <div class="inspection-card">
-        <pre>{{ inspection | json }}</pre>
-      </div>
+      <app-inspection-card [inspection]="inspection"></app-inspection-card>
       }
     </div>
     } @else if (!isFormOpen()) {
