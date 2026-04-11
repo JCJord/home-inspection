@@ -8,7 +8,9 @@ import { Inspector } from '../../../../core/models/inspector.interface';
 import { TextInputComponent } from '../../../../shared/components/inputs/text-input/text-input.component';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
-import { LucideAngularModule, Camera, User, BadgeCheck, Phone, Mail, Building, FileText, CheckCircle2 } from 'lucide-angular';
+import { AuthService } from '../../../../core/services/auth.service';
+import { Router } from '@angular/router';
+import { LucideAngularModule, Camera, User, BadgeCheck, Phone, Mail, Building, FileText, CheckCircle2, LogOut } from 'lucide-angular';
 import { environment } from '../../../../../environments/environment';
 
 @Component({
@@ -27,9 +29,11 @@ import { environment } from '../../../../../environments/environment';
 export class ProfileComponent implements OnInit {
   private fb = inject(FormBuilder);
   private inspectorsService = inject(InspectorsService);
+  private authService = inject(AuthService);
+  private router = inject(Router);
   private destroyRef = inject(DestroyRef);
 
-  readonly icons = { Camera, User, BadgeCheck, Phone, Mail, Building, FileText, CheckCircle2 };
+  readonly icons = { Camera, User, BadgeCheck, Phone, Mail, Building, FileText, CheckCircle2, LogOut };
 
   profileForm: FormGroup = this.fb.group({
     name: ['', [Validators.required]],
@@ -146,5 +150,10 @@ export class ProfileComponent implements OnInit {
           console.error(err);
         }
       });
+  }
+
+  onLogout(): void {
+    this.authService.logout();
+    this.router.navigate(['/auth/login']);
   }
 }

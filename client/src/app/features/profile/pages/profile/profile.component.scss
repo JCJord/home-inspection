@@ -321,6 +321,38 @@
   gap: 0.5rem;
 }
 
+.logout-card {
+  padding: 1rem;
+  background: white;
+  border-color: rgba(#ef4444, 0.1);
+
+  @media (min-width: 1025px) {
+    display: none; // Hide on desktop as it's in the sidebar
+  }
+
+  .btn-logout-mobile {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 0.875rem;
+    border-radius: 0.75rem;
+    background: #fef2f2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:active {
+      transform: scale(0.98);
+      background: #fee2e2;
+    }
+  }
+}
+
 @keyframes slideDown {
   from {
     opacity: 0;
