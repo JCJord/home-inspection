@@ -1,9 +1,6 @@
 <div class="create-form-container">
   <div class="form-header">
     <h2>New Inspection</h2>
-    <button class="close-btn" (click)="close.emit()" aria-label="Close">
-      <lucide-icon [name]="icons.X"></lucide-icon>
-    </button>
   </div>
 
   <form [formGroup]="inspectionForm" (ngSubmit)="onSubmit()" class="form-body">
@@ -25,7 +22,7 @@
       </div>
     </div>
 
-    <div class="flex justify-between mt-6">
+    <div class="form-actions flex justify-between mt-6">
       <app-button variant="outline" (click)="close.emit()">Cancel</app-button>
       <app-button type="submit" [disabled]="inspectionForm.invalid" variant="solid">Create Inspection</app-button>
     </div>

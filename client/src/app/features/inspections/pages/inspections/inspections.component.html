@@ -9,27 +9,27 @@
 
   <div class="content">
     @if (isFormOpen()) {
-      <app-create-inspection (close)="closeForm()" (created)="onInspectionCreated($event)"></app-create-inspection>
+    <app-create-inspection (close)="closeForm()" (created)="onInspectionCreated($event)"></app-create-inspection>
     }
 
     @if (isLoading()) {
-      <div class="loading-state">
-        <lucide-icon [name]="icons.RefreshCw" class="animate-spin"></lucide-icon>
-        <span>Loading inspections...</span>
-      </div>
+    <div class="loading-state">
+      <lucide-icon [name]="icons.RefreshCw" class="animate-spin"></lucide-icon>
+      <span>Loading inspections...</span>
+    </div>
     } @else if (inspections().length > 0) {
-      <div class="inspections-list">
-        @for (inspection of inspections(); track inspection.id) {
-          <div class="inspection-card">
-            <pre>{{ inspection | json }}</pre>
-          </div>
-        }
+    <div class="inspections-list">
+      @for (inspection of inspections(); track inspection.id) {
+      <div class="inspection-card">
+        <pre>{{ inspection | json }}</pre>
       </div>
-    } @else {
-      <div class="empty-state">
-        <lucide-icon [name]="icons.Plus" class="mb-4 text-muted"></lucide-icon>
-        <p>No inspections found. Start by creating a new one!</p>
-      </div>
+      }
+    </div>
+    } @else if (!isFormOpen()) {
+    <div class="empty-state">
+      <lucide-icon [name]="icons.ClipboardList" class="mb-4 text-muted"></lucide-icon>
+      <p>No inspections found. Start by creating a new one!</p>
+    </div>
     }
   </div>
 </div>

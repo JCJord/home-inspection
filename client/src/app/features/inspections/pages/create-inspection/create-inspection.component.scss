@@ -70,6 +70,21 @@
   }
 }
 
+@media (max-width: 390px) {
+  .form-actions {
+    flex-wrap: wrap !important;
+    flex-direction: column-reverse !important;
+    gap: 15px;
+
+    app-button {
+      width: 100%;
+
+      ::ng-deep .app-button {
+        width: 100%;
+      }
+    }
+  }
+}
 
 @keyframes fadeIn {
   from {

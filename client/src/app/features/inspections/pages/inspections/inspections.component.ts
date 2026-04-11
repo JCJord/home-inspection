@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { InspectionsService } from '../../../../core/services/inspections.service';
 import { Inspection } from '../../../../core/models/inspection.interface';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
-import { LucideAngularModule, Plus, RefreshCw } from 'lucide-angular';
+import { ClipboardList, LucideAngularModule, Plus, RefreshCw } from 'lucide-angular';
 import { CreateInspectionComponent } from '../create-inspection/create-inspection.component';
 
 @Component({
@@ -20,7 +20,7 @@ export class InspectionsComponent implements OnInit {
   isLoading = signal<boolean>(true);
   isFormOpen = signal<boolean>(false);
 
-  readonly icons = { Plus, RefreshCw };
+  readonly icons = { Plus, RefreshCw, ClipboardList };
 
   ngOnInit(): void {
     this.loadInspections();
