@@ -1,0 +1,9 @@
+import { Section, Severity } from '../enums/inspection.enums';
+
+export interface CreateFindingDto {
+  section: Section;
+  severity: Severity;
+  location?: string;
+  short_note: string;
+  sort_order?: number;
+}
