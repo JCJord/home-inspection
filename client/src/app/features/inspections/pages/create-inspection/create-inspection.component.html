@@ -1,0 +1,33 @@
+<div class="create-form-container">
+  <div class="form-header">
+    <h2>New Inspection</h2>
+    <button class="close-btn" (click)="close.emit()" aria-label="Close">
+      <lucide-icon [name]="icons.X"></lucide-icon>
+    </button>
+  </div>
+
+  <form [formGroup]="inspectionForm" (ngSubmit)="onSubmit()" class="form-body">
+    <div class="form-grid">
+      <app-text-input name="address" label="Property Address" placeholder="123 Main St, City, State"></app-text-input>
+
+      <div class="form-row">
+        <app-text-input name="client_name" label="Client Name" placeholder="John Doe"></app-text-input>
+
+        <app-text-input name="client_email" label="Client Email" type="email"
+          placeholder="john@example.com"></app-text-input>
+      </div>
+
+      <div class="form-row">
+        <app-text-input name="year_built" label="Year Built" type="number" placeholder="e.g. 1995"></app-text-input>
+
+        <app-text-input name="square_footage" label="Sq Footage (Optional)" type="number"
+          placeholder="e.g. 2500"></app-text-input>
+      </div>
+    </div>
+
+    <div class="flex justify-between mt-6">
+      <app-button variant="outline" (click)="close.emit()">Cancel</app-button>
+      <app-button type="submit" [disabled]="inspectionForm.invalid" variant="solid">Create Inspection</app-button>
+    </div>
+  </form>
+</div>

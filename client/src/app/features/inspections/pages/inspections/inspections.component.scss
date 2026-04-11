@@ -1,0 +1,108 @@
+@use 'variables' as *;
+
+.inspections-container {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2.5rem;
+
+    h1 {
+      font-size: 2rem;
+      font-weight: 800;
+      color: $color-text;
+      letter-spacing: -0.025em;
+    }
+
+  }
+
+  .content {
+
+    .loading-state,
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 5rem 2rem;
+      color: $color-text-muted;
+      background: $color-surface;
+      border-radius: 1.5rem;
+      border: 1px solid $color-border;
+      text-align: center;
+
+      lucide-icon {
+        width: 3rem;
+        height: 3rem;
+        margin-bottom: 1.5rem;
+        opacity: 0.5;
+      }
+
+      span,
+      p {
+        font-size: 1.125rem;
+      }
+    }
+
+    .inspections-list {
+      display: grid;
+      gap: 1.5rem;
+
+      .inspection-card {
+        background: $color-surface;
+        padding: 1.5rem;
+        border-radius: 1rem;
+        border: 1px solid $color-border;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        transition: transform 0.2s;
+
+        &:hover {
+          border-color: $color-primary;
+        }
+
+        pre {
+          font-family: 'JetBrains Mono', 'Fira Code', monospace;
+          font-size: 0.75rem;
+          color: $color-text-muted;
+          margin: 0;
+          white-space: pre-wrap;
+          word-break: break-all;
+        }
+      }
+    }
+  }
+}
+
+.flex {
+  display: flex;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.mr-2 {
+  margin-right: 0.5rem;
+}
+
+.mb-4 {
+  margin-bottom: 1rem;
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}

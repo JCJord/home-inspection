@@ -16,7 +16,7 @@ export const DASHBOARD_ROUTES: Routes = [
       },
       {
         path: 'inspections',
-        loadComponent: () => import('./pages/home/home.component').then(m => m.HomeComponent), // placeholder
+        loadChildren: () => import('../inspections/inspections.routes').then(m => m.INSPECTIONS_ROUTES),
       },
       {
         path: 'profile',
