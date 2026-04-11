@@ -4,7 +4,9 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
+  OneToMany,
 } from 'typeorm';
+import { Inspection } from '../inspections/inspection.entity';
 
 @Entity('inspectors')
 export class Inspector {
@@ -37,6 +39,9 @@ export class Inspector {
 
   @Column({ default: 0 })
   free_inspections_used: number;
+
+  @OneToMany(() => Inspection, (inspection) => inspection.inspector)
+  inspections: Inspection[];
 
   @CreateDateColumn()
   created_at: Date;
