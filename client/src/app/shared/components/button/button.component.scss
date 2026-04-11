@@ -29,11 +29,10 @@
     &:hover:not(:disabled) {
       background-color: $color-primary-dark;
       box-shadow: 0 4px 12px $color-primary-glow;
-      transform: translateY(-1px);
     }
 
     &:active:not(:disabled) {
-      transform: translateY(0);
+      opacity: 0.8;
     }
   }
 
