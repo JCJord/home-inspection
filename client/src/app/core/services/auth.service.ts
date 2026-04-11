@@ -4,8 +4,8 @@ import { Observable, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { RegisterRequestDto } from '../dtos/register-request.dto';
 import { LoginRequestDto } from '../dtos/login-request.dto';
-import { AuthResponse } from '../interfaces/auth-response.interface';
-import { Inspector } from '../interfaces/inspector.interface';
+import { AuthResponse } from '../models/auth-response.interface';
+import { Inspector } from '../models/inspector.interface';
 
 @Injectable({
   providedIn: 'root',

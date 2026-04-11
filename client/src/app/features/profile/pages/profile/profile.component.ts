@@ -4,7 +4,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { debounceTime, distinctUntilChanged, finalize, switchMap, filter, tap } from 'rxjs';
 import { InspectorsService } from '../../../../core/services/inspectors.service';
-import { Inspector } from '../../../../core/interfaces/inspector.interface';
+import { Inspector } from '../../../../core/models/inspector.interface';
 import { TextInputComponent } from '../../../../shared/components/inputs/text-input/text-input.component';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';

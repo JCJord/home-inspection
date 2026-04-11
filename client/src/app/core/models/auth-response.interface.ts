@@ -1,4 +1,4 @@
-import { Inspector } from '../interfaces/inspector.interface';
+import { Inspector } from './inspector.interface';
 
 export interface AuthResponse {
   user: Pick<Inspector, 'id' | 'email' | 'name'>;
