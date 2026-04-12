@@ -1,5 +1,6 @@
-import { Component, computed, input, output, signal } from '@angular/core';
+import { Component, computed, inject, input, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { Inspection } from '../../../../core/models/inspection.interface';
 import { Severity } from '../../../../core/enums/inspection.enums';
 import { LucideAngularModule, MapPin, User, Calendar, AlertTriangle, AlertCircle, Info, CheckCircle2, ChevronRight, Edit2, Trash2 } from 'lucide-angular';
@@ -15,9 +16,10 @@ import { ConfirmModalComponent } from '../../../../shared/components/confirm-mod
   styleUrl: './inspection-card.component.scss',
 })
 export class InspectionCardComponent {
+  private router = inject(Router);
+
   inspection = input.required<Inspection>();
 
-  view = output<Inspection>();
   edit = output<Inspection>();
   delete = output<Inspection>();
 
@@ -53,6 +55,10 @@ export class InspectionCardComponent {
   confirmDelete() {
     this.delete.emit(this.inspection());
     this.showDeleteModal.set(false);
+  }
+
+  viewDetails() {
+    this.router.navigate(['/dashboard/inspections', this.inspection().id]);
   }
 
   severityCounts = computed(() => {

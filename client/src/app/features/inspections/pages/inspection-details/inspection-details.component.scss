@@ -1,0 +1,208 @@
+@use 'variables' as *;
+
+.details-container {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+// ─── Header ───────────────────────────────────────────
+
+.details-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid $color-border;
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    min-width: 0;
+
+    .back-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 2.5rem;
+      height: 2.5rem;
+      border-radius: 0.75rem;
+      border: 1px solid $color-border;
+      background: $color-surface;
+      color: $color-text-muted;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: all 0.2s;
+
+      &:hover {
+        background: $color-surface-light;
+        color: $color-text;
+        border-color: $color-primary;
+      }
+    }
+
+    .header-info {
+      min-width: 0;
+
+      .address {
+        font-size: 1.375rem;
+        font-weight: 800;
+        color: $color-text;
+        margin: 0;
+        letter-spacing: -0.02em;
+        line-height: 1.3;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .client-name {
+        font-size: 0.875rem;
+        color: $color-text-muted;
+        font-weight: 500;
+      }
+    }
+  }
+
+  .header-right {
+    flex-shrink: 0;
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 0.875rem;
+      border-radius: 2rem;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+
+      .dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+      }
+
+      &.published {
+        background: rgba($color-success, 0.1);
+        color: $color-success;
+
+        .dot {
+          background: $color-success;
+        }
+      }
+    }
+
+    // Button inner layout
+    app-button {
+      ::ng-deep .app-button {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+    }
+  }
+}
+
+// ─── Content Area ─────────────────────────────────────
+
+.details-content {
+  .placeholder-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 5rem 2rem;
+    color: $color-text-muted;
+    background: $color-surface;
+    border-radius: 1.5rem;
+    border: 1px solid $color-border;
+    text-align: center;
+    font-size: 1rem;
+  }
+}
+
+// ─── States ───────────────────────────────────────────
+
+.loading-state,
+.error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 5rem 2rem;
+  color: $color-text-muted;
+  background: $color-surface;
+  border-radius: 1.5rem;
+  border: 1px solid $color-border;
+  text-align: center;
+  gap: 1rem;
+
+  lucide-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    opacity: 0.5;
+  }
+
+  span,
+  p {
+    font-size: 1.125rem;
+    margin: 0;
+  }
+}
+
+.error-state {
+  lucide-icon {
+    color: $color-error;
+    opacity: 0.8;
+  }
+}
+
+// ─── Responsive ───────────────────────────────────────
+
+@media (max-width: 640px) {
+  .details-container {
+    padding: 1.25rem;
+  }
+
+  .details-header {
+    .header-left {
+      .header-info {
+        .address {
+          font-size: 1.125rem;
+        }
+      }
+    }
+  }
+}
+
+// ─── Animations ───────────────────────────────────────
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
