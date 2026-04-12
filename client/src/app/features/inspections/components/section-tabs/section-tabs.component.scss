@@ -1,0 +1,91 @@
+@use 'variables' as *;
+
+* {
+  min-width: 0 !important;
+}
+
+:host {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0; // Crucial for allowing container to shrink below content width
+}
+
+.tabs-container {
+  width: 100%;
+  box-sizing: border-box;
+  border-bottom: 1px solid $color-border;
+  background: $color-surface;
+  padding: 0 1rem;
+  border-radius: 0.75rem 0.75rem 0 0;
+}
+
+.tabs-scroll-area {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  overflow-x: auto;
+  scrollbar-width: none; // Firefox
+  -ms-overflow-style: none; // IE/Edge
+  cursor: grab;
+  min-width: 0; // ← ADD THIS — allows flex child to shrink below content width
+  width: 100%; // ← ADD THIS — anchors it to parent width
+
+  &::-webkit-scrollbar {
+    display: none; // Chrome/Safari
+  }
+
+  &.dragging {
+    cursor: grabbing;
+    scroll-behavior: auto;
+  }
+}
+
+.tab-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 0;
+  border: none;
+  background: transparent;
+  color: $color-text-muted;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  position: relative;
+  transition: all 0.2s ease;
+  user-select: none;
+  flex-shrink: 0; // Prevent buttons from squishing when container is small
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: transparent;
+    transition: background 0.2s ease;
+  }
+
+  &:hover {
+    color: $color-text;
+  }
+
+  &.active {
+    color: $color-primary;
+
+    &::after {
+      background: $color-primary;
+    }
+  }
+
+  lucide-icon {
+    opacity: 0.8;
+  }
+
+  &.active lucide-icon {
+    opacity: 1;
+  }
+}

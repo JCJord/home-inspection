@@ -42,10 +42,13 @@
     </div>
   </div>
 
-  <!-- Content area (section tabs + findings will go here in Phase 2) -->
-  <div class="details-content">
-    <div class="placeholder-state">
-      <p>Section tabs and findings will appear here.</p>
+  <!-- Content area -->
+  <div class="details-content" style="overflow-x: hidden; width: 100%;">
+    <app-section-tabs [selectedSection]="selectedSection()" (sectionChange)="selectedSection.set($event)">
+    </app-section-tabs>
+
+    <div class="section-content-placeholder">
+      <p>Content for {{ selectedSection() }} will appear here.</p>
     </div>
   </div>
   }

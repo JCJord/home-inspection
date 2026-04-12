@@ -5,12 +5,14 @@ import { InspectionsService } from '../../../../core/services/inspections.servic
 import { Inspection } from '../../../../core/models/inspection.interface';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { ConfirmModalComponent } from '../../../../shared/components/confirm-modal/confirm-modal.component';
+import { SectionTabsComponent } from '../../components/section-tabs/section-tabs.component';
+import { Section } from '../../../../core/enums/inspection.enums';
 import { LucideAngularModule, ArrowLeft, Send, RefreshCw, AlertCircle } from 'lucide-angular';
 
 @Component({
   selector: 'app-inspection-details',
   standalone: true,
-  imports: [CommonModule, ButtonComponent, ConfirmModalComponent, LucideAngularModule],
+  imports: [CommonModule, ButtonComponent, ConfirmModalComponent, SectionTabsComponent, LucideAngularModule],
   templateUrl: './inspection-details.component.html',
   styleUrl: './inspection-details.component.scss',
 })
@@ -24,6 +26,7 @@ export class InspectionDetailsComponent implements OnInit {
   isPublishing = signal<boolean>(false);
   errorMessage = signal<string | null>(null);
   showPublishModal = signal(false);
+  selectedSection = signal<Section>(Section.EXTERIOR);
 
   readonly icons = { ArrowLeft, Send, RefreshCw, AlertCircle };
 
