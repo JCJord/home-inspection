@@ -2,6 +2,7 @@
 
 :host {
   display: block;
+
   &.w-full {
     width: 100%;
   }
@@ -10,7 +11,7 @@
 .app-button {
   border-radius: 8px;
   font-weight: 500;
-  transition: all 0.3s ease-in-out;
+  transition: background 0.3s ease-in-out;
   cursor: pointer;
   border: 2px solid transparent;
   outline: none;
@@ -30,10 +31,6 @@
       background-color: $color-primary-dark;
       box-shadow: 0 4px 12px $color-primary-glow;
     }
-
-    &:active:not(:disabled) {
-      opacity: 0.8;
-    }
   }
 
   &--outline {
@@ -45,6 +42,25 @@
       background-color: $color-primary;
       color: white;
       box-shadow: 0 4px 12px $color-primary-glow;
+    }
+  }
+
+  &--ghost {
+    background-color: rgba($color-text, 0.05);
+    color: $color-text;
+
+    &:hover:not(:disabled) {
+      background-color: rgba($color-text, 0.1);
+    }
+  }
+
+  &--subtle {
+    background-color: $color-surface-light;
+    color: $color-text;
+
+    &:hover:not(:disabled) {
+      background-color: $color-primary;
+      color: white;
     }
   }
 
