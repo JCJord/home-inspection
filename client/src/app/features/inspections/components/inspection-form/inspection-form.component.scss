@@ -19,7 +19,8 @@
   padding: 1.5rem 2rem;
   border-bottom: 1px solid $color-border;
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
+  gap: 1rem;
   align-items: center;
   background: $color-surface;
 
@@ -39,14 +40,18 @@
     padding: 0.5rem;
     border-radius: 0.75rem;
     transition: all 0.2s;
-    display: flex;
+    display: none;
     align-items: center;
     justify-content: center;
+    margin: 0;
+
+    @media (max-width: 640px) {
+      display: flex;
+    }
 
     &:hover:not(:disabled) {
       background: $color-surface-light;
       color: $color-text;
-      transform: rotate(90deg);
     }
 
     &:disabled {
@@ -96,11 +101,15 @@
   }
 }
 
-@media (max-width: 390px) {
-  .form-actions {
-    flex-wrap: wrap !important;
-    flex-direction: column-reverse !important;
-    gap: 15px;
+.form-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 1.5rem;
+
+  @media (max-width: 640px) {
+    .cancel-btn {
+      display: none;
+    }
 
     app-button {
       width: 100%;

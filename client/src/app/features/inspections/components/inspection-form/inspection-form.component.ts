@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { TextInputComponent } from '../../../../shared/components/inputs/text-input/text-input.component';
-import { LucideAngularModule, X, AlertCircle } from 'lucide-angular';
+import { LucideAngularModule, ArrowLeft, AlertCircle } from 'lucide-angular';
 import { InspectionsService } from '../../../../core/services/inspections.service';
 import { Inspection } from '../../../../core/models/inspection.interface';
 
@@ -28,7 +28,7 @@ export class InspectionFormComponent {
 
   isEditMode = computed(() => !!this.inspection());
   
-  readonly icons = { X, AlertCircle };
+  readonly icons = { ArrowLeft, AlertCircle };
 
   inspectionForm: FormGroup = this.fb.group({
     address: ['', [Validators.required]],
