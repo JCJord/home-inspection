@@ -113,7 +113,9 @@
       color: #15803d;
       border: 1px solid #bcf0da;
 
-      .close-alert { color: #15803d; }
+      .close-alert {
+        color: #15803d;
+      }
     }
 
     &.alert-error {
@@ -121,7 +123,9 @@
       color: #b91c1c;
       border: 1px solid #fecaca;
 
-      .close-alert { color: #b91c1c; }
+      .close-alert {
+        color: #b91c1c;
+      }
     }
   }
 }
@@ -260,11 +264,13 @@
       background: #f1f5f9;
       color: #475569;
     }
+
     &[data-tier="pro"] {
       background: #eff6ff;
       color: #1d4ed8;
       border: 1px solid #bfdbfe;
     }
+
     &[data-tier="enterprise"] {
       background: #faf5ff;
       color: #7e22ce;
@@ -322,8 +328,6 @@
 }
 
 .logout-card {
-  padding: 1rem;
-  background: white;
   border-color: rgba(#ef4444, 0.1);
 
   @media (min-width: 1025px) {
@@ -358,6 +362,7 @@
     opacity: 0;
     transform: translateY(-10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
