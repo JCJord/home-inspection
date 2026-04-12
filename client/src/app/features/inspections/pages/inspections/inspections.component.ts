@@ -4,13 +4,13 @@ import { InspectionsService } from '../../../../core/services/inspections.servic
 import { Inspection } from '../../../../core/models/inspection.interface';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { ClipboardList, LucideAngularModule, Plus, RefreshCw } from 'lucide-angular';
-import { CreateInspectionComponent } from '../../components/create-inspection/create-inspection.component';
+import { InspectionFormComponent } from '../../components/inspection-form/inspection-form.component';
 import { InspectionCardComponent } from '../../components/inspection-card/inspection-card.component';
 
 @Component({
   selector: 'app-inspections',
   standalone: true,
-  imports: [CommonModule, ButtonComponent, LucideAngularModule, CreateInspectionComponent, InspectionCardComponent],
+  imports: [CommonModule, ButtonComponent, LucideAngularModule, InspectionFormComponent, InspectionCardComponent],
   templateUrl: './inspections.component.html',
   styleUrl: './inspections.component.scss',
 })
@@ -20,6 +20,7 @@ export class InspectionsComponent implements OnInit {
   inspections = signal<Inspection[]>([]);
   isLoading = signal<boolean>(true);
   isFormOpen = signal<boolean>(false);
+  editingInspection = signal<Inspection | null>(null);
 
   readonly icons = { Plus, RefreshCw, ClipboardList };
 
@@ -42,14 +43,23 @@ export class InspectionsComponent implements OnInit {
   }
 
   toggleForm(): void {
+    if (!this.isFormOpen()) {
+      this.editingInspection.set(null);
+    }
     this.isFormOpen.update((val) => !val);
+  }
+
+  editInspection(inspection: Inspection): void {
+    this.editingInspection.set(inspection);
+    this.isFormOpen.set(true);
   }
 
   closeForm(): void {
     this.isFormOpen.set(false);
+    this.editingInspection.set(null);
   }
 
-  onInspectionCreated(data: Inspection): void {
+  onSaved(data: Inspection): void {
     this.closeForm();
     this.loadInspections();
   }
