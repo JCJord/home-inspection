@@ -16,7 +16,7 @@ export class InspectionsService {
     private readonly inspectorRepository: Repository<Inspector>,
     @InjectRepository(Report)
     private readonly reportRepository: Repository<Report>,
-  ) {}
+  ) { }
 
   async create(inspectorId: string, createInspectionDto: CreateInspectionDto): Promise<Inspection> {
     const inspector = await this.inspectorRepository.findOne({ where: { id: inspectorId } });
@@ -24,23 +24,24 @@ export class InspectionsService {
       throw new NotFoundException('Inspector not found');
     }
 
-    // Paywall mock validation can go here
     if (
       inspector.subscription_status !== 'active' &&
-      inspector.free_inspections_used >= 2
+      inspector.free_inspections_used >= 1000
     ) {
       throw new ForbiddenException('Free inspection limit reached. Please upgrade.');
     }
-
-    inspector.free_inspections_used += 1;
-    await this.inspectorRepository.save(inspector);
 
     const inspection = this.inspectionRepository.create({
       ...createInspectionDto,
       inspector_id: inspector.id,
     });
 
-    return await this.inspectionRepository.save(inspection);
+    const savedInspection = await this.inspectionRepository.save(inspection);
+
+    inspector.free_inspections_used += 1;
+    await this.inspectorRepository.save(inspector);
+
+    return savedInspection;
   }
 
   async findAll(inspectorId: string): Promise<Inspection[]> {
