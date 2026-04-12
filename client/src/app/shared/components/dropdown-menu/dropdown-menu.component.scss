@@ -1,0 +1,92 @@
+@use 'variables' as *;
+
+.dropdown-container {
+  position: relative;
+  display: inline-block;
+
+  .dropdown-trigger {
+    color: $color-text-muted;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+
+    &:hover, &.active {
+      color: $color-text;
+      background: rgba($color-text, 0.05);
+    }
+
+    lucide-icon {
+      pointer-events: none;
+    }
+  }
+
+  .dropdown-menu {
+    background-color: $color-surface;
+    border: 1px solid $color-border;
+    transform-origin: top right;
+    animation: dropdown-fade-in 0.15s ease-out;
+
+    .dropdown-item {
+      display: flex;
+      width: 100%;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem 1rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: $color-text;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.2s;
+
+      lucide-icon {
+        color: $color-text-muted;
+      }
+
+      &:hover {
+        background-color: $color-surface-light;
+        color: $color-primary;
+
+        lucide-icon {
+          color: $color-primary;
+        }
+      }
+
+      &.danger {
+        color: $color-error;
+        
+        lucide-icon {
+          color: $color-error;
+        }
+
+        &:hover {
+          background-color: rgba($color-error, 0.05);
+          color: $color-error;
+        }
+      }
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        
+        &:hover {
+          background-color: transparent;
+          color: $color-text;
+        }
+      }
+    }
+  }
+}
+
+@keyframes dropdown-fade-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
