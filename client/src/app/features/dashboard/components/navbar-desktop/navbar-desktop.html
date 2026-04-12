@@ -1,13 +1,13 @@
-<nav class="desktop-nav">
-  <div class="logo">
-    <img style="width: 40px;" src="/assets/icons/inspectly-logo.svg" alt="Inspectly Logo" class="brand-icon">
-    Inspectly
+<nav class="desktop-nav px-3 pt-5">
+  <div class="logo ps-2 mb-6">
+    <img style="width: 30px;" src="/assets/icons/inspectly-logo.png" alt="Inspectly Logo" class="brand-icon">
+    <span class="brand-text inter">Inspectly</span>
   </div>
   <div class="nav-content">
     <ul class="nav-links">
       <li>
         <a routerLink="/home" routerLinkActive="active">
-          <lucide-icon [img]="icons.House" [size]="20" />
+          <lucide-icon [img]="icons.LayoutDashboard" [size]="20" />
           Dashboard
         </a>
       </li>
@@ -23,6 +23,10 @@
           Profile
         </a>
       </li>
+    </ul>
+  </div>
+  <div class="nav-footer pb-4">
+    <ul class="nav-links">
       <li>
         <a (click)="onLogout()">
           <lucide-icon [img]="icons.LogOut" [size]="20" />
