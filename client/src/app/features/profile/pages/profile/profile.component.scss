@@ -1,3 +1,5 @@
+@use 'variables' as *;
+
 .profile-container {
   padding: 2rem;
   max-width: 1200px;
@@ -11,10 +13,10 @@
     justify-content: center;
     height: 400px;
     gap: 1rem;
-    color: #64748b;
+    color: $color-text-muted;
 
     .spinner-primary {
-      border-color: #3b82f6;
+      border-color: $color-primary;
       border-top-color: transparent;
     }
   }
@@ -37,7 +39,7 @@
     h1 {
       font-size: 2rem;
       font-weight: 700;
-      color: #1e293b;
+      color: $color-text;
       margin: 0;
     }
   }
@@ -54,24 +56,24 @@
       transition: all 0.3s ease;
 
       &.saving {
-        background: #eff6ff;
-        color: #3b82f6;
+        background: rgba($color-primary, 0.1);
+        color: $color-primary;
       }
 
       &.saved {
-        background: #f0fdf4;
-        color: #15803d;
+        background: rgba($color-success, 0.1);
+        color: $color-success;
       }
 
       &.idle {
-        background: #f8fafc;
-        color: #94a3b8;
+        background: $color-surface-light;
+        color: $color-text-muted;
       }
     }
   }
 
   .subtitle {
-    color: #64748b;
+    color: $color-text-muted;
     margin-top: 0.25rem;
   }
 
@@ -109,22 +111,22 @@
     }
 
     &.alert-success {
-      background: #f0fdf4;
-      color: #15803d;
-      border: 1px solid #bcf0da;
+      background: rgba($color-success, 0.1);
+      color: $color-success;
+      border: 1px solid rgba($color-success, 0.3);
 
       .close-alert {
-        color: #15803d;
+        color: $color-success;
       }
     }
 
     &.alert-error {
-      background: #fef2f2;
-      color: #b91c1c;
-      border: 1px solid #fecaca;
+      background: rgba($color-error, 0.1);
+      color: $color-error;
+      border: 1px solid rgba($color-error, 0.3);
 
       .close-alert {
-        color: #b91c1c;
+        color: $color-error;
       }
     }
   }
@@ -146,7 +148,7 @@
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
   padding: 1.5rem;
   margin-bottom: 2rem;
-  border: 1px solid #f1f5f9;
+  border: 1px solid $color-surface-light;
 
   .card-header {
     display: flex;
@@ -154,17 +156,17 @@
     gap: 0.75rem;
     margin-bottom: 1.5rem;
     padding-bottom: 1rem;
-    border-bottom: 1px solid #f1f5f9;
+    border-bottom: 1px solid $color-surface-light;
 
     h3 {
       font-size: 1.125rem;
       font-weight: 600;
-      color: #334155;
+      color: $color-text;
       margin: 0;
     }
 
     lucide-icon {
-      color: #3b82f6;
+      color: $color-primary;
     }
   }
 }
@@ -182,8 +184,8 @@
       width: 120px;
       height: 120px;
       border-radius: 2rem;
-      background: #f8fafc;
-      border: 2px dashed #cbd5e1;
+      background: $color-bg;
+      border: 2px dashed $color-border;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -198,12 +200,12 @@
       }
 
       .logo-placeholder {
-        color: #94a3b8;
+        color: $color-text-muted;
       }
 
       &:hover {
-        border-color: #3b82f6;
-        background: #f0f7ff;
+        border-color: $color-primary;
+        background: rgba($color-primary, 0.05);
       }
 
       .upload-badge {
@@ -212,23 +214,23 @@
         right: -0.5rem;
         width: 36px;
         height: 36px;
-        background: #3b82f6;
+        background: $color-primary;
         color: white;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
-        box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.3);
+        box-shadow: 0 4px 6px -1px rgba($color-primary, 0.3);
         transition: all 0.2s ease;
 
         &:hover {
           transform: scale(1.1);
-          background: #2563eb;
+          background: $color-primary-dark;
         }
 
         &.uploading {
-          background: #94a3b8;
+          background: $color-text-muted;
           cursor: not-allowed;
         }
       }
@@ -237,12 +239,12 @@
     h3 {
       font-size: 1.25rem;
       font-weight: 700;
-      color: #1e293b;
+      color: $color-text;
       margin: 0;
     }
 
     .inspector-email {
-      color: #64748b;
+      color: $color-text-muted;
       font-size: 0.875rem;
       margin-top: 0.25rem;
     }
@@ -261,14 +263,14 @@
     margin-bottom: 1.5rem;
 
     &[data-tier="free"] {
-      background: #f1f5f9;
-      color: #475569;
+      background: $color-surface-light;
+      color: $color-text-muted;
     }
 
     &[data-tier="pro"] {
-      background: #eff6ff;
-      color: #1d4ed8;
-      border: 1px solid #bfdbfe;
+      background: rgba($color-primary, 0.1);
+      color: $color-primary-dark;
+      border: 1px solid rgba($color-primary, 0.2);
     }
 
     &[data-tier="enterprise"] {
@@ -282,21 +284,21 @@
     .label {
       font-size: 0.875rem;
       font-weight: 600;
-      color: #64748b;
+      color: $color-text-muted;
       display: block;
       margin-bottom: 0.75rem;
     }
 
     .progress-bar {
       height: 8px;
-      background: #f1f5f9;
+      background: $color-surface-light;
       border-radius: 4px;
       overflow: hidden;
       margin-bottom: 0.5rem;
 
       .progress {
         height: 100%;
-        background: linear-gradient(90deg, #3b82f6 0%, #60a5fa 100%);
+        background: linear-gradient(90deg, $color-primary-dark 0%, $color-primary-light 100%);
         border-radius: 4px;
         transition: width 0.3s ease;
       }
@@ -304,7 +306,7 @@
 
     .usage-text {
       font-size: 0.8125rem;
-      color: #94a3b8;
+      color: $color-text-muted;
     }
   }
 }
@@ -328,7 +330,7 @@
 }
 
 .logout-card {
-  border-color: rgba(#ef4444, 0.1);
+  border-color: rgba($color-error, 0.1);
 
   @media (min-width: 1025px) {
     display: none; // Hide on desktop as it's in the sidebar
@@ -342,9 +344,9 @@
     gap: 0.75rem;
     padding: 0.875rem;
     border-radius: 0.75rem;
-    background: #fef2f2;
-    color: #b91c1c;
-    border: 1px solid #fecaca;
+    background: rgba($color-error, 0.05);
+    color: $color-error;
+    border: 1px solid rgba($color-error, 0.2);
     font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
@@ -352,7 +354,7 @@
 
     &:active {
       transform: scale(0.98);
-      background: #fee2e2;
+      background: rgba($color-error, 0.1);
     }
   }
 }
