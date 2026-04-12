@@ -35,7 +35,7 @@ export class InspectionDetailsComponent implements OnInit {
     if (id) {
       this.loadInspection(id);
     } else {
-      this.router.navigate(['/dashboard/inspections']);
+      this.router.navigate(['/inspections']);
     }
   }
 
@@ -56,7 +56,7 @@ export class InspectionDetailsComponent implements OnInit {
   }
 
   goBack(): void {
-    this.router.navigate(['/dashboard/inspections']);
+    this.router.navigate(['/inspections']);
   }
 
   confirmPublish(): void {

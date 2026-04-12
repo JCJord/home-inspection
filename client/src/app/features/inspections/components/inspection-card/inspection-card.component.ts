@@ -58,7 +58,7 @@ export class InspectionCardComponent {
   }
 
   viewDetails() {
-    this.router.navigate(['/dashboard/inspections', this.inspection().id]);
+    this.router.navigate(['/inspections', this.inspection().id]);
   }
 
   severityCounts = computed(() => {
