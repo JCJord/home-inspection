@@ -43,6 +43,24 @@
       color: white;
       box-shadow: 0 4px 12px $color-primary-glow;
     }
+
+    &:active:not(:disabled) {
+      transform: scale(0.98);
+    }
+  }
+
+  &--danger {
+    background-color: $color-error;
+    color: white;
+
+    &:hover:not(:disabled) {
+      background-color: darken($color-error, 10%);
+      box-shadow: 0 4px 12px rgba($color-error, 0.2);
+    }
+
+    &:active:not(:disabled) {
+      transform: scale(0.98);
+    }
   }
 
   &--ghost {
