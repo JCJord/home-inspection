@@ -31,8 +31,14 @@
   display: flex;
   flex-direction: column;
   padding-bottom: 5rem; /* Space for mobile nav */
+  position: relative;
   
   @media (min-width: 768px) {
     padding-bottom: 0; /* Remove space on desktop */
+  }
+
+  .app-content {
+    flex: 1;
+    overflow-y: auto;
   }
 }

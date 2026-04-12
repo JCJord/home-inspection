@@ -2,7 +2,10 @@
   <div class="app-layout">
     <app-navbar-desktop class="desktop-only"></app-navbar-desktop>
     <div class="app-main">
-      <router-outlet></router-outlet>
+      <app-top-bar></app-top-bar>
+      <div class="app-content">
+        <router-outlet></router-outlet>
+      </div>
     </div>
     <app-navbar-mobile class="mobile-only"></app-navbar-mobile>
   </div>

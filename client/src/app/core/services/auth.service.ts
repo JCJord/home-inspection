@@ -16,7 +16,7 @@ export class AuthService {
 
   // --- State ---
   token = signal<string | null>(localStorage.getItem('access_token'));
-  currentUser = signal<Pick<Inspector, 'id' | 'email' | 'name'> | null>(
+  currentUser = signal<Pick<Inspector, 'id' | 'email' | 'name' | 'subscription_status'> | null>(
     JSON.parse(localStorage.getItem('current_user') || 'null')
   );
 

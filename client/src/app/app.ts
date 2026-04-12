@@ -5,10 +5,12 @@ import { AuthService } from './core/services/auth.service';
 import { NavbarDesktop } from './features/dashboard/components/navbar-desktop/navbar-desktop';
 import { NavbarMobile } from './features/dashboard/components/navbar-mobile/navbar-mobile';
 
+import { TopBarComponent } from './shared/components/top-bar/top-bar.component';
+
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, NavbarDesktop, NavbarMobile],
+  imports: [CommonModule, RouterOutlet, NavbarDesktop, NavbarMobile, TopBarComponent],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })
