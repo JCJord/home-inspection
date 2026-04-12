@@ -63,4 +63,17 @@ export class InspectionsComponent implements OnInit {
     this.closeForm();
     this.loadInspections();
   }
+
+  deleteInspection(inspection: Inspection): void {
+    this.inspectionsService.deleteInspection(inspection.id).subscribe({
+      next: () => {
+        // Optimistically remove from UI
+        this.inspections.update(list => list.filter(i => i.id !== inspection.id));
+      },
+      error: (err) => {
+        console.error('Failed to delete inspection', err);
+        // We could show a toast notification here in the future
+      }
+    });
+  }
 }

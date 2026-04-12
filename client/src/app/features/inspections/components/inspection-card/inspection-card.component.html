@@ -71,3 +71,14 @@
     </div>
   </div>
 </div>
+
+@if (showDeleteModal()) {
+  <app-confirm-modal 
+    title="Delete Inspection" 
+    message="Are you absolutely sure you want to delete this inspection? This action cannot be undone."
+    [isDestructive]="true"
+    confirmText="Delete Inspection"
+    (confirm)="confirmDelete()"
+    (cancel)="showDeleteModal.set(false)"
+  ></app-confirm-modal>
+}

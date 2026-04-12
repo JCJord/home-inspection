@@ -20,7 +20,7 @@
     } @else if (inspections().length > 0 && !isFormOpen()) {
     <div class="inspections-list">
       @for (inspection of inspections(); track inspection.id) {
-      <app-inspection-card [inspection]="inspection" (edit)="editInspection($event)"></app-inspection-card>
+      <app-inspection-card [inspection]="inspection" (edit)="editInspection($event)" (delete)="deleteInspection($event)"></app-inspection-card>
       }
     </div>
     } @else if (!isFormOpen()) {
