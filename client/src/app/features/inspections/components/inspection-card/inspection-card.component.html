@@ -22,6 +22,7 @@
         <span class="dot"></span>
         {{ statusLabel() }}
       </span>
+      <app-dropdown-menu [items]="menuItems()"></app-dropdown-menu>
     </div>
   </div>
 
@@ -62,9 +63,11 @@
   </div>
 
   <div class="card-footer">
-    <button class="view-btn">
-      View Details
-      <lucide-icon [name]="icons.ChevronRight" [size]="16"></lucide-icon>
-    </button>
+    <div class="footer-actions">
+      <app-button variant="subtle" size="sm" (click)="view.emit(inspection())">
+        View Details
+        <lucide-icon [name]="icons.ChevronRight" [size]="16"></lucide-icon>
+      </app-button>
+    </div>
   </div>
 </div>
