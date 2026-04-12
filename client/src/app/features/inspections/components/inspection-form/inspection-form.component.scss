@@ -1,6 +1,6 @@
 @use 'variables' as *;
 
-.create-form-container {
+.form-container {
   background: $color-surface;
   border-radius: 1.5rem;
   border: 1px solid $color-border;
@@ -8,6 +8,11 @@
   overflow: hidden;
   margin-bottom: 2rem;
   animation: fadeIn 0.3s ease-out forwards;
+
+  &.edit-mode {
+    border-color: rgba($color-primary, 0.3);
+    box-shadow: 0 10px 30px -5px rgba($color-primary, 0.1);
+  }
 }
 
 .form-header {
@@ -38,10 +43,15 @@
     align-items: center;
     justify-content: center;
 
-    &:hover {
+    &:hover:not(:disabled) {
       background: $color-surface-light;
       color: $color-text;
       transform: rotate(90deg);
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
     }
   }
 }

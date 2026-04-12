@@ -1,6 +1,9 @@
-<div class="create-form-container">
+<div class="form-container" [class.edit-mode]="isEditMode()">
   <div class="form-header">
-    <h2>New Inspection</h2>
+    <h2>{{ isEditMode() ? 'Edit Inspection' : 'New Inspection' }}</h2>
+    <button class="close-btn" (click)="close.emit()" [disabled]="isLoading()">
+      <lucide-icon [name]="icons.X" [size]="20"></lucide-icon>
+    </button>
   </div>
 
   <form [formGroup]="inspectionForm" (ngSubmit)="onSubmit()" class="form-body">
@@ -33,7 +36,7 @@
       <app-button variant="outline" (click)="close.emit()" [disabled]="isLoading()">Cancel</app-button>
       <app-button type="submit" [disabled]="inspectionForm.invalid || isLoading()" [isLoading]="isLoading()"
         variant="solid">
-        Create Inspection
+        {{ isEditMode() ? 'Save Changes' : 'Create Inspection' }}
       </app-button>
     </div>
   </form>
