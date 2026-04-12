@@ -37,6 +37,12 @@
       border: 1px solid $color-border;
       text-align: center;
 
+      .spinner-primary {
+        border-color: $color-primary;
+        border-top-color: transparent;
+        margin-bottom: 1.5rem;
+      }
+
       lucide-icon {
         width: 3rem;
         height: 3rem;
@@ -93,18 +99,4 @@
 
 .mb-4 {
   margin-bottom: 1rem;
-}
-
-.animate-spin {
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-
-  to {
-    transform: rotate(360deg);
-  }
 }

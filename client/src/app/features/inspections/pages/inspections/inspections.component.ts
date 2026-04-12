@@ -3,14 +3,15 @@ import { CommonModule } from '@angular/common';
 import { InspectionsService } from '../../../../core/services/inspections.service';
 import { Inspection } from '../../../../core/models/inspection.interface';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
-import { ClipboardList, LucideAngularModule, Plus, RefreshCw } from 'lucide-angular';
+import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
+import { ClipboardList, LucideAngularModule, Plus } from 'lucide-angular';
 import { InspectionFormComponent } from '../../components/inspection-form/inspection-form.component';
 import { InspectionCardComponent } from '../../components/inspection-card/inspection-card.component';
 
 @Component({
   selector: 'app-inspections',
   standalone: true,
-  imports: [CommonModule, ButtonComponent, LucideAngularModule, InspectionFormComponent, InspectionCardComponent],
+  imports: [CommonModule, ButtonComponent, SpinnerComponent, LucideAngularModule, InspectionFormComponent, InspectionCardComponent],
   templateUrl: './inspections.component.html',
   styleUrl: './inspections.component.scss',
 })
@@ -22,7 +23,7 @@ export class InspectionsComponent implements OnInit {
   isFormOpen = signal<boolean>(false);
   editingInspection = signal<Inspection | null>(null);
 
-  readonly icons = { Plus, RefreshCw, ClipboardList };
+  readonly icons = { Plus, ClipboardList };
 
   ngOnInit(): void {
     this.loadInspections();
