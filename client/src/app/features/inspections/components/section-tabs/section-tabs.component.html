@@ -1,6 +1,6 @@
-<div class="tabs-container">
+<div class="tabs-container" [class.hide-fade]="isScrollEnd">
   <div class="tabs-scroll-area" #scrollArea [class.dragging]="isDragging" (mousedown)="onMouseDown($event)"
-    (mouseleave)="onMouseLeave()" (mouseup)="onMouseUp()" (mousemove)="onMouseMove($event)">
+    (mouseleave)="onMouseLeave()" (mouseup)="onMouseUp()" (mousemove)="onMouseMove($event)" (scroll)="checkScroll()">
     @for (section of sections; track section) {
     <button class="tab-btn" [class.active]="selectedSection === section" (click)="selectSection(section)">
       <lucide-icon [name]="icons[section]" [size]="18"></lucide-icon>

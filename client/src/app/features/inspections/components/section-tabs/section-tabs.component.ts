@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, ViewChild, ElementRef } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ViewChild, ElementRef, AfterViewInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule, Home, ChevronUp, ChevronDown, Hammer, Zap, Droplets, Wind, Flame, Box, Grid, Monitor, Car } from 'lucide-angular';
 import { Section } from '../../../../core/enums/inspection.enums';
@@ -10,7 +10,7 @@ import { Section } from '../../../../core/enums/inspection.enums';
   templateUrl: './section-tabs.component.html',
   styleUrl: './section-tabs.component.scss'
 })
-export class SectionTabsComponent {
+export class SectionTabsComponent implements AfterViewInit {
   @Input({ required: true }) selectedSection!: Section;
   @Output() sectionChange = new EventEmitter<Section>();
 
@@ -34,8 +34,25 @@ export class SectionTabsComponent {
   @ViewChild('scrollArea') scrollArea!: ElementRef<HTMLDivElement>;
   isDragging = false;
   isMouseDown = false;
+  isScrollEnd = true;
   startX = 0;
   scrollLeft = 0;
+
+  ngAfterViewInit() {
+    this.checkScroll();
+  }
+
+  @HostListener('window:resize')
+  onResize() {
+    this.checkScroll();
+  }
+
+  checkScroll() {
+    if (!this.scrollArea) return;
+    const el = this.scrollArea.nativeElement;
+    // True if scrolling is not possible or we reached the end
+    this.isScrollEnd = el.scrollWidth <= el.clientWidth || Math.abs(el.scrollWidth - el.scrollLeft - el.clientWidth) <= 2;
+  }
 
   selectSection(section: Section) {
     if (this.isDragging) return; // Prevent tab switch if we were actively dragging

@@ -12,12 +12,30 @@
 }
 
 .tabs-container {
+  position: relative;
   width: 100%;
   box-sizing: border-box;
   border-bottom: 1px solid $color-border;
   background: $color-surface;
   padding: 0 1rem;
   border-radius: 0.75rem 0.75rem 0 0;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 1px;
+    width: 4rem;
+    background: linear-gradient(to right, transparent, $color-surface 90%);
+    pointer-events: none;
+    border-top-right-radius: 0.75rem;
+    transition: opacity 0.3s ease;
+  }
+
+  &.hide-fade::after {
+    opacity: 0;
+  }
 }
 
 .tabs-scroll-area {
