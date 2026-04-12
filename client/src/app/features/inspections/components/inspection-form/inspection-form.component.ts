@@ -27,7 +27,7 @@ export class InspectionFormComponent {
   errorMessage = signal<string | null>(null);
 
   isEditMode = computed(() => !!this.inspection());
-  
+
   readonly icons = { ArrowLeft, AlertCircle };
 
   inspectionForm: FormGroup = this.fb.group({
@@ -62,9 +62,21 @@ export class InspectionFormComponent {
       this.isLoading.set(true);
       this.errorMessage.set(null);
 
+      const formValue = { ...this.inspectionForm.value };
+
+      if (formValue.square_footage === '') {
+        formValue.square_footage = null;
+      } else if (formValue.square_footage !== null && formValue.square_footage !== undefined) {
+        formValue.square_footage = Number(formValue.square_footage);
+      }
+
+      if (formValue.year_built) {
+        formValue.year_built = Number(formValue.year_built);
+      }
+
       const request$ = this.isEditMode()
-        ? this.inspectionsService.updateInspection(this.inspection()!.id, this.inspectionForm.value)
-        : this.inspectionsService.createInspection(this.inspectionForm.value);
+        ? this.inspectionsService.updateInspection(this.inspection()!.id, formValue)
+        : this.inspectionsService.createInspection(formValue);
 
       request$.subscribe({
         next: (response) => {
