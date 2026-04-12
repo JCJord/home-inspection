@@ -11,20 +11,28 @@
   position: sticky;
   top: 0;
   z-index: 50;
+  min-height: 63px;
 
   .brand {
     display: flex;
     align-items: center;
     gap: 0.5rem;
     color: $color-primary-dark;
-    
+
+    @media (min-width: 768px) {
+      visibility: hidden;
+    }
+
+
     .brand-name {
-      display: none; /* Hidden on mobile */
+      display: none;
+      /* Hidden on mobile */
       font-weight: 700;
       font-size: 1.25rem;
 
       @media (min-width: 768px) {
-        display: block; /* Visible on desktop */
+        display: block;
+        /* Visible on desktop */
       }
     }
   }
@@ -44,17 +52,17 @@
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      
+
       &.free {
         background-color: #f1f5f9;
         color: #64748b;
       }
-      
+
       &.pro {
         background-color: #ecfdf5;
         color: #10b981;
       }
-      
+
       &.enterprise {
         background-color: #eff6ff;
         color: #3b82f6;
