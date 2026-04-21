@@ -12,6 +12,8 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
 import { PhotosService } from './photos.service';
 import { ReorderPhotosDto } from './dto/reorder-photos.dto';
 import { AuthGuard } from '../auth/guards/auth.guard';
@@ -24,6 +26,13 @@ export class PhotosController {
 
   @Post()
   @UseInterceptors(FileInterceptor('photo', {
+    storage: diskStorage({
+      destination: './uploads',
+      filename: (req, file, cb) => {
+        const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+        cb(null, `${uniqueSuffix}${extname(file.originalname)}`);
+      },
+    }),
     limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
     fileFilter: (req, file, cb) => {
       if (!file.mimetype.match(/^image\/(jpeg|png|webp)$/)) {

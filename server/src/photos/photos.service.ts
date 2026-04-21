@@ -42,8 +42,8 @@ export class PhotosService {
       throw new BadRequestException('Cannot add photos to a published inspection');
     }
 
-    // Mock storage service upload (e.g., R2)
-    const storageUrl = `/uploads/mock-r2-${file.originalname}-${Date.now()}`;
+    // Build the URL path that matches the ServeStaticModule serveRoot '/uploads'
+    const storageUrl = `/uploads/${file.filename}`;
 
     // Create the photo record
     const photo = this.photoRepository.create({
