@@ -46,10 +46,42 @@
   <div class="details-content" style="overflow-x: hidden; width: 100%;">
     <app-section-tabs [selectedSection]="selectedSection()" (sectionChange)="selectedSection.set($event)">
     </app-section-tabs>
+    @if (isAddingFinding()) {
+      <app-finding-form
+        [inspectionId]="insp.id"
+        [section]="selectedSection()"
+        (close)="isAddingFinding.set(false)"
+        (saved)="onFindingSaved($event)">
+      </app-finding-form>
+    } @else {
+      @if (sectionFindings().length === 0) {
+        <div class="empty-section-state">
+          <p>No findings for {{ selectedSection() }} yet.</p>
+          <button class="add-finding-btn" (click)="isAddingFinding.set(true)">
+            <lucide-icon [name]="icons.Plus" [size]="16"></lucide-icon>
+            Add Finding
+          </button>
+        </div>
+      } @else {
+        <div class="findings-list">
+          <!-- Findings Header & Add Action -->
+          <div class="findings-header">
+            <h3>Findings for {{ selectedSection() }}</h3>
+            <button class="add-finding-btn small" (click)="isAddingFinding.set(true)">
+              <lucide-icon [name]="icons.Plus" [size]="14"></lucide-icon>
+              Add Finding
+            </button>
+          </div>
 
-    <div class="section-content-placeholder">
-      <p>Content for {{ selectedSection() }} will appear here.</p>
-    </div>
+          <!-- List of findings -->
+          <div class="findings-cards">
+            @for (finding of sectionFindings(); track finding.id) {
+              <app-finding-card [finding]="finding"></app-finding-card>
+            }
+          </div>
+        </div>
+      }
+    }
   </div>
   }
 </div>

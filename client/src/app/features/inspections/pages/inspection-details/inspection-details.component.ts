@@ -6,13 +6,16 @@ import { Inspection } from '../../../../core/models/inspection.interface';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { ConfirmModalComponent } from '../../../../shared/components/confirm-modal/confirm-modal.component';
 import { SectionTabsComponent } from '../../components/section-tabs/section-tabs.component';
+import { FindingFormComponent } from '../../components/finding-form/finding-form.component';
+import { FindingCardComponent } from '../../components/finding-card/finding-card.component';
 import { Section } from '../../../../core/enums/inspection.enums';
-import { LucideAngularModule, ArrowLeft, Send, RefreshCw, AlertCircle } from 'lucide-angular';
+import { LucideAngularModule, ArrowLeft, Send, RefreshCw, AlertCircle, Plus } from 'lucide-angular';
+
 
 @Component({
   selector: 'app-inspection-details',
   standalone: true,
-  imports: [CommonModule, ButtonComponent, ConfirmModalComponent, SectionTabsComponent, LucideAngularModule],
+  imports: [CommonModule, ButtonComponent, ConfirmModalComponent, SectionTabsComponent, FindingFormComponent, FindingCardComponent, LucideAngularModule],
   templateUrl: './inspection-details.component.html',
   styleUrl: './inspection-details.component.scss',
 })
@@ -27,11 +30,17 @@ export class InspectionDetailsComponent implements OnInit {
   errorMessage = signal<string | null>(null);
   showPublishModal = signal(false);
   selectedSection = signal<Section>(Section.EXTERIOR);
+  isAddingFinding = signal<boolean>(false);
 
-  readonly icons = { ArrowLeft, Send, RefreshCw, AlertCircle };
+  readonly icons = { ArrowLeft, Send, RefreshCw, AlertCircle, Plus };
 
   isPublished = computed(() => this.inspection()?.status === 'published');
   hasFindings = computed(() => (this.inspection()?.findings?.length ?? 0) > 0);
+
+  sectionFindings = computed(() => {
+    const findings = this.inspection()?.findings || [];
+    return findings.filter(f => f.section === this.selectedSection());
+  });
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
@@ -80,4 +89,12 @@ export class InspectionDetailsComponent implements OnInit {
       },
     });
   }
+
+  onFindingSaved(finding: any): void {
+    this.isAddingFinding.set(false);
+    // Reload inspection to get updated findings
+    this.loadInspection(this.inspection()!.id);
+  }
+
+
 }
