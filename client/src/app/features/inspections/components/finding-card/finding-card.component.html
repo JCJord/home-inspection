@@ -6,32 +6,29 @@
 
   <div class="finding-card-content">
     <div class="finding-top-row">
-      <span
-        class="finding-severity"
-        [attr.data-severity]="finding().severity.toLowerCase()"
-      >
-        {{ finding().severity }}
-      </span>
-
-      @if (finding().location) {
-        <span class="finding-location">
-          <lucide-icon [name]="icons.MapPin" [size]="12"></lucide-icon>
-          {{ finding().location }}
+      <div class="finding-top-left">
+        <span
+          class="finding-severity"
+          [attr.data-severity]="finding().severity.toLowerCase()"
+        >
+          {{ finding().severity }}
         </span>
-      }
+
+        @if (finding().location) {
+          <span class="finding-location">
+            <lucide-icon [name]="icons.MapPin" [size]="12"></lucide-icon>
+            {{ finding().location }}
+          </span>
+        }
+      </div>
+      <app-dropdown-menu [items]="menuItems()" icon="horizontal"></app-dropdown-menu>
     </div>
 
     <p class="finding-note">{{ finding().short_note }}</p>
 
-    @if (finding().photos && finding().photos.length > 0) {
-      <div class="finding-photos">
-        @for (photo of finding().photos; track photo.id) {
-          <img
-            [src]="resolveImageUrl(photo.storage_url)"
-            alt="Finding photo"
-            class="finding-thumbnail"
-          />
-        }
+    @if (resolvedImages().length > 0) {
+      <div class="finding-photos-carousel">
+        <app-photo-carousel [images]="resolvedImages()"></app-photo-carousel>
       </div>
     }
   </div>
