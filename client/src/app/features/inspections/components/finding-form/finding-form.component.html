@@ -16,8 +16,24 @@
         <input #fileInput type="file" multiple accept="image/*" style="display: none" (change)="onFileSelected($event)">
       </div>
 
+      <!-- Existing Photos -->
+      @if (existingPhotos().length > 0) {
+      <div class="existing-photos-grid">
+        @for (photo of existingPhotos(); track photo.id) {
+        <div class="existing-photo-item">
+          <img [src]="resolveImageUrl(photo.storage_url)" alt="Finding photo">
+          <button type="button" class="delete-photo-btn text-error" (click)="deleteExistingPhoto(photo.id)"
+            aria-label="Delete photo">
+            <lucide-icon [name]="icons.Trash2" [size]="16"></lucide-icon>
+          </button>
+        </div>
+        }
+      </div>
+      }
+
+      <!-- New Selected Files -->
       @if (selectedFiles().length > 0) {
-      <div class="selected-files-list">
+      <div class="selected-files-list mt-3">
         @for (file of selectedFiles(); track file.name; let i = $index) {
         <div class="file-item">
           <lucide-icon [name]="icons.FileImage" [size]="16" class="file-icon"></lucide-icon>
@@ -50,7 +66,7 @@
     <app-textarea-input name="short_note" label="Observation Note *" placeholder="Describe the finding...">
     </app-textarea-input>
 
-    <div class="form-actions">
+    <div class="form-actions flex justify-between">
       <app-button type="button" class="cancel-btn" variant="outline" (click)="close.emit()" [disabled]="isLoading()">
         Cancel
       </app-button>

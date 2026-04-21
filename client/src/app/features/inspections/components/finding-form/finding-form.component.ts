@@ -3,13 +3,14 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { InspectionsService } from '../../../../core/services/inspections.service';
 import { Section, Severity } from '../../../../core/enums/inspection.enums';
-import { Finding } from '../../../../core/models/inspection.interface';
+import { Finding, Photo } from '../../../../core/models/inspection.interface';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { TextInputComponent } from '../../../../shared/components/inputs/text-input/text-input.component';
 import { TextareaInputComponent } from '../../../../shared/components/inputs/textarea-input/textarea-input.component';
-import { LucideAngularModule, AlertCircle, FileImage, Upload } from 'lucide-angular';
+import { LucideAngularModule, AlertCircle, FileImage, Upload, Trash2 } from 'lucide-angular';
 import { CreateFindingDto } from '../../../../core/dtos/create-finding.dto';
 import { UpdateFindingDto } from '../../../../core/dtos/update-finding.dto';
+import { environment } from '../../../../../environments/environment';
 
 @Component({
   selector: 'app-finding-form',
@@ -35,8 +36,9 @@ export class FindingFormComponent {
   isEditMode = computed(() => !!this.finding());
 
   selectedFiles = signal<File[]>([]);
+  existingPhotos = signal<Photo[]>([]);
   severities = Object.values(Severity);
-  readonly icons = { AlertCircle, FileImage, Upload };
+  readonly icons = { AlertCircle, FileImage, Upload, Trash2 };
 
   findingForm: FormGroup = this.fb.group({
     severity: [Severity.MINOR, [Validators.required]],
@@ -53,10 +55,38 @@ export class FindingFormComponent {
           location: data.location || '',
           short_note: data.short_note,
         });
+        this.existingPhotos.set(data.photos || []);
       } else {
         this.findingForm.reset({
           severity: Severity.MINOR,
         });
+        this.existingPhotos.set([]);
+      }
+    });
+  }
+
+  resolveImageUrl(url: string | undefined): string {
+    if (!url) return '';
+    if (url.startsWith('http')) return url;
+    const path = url.startsWith('/') ? url : `/${url}`;
+    // We'll replace environment.apiUrl directly or use the import.
+    // For simplicity, we can do this if environment is tricky to import:
+    return `http://localhost:3000${path}`; 
+  }
+
+  deleteExistingPhoto(photoId: string): void {
+    if (!confirm('Are you sure you want to delete this photo?')) return;
+    
+    this.isLoading.set(true);
+    this.inspectionsService.deletePhoto(this.inspectionId(), this.finding()!.id, photoId).subscribe({
+      next: () => {
+        this.existingPhotos.update(photos => photos.filter(p => p.id !== photoId));
+        this.isLoading.set(false);
+      },
+      error: (err) => {
+        console.error('Failed to delete photo', err);
+        this.errorMessage.set('Failed to delete photo.');
+        this.isLoading.set(false);
       }
     });
   }

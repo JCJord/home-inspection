@@ -2,7 +2,7 @@ import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { InspectionsService } from '../../../../core/services/inspections.service';
-import { Inspection } from '../../../../core/models/inspection.interface';
+import { Finding, Inspection } from '../../../../core/models/inspection.interface';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { ConfirmModalComponent } from '../../../../shared/components/confirm-modal/confirm-modal.component';
 import { SectionTabsComponent } from '../../components/section-tabs/section-tabs.component';
@@ -29,8 +29,11 @@ export class InspectionDetailsComponent implements OnInit {
   isPublishing = signal<boolean>(false);
   errorMessage = signal<string | null>(null);
   showPublishModal = signal(false);
+  findingToDelete = signal<string | null>(null);
+  findingToEdit = signal<Finding | null>(null);
   selectedSection = signal<Section>(Section.EXTERIOR);
   isAddingFinding = signal<boolean>(false);
+  isDeletingFinding = signal<boolean>(false);
 
   readonly icons = { ArrowLeft, Send, RefreshCw, AlertCircle, Plus };
 
@@ -90,11 +93,41 @@ export class InspectionDetailsComponent implements OnInit {
     });
   }
 
-  onFindingSaved(finding: any): void {
+  confirmDeleteFinding(): void {
+    const inspectionId = this.inspection()?.id;
+    const findingId = this.findingToDelete();
+
+    if (!inspectionId || !findingId) return;
+
+    this.isDeletingFinding.set(true);
+    this.inspectionsService.deleteFinding(inspectionId, findingId).subscribe({
+      next: () => {
+        this.isDeletingFinding.set(false);
+        this.findingToDelete.set(null);
+        this.loadInspection(inspectionId);
+      },
+      error: (err) => {
+        console.error('Failed to delete finding', err);
+        this.errorMessage.set(err.error?.message || 'Failed to delete finding.');
+        this.isDeletingFinding.set(false);
+        this.findingToDelete.set(null);
+      }
+    });
+  }
+
+  editFinding(finding: any): void {
+    this.findingToEdit.set(finding);
+  }
+
+  cancelFindingForm(): void {
     this.isAddingFinding.set(false);
+    this.findingToEdit.set(null);
+  }
+
+  onFindingSaved(finding: any): void {
+    this.cancelFindingForm();
     // Reload inspection to get updated findings
     this.loadInspection(this.inspection()!.id);
   }
-
 
 }
