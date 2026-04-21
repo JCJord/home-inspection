@@ -1,0 +1,127 @@
+@use '/variables' as *;
+
+:host {
+  display: block;
+  width: 100%;
+}
+
+.carousel-wrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background: $color-surface-light;
+  border: 1px solid $color-border;
+}
+
+// Keep buttons slightly floating inside
+.nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.7);
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: $color-text;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: opacity 0.2s, background 0.2s, transform 0.2s;
+  z-index: 10;
+  opacity: 0; // Show on hover
+
+  &:hover {
+    background: white;
+    transform: translateY(-50%) scale(1.05);
+  }
+
+  &.prev-btn {
+    left: 8px;
+  }
+
+  &.next-btn {
+    right: 8px;
+  }
+
+  &.hidden {
+    opacity: 0;
+    pointer-events: none;
+  }
+}
+
+// Full wrapper hover reveals buttons
+.carousel-wrapper:hover .nav-btn:not(.hidden) {
+  opacity: 1;
+}
+
+.carousel-container {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  width: 100%;
+  height: 100%;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
+
+  &::-webkit-scrollbar {
+    display: none; // Chrome
+  }
+
+  .slide {
+    flex: 0 0 100%;
+    min-width: 100%;
+    height: 100%;
+    flex-shrink: 0;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+}
+
+.dots-container {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 4px 8px;
+  border-radius: 12px;
+  z-index: 10;
+
+  .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    transition: all 0.2s;
+
+    &.active {
+      background: white;
+      transform: scale(1.3);
+    }
+  }
+}
