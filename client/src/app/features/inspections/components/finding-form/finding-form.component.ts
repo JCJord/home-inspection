@@ -7,7 +7,7 @@ import { Finding, Photo } from '../../../../core/models/inspection.interface';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { TextInputComponent } from '../../../../shared/components/inputs/text-input/text-input.component';
 import { TextareaInputComponent } from '../../../../shared/components/inputs/textarea-input/textarea-input.component';
-import { LucideAngularModule, AlertCircle, FileImage, Upload, Trash2, Edit } from 'lucide-angular';
+import { LucideAngularModule, AlertCircle, FileImage, Upload, Trash2, Edit, X, Check } from 'lucide-angular';
 import { CreateFindingDto } from '../../../../core/dtos/create-finding.dto';
 import { UpdateFindingDto } from '../../../../core/dtos/update-finding.dto';
 import { environment } from '../../../../../environments/environment';
@@ -48,8 +48,13 @@ export class FindingFormComponent implements OnDestroy {
   selectedFiles = signal<SelectedPhoto[]>([]);
   existingPhotos = signal<Photo[]>([]);
   photoToEdit = signal<EditTarget | null>(null);
+  
+  // Deletion Tracking
+  activeDeleteExistingId = signal<string | null>(null);
+  activeDeleteNewIndex = signal<number | null>(null);
+
   severities = Object.values(Severity);
-  readonly icons = { AlertCircle, FileImage, Upload, Trash2, Edit };
+  readonly icons = { AlertCircle, FileImage, Upload, Trash2, Edit, X, Check };
 
   findingForm: FormGroup = this.fb.group({
     severity: [Severity.MINOR, [Validators.required]],
@@ -77,7 +82,6 @@ export class FindingFormComponent implements OnDestroy {
   }
 
   ngOnDestroy() {
-    // Prevent memory leaks
     this.selectedFiles().forEach(item => {
       URL.revokeObjectURL(item.previewUrl);
     });
@@ -90,9 +94,24 @@ export class FindingFormComponent implements OnDestroy {
     return `http://localhost:3000${path}`; 
   }
 
-  deleteExistingPhoto(photoId: string): void {
-    if (!confirm('Are you sure you want to delete this photo?')) return;
-    
+  // Two-step Delete Flow
+  initDeleteExistingPhoto(photoId: string): void {
+    this.activeDeleteExistingId.set(photoId);
+    this.activeDeleteNewIndex.set(null);
+  }
+
+  initDeleteNewPhoto(index: number): void {
+    this.activeDeleteNewIndex.set(index);
+    this.activeDeleteExistingId.set(null);
+  }
+
+  cancelDelete(): void {
+    this.activeDeleteExistingId.set(null);
+    this.activeDeleteNewIndex.set(null);
+  }
+
+  confirmDeleteExistingPhoto(photoId: string): void {
+    this.cancelDelete();
     this.isLoading.set(true);
     this.inspectionsService.deletePhoto(this.inspectionId(), this.finding()!.id, photoId).subscribe({
       next: () => {
@@ -104,6 +123,16 @@ export class FindingFormComponent implements OnDestroy {
         this.errorMessage.set('Failed to delete photo.');
         this.isLoading.set(false);
       }
+    });
+  }
+
+  removeFile(index: number): void {
+    this.cancelDelete();
+    this.selectedFiles.update(files => {
+      const newFiles = [...files];
+      URL.revokeObjectURL(newFiles[index].previewUrl);
+      newFiles.splice(index, 1);
+      return newFiles;
     });
   }
 
@@ -186,15 +215,6 @@ export class FindingFormComponent implements OnDestroy {
       }));
       this.selectedFiles.update(files => [...files, ...newItems]);
     }
-  }
-
-  removeFile(index: number): void {
-    this.selectedFiles.update(files => {
-      const newFiles = [...files];
-      URL.revokeObjectURL(newFiles[index].previewUrl);
-      newFiles.splice(index, 1);
-      return newFiles;
-    });
   }
 
   get currentSeverity(): Severity {

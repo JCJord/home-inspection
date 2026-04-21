@@ -140,8 +140,8 @@
 
     .existing-photos-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-      gap: 0.5rem;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 0.75rem;
       margin-top: 0.5rem;
 
       .existing-photo-item {
@@ -171,6 +171,13 @@
           padding: 2px 8px;
           gap: 6px;
           box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+          transition: all 0.2s ease-in-out;
+
+          &.confirming {
+            /* Keep the default black glassy background */
+            padding: 2px 16px;
+            gap: 12px;
+          }
 
           .divider {
             width: 1px;
@@ -188,6 +195,17 @@
             cursor: pointer;
             transition: all 0.2s;
 
+            .action-text {
+              font-size: 0.75rem; /* 12px */
+              font-weight: 500;
+              letter-spacing: 0.02em;
+              white-space: nowrap;
+              
+              &.font-bold {
+                font-weight: 700;
+              }
+            }
+
             &.edit {
               color: white;
               &:hover { color: $color-primary; transform: scale(1.1); }
@@ -196,6 +214,18 @@
             &.delete {
               color: $color-error;
               &:hover { opacity: 0.8; transform: scale(1.1); }
+            }
+
+            &.cancel-delete {
+              color: white;
+              padding: 0 4px;
+              &:hover { color: $color-primary; transform: scale(1.05); }
+            }
+            
+            &.confirm-delete {
+              color: white;
+              padding: 0 4px;
+              &:hover { color: $color-error; transform: scale(1.05); }
             }
           }
         }
