@@ -12,6 +12,8 @@
 .desktop-nav {
   width: 250px;
   height: 100vh;
+  position: sticky;
+  top: 0;
   background-color: $color-surface;
   border-right: 1px solid $color-border;
   display: flex;
