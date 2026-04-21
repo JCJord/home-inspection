@@ -77,6 +77,16 @@
     display: none; // Chrome
   }
 
+  &.dragging {
+    scroll-behavior: auto;
+    cursor: grabbing;
+    scroll-snap-type: none;
+
+    .slide {
+      scroll-snap-align: none;
+    }
+  }
+
   .slide {
     flex: 0 0 100%;
     min-width: 100%;

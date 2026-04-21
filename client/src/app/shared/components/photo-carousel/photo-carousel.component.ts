@@ -16,6 +16,12 @@ export class PhotoCarouselComponent {
 
   activeIndex = signal(0);
   
+  // Drag states
+  isDragging = false;
+  isMouseDown = false;
+  startX = 0;
+  scrollLeftPos = 0;
+  
   readonly icons = { ChevronLeft, ChevronRight };
 
   hasImages = computed(() => this.images().length > 0);
@@ -29,6 +35,39 @@ export class PhotoCarouselComponent {
     const newIndex = Math.round(scrollLeft / width);
     if (this.activeIndex() !== newIndex) {
       this.activeIndex.set(newIndex);
+    }
+  }
+
+  onMouseDown(e: MouseEvent) {
+    if (!this.scrollContainer) return;
+    this.isMouseDown = true;
+    this.isDragging = false;
+    this.startX = e.pageX - this.scrollContainer.nativeElement.offsetLeft;
+    this.scrollLeftPos = this.scrollContainer.nativeElement.scrollLeft;
+  }
+
+  onMouseLeave() {
+    this.isMouseDown = false;
+    this.isDragging = false;
+  }
+
+  onMouseUp() {
+    this.isMouseDown = false;
+    setTimeout(() => {
+      this.isDragging = false;
+    }, 50);
+  }
+
+  onMouseMove(e: MouseEvent) {
+    if (!this.isMouseDown || !this.scrollContainer) return;
+    
+    const x = e.pageX - this.scrollContainer.nativeElement.offsetLeft;
+    
+    if (Math.abs(x - this.startX) > 5) {
+      this.isDragging = true;
+      e.preventDefault();
+      const walk = (x - this.startX) * 2;
+      this.scrollContainer.nativeElement.scrollLeft = this.scrollLeftPos - walk;
     }
   }
 

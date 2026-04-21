@@ -1,10 +1,16 @@
 @if (hasImages()) {
 <div class="carousel-wrapper">
   
-  <div class="carousel-container" #scrollContainer (scroll)="onScroll($event)">
+  <div class="carousel-container" #scrollContainer 
+       (scroll)="onScroll($event)"
+       (mousedown)="onMouseDown($event)"
+       (mouseleave)="onMouseLeave()"
+       (mouseup)="onMouseUp()"
+       (mousemove)="onMouseMove($event)"
+       [class.dragging]="isDragging">
     @for (img of images(); track img; let i = $index) {
       <div class="slide">
-        <img [src]="img" loading="lazy" alt="Finding photo">
+        <img [src]="img" loading="lazy" alt="Finding photo" draggable="false">
       </div>
     }
   </div>
