@@ -1,0 +1,38 @@
+<div class="finding-card">
+  <div
+    class="finding-severity-indicator"
+    [attr.data-severity]="finding().severity.toLowerCase()"
+  ></div>
+
+  <div class="finding-card-content">
+    <div class="finding-top-row">
+      <span
+        class="finding-severity"
+        [attr.data-severity]="finding().severity.toLowerCase()"
+      >
+        {{ finding().severity }}
+      </span>
+
+      @if (finding().location) {
+        <span class="finding-location">
+          <lucide-icon [name]="icons.MapPin" [size]="12"></lucide-icon>
+          {{ finding().location }}
+        </span>
+      }
+    </div>
+
+    <p class="finding-note">{{ finding().short_note }}</p>
+
+    @if (finding().photos && finding().photos.length > 0) {
+      <div class="finding-photos">
+        @for (photo of finding().photos; track photo.id) {
+          <img
+            [src]="resolveImageUrl(photo.storage_url)"
+            alt="Finding photo"
+            class="finding-thumbnail"
+          />
+        }
+      </div>
+    }
+  </div>
+</div>

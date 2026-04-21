@@ -1,0 +1,99 @@
+@use '../../../../../assets/styles/variables' as *;
+
+:host {
+  display: block;
+}
+
+.finding-card {
+  display: flex;
+  background: $color-surface-light;
+  border: 1px solid $color-border;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  }
+
+  .finding-severity-indicator {
+    width: 6px;
+    flex-shrink: 0;
+
+    &[data-severity='safety']      { background: $color-safety; }
+    &[data-severity='major']       { background: $color-major; }
+    &[data-severity='minor']       { background: $color-minor; }
+    &[data-severity='maintenance'] { background: $color-maintenance; }
+  }
+
+  .finding-card-content {
+    padding: 1.25rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+
+    .finding-top-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+
+      .finding-severity {
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        padding: 0.25rem 0.625rem;
+        border-radius: 2rem;
+
+        &[data-severity='safety']      { background: rgba($color-safety, 0.1);      color: $color-safety; }
+        &[data-severity='major']       { background: rgba($color-major, 0.1);        color: $color-major; }
+        &[data-severity='minor']       { background: rgba($color-minor, 0.1);        color: $color-minor; }
+        &[data-severity='maintenance'] { background: rgba($color-maintenance, 0.1);  color: $color-maintenance; }
+      }
+
+      .finding-location {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        font-size: 0.8125rem;
+        font-weight: 500;
+        color: $color-text-muted;
+
+        lucide-icon {
+          opacity: 0.7;
+        }
+      }
+    }
+
+    .finding-note {
+      margin: 0;
+      font-size: 0.9375rem;
+      line-height: 1.5;
+      color: $color-text;
+    }
+
+    .finding-photos {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+      overflow-x: auto;
+      padding-bottom: 0.25rem;
+
+      .finding-thumbnail {
+        width: 60px;
+        height: 60px;
+        border-radius: 0.5rem;
+        object-fit: cover;
+        border: 1px solid $color-border;
+        cursor: pointer;
+        transition: opacity 0.2s;
+        flex-shrink: 0;
+
+        &:hover {
+          opacity: 0.8;
+        }
+      }
+    }
+  }
+}
