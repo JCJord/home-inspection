@@ -1,0 +1,36 @@
+<div class="editor-overlay">
+  <div class="editor-header">
+    <button class="icon-btn cancel-btn" (click)="close.emit()" aria-label="Cancel">
+      <lucide-icon [name]="icons.X" [size]="20"></lucide-icon>
+      <span>Cancel</span>
+    </button>
+    
+    <div class="editor-actions">
+      <button class="action-btn" (click)="undo()" aria-label="Undo">
+        <lucide-icon [name]="icons.Undo" [size]="20"></lucide-icon>
+      </button>
+      <button class="action-btn" (click)="reset()" aria-label="Reset">
+        <lucide-icon [name]="icons.RotateCcw" [size]="20"></lucide-icon>
+      </button>
+    </div>
+
+    <button class="icon-btn save-btn" (click)="onSave()" aria-label="Save">
+      <span>Save</span>
+      <lucide-icon [name]="icons.Check" [size]="20"></lucide-icon>
+    </button>
+  </div>
+
+  <div class="canvas-container" #containerElement>
+    <canvas 
+      #canvasElement
+      (mousedown)="startDrawing($event)"
+      (mousemove)="draw($event)"
+      (mouseup)="stopDrawing()"
+      (mouseleave)="stopDrawing()"
+      (touchstart)="startDrawing($event)"
+      (touchmove)="draw($event)"
+      (touchend)="stopDrawing()"
+      (touchcancel)="stopDrawing()"
+    ></canvas>
+  </div>
+</div>

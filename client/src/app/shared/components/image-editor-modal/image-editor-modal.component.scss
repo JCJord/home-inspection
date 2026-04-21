@@ -1,0 +1,102 @@
+@use '/variables' as *;
+
+.editor-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #000;
+  z-index: 1000; // Keep it on very top
+  display: flex;
+  flex-direction: column;
+  animation: fadeIn 0.3s ease;
+}
+
+.editor-header {
+  height: 60px;
+  background: rgba(20, 20, 20, 0.9);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+
+  .icon-btn {
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: opacity 0.2s;
+
+    &:hover {
+      opacity: 0.8;
+    }
+
+    &.cancel-btn {
+      color: $color-error;
+    }
+
+    &.save-btn {
+      color: $color-primary;
+    }
+  }
+
+  .editor-actions {
+    display: flex;
+    gap: 1rem;
+
+    .action-btn {
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      color: white;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 0.2s;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.2);
+      }
+    }
+  }
+}
+
+.canvas-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 1rem;
+  touch-action: none; // Critical to prevent pull-to-refresh while drawing
+
+  canvas {
+    max-width: 100%;
+    max-height: 100%;
+    // We scale the display view to fit, logic handles drawing accurately to the internal high-res width
+    object-fit: contain;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    background-color: #222;
+    cursor: crosshair;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}

@@ -1,4 +1,4 @@
-import { Component, inject, input, output, signal, effect, computed } from '@angular/core';
+import { Component, inject, input, output, signal, effect, computed, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { InspectionsService } from '../../../../core/services/inspections.service';
@@ -7,19 +7,29 @@ import { Finding, Photo } from '../../../../core/models/inspection.interface';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { TextInputComponent } from '../../../../shared/components/inputs/text-input/text-input.component';
 import { TextareaInputComponent } from '../../../../shared/components/inputs/textarea-input/textarea-input.component';
-import { LucideAngularModule, AlertCircle, FileImage, Upload, Trash2 } from 'lucide-angular';
+import { LucideAngularModule, AlertCircle, FileImage, Upload, Trash2, Edit } from 'lucide-angular';
 import { CreateFindingDto } from '../../../../core/dtos/create-finding.dto';
 import { UpdateFindingDto } from '../../../../core/dtos/update-finding.dto';
 import { environment } from '../../../../../environments/environment';
+import { ImageEditorModalComponent } from '../../../../shared/components/image-editor-modal/image-editor-modal.component';
+
+interface SelectedPhoto {
+  file: File;
+  previewUrl: string;
+}
+
+type EditTarget = 
+  | { type: 'existing', photo: Photo }
+  | { type: 'new', index: number, previewUrl: string };
 
 @Component({
   selector: 'app-finding-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ButtonComponent, TextInputComponent, TextareaInputComponent, LucideAngularModule],
+  imports: [CommonModule, ReactiveFormsModule, ButtonComponent, TextInputComponent, TextareaInputComponent, LucideAngularModule, ImageEditorModalComponent],
   templateUrl: './finding-form.component.html',
   styleUrl: './finding-form.component.scss',
 })
-export class FindingFormComponent {
+export class FindingFormComponent implements OnDestroy {
   private fb = inject(FormBuilder);
   private inspectionsService = inject(InspectionsService);
 
@@ -35,10 +45,11 @@ export class FindingFormComponent {
 
   isEditMode = computed(() => !!this.finding());
 
-  selectedFiles = signal<File[]>([]);
+  selectedFiles = signal<SelectedPhoto[]>([]);
   existingPhotos = signal<Photo[]>([]);
+  photoToEdit = signal<EditTarget | null>(null);
   severities = Object.values(Severity);
-  readonly icons = { AlertCircle, FileImage, Upload, Trash2 };
+  readonly icons = { AlertCircle, FileImage, Upload, Trash2, Edit };
 
   findingForm: FormGroup = this.fb.group({
     severity: [Severity.MINOR, [Validators.required]],
@@ -65,12 +76,17 @@ export class FindingFormComponent {
     });
   }
 
+  ngOnDestroy() {
+    // Prevent memory leaks
+    this.selectedFiles().forEach(item => {
+      URL.revokeObjectURL(item.previewUrl);
+    });
+  }
+
   resolveImageUrl(url: string | undefined): string {
     if (!url) return '';
     if (url.startsWith('http')) return url;
     const path = url.startsWith('/') ? url : `/${url}`;
-    // We'll replace environment.apiUrl directly or use the import.
-    // For simplicity, we can do this if environment is tricky to import:
     return `http://localhost:3000${path}`; 
   }
 
@@ -91,6 +107,71 @@ export class FindingFormComponent {
     });
   }
 
+  editExistingPhoto(photo: Photo): void {
+    this.photoToEdit.set({ type: 'existing', photo });
+  }
+
+  editNewPhoto(index: number, previewUrl: string): void {
+    this.photoToEdit.set({ type: 'new', index, previewUrl });
+  }
+
+  onSavePhotoEdit(blob: Blob): void {
+    const target = this.photoToEdit();
+    if (!target) return;
+    
+    this.photoToEdit.set(null);
+
+    const file = new File([blob], `edited_${Date.now()}.jpg`, { type: 'image/jpeg' });
+
+    if (target.type === 'existing') {
+        const photo = target.photo;
+        this.isLoading.set(true);
+
+        // Upload new photo
+        this.inspectionsService.uploadPhoto(this.inspectionId(), this.finding()!.id, file).subscribe({
+          next: (newPhoto) => {
+            // Delete the old photo
+            this.inspectionsService.deletePhoto(this.inspectionId(), this.finding()!.id, photo.id).subscribe({
+              next: () => {
+                this.existingPhotos.update(photos => {
+                  const newPhotos = [...photos];
+                  const idx = newPhotos.findIndex(p => p.id === photo.id);
+                  if (idx > -1) {
+                    newPhotos[idx] = newPhoto; 
+                  } else {
+                    newPhotos.push(newPhoto);
+                  }
+                  return newPhotos;
+                });
+                this.isLoading.set(false);
+              },
+              error: (err) => {
+                console.error('Failed to delete old photo', err);
+                this.errorMessage.set('Photo updated but old version failed to delete from server.');
+                this.isLoading.set(false);
+              }
+            });
+          },
+          error: (err) => {
+            console.error('Failed to upload edited photo', err);
+            this.errorMessage.set('Failed to save edited photo.');
+            this.isLoading.set(false);
+          }
+        });
+    } else {
+        // New file: just update the local array natively!
+        this.selectedFiles.update(files => {
+            const newArray = [...files];
+            URL.revokeObjectURL(newArray[target.index].previewUrl); 
+            newArray[target.index] = {
+               file,
+               previewUrl: URL.createObjectURL(file)
+            };
+            return newArray;
+        });
+    }
+  }
+
   setSeverity(severity: Severity): void {
     this.findingForm.patchValue({ severity });
   }
@@ -99,13 +180,18 @@ export class FindingFormComponent {
     const input = event.target as HTMLInputElement;
     if (input.files) {
       const filesArray = Array.from(input.files);
-      this.selectedFiles.update(files => [...files, ...filesArray]);
+      const newItems = filesArray.map(file => ({
+        file,
+        previewUrl: URL.createObjectURL(file)
+      }));
+      this.selectedFiles.update(files => [...files, ...newItems]);
     }
   }
 
   removeFile(index: number): void {
     this.selectedFiles.update(files => {
       const newFiles = [...files];
+      URL.revokeObjectURL(newFiles[index].previewUrl);
       newFiles.splice(index, 1);
       return newFiles;
     });
@@ -124,12 +210,11 @@ export class FindingFormComponent {
 
       const handleSuccess = (finding: Finding) => {
         if (this.selectedFiles().length > 0) {
-          // Required imports missing but I'll assume they will be added or we manage it with array maps
           let uploadCount = 0;
           let hasErrors = false;
           
-          this.selectedFiles().forEach(file => {
-            this.inspectionsService.uploadPhoto(this.inspectionId(), finding.id, file).subscribe({
+          this.selectedFiles().forEach(item => {
+            this.inspectionsService.uploadPhoto(this.inspectionId(), finding.id, item.file).subscribe({
               next: () => {
                 uploadCount++;
                 if (uploadCount === this.selectedFiles().length) {
@@ -143,7 +228,7 @@ export class FindingFormComponent {
                 uploadCount++;
                 if (uploadCount === this.selectedFiles().length) {
                   this.isLoading.set(false);
-                  this.saved.emit(finding); // Still emit finding because finding was created
+                  this.saved.emit(finding);
                 }
               }
             });
