@@ -1,4 +1,4 @@
-<div class="editor-overlay">
+<dialog #editorDialog class="editor-overlay" (cancel)="close.emit()">
   <div class="editor-header">
     <button class="icon-btn cancel-btn" (click)="close.emit()" aria-label="Cancel">
       <lucide-icon [name]="icons.X" [size]="20"></lucide-icon>
@@ -33,4 +33,4 @@
       (touchcancel)="stopDrawing()"
     ></canvas>
   </div>
-</div>
+</dialog>

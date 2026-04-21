@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild, input, output, effect, signal, HostListener, afterNextRender } from '@angular/core';
+import { Component, ElementRef, ViewChild, input, output, signal, HostListener, afterNextRender, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule, X, Check, Undo, RotateCcw } from 'lucide-angular';
 
@@ -9,12 +9,13 @@ import { LucideAngularModule, X, Check, Undo, RotateCcw } from 'lucide-angular';
   templateUrl: './image-editor-modal.component.html',
   styleUrl: './image-editor-modal.component.scss'
 })
-export class ImageEditorModalComponent {
+export class ImageEditorModalComponent implements OnInit, OnDestroy {
   imageUrl = input.required<string>();
   
   close = output<void>();
   save = output<Blob>();
 
+  @ViewChild('editorDialog') dialogRef!: ElementRef<HTMLDialogElement>;
   @ViewChild('canvasElement') canvasRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('containerElement') containerRef!: ElementRef<HTMLDivElement>;
 
@@ -30,7 +31,18 @@ export class ImageEditorModalComponent {
   constructor() {
     afterNextRender(() => {
       this.initCanvas();
+      if (this.dialogRef) {
+        this.dialogRef.nativeElement.showModal();
+      }
     });
+  }
+
+  ngOnInit() {
+    document.body.style.overflow = 'hidden';
+  }
+
+  ngOnDestroy() {
+    document.body.style.overflow = '';
   }
 
   private initCanvas() {
