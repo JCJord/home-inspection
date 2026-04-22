@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { InspectionsService } from './inspections.service';
 import { CreateInspectionDto } from './dto/create-inspection.dto';
@@ -28,8 +29,14 @@ export class InspectionsController {
   }
 
   @Get()
-  findAll(@GetUser('sub') inspectorId: string) {
-    return this.inspectionsService.findAll(inspectorId);
+  findAll(
+    @GetUser('sub') inspectorId: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    const pageNumber = parseInt(page || '1', 10);
+    const limitNumber = parseInt(limit || '10', 10);
+    return this.inspectionsService.findAll(inspectorId, pageNumber, limitNumber);
   }
 
   @Get(':id')

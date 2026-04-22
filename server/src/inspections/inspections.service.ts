@@ -44,11 +44,25 @@ export class InspectionsService {
     return savedInspection;
   }
 
-  async findAll(inspectorId: string): Promise<Inspection[]> {
-    return await this.inspectionRepository.find({
+  async findAll(inspectorId: string, page: number = 1, limit: number = 10): Promise<{ data: Inspection[], meta: { total: number, page: number, limit: number, totalPages: number } }> {
+    const skip = (page - 1) * limit;
+
+    const [data, total] = await this.inspectionRepository.findAndCount({
       where: { inspector_id: inspectorId },
       order: { updated_at: 'DESC' },
+      skip,
+      take: limit,
     });
+
+    return {
+      data,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
   }
 
   async findOne(inspectorId: string, id: string): Promise<Inspection> {

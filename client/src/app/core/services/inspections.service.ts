@@ -19,8 +19,12 @@ export class InspectionsService {
 
   // --- Inspection Methods ---
 
-  getInspections(): Observable<Inspection[]> {
-    return this.http.get<Inspection[]>(this.apiUrl);
+  getInspections(page: number = 1, limit: number = 10): Observable<{ data: Inspection[], meta: { total: number, page: number, limit: number, totalPages: number } }> {
+    let params = new HttpParams()
+      .set('page', page.toString())
+      .set('limit', limit.toString());
+
+    return this.http.get<{ data: Inspection[], meta: { total: number, page: number, limit: number, totalPages: number } }>(this.apiUrl, { params });
   }
 
   getInspectionById(id: string): Observable<Inspection> {

@@ -25,6 +25,13 @@
         (delete)="deleteInspection($event)"></app-inspection-card>
       }
     </div>
+    
+    <app-pagination
+      [currentPage]="currentPage()"
+      [totalItems]="totalItems()"
+      [itemsPerPage]="itemsPerPage()"
+      (pageChanged)="onPageChange($event)">
+    </app-pagination>
     } @else if (!isFormOpen()) {
     <div class="empty-state">
       <lucide-icon [name]="icons.ClipboardList" class="mb-4 text-muted"></lucide-icon>

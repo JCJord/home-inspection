@@ -7,11 +7,12 @@ import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.
 import { ClipboardList, LucideAngularModule, Plus } from 'lucide-angular';
 import { InspectionFormComponent } from '../../components/inspection-form/inspection-form.component';
 import { InspectionCardComponent } from '../../components/inspection-card/inspection-card.component';
+import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
 
 @Component({
   selector: 'app-inspections',
   standalone: true,
-  imports: [CommonModule, ButtonComponent, SpinnerComponent, LucideAngularModule, InspectionFormComponent, InspectionCardComponent],
+  imports: [CommonModule, ButtonComponent, SpinnerComponent, LucideAngularModule, InspectionFormComponent, InspectionCardComponent, PaginationComponent],
   templateUrl: './inspections.component.html',
   styleUrl: './inspections.component.scss',
 })
@@ -22,6 +23,10 @@ export class InspectionsComponent implements OnInit {
   isLoading = signal<boolean>(true);
   isFormOpen = signal<boolean>(false);
   editingInspection = signal<Inspection | null>(null);
+  
+  currentPage = signal<number>(1);
+  totalItems = signal<number>(0);
+  itemsPerPage = signal<number>(10);
 
   readonly icons = { Plus, ClipboardList };
 
@@ -31,9 +36,10 @@ export class InspectionsComponent implements OnInit {
 
   loadInspections(): void {
     this.isLoading.set(true);
-    this.inspectionsService.getInspections().subscribe({
-      next: (data) => {
-        this.inspections.set(data);
+    this.inspectionsService.getInspections(this.currentPage(), this.itemsPerPage()).subscribe({
+      next: (res) => {
+        this.inspections.set(res.data);
+        this.totalItems.set(res.meta.total);
         this.isLoading.set(false);
       },
       error: (err) => {
@@ -41,6 +47,11 @@ export class InspectionsComponent implements OnInit {
         this.isLoading.set(false);
       },
     });
+  }
+
+  onPageChange(page: number): void {
+    this.currentPage.set(page);
+    this.loadInspections();
   }
 
   toggleForm(): void {
@@ -70,6 +81,7 @@ export class InspectionsComponent implements OnInit {
       next: () => {
         // Optimistically remove from UI
         this.inspections.update(list => list.filter(i => i.id !== inspection.id));
+        this.totalItems.update(t => t - 1);
       },
       error: (err) => {
         console.error('Failed to delete inspection', err);
