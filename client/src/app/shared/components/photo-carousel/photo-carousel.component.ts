@@ -1,11 +1,11 @@
 import { Component, ElementRef, ViewChild, computed, input, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, NgOptimizedImage } from '@angular/common';
 import { LucideAngularModule, ChevronLeft, ChevronRight } from 'lucide-angular';
 
 @Component({
   selector: 'app-photo-carousel',
   standalone: true,
-  imports: [CommonModule, LucideAngularModule],
+  imports: [CommonModule, NgOptimizedImage, LucideAngularModule],
   templateUrl: './photo-carousel.component.html',
   styleUrl: './photo-carousel.component.scss'
 })

@@ -10,7 +10,7 @@
        [class.dragging]="isDragging">
     @for (img of images(); track img; let i = $index) {
       <div class="slide">
-        <img [src]="img" loading="lazy" alt="Finding photo" draggable="false">
+        <img [ngSrc]="img" fill alt="Finding photo" draggable="false">
       </div>
     }
   </div>
