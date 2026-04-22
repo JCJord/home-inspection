@@ -1,0 +1,28 @@
+@import '../../../../assets/styles/variables';
+
+.pagination-btn {
+  border: 1px solid $color-border;
+  background-color: $color-surface;
+  color: $color-text;
+
+  &:hover:not(.disabled):not(.active) {
+    background-color: $color-surface-light;
+    border-color: $color-primary-light;
+    color: $color-primary;
+  }
+
+  &.active {
+    background-color: $color-primary;
+    border-color: $color-primary;
+    color: white;
+    box-shadow: 0 2px 4px $color-primary-glow;
+  }
+
+  &.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: $color-surface-light;
+    color: $color-text-muted;
+  }
+}
+
