@@ -23,6 +23,7 @@ export class DropdownMenuComponent {
   items = input<DropdownItem[]>([]);
   
   isOpen = signal(false);
+  openUpwards = signal(false);
 
   readonly icons = {
     MoreVertical,
@@ -31,7 +32,22 @@ export class DropdownMenuComponent {
 
   toggle(event: Event) {
     event.stopPropagation();
-    this.isOpen.update(v => !v);
+    
+    if (this.isOpen()) {
+      this.isOpen.set(false);
+      return;
+    }
+
+    const buttonRect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+    const approximateItemHeight = 42; 
+    const paddingHeight = 16;
+    const estimatedDropdownHeight = (this.items().length * approximateItemHeight) + paddingHeight;
+    
+    const spaceBelow = window.innerHeight - buttonRect.bottom;
+    const spaceAbove = buttonRect.top;
+
+    this.openUpwards.set(spaceBelow < estimatedDropdownHeight && spaceAbove > spaceBelow);
+    this.isOpen.set(true);
   }
 
   onItemClick(event: Event, item: DropdownItem) {

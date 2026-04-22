@@ -9,7 +9,6 @@
   background: $color-surface-light;
   border: 1px solid $color-border;
   border-radius: 0.75rem;
-  overflow: hidden;
   transition: transform 0.2s, box-shadow 0.2s;
 
   &:hover {
@@ -20,6 +19,8 @@
   .finding-severity-indicator {
     width: 6px;
     flex-shrink: 0;
+    border-top-left-radius: calc(0.75rem - 1px);
+    border-bottom-left-radius: calc(0.75rem - 1px);
 
     &[data-severity='safety']      { background: $color-safety; }
     &[data-severity='major']       { background: $color-major; }

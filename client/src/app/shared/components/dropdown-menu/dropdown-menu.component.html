@@ -13,7 +13,10 @@
   </button>
 
   @if (isOpen()) {
-    <div class="dropdown-menu absolute right-0 mt-2 w-48 rounded-md shadow-lg z-50">
+    <div class="dropdown-menu absolute right-0 w-48 rounded-md shadow-lg z-50"
+         [class.open-upwards]="openUpwards()"
+         [class.mt-2]="!openUpwards()"
+         [class.mb-2]="openUpwards()">
       <div class="py-1" role="menu" aria-orientation="vertical">
         @for (item of items(); track item.label) {
           <button 
