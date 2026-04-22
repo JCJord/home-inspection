@@ -30,6 +30,19 @@ export class DropdownMenuComponent {
     MoreHorizontal
   };
 
+  private getScrollParent(node: HTMLElement | null): HTMLElement | Window {
+    if (node == null || node.tagName === 'HTML' || node.tagName === 'BODY') {
+      return window;
+    }
+
+    const style = window.getComputedStyle(node);
+    if (/(auto|scroll|overlay)/.test(style.overflow + style.overflowY + style.overflowX)) {
+      return node;
+    }
+
+    return this.getScrollParent(node.parentElement);
+  }
+
   toggle(event: Event) {
     event.stopPropagation();
     
@@ -38,13 +51,25 @@ export class DropdownMenuComponent {
       return;
     }
 
-    const buttonRect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+    const buttonElement = event.currentTarget as HTMLElement;
+    const buttonRect = buttonElement.getBoundingClientRect();
     const approximateItemHeight = 42; 
     const paddingHeight = 16;
     const estimatedDropdownHeight = (this.items().length * approximateItemHeight) + paddingHeight;
     
-    const spaceBelow = window.innerHeight - buttonRect.bottom;
-    const spaceAbove = buttonRect.top;
+    const scrollParent = this.getScrollParent(buttonElement);
+    
+    let spaceBelow: number;
+    let spaceAbove: number;
+
+    if (scrollParent === window) {
+      spaceBelow = window.innerHeight - buttonRect.bottom;
+      spaceAbove = buttonRect.top;
+    } else {
+      const parentRect = (scrollParent as HTMLElement).getBoundingClientRect();
+      spaceBelow = parentRect.bottom - buttonRect.bottom;
+      spaceAbove = buttonRect.top - parentRect.top;
+    }
 
     this.openUpwards.set(spaceBelow < estimatedDropdownHeight && spaceAbove > spaceBelow);
     this.isOpen.set(true);
