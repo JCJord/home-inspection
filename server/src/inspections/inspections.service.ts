@@ -26,7 +26,7 @@ export class InspectionsService {
 
     if (
       inspector.subscription_status !== 'active' &&
-      inspector.free_inspections_used >= 1000
+      inspector.free_inspections_used >= 10
     ) {
       throw new ForbiddenException('Free inspection limit reached. Please upgrade.');
     }
