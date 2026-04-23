@@ -100,3 +100,9 @@
 .mb-4 {
   margin-bottom: 1rem;
 }
+
+// ─── Utility Bridges ──────────────────────────────────
+
+.border-standard { border-color: $color-border !important; }
+.bg-surface-standard { background-color: $color-surface !important; }
+.bg-light-standard { background-color: $color-surface-light !important; }

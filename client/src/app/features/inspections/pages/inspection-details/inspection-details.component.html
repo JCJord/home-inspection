@@ -1,8 +1,49 @@
 <div class="details-container">
   @if (isLoading()) {
-  <div class="loading-state">
-    <lucide-icon [name]="icons.RefreshCw" class="animate-spin"></lucide-icon>
-    <span>Loading inspection...</span>
+  <div class="flex flex-col animate-pulse">
+    <!-- Header Skeleton -->
+    <div class="flex justify-between flex-wrap gap-3 items-center mb-8 pb-6 border-b border-standard">
+      <div class="flex items-center gap-4 flex-wrap">
+        <app-skeleton width="40px" height="40px" borderRadius="12px"></app-skeleton>
+        <div class="flex flex-col gap-2">
+          <app-skeleton width="80%" height="28px" borderRadius="8px"></app-skeleton>
+          <app-skeleton width="150px" height="18px" borderRadius="6px"></app-skeleton>
+        </div>
+      </div>
+      <div class="flex-shrink-0">
+        <app-skeleton width="100px" height="38px" borderRadius="8px"></app-skeleton>
+      </div>
+    </div>
+
+    <!-- Tabs Skeleton -->
+    <div class="mb-8">
+      <div class="flex gap-3 overflow-hidden py-1">
+        @for (i of [1,2,3,4,5,6]; track i) {
+        <app-skeleton width="110px" height="38px" borderRadius="8px"></app-skeleton>
+        }
+      </div>
+    </div>
+
+    <!-- Findings Skeleton -->
+    <div class="bg-surface-standard rounded-[1.5rem] p-6 flex flex-col gap-6 border border-standard">
+      <div class="flex flex-wrap gap-3 justify-between items-center">
+        <app-skeleton width="130px" height="32px" borderRadius="6px"></app-skeleton>
+        <app-skeleton width="130px" height="32px" borderRadius="8px"></app-skeleton>
+      </div>
+      <div class="flex flex-col gap-4">
+        @for (i of [1,2,3]; track i) {
+        <div class="bg-light-standard border border-standard rounded-xl p-5 flex flex-col gap-5">
+          <div class="flex justify-between items-center">
+            <app-skeleton width="100px" height="18px" borderRadius="2px"></app-skeleton>
+            <app-skeleton width="70px" height="18px" borderRadius="2px"></app-skeleton>
+          </div>
+          <div class="flex gap-5 items-center w-full">
+            <app-skeleton class="w-full" width="100%" height="132px" borderRadius="4px"></app-skeleton>
+          </div>
+        </div>
+        }
+      </div>
+    </div>
   </div>
   } @else if (errorMessage()) {
   <div class="error-state">
@@ -47,46 +88,39 @@
     <app-section-tabs [selectedSection]="selectedSection()" (sectionChange)="selectedSection.set($event)">
     </app-section-tabs>
     @if (isAddingFinding() || findingToEdit()) {
-      <app-finding-form
-        [inspectionId]="insp.id"
-        [section]="selectedSection()"
-        [finding]="findingToEdit()"
-        (close)="cancelFindingForm()"
-        (saved)="onFindingSaved($event)">
-      </app-finding-form>
+    <app-finding-form [inspectionId]="insp.id" [section]="selectedSection()" [finding]="findingToEdit()"
+      (close)="cancelFindingForm()" (saved)="onFindingSaved($event)">
+    </app-finding-form>
     } @else {
-      @if (sectionFindings().length === 0) {
-        <div class="empty-section-state">
-          <p>No findings for {{ selectedSection() }} yet.</p>
-          <app-button (click)="isAddingFinding.set(true)">
-            <lucide-icon [name]="icons.Plus" [size]="16"></lucide-icon>
-            Add Finding
-          </app-button>
-        </div>
-      } @else {
-        <div class="findings-list">
-          <!-- Findings Header & Add Action -->
-          <div class="findings-header">
-            <h3>Findings for {{ selectedSection() }}</h3>
-            <app-button size="sm" (click)="isAddingFinding.set(true)">
-              <lucide-icon [name]="icons.Plus" [size]="14"></lucide-icon>
-              Add Finding
-            </app-button>
-          </div>
+    @if (sectionFindings().length === 0) {
+    <div class="empty-section-state">
+      <p>No findings for {{ selectedSection() }} yet.</p>
+      <app-button (click)="isAddingFinding.set(true)">
+        <lucide-icon [name]="icons.Plus" [size]="16"></lucide-icon>
+        Add Finding
+      </app-button>
+    </div>
+    } @else {
+    <div class="findings-list">
+      <!-- Findings Header & Add Action -->
+      <div class="findings-header">
+        <h3>Findings for {{ selectedSection() }}</h3>
+        <app-button size="sm" (click)="isAddingFinding.set(true)">
+          <lucide-icon [name]="icons.Plus" [size]="14"></lucide-icon>
+          Add Finding
+        </app-button>
+      </div>
 
-          <!-- List of findings -->
-          <div class="findings-cards">
-            @for (finding of sectionFindings(); track finding.id) {
-              <app-finding-card 
-                [finding]="finding" 
-                [isDeleting]="deletingId() === finding.id"
-                (delete)="handleDeleteFinding(finding)" 
-                (edit)="editFinding(finding)">
-              </app-finding-card>
-            }
-          </div>
-        </div>
-      }
+      <!-- List of findings -->
+      <div class="findings-cards">
+        @for (finding of sectionFindings(); track finding.id) {
+        <app-finding-card [finding]="finding" [isDeleting]="deletingId() === finding.id"
+          (delete)="handleDeleteFinding(finding)" (edit)="editFinding(finding)">
+        </app-finding-card>
+        }
+      </div>
+    </div>
+    }
     }
   </div>
   }

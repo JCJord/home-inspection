@@ -9,13 +9,14 @@ import { SectionTabsComponent } from '../../components/section-tabs/section-tabs
 import { FindingFormComponent } from '../../components/finding-form/finding-form.component';
 import { FindingCardComponent } from '../../components/finding-card/finding-card.component';
 import { Section } from '../../../../core/enums/inspection.enums';
+import { SkeletonComponent } from '../../../../shared/components/skeleton/skeleton.component';
 import { LucideAngularModule, ArrowLeft, Send, RefreshCw, AlertCircle, Plus } from 'lucide-angular';
 
 
 @Component({
   selector: 'app-inspection-details',
   standalone: true,
-  imports: [CommonModule, ButtonComponent, ConfirmModalComponent, SectionTabsComponent, FindingFormComponent, FindingCardComponent, LucideAngularModule],
+  imports: [CommonModule, ButtonComponent, ConfirmModalComponent, SectionTabsComponent, FindingFormComponent, FindingCardComponent, LucideAngularModule, SkeletonComponent],
   templateUrl: './inspection-details.component.html',
   styleUrl: './inspection-details.component.scss',
 })

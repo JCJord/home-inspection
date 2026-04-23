@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { InspectionsService } from '../../../../core/services/inspections.service';
 import { Inspection } from '../../../../core/models/inspection.interface';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
-import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
+import { SkeletonComponent } from '../../../../shared/components/skeleton/skeleton.component';
 import { ClipboardList, LucideAngularModule, Plus } from 'lucide-angular';
 import { InspectionFormComponent } from '../../components/inspection-form/inspection-form.component';
 import { InspectionCardComponent } from '../../components/inspection-card/inspection-card.component';
@@ -12,7 +12,7 @@ import { PaginationComponent } from '../../../../shared/components/pagination/pa
 @Component({
   selector: 'app-inspections',
   standalone: true,
-  imports: [CommonModule, ButtonComponent, SpinnerComponent, LucideAngularModule, InspectionFormComponent, InspectionCardComponent, PaginationComponent],
+  imports: [CommonModule, ButtonComponent, LucideAngularModule, InspectionFormComponent, InspectionCardComponent, PaginationComponent, SkeletonComponent],
   templateUrl: './inspections.component.html',
   styleUrl: './inspections.component.scss',
 })
