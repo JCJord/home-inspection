@@ -58,20 +58,20 @@
       @if (sectionFindings().length === 0) {
         <div class="empty-section-state">
           <p>No findings for {{ selectedSection() }} yet.</p>
-          <button class="add-finding-btn" (click)="isAddingFinding.set(true)">
+          <app-button (click)="isAddingFinding.set(true)">
             <lucide-icon [name]="icons.Plus" [size]="16"></lucide-icon>
             Add Finding
-          </button>
+          </app-button>
         </div>
       } @else {
         <div class="findings-list">
           <!-- Findings Header & Add Action -->
           <div class="findings-header">
             <h3>Findings for {{ selectedSection() }}</h3>
-            <button class="add-finding-btn small" (click)="isAddingFinding.set(true)">
+            <app-button size="sm" (click)="isAddingFinding.set(true)">
               <lucide-icon [name]="icons.Plus" [size]="14"></lucide-icon>
               Add Finding
-            </button>
+            </app-button>
           </div>
 
           <!-- List of findings -->
