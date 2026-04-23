@@ -1,7 +1,7 @@
 import { Component, input, output, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Finding } from '../../../../core/models/inspection.interface';
-import { LucideAngularModule, MapPin, Trash2, Edit } from 'lucide-angular';
+import { LucideAngularModule, MapPin, Trash2, Edit, Sparkles } from 'lucide-angular';
 import { environment } from '../../../../../environments/environment';
 import { DropdownMenuComponent, DropdownItem } from '../../../../shared/components/dropdown-menu/dropdown-menu.component';
 import { PhotoCarouselComponent } from '../../../../shared/components/photo-carousel/photo-carousel.component';
@@ -20,7 +20,7 @@ export class FindingCardComponent {
   edit = output<void>();
   isConfirmingDelete = signal(false);
 
-  readonly icons = { MapPin };
+  readonly icons = { MapPin, Sparkles };
 
   resolvedImages = computed<string[]>(() => {
     return (this.finding().photos || []).map(p => this.resolveImageUrl(p.storage_url));

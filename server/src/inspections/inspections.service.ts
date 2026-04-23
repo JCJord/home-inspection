@@ -6,6 +6,7 @@ import { CreateInspectionDto } from './dto/create-inspection.dto';
 import { UpdateInspectionDto } from './dto/update-inspection.dto';
 import { Inspector } from '../inspectors/inspector.entity';
 import { Report } from '../reports/report.entity';
+import { SubscriptionStatus } from '../common/enums/subscription-status.enum';
 
 @Injectable()
 export class InspectionsService {
@@ -25,7 +26,7 @@ export class InspectionsService {
     }
 
     if (
-      inspector.subscription_status !== 'active' &&
+      inspector.subscription_status !== SubscriptionStatus.ACTIVE &&
       inspector.free_inspections_used >= 10
     ) {
       throw new ForbiddenException('Free inspection limit reached. Please upgrade.');

@@ -39,6 +39,11 @@ export class TextareaInputComponent {
    * Number of visible text lines for the control.
    */
   rows = input<number>(4);
+  
+  /**
+   * Whether the textarea is read-only.
+   */
+  readonly = input<boolean>(false);
 
   /**
    * Accesses the injected form control.

@@ -39,7 +39,20 @@
       </div>
     </div>
 
-    <p class="finding-note">{{ finding().short_note }}</p>
+    @if (finding().ai_comment) {
+      <div class="ai-comment-box">
+        <div class="ai-comment-header">
+          <lucide-icon [name]="icons.Sparkles" [size]="12" class="mr-1"></lucide-icon>
+          <span>Report Comment</span>
+        </div>
+        <p class="finding-ai-comment">{{ finding().ai_comment }}</p>
+      </div>
+    }
+
+    <div class="finding-observation">
+      <span class="observation-label">Observation:</span>
+      <p class="finding-note">{{ finding().short_note }}</p>
+    </div>
 
     @if (resolvedImages().length > 0) {
       <div class="finding-photos-carousel">

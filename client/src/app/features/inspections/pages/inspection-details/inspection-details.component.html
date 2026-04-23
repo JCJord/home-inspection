@@ -88,7 +88,7 @@
     <app-section-tabs [selectedSection]="selectedSection()" (sectionChange)="selectedSection.set($event)">
     </app-section-tabs>
     @if (isAddingFinding() || findingToEdit()) {
-    <app-finding-form [inspectionId]="insp.id" [section]="selectedSection()" [finding]="findingToEdit()"
+    <app-finding-form [inspectionId]="insp.id" [section]="selectedSection()" [finding]="findingToEdit()" [year_built]="insp.year_built"
       (close)="cancelFindingForm()" (saved)="onFindingSaved($event)">
     </app-finding-form>
     } @else {

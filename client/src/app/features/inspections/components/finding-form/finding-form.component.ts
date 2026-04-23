@@ -1,4 +1,4 @@
-import { Component, inject, input, output, signal, effect, computed, OnDestroy } from '@angular/core';
+import { Component, inject, output, signal, effect, computed, OnDestroy, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { InspectionsService } from '../../../../core/services/inspections.service';
@@ -7,9 +7,11 @@ import { Finding, Photo } from '../../../../core/models/inspection.interface';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { TextInputComponent } from '../../../../shared/components/inputs/text-input/text-input.component';
 import { TextareaInputComponent } from '../../../../shared/components/inputs/textarea-input/textarea-input.component';
-import { LucideAngularModule, AlertCircle, FileImage, Upload, Trash2, Edit, X, Check } from 'lucide-angular';
+import { LucideAngularModule, AlertCircle, FileImage, Upload, Trash2, Edit, X, Check, Sparkles } from 'lucide-angular';
 import { CreateFindingDto } from '../../../../core/dtos/create-finding.dto';
 import { UpdateFindingDto } from '../../../../core/dtos/update-finding.dto';
+import { AiService } from '../../../../core/services/ai.service';
+import { AuthService } from '../../../../core/services/auth.service';
 import { environment } from '../../../../../environments/environment';
 import { ImageEditorModalComponent } from '../../../../shared/components/image-editor-modal/image-editor-modal.component';
 
@@ -29,21 +31,45 @@ type EditTarget =
   templateUrl: './finding-form.component.html',
   styleUrl: './finding-form.component.scss',
 })
-export class FindingFormComponent implements OnDestroy {
+export class FindingFormComponent implements OnDestroy, OnChanges {
   private fb = inject(FormBuilder);
   private inspectionsService = inject(InspectionsService);
+  private aiService = inject(AiService);
+  private authService = inject(AuthService);
 
-  inspectionId = input.required<string>();
-  section = input.required<Section>();
-  finding = input<Finding | null>(null);
+  isPremium = this.authService.isPremium;
+
+  @Input({ required: true }) inspectionId!: string;
+  @Input({ required: true }) year_built!: number;
+  @Input({ required: true }) section!: Section;
+  @Input() finding: Finding | null = null;
+
+  private _inspectionId = signal<string>('');
+  private _yearBuilt = signal<number>(0);
+  private _section = signal<Section>(Section.EXTERIOR);
+  private _finding = signal<Finding | null>(null);
+
+  // Expose signals for internal use
+  inspectionIdSignal = this._inspectionId.asReadonly();
+  yearBuiltSignal = this._yearBuilt.asReadonly();
+  sectionSignal = this._section.asReadonly();
+  findingSignal = this._finding.asReadonly();
 
   close = output<void>();
   saved = output<Finding>();
+  
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['inspectionId']) this._inspectionId.set(this.inspectionId);
+    if (changes['year_built']) this._yearBuilt.set(this.year_built);
+    if (changes['section']) this._section.set(this.section);
+    if (changes['finding']) this._finding.set(this.finding);
+  }
 
   isLoading = signal<boolean>(false);
+  isGeneratingAi = signal<boolean>(false);
   errorMessage = signal<string | null>(null);
 
-  isEditMode = computed(() => !!this.finding());
+  isEditMode = computed(() => !!this._finding());
 
   selectedFiles = signal<SelectedPhoto[]>([]);
   existingPhotos = signal<Photo[]>([]);
@@ -54,22 +80,24 @@ export class FindingFormComponent implements OnDestroy {
   activeDeleteNewIndex = signal<number | null>(null);
 
   severities = Object.values(Severity);
-  readonly icons = { AlertCircle, FileImage, Upload, Trash2, Edit, X, Check };
+  readonly icons = { AlertCircle, FileImage, Upload, Trash2, Edit, X, Check, Sparkles };
 
   findingForm: FormGroup = this.fb.group({
     severity: [Severity.MINOR, [Validators.required]],
     location: [''],
     short_note: ['', [Validators.required]],
+    ai_comment: [''],
   });
 
   constructor() {
     effect(() => {
-      const data = this.finding();
+      const data = this._finding();
       if (data) {
         this.findingForm.patchValue({
           severity: data.severity,
           location: data.location || '',
           short_note: data.short_note,
+          ai_comment: data.ai_comment || '',
         });
         this.existingPhotos.set(data.photos || []);
       } else {
@@ -113,7 +141,7 @@ export class FindingFormComponent implements OnDestroy {
   confirmDeleteExistingPhoto(photoId: string): void {
     this.cancelDelete();
     this.isLoading.set(true);
-    this.inspectionsService.deletePhoto(this.inspectionId(), this.finding()!.id, photoId).subscribe({
+    this.inspectionsService.deletePhoto(this._inspectionId(), this._finding()!.id, photoId).subscribe({
       next: () => {
         this.existingPhotos.update(photos => photos.filter(p => p.id !== photoId));
         this.isLoading.set(false);
@@ -157,10 +185,10 @@ export class FindingFormComponent implements OnDestroy {
         this.isLoading.set(true);
 
         // Upload new photo
-        this.inspectionsService.uploadPhoto(this.inspectionId(), this.finding()!.id, file).subscribe({
+        this.inspectionsService.uploadPhoto(this._inspectionId(), this._finding()!.id, file).subscribe({
           next: (newPhoto) => {
             // Delete the old photo
-            this.inspectionsService.deletePhoto(this.inspectionId(), this.finding()!.id, photo.id).subscribe({
+            this.inspectionsService.deletePhoto(this._inspectionId(), this._finding()!.id, photo.id).subscribe({
               next: () => {
                 this.existingPhotos.update(photos => {
                   const newPhotos = [...photos];
@@ -221,6 +249,36 @@ export class FindingFormComponent implements OnDestroy {
     return this.findingForm.get('severity')?.value;
   }
 
+  generateAiComment(): void {
+    const { severity, location, short_note } = this.findingForm.value;
+    
+    if (!short_note) {
+      this.errorMessage.set('Please provide an observation note first.');
+      return;
+    }
+
+    this.isGeneratingAi.set(true);
+    this.errorMessage.set(null);
+
+    this.aiService.generateComment({
+      section: this._section(),
+      severity,
+      location,
+      short_note,
+      year_built: this._yearBuilt()
+    }).subscribe({
+      next: (res) => {
+        this.findingForm.patchValue({ ai_comment: res.comment });
+        this.isGeneratingAi.set(false);
+      },
+      error: (err) => {
+        console.error('AI Generation failed', err);
+        this.errorMessage.set('Failed to generate AI comment. Please try again.');
+        this.isGeneratingAi.set(false);
+      }
+    });
+  }
+
   onSubmit(): void {
     if (this.findingForm.valid && !this.isLoading()) {
       this.isLoading.set(true);
@@ -234,7 +292,7 @@ export class FindingFormComponent implements OnDestroy {
           let hasErrors = false;
           
           this.selectedFiles().forEach(item => {
-            this.inspectionsService.uploadPhoto(this.inspectionId(), finding.id, item.file).subscribe({
+            this.inspectionsService.uploadPhoto(this._inspectionId(), finding.id, item.file).subscribe({
               next: () => {
                 uploadCount++;
                 if (uploadCount === this.selectedFiles().length) {
@@ -261,13 +319,14 @@ export class FindingFormComponent implements OnDestroy {
 
       if (this.isEditMode()) {
         const dto: UpdateFindingDto = {
-          section: this.section(),
+          section: this._section(),
           severity: formValue.severity,
           short_note: formValue.short_note,
+          ai_comment: formValue.ai_comment || undefined,
           location: formValue.location || undefined,
         };
 
-        this.inspectionsService.updateFinding(this.inspectionId(), this.finding()!.id, dto).subscribe({
+        this.inspectionsService.updateFinding(this._inspectionId(), this._finding()!.id, dto).subscribe({
           next: handleSuccess,
           error: (err) => {
             console.error('Failed to update finding', err);
@@ -277,13 +336,14 @@ export class FindingFormComponent implements OnDestroy {
         });
       } else {
         const dto: CreateFindingDto = {
-          section: this.section(),
+          section: this._section(),
           severity: formValue.severity,
           short_note: formValue.short_note,
+          ai_comment: formValue.ai_comment || undefined,
           location: formValue.location || undefined,
         };
 
-        this.inspectionsService.createFinding(this.inspectionId(), dto).subscribe({
+        this.inspectionsService.createFinding(this._inspectionId(), dto).subscribe({
           next: handleSuccess,
           error: (err) => {
             console.error('Failed to create finding', err);

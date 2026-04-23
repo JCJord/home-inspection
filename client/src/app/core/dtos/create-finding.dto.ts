@@ -5,5 +5,6 @@ export interface CreateFindingDto {
   severity: Severity;
   location?: string;
   short_note: string;
+  ai_comment?: string;
   sort_order?: number;
 }

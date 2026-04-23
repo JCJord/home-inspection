@@ -6,6 +6,7 @@ import { RegisterRequestDto } from '../dtos/register-request.dto';
 import { LoginRequestDto } from '../dtos/login-request.dto';
 import { AuthResponse } from '../models/auth-response.interface';
 import { Inspector } from '../models/inspector.interface';
+import { SubscriptionStatus } from '../enums/subscription-status.enum';
 
 @Injectable({
   providedIn: 'root',
@@ -22,6 +23,7 @@ export class AuthService {
 
   // --- Computed ---
   isAuthenticated = computed(() => !!this.token());
+  isPremium = computed(() => this.currentUser()?.subscription_status === SubscriptionStatus.ACTIVE);
 
   /**
    * Registers a new inspector.

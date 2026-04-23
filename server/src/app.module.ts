@@ -10,6 +10,7 @@ import { join } from 'path';
 import { InspectionsModule } from './inspections/inspections.module';
 import { FindingsModule } from './findings/findings.module';
 import { PhotosModule } from './photos/photos.module';
+import { AiModule } from './ai/ai.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { PhotosModule } from './photos/photos.module';
     InspectionsModule,
     FindingsModule,
     PhotosModule,
+    AiModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -1,3 +1,5 @@
+import { SubscriptionStatus } from '../enums/subscription-status.enum';
+
 export interface Inspector {
   id: string;
   email: string;
@@ -6,7 +8,7 @@ export interface Inspector {
   phone?: string;
   license_number?: string;
   logo_url?: string;
-  subscription_status: 'free' | 'pro' | 'enterprise';
+  subscription_status: SubscriptionStatus;
   free_inspections_used: number;
   created_at: Date;
   updated_at: Date;

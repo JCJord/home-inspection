@@ -98,6 +98,30 @@
     <app-textarea-input name="short_note" label="Observation Note *" placeholder="Describe the finding...">
     </app-textarea-input>
 
+    <!-- AI Generated Comment -->
+    <div class="form-group ai-comment-group">
+      <div class="flex justify-between items-center mb-1">
+        <label class="control-label">AI Generated Comment (Optional)</label>
+        <button type="button" class="ai-generate-btn" (click)="generateAiComment()" [disabled]="isGeneratingAi() || !isPremium()"
+          [class.premium-lock]="!isPremium()" [title]="!isPremium() ? 'Available for users with Active subscription only' : ''">
+          @if (isGeneratingAi()) {
+            <div class="spinner-small mr-2"></div>
+            Generating...
+          } @else {
+            <lucide-icon [name]="icons.Sparkles" [size]="14" class="mr-1"></lucide-icon>
+            {{ isPremium() ? 'Generate AI Comment' : 'Upgrade for AI' }}
+          }
+        </button>
+      </div>
+      <app-textarea-input name="ai_comment" placeholder="The AI generated professional comment will appear here..." [rows]="4" [readonly]="!isPremium() && findingForm.get('ai_comment')?.value === ''">
+      </app-textarea-input>
+      @if (!isPremium()) {
+        <p class="field-hint text-amber-600 font-medium">✨ AI Finding generation is available for Active users.</p>
+      } @else {
+        <p class="field-hint">You can edit the AI output or write your own professional comment.</p>
+      }
+    </div>
+
     <div class="form-actions flex justify-between">
       <app-button type="button" class="cancel-btn" variant="outline" (click)="close.emit()" [disabled]="isLoading()">
         Cancel
