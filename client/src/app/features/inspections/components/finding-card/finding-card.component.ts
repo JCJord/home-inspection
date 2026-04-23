@@ -1,7 +1,7 @@
 import { Component, input, output, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Finding } from '../../../../core/models/inspection.interface';
-import { LucideAngularModule, MapPin, Trash2, Edit, Sparkles } from 'lucide-angular';
+import { LucideAngularModule, MapPin, Trash2, Edit, Sparkles, ChevronDown, ChevronUp } from 'lucide-angular';
 import { environment } from '../../../../../environments/environment';
 import { DropdownMenuComponent, DropdownItem } from '../../../../shared/components/dropdown-menu/dropdown-menu.component';
 import { PhotoCarouselComponent } from '../../../../shared/components/photo-carousel/photo-carousel.component';
@@ -19,8 +19,13 @@ export class FindingCardComponent {
   delete = output<void>();
   edit = output<void>();
   isConfirmingDelete = signal(false);
+  isAiExpanded = signal(false);
+  isNoteExpanded = signal(false);
 
-  readonly icons = { MapPin, Sparkles };
+  readonly icons = { MapPin, Sparkles, ChevronDown, ChevronUp };
+
+  shouldShowAiExpand = computed(() => (this.finding().ai_comment?.length || 0) > 140);
+  shouldShowNoteExpand = computed(() => (this.finding().short_note?.length || 0) > 140);
 
   resolvedImages = computed<string[]>(() => {
     return (this.finding().photos || []).map(p => this.resolveImageUrl(p.storage_url));
