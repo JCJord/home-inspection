@@ -1,6 +1,6 @@
 import { Component, ElementRef, ViewChild, input, output, signal, HostListener, afterNextRender, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { LucideAngularModule, X, Check, Undo, RotateCcw } from 'lucide-angular';
+import { LucideAngularModule, X, Check, Undo, RotateCcw, Circle, ArrowUpRight, Pencil, ZoomIn, ZoomOut, Maximize, ChevronUp, ChevronDown } from 'lucide-angular';
 
 @Component({
   selector: 'app-image-editor-modal',
@@ -18,14 +18,28 @@ export class ImageEditorModalComponent implements OnInit, OnDestroy {
   @ViewChild('editorDialog') dialogRef!: ElementRef<HTMLDialogElement>;
   @ViewChild('canvasElement') canvasRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('containerElement') containerRef!: ElementRef<HTMLDivElement>;
+  @ViewChild('paletteScrollArea') paletteScrollRef!: ElementRef<HTMLDivElement>;
 
-  readonly icons = { X, Check, Undo, RotateCcw };
+  readonly icons: Record<string, any> = { 
+    X, Check, Undo, RotateCcw, Pencil, Circle, ArrowUpRight, ZoomIn, ZoomOut, Maximize, ChevronUp, ChevronDown 
+  };
 
   private ctx!: CanvasRenderingContext2D;
   private isDrawing = false;
-  private imageElement = new Image();
+  imageElement = new Image();
   
-  // To handle undo operations, we could save snapshots. For simple undo, an array of ImageData
+  activeTool = signal<'brush' | 'circle' | 'arrow'>('brush');
+  strokeColor = signal<string>('#ef4444'); // Default Red
+  strokeWidth = signal<number>(1); // Default thin (will be scaled)
+  zoomLevel = signal<number>(1);
+  isPaletteOpen = signal<boolean>(false);
+  
+  isPaletteTop = signal<boolean>(true);
+  isPaletteBottom = signal<boolean>(true);
+  
+  private startCoords: {x: number, y: number} | null = null;
+  
+  // To handle undo operations, we save snapshots
   private history: ImageData[] = [];
 
   constructor() {
@@ -34,7 +48,29 @@ export class ImageEditorModalComponent implements OnInit, OnDestroy {
       if (this.dialogRef) {
         this.dialogRef.nativeElement.showModal();
       }
+      this.checkPaletteScroll();
     });
+  }
+
+  togglePalette() {
+    this.isPaletteOpen.update(v => !v);
+    if (this.isPaletteOpen()) {
+      setTimeout(() => this.checkPaletteScroll(), 100);
+    }
+  }
+
+  checkPaletteScroll() {
+    if (!this.paletteScrollRef) return;
+    const el = this.paletteScrollRef.nativeElement;
+    this.isPaletteTop.set(el.scrollTop <= 5);
+    this.isPaletteBottom.set(el.scrollHeight - el.scrollTop - el.clientHeight <= 5);
+  }
+
+  cycleColor() {
+    const colors = ['#ef4444', '#f59e0b', '#22c55e', '#3b82f6'];
+    const current = this.strokeColor();
+    const nextIndex = (colors.indexOf(current) + 1) % colors.length;
+    this.strokeColor.set(colors[nextIndex]);
   }
 
   ngOnInit() {
@@ -47,41 +83,33 @@ export class ImageEditorModalComponent implements OnInit, OnDestroy {
 
   private initCanvas() {
     const canvas = this.canvasRef.nativeElement;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
     if (!ctx) return;
     this.ctx = ctx;
 
-    // Load image
-    this.imageElement.crossOrigin = 'anonymous'; // Important for canvas toBlob if pulling from API
+    this.imageElement.crossOrigin = 'anonymous';
     this.imageElement.onload = () => {
       this.resizeCanvas();
     };
     this.imageElement.src = this.imageUrl();
   }
 
-  @HostListener('window:resize')
-  onResize() {
-    // Only resize if we haven't drawn much, or resize strictly transforms it. 
-    // Usually, image editors lock orientation or do complex projection.
-    // For simplicity, we just redraw the latest history state scaled.
-    // However, canvas resizing clears it. A better approach is to keep the original image size and scale the canvas via CSS!
-    // So the internal resolution is exactly the image resolution.
-  }
-
   private resizeCanvas() {
     const canvas = this.canvasRef.nativeElement;
-    const container = this.containerRef.nativeElement;
-
-    // Set internal resolution to image native resolution
     canvas.width = this.imageElement.width;
     canvas.height = this.imageElement.height;
-
-    // Draw the image onto it
     this.ctx.drawImage(this.imageElement, 0, 0);
-    this.saveState(); // initial state
+    this.saveState();
   }
 
-  // Helper to get correct coordinates regardless of CSS scaling
+  @HostListener('window:keydown', ['$event'])
+  handleKeyDown(event: KeyboardEvent) {
+    if ((event.ctrlKey || event.metaKey) && event.key === 'z') {
+      event.preventDefault();
+      this.undo();
+    }
+  }
+
   private getEventCoords(event: MouseEvent | TouchEvent): {x: number, y: number} {
     const canvas = this.canvasRef.nativeElement;
     const rect = canvas.getBoundingClientRect();
@@ -105,47 +133,105 @@ export class ImageEditorModalComponent implements OnInit, OnDestroy {
   }
 
   startDrawing(event: MouseEvent | TouchEvent) {
-    event.preventDefault(); // Prevent scrolling
+    event.preventDefault();
     this.isDrawing = true;
-    const coords = this.getEventCoords(event);
+    this.startCoords = this.getEventCoords(event);
     
-    this.ctx.beginPath();
-    this.ctx.moveTo(coords.x, coords.y);
+    // Setup stroke style based on signals
+    this.ctx.strokeStyle = this.strokeColor();
     
-    // Setup stroke style
-    this.ctx.strokeStyle = '#ef4444'; // Red for clear visibility
-    this.ctx.lineWidth = Math.max(5, this.imageElement.width * 0.005); // Scale line width reasonably
+    // Base thickness calculation reduced by 2px as requested
+    const baseWidth = Math.max(4, this.imageElement.width * 0.006); 
+    this.ctx.lineWidth = baseWidth * this.strokeWidth();
+    
     this.ctx.lineCap = 'round';
     this.ctx.lineJoin = 'round';
+
+    if (this.activeTool() === 'brush') {
+      this.ctx.beginPath();
+      this.ctx.moveTo(this.startCoords.x, this.startCoords.y);
+    }
   }
 
   draw(event: MouseEvent | TouchEvent) {
-    if (!this.isDrawing) return;
+    if (!this.isDrawing || !this.startCoords) return;
     event.preventDefault();
     const coords = this.getEventCoords(event);
-    this.ctx.lineTo(coords.x, coords.y);
+
+    if (this.activeTool() === 'brush') {
+      this.ctx.lineTo(coords.x, coords.y);
+      this.ctx.stroke();
+    } else {
+      // Shape drawing: we need to restore the state for every move to show preview
+      this.restoreLastState();
+      
+      if (this.activeTool() === 'circle') {
+        this.drawCircle(this.startCoords, coords);
+      } else if (this.activeTool() === 'arrow') {
+        this.drawArrow(this.startCoords, coords);
+      }
+    }
+  }
+
+  private drawCircle(start: {x: number, y: number}, end: {x: number, y: number}) {
+    const radius = Math.sqrt(Math.pow(end.x - start.x, 2) + Math.pow(end.y - start.y, 2));
+    this.ctx.beginPath();
+    this.ctx.arc(start.x, start.y, radius, 0, 2 * Math.PI);
+    this.ctx.stroke();
+  }
+
+  private drawArrow(start: {x: number, y: number}, end: {x: number, y: number}) {
+    const headLength = this.ctx.lineWidth * 4;
+    const angle = Math.atan2(end.y - start.y, end.x - start.x);
+
+    this.ctx.beginPath();
+    this.ctx.moveTo(start.x, start.y);
+    this.ctx.lineTo(end.x, end.y);
+    this.ctx.stroke();
+
+    // Arrowhead
+    this.ctx.beginPath();
+    this.ctx.moveTo(end.x, end.y);
+    this.ctx.lineTo(end.x - headLength * Math.cos(angle - Math.PI / 6), end.y - headLength * Math.sin(angle - Math.PI / 6));
+    this.ctx.moveTo(end.x, end.y);
+    this.ctx.lineTo(end.x - headLength * Math.cos(angle + Math.PI / 6), end.y - headLength * Math.sin(angle + Math.PI / 6));
     this.ctx.stroke();
   }
 
   stopDrawing() {
     if (!this.isDrawing) return;
-    this.ctx.closePath();
     this.isDrawing = false;
+    this.startCoords = null;
     this.saveState();
   }
-
-  // --- Actions ---
 
   private saveState() {
     const canvas = this.canvasRef.nativeElement;
     this.history.push(this.ctx.getImageData(0, 0, canvas.width, canvas.height));
   }
 
+  private restoreLastState() {
+    if (this.history.length > 0) {
+      this.ctx.putImageData(this.history[this.history.length - 1], 0, 0);
+    }
+  }
+
+  zoomIn() {
+    this.zoomLevel.update(z => Math.min(z + 0.5, 4));
+  }
+
+  zoomOut() {
+    this.zoomLevel.update(z => Math.max(z - 0.5, 1));
+  }
+
+  resetZoom() {
+    this.zoomLevel.set(1);
+  }
+
   undo() {
     if (this.history.length > 1) {
-      this.history.pop(); // remove current state
-      const previousState = this.history[this.history.length - 1];
-      this.ctx.putImageData(previousState, 0, 0);
+      this.history.pop();
+      this.restoreLastState();
     }
   }
 
@@ -159,7 +245,6 @@ export class ImageEditorModalComponent implements OnInit, OnDestroy {
 
   onSave() {
     const canvas = this.canvasRef.nativeElement;
-    // Export high-quality JPEG
     canvas.toBlob((blob) => {
       if (blob) {
         this.save.emit(blob);

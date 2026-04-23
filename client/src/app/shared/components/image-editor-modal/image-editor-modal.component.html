@@ -1,28 +1,86 @@
 <dialog #editorDialog class="editor-overlay" (cancel)="close.emit()">
   <div class="editor-header">
     <button class="icon-btn cancel-btn" (click)="close.emit()" aria-label="Cancel">
-      <lucide-icon [name]="icons.X" [size]="20"></lucide-icon>
+      <lucide-icon [name]="icons['X']" [size]="20"></lucide-icon>
       <span>Cancel</span>
     </button>
     
     <div class="editor-actions">
       <button class="action-btn" (click)="undo()" aria-label="Undo">
-        <lucide-icon [name]="icons.Undo" [size]="20"></lucide-icon>
+        <lucide-icon [name]="icons['Undo']" [size]="20"></lucide-icon>
       </button>
       <button class="action-btn" (click)="reset()" aria-label="Reset">
-        <lucide-icon [name]="icons.RotateCcw" [size]="20"></lucide-icon>
+        <lucide-icon [name]="icons['RotateCcw']" [size]="20"></lucide-icon>
       </button>
     </div>
 
     <button class="icon-btn save-btn" (click)="onSave()" aria-label="Save">
       <span>Save</span>
-      <lucide-icon [name]="icons.Check" [size]="20"></lucide-icon>
+      <lucide-icon [name]="icons['Check']" [size]="20"></lucide-icon>
+    </button>
+  </div>
+  
+  <div class="editor-side-controls">
+    <!-- Main Palette Sidebar -->
+    <div class="palette-popup side-bar" [class.open]="isPaletteOpen()" [class.show-top-fade]="!isPaletteTop()" [class.show-bottom-fade]="!isPaletteBottom()">
+      <div class="scroll-indicator top" *ngIf="!isPaletteTop()">
+        <lucide-icon [name]="icons['ChevronUp']" [size]="14"></lucide-icon>
+      </div>
+
+      <div class="palette-scroll-area" #paletteScrollArea (scroll)="checkPaletteScroll()">
+        <div class="palette-stack vertical">
+          <!-- Active Color Cycle -->
+          <div class="side-group color-cycle">
+            <button class="cycle-btn" [style.background-color]="strokeColor()" (click)="cycleColor()" title="Cycle Color"></button>
+          </div>
+
+          <div class="v-divider"></div>
+
+          <!-- Tools Stacked Vertically -->
+          <div class="side-group tool-stack">
+            <button class="tool-btn" [class.active]="activeTool() === 'brush'" (click)="activeTool.set('brush'); togglePalette()">
+              <lucide-icon [name]="icons['Pencil']" [size]="22"></lucide-icon>
+            </button>
+            <button class="tool-btn" [class.active]="activeTool() === 'circle'" (click)="activeTool.set('circle'); togglePalette()">
+              <lucide-icon [name]="icons['Circle']" [size]="22"></lucide-icon>
+            </button>
+            <button class="tool-btn" [class.active]="activeTool() === 'arrow'" (click)="activeTool.set('arrow'); togglePalette()">
+              <lucide-icon [name]="icons['ArrowUpRight']" [size]="22"></lucide-icon>
+            </button>
+          </div>
+
+          <div class="v-divider"></div>
+
+          <!-- Zoom Controls -->
+          <div class="side-group zoom-stack">
+            <button class="tool-btn" (click)="zoomIn()" [disabled]="zoomLevel() >= 4">
+              <lucide-icon [name]="icons['ZoomIn']" [size]="20"></lucide-icon>
+            </button>
+            <span class="zoom-value">{{ zoomLevel() }}x</span>
+            <button class="tool-btn" (click)="zoomOut()" [disabled]="zoomLevel() <= 1">
+              <lucide-icon [name]="icons['ZoomOut']" [size]="20"></lucide-icon>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="scroll-indicator bottom" *ngIf="!isPaletteBottom()">
+        <lucide-icon [name]="icons['ChevronDown']" [size]="14"></lucide-icon>
+      </div>
+    </div>
+
+    <!-- Side Toggle Pill -->
+    <button class="side-pill" (click)="togglePalette()" [class.active]="isPaletteOpen()">
+      <div class="color-indicator" [style.background-color]="strokeColor()"></div>
+      <lucide-icon [name]="icons[activeTool() === 'brush' ? 'Pencil' : activeTool() === 'circle' ? 'Circle' : 'ArrowUpRight']" [size]="18"></lucide-icon>
     </button>
   </div>
 
   <div class="canvas-container" #containerElement>
     <canvas 
       #canvasElement
+      [style.transform]="'scale(' + zoomLevel() + ')'"
+      [style.transform-origin]="'center center'"
       (mousedown)="startDrawing($event)"
       (mousemove)="draw($event)"
       (mouseup)="stopDrawing()"
