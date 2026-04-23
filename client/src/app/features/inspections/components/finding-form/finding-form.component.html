@@ -16,36 +16,6 @@
         <input #fileInput type="file" multiple accept="image/*" style="display: none" (change)="onFileSelected($event)">
       </div>
 
-      <!-- Existing Photos -->
-      @if (existingPhotos().length > 0) {
-      <div class="existing-photos-grid">
-        @for (photo of existingPhotos(); track photo.id) {
-        <div class="existing-photo-item">
-          <img [src]="resolveImageUrl(photo.storage_url)" alt="Finding photo">
-          <div class="photo-action-pill" [class.confirming]="activeDeleteExistingId() === photo.id">
-            @if (activeDeleteExistingId() === photo.id) {
-              <button type="button" class="action-btn cancel-delete" (click)="cancelDelete()" aria-label="Cancel">
-                <span class="action-text">Cancel</span>
-              </button>
-              <div class="divider"></div>
-              <button type="button" class="action-btn confirm-delete" (click)="confirmDeleteExistingPhoto(photo.id)" aria-label="Confirm Deletion">
-                <span class="action-text font-bold">Delete</span>
-              </button>
-            } @else {
-              <button type="button" class="action-btn edit" (click)="editExistingPhoto(photo)" aria-label="Edit photo">
-                <lucide-icon [name]="icons.Edit" [size]="14"></lucide-icon>
-              </button>
-              <div class="divider"></div>
-              <button type="button" class="action-btn delete" (click)="initDeleteExistingPhoto(photo.id)" aria-label="Delete photo">
-                <lucide-icon [name]="icons.Trash2" [size]="14"></lucide-icon>
-              </button>
-            }
-          </div>
-        </div>
-        }
-      </div>
-      }
-
       <!-- New Selected Files -->
       @if (selectedFiles().length > 0) {
       <div class="existing-photos-grid">
@@ -67,6 +37,36 @@
               </button>
               <div class="divider"></div>
               <button type="button" class="action-btn delete" (click)="initDeleteNewPhoto(i)" aria-label="Remove photo">
+                <lucide-icon [name]="icons.Trash2" [size]="14"></lucide-icon>
+              </button>
+            }
+          </div>
+        </div>
+        }
+      </div>
+      }
+
+      <!-- Existing Photos -->
+      @if (existingPhotos().length > 0) {
+      <div class="existing-photos-grid">
+        @for (photo of existingPhotos(); track photo.id) {
+        <div class="existing-photo-item">
+          <img [src]="resolveImageUrl(photo.storage_url)" alt="Finding photo">
+          <div class="photo-action-pill" [class.confirming]="activeDeleteExistingId() === photo.id">
+            @if (activeDeleteExistingId() === photo.id) {
+              <button type="button" class="action-btn cancel-delete" (click)="cancelDelete()" aria-label="Cancel">
+                <span class="action-text">Cancel</span>
+              </button>
+              <div class="divider"></div>
+              <button type="button" class="action-btn confirm-delete" (click)="confirmDeleteExistingPhoto(photo.id)" aria-label="Confirm Deletion">
+                <span class="action-text font-bold">Delete</span>
+              </button>
+            } @else {
+              <button type="button" class="action-btn edit" (click)="editExistingPhoto(photo)" aria-label="Edit photo">
+                <lucide-icon [name]="icons.Edit" [size]="14"></lucide-icon>
+              </button>
+              <div class="divider"></div>
+              <button type="button" class="action-btn delete" (click)="initDeleteExistingPhoto(photo.id)" aria-label="Delete photo">
                 <lucide-icon [name]="icons.Trash2" [size]="14"></lucide-icon>
               </button>
             }

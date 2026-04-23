@@ -242,7 +242,7 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
         file,
         previewUrl: URL.createObjectURL(file)
       }));
-      this.selectedFiles.update(files => [...files, ...newItems]);
+      this.selectedFiles.update(files => [...newItems, ...files]);
     }
   }
 
