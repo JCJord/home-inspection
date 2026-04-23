@@ -1,4 +1,4 @@
-<div class="inspection-card">
+<div class="inspection-card" [class.is-deleting]="isDeleting()">
   <div class="card-header">
     <div class="header-left">
       <div class="address-row">
@@ -18,46 +18,58 @@
     </div>
 
     <div class="header-right">
-      <span class="status-badge" [class]="inspection().status">
-        <span class="dot"></span>
-        {{ statusLabel() }}
-      </span>
-      <app-dropdown-menu [items]="menuItems()"></app-dropdown-menu>
+      @if (isConfirmingDelete()) {
+        <div class="photo-action-pill confirming">
+          <button type="button" class="action-btn cancel-delete" (click)="isConfirmingDelete.set(false)">
+            <span class="action-text">Cancel</span>
+          </button>
+          <div class="divider"></div>
+          <button type="button" class="action-btn confirm-delete" (click)="confirmDelete()">
+            <span class="action-text font-bold">Delete</span>
+          </button>
+        </div>
+      } @else {
+        <span class="status-badge" [class]="inspection().status">
+          <span class="dot"></span>
+          {{ statusLabel() }}
+        </span>
+        <app-dropdown-menu [items]="menuItems()"></app-dropdown-menu>
+      }
     </div>
   </div>
 
   <div class="card-content">
     <div class="findings-summary">
-      @if (severityCounts()['Safety'] > 0) {
+      @if (severityCounts()[Severity.SAFETY] > 0) {
       <div class="severity-chip safety">
         <lucide-icon [name]="icons.AlertTriangle" [size]="12"></lucide-icon>
-        <span>{{ severityCounts()['Safety'] }} Safety</span>
+        <span>{{ severityCounts()[Severity.SAFETY] }} Safety</span>
       </div>
       }
 
-      @if (severityCounts()['Major'] > 0) {
+      @if (severityCounts()[Severity.MAJOR] > 0) {
       <div class="severity-chip major">
         <lucide-icon [name]="icons.AlertCircle" [size]="12"></lucide-icon>
-        <span>{{ severityCounts()['Major'] }} Major</span>
+        <span>{{ severityCounts()[Severity.MAJOR] }} Major</span>
       </div>
       }
 
-      @if (severityCounts()['Minor'] > 0) {
+      @if (severityCounts()[Severity.MINOR] > 0) {
       <div class="severity-chip minor">
         <lucide-icon [name]="icons.Info" [size]="12"></lucide-icon>
-        <span>{{ severityCounts()['Minor'] }} Minor</span>
+        <span>{{ severityCounts()[Severity.MINOR] }} Minor</span>
       </div>
       }
 
-      @if (severityCounts()['Maintenance'] > 0) {
+      @if (severityCounts()[Severity.MAINTENANCE] > 0) {
       <div class="severity-chip maintenance">
         <lucide-icon [name]="icons.CheckCircle2" [size]="12"></lucide-icon>
-        <span>{{ severityCounts()['Maintenance'] }} Maintenance</span>
+        <span>{{ severityCounts()[Severity.MAINTENANCE] }} Maintenance</span>
       </div>
       }
 
       <div class="total-findings">
-        <span>{{ totalFindings() }} findings</span>
+        <span>{{ totalFindings() }} finding{{ totalFindings() === 1 ? '' : 's' }}</span>
       </div>
     </div>
   </div>

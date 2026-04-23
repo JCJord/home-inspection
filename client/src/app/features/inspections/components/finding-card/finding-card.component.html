@@ -1,11 +1,11 @@
-<div class="finding-card">
+<div class="finding-card" [class.is-deleting]="isDeleting()">
   <div
     class="finding-severity-indicator"
     [attr.data-severity]="finding().severity.toLowerCase()"
   ></div>
 
   <div class="finding-card-content">
-    <div class="finding-top-row">
+    <div class="finding-top-row" [class.confirming]="isConfirmingDelete()">
       <div class="finding-top-left">
         <span
           class="finding-severity"
@@ -21,7 +21,22 @@
           </span>
         }
       </div>
-      <app-dropdown-menu [items]="menuItems()" icon="horizontal"></app-dropdown-menu>
+
+      <div class="action-area">
+        @if (isConfirmingDelete()) {
+          <div class="photo-action-pill confirming">
+            <button type="button" class="action-btn cancel-delete" (click)="isConfirmingDelete.set(false)">
+              <span class="action-text">Cancel</span>
+            </button>
+            <div class="divider"></div>
+            <button type="button" class="action-btn confirm-delete" (click)="delete.emit()">
+              <span class="action-text font-bold">Delete</span>
+            </button>
+          </div>
+        } @else {
+          <app-dropdown-menu [items]="menuItems()" icon="horizontal"></app-dropdown-menu>
+        }
+      </div>
     </div>
 
     <p class="finding-note">{{ finding().short_note }}</p>

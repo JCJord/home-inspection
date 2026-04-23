@@ -20,10 +20,14 @@ export class InspectionCardComponent {
 
   inspection = input.required<Inspection>();
 
+  Severity = Severity;
+
   edit = output<Inspection>();
   delete = output<Inspection>();
 
   showDeleteModal = signal(false);
+  isDeleting = signal(false);
+  isConfirmingDelete = signal(false);
 
   readonly icons = {
     MapPin,
@@ -48,13 +52,19 @@ export class InspectionCardComponent {
       label: 'Delete',
       icon: this.icons.Trash2,
       danger: true,
-      action: () => this.showDeleteModal.set(true),
+      action: () => this.isConfirmingDelete.set(true),
     }
   ]);
 
   confirmDelete() {
-    this.delete.emit(this.inspection());
-    this.showDeleteModal.set(false);
+    this.isConfirmingDelete.set(false);
+    this.isDeleting.set(true);
+
+    // Wait for the animation to complete before emitting the delete event
+    setTimeout(() => {
+      this.delete.emit(this.inspection());
+      this.isDeleting.set(false); // Reset state for future use
+    }, 400);
   }
 
   viewDetails() {
@@ -77,7 +87,10 @@ export class InspectionCardComponent {
     return counts;
   });
 
-  totalFindings = computed(() => (this.inspection().findings || []).length);
+  totalFindings = computed(() => {
+    const findings = this.inspection().findings;
+    return Array.isArray(findings) ? findings.length : 0;
+  });
 
   statusLabel = computed(() => {
     return this.inspection().status === 'published' ? 'Published' : 'In Progress';

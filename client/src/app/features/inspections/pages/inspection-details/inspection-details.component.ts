@@ -29,11 +29,11 @@ export class InspectionDetailsComponent implements OnInit {
   isPublishing = signal<boolean>(false);
   errorMessage = signal<string | null>(null);
   showPublishModal = signal(false);
-  findingToDelete = signal<string | null>(null);
   findingToEdit = signal<Finding | null>(null);
   selectedSection = signal<Section>(Section.EXTERIOR);
   isAddingFinding = signal<boolean>(false);
   isDeletingFinding = signal<boolean>(false);
+  deletingId = signal<string | null>(null);
 
   readonly icons = { ArrowLeft, Send, RefreshCw, AlertCircle, Plus };
 
@@ -93,26 +93,29 @@ export class InspectionDetailsComponent implements OnInit {
     });
   }
 
-  confirmDeleteFinding(): void {
+  handleDeleteFinding(finding: any): void {
     const inspectionId = this.inspection()?.id;
-    const findingId = this.findingToDelete();
+    if (!inspectionId || !finding.id) return;
 
-    if (!inspectionId || !findingId) return;
-
+    this.deletingId.set(finding.id);
     this.isDeletingFinding.set(true);
-    this.inspectionsService.deleteFinding(inspectionId, findingId).subscribe({
-      next: () => {
-        this.isDeletingFinding.set(false);
-        this.findingToDelete.set(null);
-        this.loadInspection(inspectionId);
-      },
-      error: (err) => {
-        console.error('Failed to delete finding', err);
-        this.errorMessage.set(err.error?.message || 'Failed to delete finding.');
-        this.isDeletingFinding.set(false);
-        this.findingToDelete.set(null);
-      }
-    });
+
+    // Wait for the animation to play before calling the service
+    setTimeout(() => {
+      this.inspectionsService.deleteFinding(inspectionId, finding.id).subscribe({
+        next: () => {
+          this.isDeletingFinding.set(false);
+          this.deletingId.set(null);
+          this.loadInspection(inspectionId);
+        },
+        error: (err) => {
+          console.error('Failed to delete finding', err);
+          this.errorMessage.set(err.error?.message || 'Failed to delete finding.');
+          this.isDeletingFinding.set(false);
+          this.deletingId.set(null);
+        }
+      });
+    }, 400);
   }
 
   editFinding(finding: any): void {

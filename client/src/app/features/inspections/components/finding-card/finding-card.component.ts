@@ -1,4 +1,4 @@
-import { Component, input, output, computed } from '@angular/core';
+import { Component, input, output, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Finding } from '../../../../core/models/inspection.interface';
 import { LucideAngularModule, MapPin, Trash2, Edit } from 'lucide-angular';
@@ -15,8 +15,10 @@ import { PhotoCarouselComponent } from '../../../../shared/components/photo-caro
 })
 export class FindingCardComponent {
   finding = input.required<Finding>();
+  isDeleting = input<boolean>(false);
   delete = output<void>();
   edit = output<void>();
+  isConfirmingDelete = signal(false);
 
   readonly icons = { MapPin };
 
@@ -33,7 +35,7 @@ export class FindingCardComponent {
     {
       label: 'Delete',
       icon: Trash2,
-      action: () => this.delete.emit(),
+      action: () => this.isConfirmingDelete.set(true),
       danger: true,
     },
   ]);

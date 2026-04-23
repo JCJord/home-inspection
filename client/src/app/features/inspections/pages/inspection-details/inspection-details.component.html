@@ -77,7 +77,12 @@
           <!-- List of findings -->
           <div class="findings-cards">
             @for (finding of sectionFindings(); track finding.id) {
-              <app-finding-card [finding]="finding" (delete)="findingToDelete.set(finding.id)" (edit)="editFinding(finding)"></app-finding-card>
+              <app-finding-card 
+                [finding]="finding" 
+                [isDeleting]="deletingId() === finding.id"
+                (delete)="handleDeleteFinding(finding)" 
+                (edit)="editFinding(finding)">
+              </app-finding-card>
             }
           </div>
         </div>
@@ -91,12 +96,5 @@
 <app-confirm-modal title="Publish Inspection"
   message="Are you sure you want to publish this inspection? Once published, findings can no longer be edited."
   confirmText="Publish" (confirm)="confirmPublish()" (cancel)="showPublishModal.set(false)">
-</app-confirm-modal>
-}
-
-@if (findingToDelete()) {
-<app-confirm-modal title="Delete Finding"
-  message="Are you sure you want to delete this finding? This action cannot be undone."
-  confirmText="Delete" (confirm)="confirmDeleteFinding()" (cancel)="findingToDelete.set(null)">
 </app-confirm-modal>
 }
