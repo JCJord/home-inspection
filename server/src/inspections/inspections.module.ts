@@ -5,11 +5,12 @@ import { InspectionsController } from './inspections.controller';
 import { Inspection } from './inspection.entity';
 import { Inspector } from '../inspectors/inspector.entity';
 import { Report } from '../reports/report.entity';
+import { Finding } from '../findings/finding.entity';
 import { AuthModule } from '../auth/auth.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Inspection, Inspector, Report]),
+    TypeOrmModule.forFeature([Inspection, Inspector, Report, Finding]),
     AuthModule,
   ],
   controllers: [InspectionsController],

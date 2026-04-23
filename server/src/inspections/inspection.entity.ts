@@ -43,7 +43,7 @@ export class Inspection {
   @Column({ default: 'in_progress' })
   status: string;
 
-  @OneToMany(() => Finding, (finding) => finding.inspection, { cascade: true })
+  @OneToMany(() => Finding, (finding) => finding.inspection, { cascade: true, eager: true })
   findings: Finding[];
 
   @OneToOne(() => Report, (report) => report.inspection, { cascade: true })
