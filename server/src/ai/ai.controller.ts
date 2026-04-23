@@ -1,4 +1,5 @@
 import { Controller, Post, Body, UseGuards, Request, ForbiddenException } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { AiService } from './ai.service';
 import { GenerateCommentRequestDto } from './dto/generate-comment.dto';
 import { AuthGuard } from '../auth/guards/auth.guard';
@@ -13,6 +14,7 @@ export class AiController {
   ) {}
 
   @UseGuards(AuthGuard)
+  @Throttle({ default: { limit: 3, ttl: 60000 } })
   @Post('generate-comment')
   async generateComment(
     @Request() req: any,
