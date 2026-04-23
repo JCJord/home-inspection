@@ -20,22 +20,54 @@
   padding: 0 1rem;
   border-radius: 0.75rem 0.75rem 0 0;
 
+  &::before,
   &::after {
     content: '';
     position: absolute;
     top: 0;
-    right: 0;
     bottom: 1px;
-    width: 4rem;
-    background: linear-gradient(to right, transparent, $color-surface 90%);
+    width: 3.5rem;
     pointer-events: none;
-    border-top-right-radius: 0.75rem;
     transition: opacity 0.3s ease;
-  }
-
-  &.hide-fade::after {
+    z-index: 2;
     opacity: 0;
   }
+
+  &::before {
+    left: 0;
+    background: linear-gradient(to left, transparent, $color-surface 85%);
+    border-top-left-radius: 0.75rem;
+  }
+
+  &::after {
+    right: 0;
+    background: linear-gradient(to right, transparent, $color-surface 85%);
+    border-top-right-radius: 0.75rem;
+  }
+
+  &.show-left-fade::before { opacity: 1; }
+  &.show-right-fade::after { opacity: 1; }
+}
+
+.scroll-indicator {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 3;
+  color: $color-text-muted;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  animation: fadeIn 0.3s ease-out;
+
+  &.left { left: 8px; }
+  &.right { right: 8px; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .tabs-scroll-area {

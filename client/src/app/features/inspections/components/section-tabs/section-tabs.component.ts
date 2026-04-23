@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter, ViewChild, ElementRef, AfterViewInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { LucideAngularModule, Home, ChevronUp, ChevronDown, Hammer, Zap, Droplets, Wind, Flame, Box, Grid, Monitor, Car } from 'lucide-angular';
+import { LucideAngularModule, Home, ChevronUp, ChevronDown, Hammer, Zap, Droplets, Wind, Flame, Box, Grid, Monitor, Car, ChevronLeft, ChevronRight } from 'lucide-angular';
 import { Section } from '../../../../core/enums/inspection.enums';
 
 @Component({
@@ -29,12 +29,15 @@ export class SectionTabsComponent implements AfterViewInit {
     [Section.INTERIOR]: Grid,
     [Section.APPLIANCES]: Monitor,
     [Section.GARAGE]: Car,
+    ChevronLeft,
+    ChevronRight
   };
 
   @ViewChild('scrollArea') scrollArea!: ElementRef<HTMLDivElement>;
   isDragging = false;
   isMouseDown = false;
-  isScrollEnd = true;
+  isScrollStart = true;
+  isScrollEnd = false;
   startX = 0;
   scrollLeft = 0;
 
@@ -50,8 +53,12 @@ export class SectionTabsComponent implements AfterViewInit {
   checkScroll() {
     if (!this.scrollArea) return;
     const el = this.scrollArea.nativeElement;
-    // True if scrolling is not possible or we reached the end
-    this.isScrollEnd = el.scrollWidth <= el.clientWidth || Math.abs(el.scrollWidth - el.scrollLeft - el.clientWidth) <= 2;
+    
+    // Detection for start (left)
+    this.isScrollStart = el.scrollLeft <= 5;
+    
+    // Detection for end (right)
+    this.isScrollEnd = el.scrollWidth <= el.clientWidth || Math.abs(el.scrollWidth - el.scrollLeft - el.clientWidth) <= 5;
   }
 
   selectSection(section: Section) {
