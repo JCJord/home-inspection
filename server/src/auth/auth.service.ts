@@ -43,6 +43,7 @@ export class AuthService {
           id: inspector.id,
           email: inspector.email,
           name: inspector.name,
+          subscription_status: inspector.subscription_status,
         },
         access_token,
       };
@@ -78,6 +79,7 @@ export class AuthService {
         id: inspector.id,
         email: inspector.email,
         name: inspector.name,
+        subscription_status: inspector.subscription_status,
       },
       access_token,
     };

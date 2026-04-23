@@ -1,0 +1,19 @@
+<div class="tabs-container" [class.show-left-fade]="!isScrollStart" [class.show-right-fade]="!isScrollEnd">
+  <div class="scroll-indicator left" *ngIf="!isScrollStart">
+    <lucide-icon [name]="icons['ChevronLeft']" [size]="14"></lucide-icon>
+  </div>
+
+  <div class="tabs-scroll-area" #scrollArea [class.dragging]="isDragging" (mousedown)="onMouseDown($event)"
+    (mouseleave)="onMouseLeave()" (mouseup)="onMouseUp()" (mousemove)="onMouseMove($event)" (scroll)="checkScroll()">
+    @for (section of sections; track section) {
+    <button class="tab-btn" [class.active]="selectedSection === section" (click)="selectSection(section)">
+      <lucide-icon [name]="icons[section]" [size]="18"></lucide-icon>
+      <span>{{ section }}</span>
+    </button>
+    }
+  </div>
+
+  <div class="scroll-indicator right" *ngIf="!isScrollEnd">
+    <lucide-icon [name]="icons['ChevronRight']" [size]="14"></lucide-icon>
+  </div>
+</div>

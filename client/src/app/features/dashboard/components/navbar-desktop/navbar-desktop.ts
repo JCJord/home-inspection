@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
-import { RouterLink, RouterLinkActive } from '@angular/router';
-import { LucideAngularModule, House, ClipboardList, UserCircle } from 'lucide-angular';
+import { Component, inject } from '@angular/core';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { LucideAngularModule, LayoutDashboard, ClipboardList, UserCircle, LogOut } from 'lucide-angular';
+import { AuthService } from '../../../../core/services/auth.service';
 
 @Component({
   selector: 'app-navbar-desktop',
@@ -10,5 +11,13 @@ import { LucideAngularModule, House, ClipboardList, UserCircle } from 'lucide-an
   styleUrl: './navbar-desktop.scss',
 })
 export class NavbarDesktop {
-  readonly icons = { House, ClipboardList, UserCircle };
+  authService = inject(AuthService);
+  private router = inject(Router);
+
+  readonly icons = { LayoutDashboard, ClipboardList, UserCircle, LogOut };
+
+  onLogout() {
+    this.authService.logout();
+    this.router.navigate(['/auth/login']);
+  }
 }

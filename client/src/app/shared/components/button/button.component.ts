@@ -2,7 +2,7 @@ import { Component, computed, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SpinnerComponent } from '../spinner/spinner.component';
 
-export type ButtonVariant = 'solid' | 'outline';
+export type ButtonVariant = 'solid' | 'outline' | 'ghost' | 'subtle' | 'danger';
 export type ButtonSize = 'sm' | 'md' | 'lg';
 
 @Component({

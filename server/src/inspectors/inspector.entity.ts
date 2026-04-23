@@ -4,7 +4,10 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
+  OneToMany,
 } from 'typeorm';
+import { Inspection } from '../inspections/inspection.entity';
+import { SubscriptionStatus } from '../common/enums/subscription-status.enum';
 
 @Entity('inspectors')
 export class Inspector {
@@ -32,11 +35,17 @@ export class Inspector {
   @Column({ nullable: true })
   logo_url: string;
 
-  @Column({ default: 'free' })
-  subscription_status: string;
+  @Column({
+    type: 'varchar',
+    default: SubscriptionStatus.FREE,
+  })
+  subscription_status: SubscriptionStatus;
 
   @Column({ default: 0 })
   free_inspections_used: number;
+
+  @OneToMany(() => Inspection, (inspection) => inspection.inspector)
+  inspections: Inspection[];
 
   @CreateDateColumn()
   created_at: Date;

@@ -53,7 +53,7 @@ export class LoginComponent {
         .pipe(finalize(() => this.isLoading.set(false)))
         .subscribe({
           next: () => {
-            this.router.navigate(['/dashboard']);
+            this.router.navigate(['/home']);
           },
           error: (error) => {
             console.error('Login error:', error);

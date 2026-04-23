@@ -1,0 +1,77 @@
+<div class="finding-card" [class.is-deleting]="isDeleting()">
+  <div
+    class="finding-severity-indicator"
+    [attr.data-severity]="finding().severity.toLowerCase()"
+  ></div>
+
+  <div class="finding-card-content">
+    <div class="finding-top-row" [class.confirming]="isConfirmingDelete()">
+      <div class="finding-top-left">
+        <span
+          class="finding-severity"
+          [attr.data-severity]="finding().severity.toLowerCase()"
+        >
+          {{ finding().severity }}
+        </span>
+
+        @if (finding().location) {
+          <span class="finding-location">
+            <lucide-icon [name]="icons.MapPin" [size]="12"></lucide-icon>
+            <span class="truncate">{{ finding().location }}</span>
+          </span>
+        }
+      </div>
+
+      <div class="action-area">
+        @if (isConfirmingDelete()) {
+          <div class="photo-action-pill confirming">
+            <button type="button" class="action-btn cancel-delete" (click)="isConfirmingDelete.set(false)">
+              <span class="action-text">Cancel</span>
+            </button>
+            <div class="divider"></div>
+            <button type="button" class="action-btn confirm-delete" (click)="delete.emit()">
+              <span class="action-text font-bold">Delete</span>
+            </button>
+          </div>
+        } @else {
+          <app-dropdown-menu [items]="menuItems()" icon="horizontal"></app-dropdown-menu>
+        }
+      </div>
+    </div>
+
+    @if (finding().ai_comment) {
+      <div class="ai-comment-box" [class.expanded]="isAiExpanded()">
+        <div class="flex justify-between items-start mb-1.5">
+          <div class="ai-comment-header m-0">
+            <lucide-icon [name]="icons.Sparkles" [size]="12" class="mr-1"></lucide-icon>
+            <span>Report Comment</span>
+          </div>
+          @if (shouldShowAiExpand()) {
+            <button type="button" class="expand-toggle-btn" (click)="isAiExpanded.set(!isAiExpanded())">
+              <lucide-icon [name]="isAiExpanded() ? icons.ChevronUp : icons.ChevronDown" [size]="14"></lucide-icon>
+            </button>
+          }
+        </div>
+        <p class="finding-ai-comment" [class.line-clamp-2]="!isAiExpanded() && shouldShowAiExpand()">{{ finding().ai_comment }}</p>
+      </div>
+    }
+
+    <div class="finding-observation" [class.expanded]="isNoteExpanded()">
+      <div class="flex justify-between items-start mb-1">
+        <span class="observation-label m-0">Observation:</span>
+        @if (shouldShowNoteExpand()) {
+          <button type="button" class="expand-toggle-btn" (click)="isNoteExpanded.set(!isNoteExpanded())">
+            <lucide-icon [name]="isNoteExpanded() ? icons.ChevronUp : icons.ChevronDown" [size]="14"></lucide-icon>
+          </button>
+        }
+      </div>
+      <p class="finding-note" [class.line-clamp-2]="!isNoteExpanded() && shouldShowNoteExpand()">{{ finding().short_note }}</p>
+    </div>
+
+    @if (resolvedImages().length > 0) {
+      <div class="finding-photos-carousel">
+        <app-photo-carousel [images]="resolvedImages()"></app-photo-carousel>
+      </div>
+    }
+  </div>
+</div>

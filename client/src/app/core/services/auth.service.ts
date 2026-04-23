@@ -4,8 +4,9 @@ import { Observable, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { RegisterRequestDto } from '../dtos/register-request.dto';
 import { LoginRequestDto } from '../dtos/login-request.dto';
-import { AuthResponse } from '../interfaces/auth-response.interface';
-import { Inspector } from '../interfaces/inspector.interface';
+import { AuthResponse } from '../models/auth-response.interface';
+import { Inspector } from '../models/inspector.interface';
+import { SubscriptionStatus } from '../enums/subscription-status.enum';
 
 @Injectable({
   providedIn: 'root',
@@ -16,12 +17,13 @@ export class AuthService {
 
   // --- State ---
   token = signal<string | null>(localStorage.getItem('access_token'));
-  currentUser = signal<Pick<Inspector, 'id' | 'email' | 'name'> | null>(
+  currentUser = signal<Pick<Inspector, 'id' | 'email' | 'name' | 'subscription_status'> | null>(
     JSON.parse(localStorage.getItem('current_user') || 'null')
   );
 
   // --- Computed ---
   isAuthenticated = computed(() => !!this.token());
+  isPremium = computed(() => this.currentUser()?.subscription_status === SubscriptionStatus.ACTIVE);
 
   /**
    * Registers a new inspector.

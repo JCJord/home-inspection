@@ -1,0 +1,20 @@
+@use 'variables' as *;
+@use '../input-base' as base;
+
+.input-container {
+  @include base.input-container;
+}
+
+.input-label {
+  @include base.label-style;
+}
+
+.input-field {
+  @include base.field-style;
+  resize: vertical;
+  min-height: 80px;
+}
+
+.input-error {
+  @include base.error-text-style;
+}

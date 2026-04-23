@@ -2,6 +2,7 @@
 
 :host {
   display: block;
+
   &.w-full {
     width: 100%;
   }
@@ -10,7 +11,7 @@
 .app-button {
   border-radius: 8px;
   font-weight: 500;
-  transition: all 0.3s ease-in-out;
+  transition: background 0.3s ease-in-out;
   cursor: pointer;
   border: 2px solid transparent;
   outline: none;
@@ -29,11 +30,6 @@
     &:hover:not(:disabled) {
       background-color: $color-primary-dark;
       box-shadow: 0 4px 12px $color-primary-glow;
-      transform: translateY(-1px);
-    }
-
-    &:active:not(:disabled) {
-      transform: translateY(0);
     }
   }
 
@@ -46,6 +42,43 @@
       background-color: $color-primary;
       color: white;
       box-shadow: 0 4px 12px $color-primary-glow;
+    }
+
+    &:active:not(:disabled) {
+      transform: scale(0.98);
+    }
+  }
+
+  &--danger {
+    background-color: $color-error;
+    color: white;
+
+    &:hover:not(:disabled) {
+      background-color: darken($color-error, 10%);
+      box-shadow: 0 4px 12px rgba($color-error, 0.2);
+    }
+
+    &:active:not(:disabled) {
+      transform: scale(0.98);
+    }
+  }
+
+  &--ghost {
+    background-color: rgba($color-text, 0.05);
+    color: $color-text;
+
+    &:hover:not(:disabled) {
+      background-color: rgba($color-text, 0.1);
+    }
+  }
+
+  &--subtle {
+    background-color: $color-surface-light;
+    color: $color-text;
+
+    &:hover:not(:disabled) {
+      background-color: $color-primary;
+      color: white;
     }
   }
 

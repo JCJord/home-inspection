@@ -85,7 +85,7 @@ export class RegisterComponent {
         .subscribe({
           next: (response) => {
             console.log('Registration successful:', response);
-            this.router.navigate(['/dashboard']); 
+            this.router.navigate(['/home']); 
           },
           error: (error) => {
             console.error('Registration error:', error);

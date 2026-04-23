@@ -9,13 +9,33 @@ export const routes: Routes = [
     loadChildren: () => import('./features/auth/auth.routes').then(m => m.AUTH_ROUTES),
   },
   {
-    path: 'dashboard',
-    canActivate: [authGuard],
-    loadChildren: () => import('./features/dashboard/dashboard.routes').then(m => m.DASHBOARD_ROUTES),
-  },
-  {
     path: '',
-    redirectTo: 'dashboard',
-    pathMatch: 'full',
+    canActivate: [authGuard],
+    children: [
+      {
+        path: '',
+        redirectTo: 'home',
+        pathMatch: 'full',
+      },
+      {
+        // Wrap the home component with the dashboard header
+        path: 'home',
+        loadComponent: () => import('./features/dashboard/pages/dashboard/dashboard.component').then(m => m.DashboardComponent),
+        children: [
+          {
+             path: '',
+             loadComponent: () => import('./features/dashboard/pages/home/home.component').then(m => m.HomeComponent),
+          }
+        ]
+      },
+      {
+        path: 'inspections',
+        loadChildren: () => import('./features/inspections/inspections.routes').then(m => m.INSPECTIONS_ROUTES),
+      },
+      {
+        path: 'profile',
+        loadChildren: () => import('./features/profile/profile.routes').then(m => m.PROFILE_ROUTES),
+      },
+    ],
   },
 ];
