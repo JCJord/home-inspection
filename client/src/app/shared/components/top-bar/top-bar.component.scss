@@ -1,0 +1,78 @@
+@use 'variables' as *;
+
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  background-color: white;
+  border-bottom: 1px solid $color-border;
+  box-shadow: 0 1px 3px rgba($color-text, 0.05);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  min-height: 63px;
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: $color-primary-dark;
+
+    @media (min-width: 768px) {
+      visibility: hidden;
+    }
+
+
+    .brand-name {
+      display: none;
+      /* Hidden on mobile */
+      font-weight: 700;
+      font-size: 1.25rem;
+
+      @media (min-width: 768px) {
+        display: block;
+        /* Visible on desktop */
+      }
+    }
+  }
+
+  .user-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+
+    .subscription-badge {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.25rem 0.75rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+
+      &.free {
+        background-color: #f1f5f9;
+        color: #64748b;
+      }
+
+      &.pro {
+        background-color: #ecfdf5;
+        color: #10b981;
+      }
+
+      &.enterprise {
+        background-color: #eff6ff;
+        color: #3b82f6;
+      }
+    }
+
+    .user-name {
+      font-weight: 500;
+      color: $color-text;
+      font-size: 0.9rem;
+    }
+  }
+}

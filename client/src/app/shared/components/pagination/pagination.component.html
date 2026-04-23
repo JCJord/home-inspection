@@ -1,0 +1,28 @@
+<div class="flex items-center justify-center gap-1.5 my-4" *ngIf="totalPages() > 1">
+  <button 
+    class="pagination-btn flex items-center justify-center min-w-9 h-9 px-2 text-sm font-medium rounded-lg transition-all duration-200 select-none" 
+    [class.disabled]="currentPage() === 1"
+    (click)="previousPage()"
+    [attr.disabled]="currentPage() === 1 ? true : null"
+    aria-label="Previous page">
+    <lucide-icon [img]="icons.ChevronLeft" class="w-[18px] h-[18px] stroke-[2.5px]"></lucide-icon>
+  </button>
+
+  <ng-container *ngFor="let page of visiblePages()">
+    <button 
+      class="pagination-btn flex items-center justify-center min-w-9 h-9 px-2 text-sm font-medium rounded-lg transition-all duration-200 select-none" 
+      [class.active]="currentPage() === page"
+      (click)="onPageChange(page)">
+      {{ page }}
+    </button>
+  </ng-container>
+
+  <button 
+    class="pagination-btn flex items-center justify-center min-w-9 h-9 px-2 text-sm font-medium rounded-lg transition-all duration-200 select-none" 
+    [class.disabled]="currentPage() === totalPages()"
+    (click)="nextPage()"
+    [attr.disabled]="currentPage() === totalPages() ? true : null"
+    aria-label="Next page">
+    <lucide-icon [img]="icons.ChevronRight" class="w-[18px] h-[18px] stroke-[2.5px]"></lucide-icon>
+  </button>
+</div>

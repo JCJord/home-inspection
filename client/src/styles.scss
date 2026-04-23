@@ -1,1 +1,10 @@
-/* You can add global styles to this file, and also import other style files */
+@use 'tailwindcss';
+@use 'assets/styles/variables' as *;
+
+html, body {
+  height: 100%;
+  margin: 0;
+  background-color: $color-bg;
+  color: $color-text;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}

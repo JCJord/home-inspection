@@ -1,0 +1,18 @@
+@use 'variables' as *;
+@use '../input-base' as base;
+
+.input-container {
+  @include base.input-container;
+}
+
+.input-label {
+  @include base.label-style;
+}
+
+.input-field {
+  @include base.field-style;
+}
+
+.input-error {
+  @include base.error-text-style;
+}

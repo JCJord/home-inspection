@@ -1,0 +1,24 @@
+<div class="input-container">
+  @if (label()) {
+    <label [for]="name()" class="input-label">
+      {{ label() }}
+    </label>
+  }
+
+  <textarea
+    [id]="name()"
+    [name]="name()"
+    [formControlName]="name()"
+    [placeholder]="placeholder()"
+    [rows]="rows()"
+    [readOnly]="readonly()"
+    class="input-field"
+    [class.input-field--error]="isInvalid"
+  ></textarea>
+
+  @if (isInvalid) {
+    <span class="input-error">
+      {{ getFirstError() }}
+    </span>
+  }
+</div>

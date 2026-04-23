@@ -1,0 +1,33 @@
+<div class="dropdown-container">
+  <button 
+    class="dropdown-trigger flex items-center justify-center rounded-full p-1.5 transition-colors"
+    (click)="toggle($event)"
+    [class.active]="isOpen()"
+    aria-haspopup="true"
+    [attr.aria-expanded]="isOpen()">
+    @if (icon() === 'vertical') {
+      <lucide-icon [name]="icons.MoreVertical" [size]="20"></lucide-icon>
+    } @else {
+      <lucide-icon [name]="icons.MoreHorizontal" [size]="20"></lucide-icon>
+    }
+  </button>
+
+  @if (isOpen()) {
+    <div class="dropdown-menu absolute right-0 w-48 rounded-md shadow-lg z-50"
+         [class.open-upwards]="openUpwards()"
+         [class.mt-2]="!openUpwards()"
+         [class.mb-2]="openUpwards()">
+      <div class="py-1" role="menu" aria-orientation="vertical">
+        @for (item of items(); track item.label) {
+          <button 
+            class="dropdown-item" 
+            [class.danger]="item.danger"
+            (click)="onItemClick($event, item)">
+            <lucide-icon [name]="item.icon" [size]="16"></lucide-icon>
+            {{ item.label }}
+          </button>
+        }
+      </div>
+    </div>
+  }
+</div>

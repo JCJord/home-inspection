@@ -1,0 +1,34 @@
+@if (hasImages()) {
+<div class="carousel-wrapper">
+  
+  <div class="carousel-container" #scrollContainer 
+       (scroll)="onScroll($event)"
+       (mousedown)="onMouseDown($event)"
+       (mouseleave)="onMouseLeave()"
+       (mouseup)="onMouseUp()"
+       (mousemove)="onMouseMove($event)"
+       [class.dragging]="isDragging">
+    @for (img of images(); track img; let i = $index) {
+      <div class="slide">
+        <img [ngSrc]="img" fill alt="Finding photo" draggable="false">
+      </div>
+    }
+  </div>
+
+  @if (isMultiple()) {
+    <button class="nav-btn prev-btn" (click)="prev()" [class.hidden]="activeIndex() === 0" aria-label="Previous">
+      <lucide-icon [name]="icons.ChevronLeft" [size]="24"></lucide-icon>
+    </button>
+    
+    <button class="nav-btn next-btn" (click)="next()" [class.hidden]="activeIndex() === images().length - 1" aria-label="Next">
+      <lucide-icon [name]="icons.ChevronRight" [size]="24"></lucide-icon>
+    </button>
+
+    <div class="dots-container">
+      @for (img of images(); track img; let i = $index) {
+        <button class="dot" [class.active]="activeIndex() === i" (click)="scrollTo(i)" aria-label="Go to slide"></button>
+      }
+    </div>
+  }
+</div>
+}

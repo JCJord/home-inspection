@@ -1,0 +1,104 @@
+@use 'variables' as *;
+
+:host {
+  display: block;
+
+  &.w-full {
+    width: 100%;
+  }
+}
+
+.app-button {
+  border-radius: 8px;
+  font-weight: 500;
+  transition: background 0.3s ease-in-out;
+  cursor: pointer;
+  border: 2px solid transparent;
+  outline: none;
+  white-space: nowrap;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  // Variants
+  &--solid {
+    background-color: $color-primary;
+    color: white;
+
+    &:hover:not(:disabled) {
+      background-color: $color-primary-dark;
+      box-shadow: 0 4px 12px $color-primary-glow;
+    }
+  }
+
+  &--outline {
+    background-color: transparent;
+    border-color: $color-primary;
+    color: $color-primary;
+
+    &:hover:not(:disabled) {
+      background-color: $color-primary;
+      color: white;
+      box-shadow: 0 4px 12px $color-primary-glow;
+    }
+
+    &:active:not(:disabled) {
+      transform: scale(0.98);
+    }
+  }
+
+  &--danger {
+    background-color: $color-error;
+    color: white;
+
+    &:hover:not(:disabled) {
+      background-color: darken($color-error, 10%);
+      box-shadow: 0 4px 12px rgba($color-error, 0.2);
+    }
+
+    &:active:not(:disabled) {
+      transform: scale(0.98);
+    }
+  }
+
+  &--ghost {
+    background-color: rgba($color-text, 0.05);
+    color: $color-text;
+
+    &:hover:not(:disabled) {
+      background-color: rgba($color-text, 0.1);
+    }
+  }
+
+  &--subtle {
+    background-color: $color-surface-light;
+    color: $color-text;
+
+    &:hover:not(:disabled) {
+      background-color: $color-primary;
+      color: white;
+    }
+  }
+
+  // Sizes
+  &--sm {
+    padding: 6px 14px;
+    font-size: 12px;
+  }
+
+  &--md {
+    padding: 10px 20px;
+    font-size: 14px;
+  }
+
+  &--lg {
+    padding: 14px 28px;
+    font-size: 16px;
+  }
+
+  &--full {
+    width: 100%;
+  }
+}

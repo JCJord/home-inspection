@@ -1,0 +1,42 @@
+@use 'variables' as *;
+
+.dashboard-content {
+  padding: 2rem;
+  flex: 1;
+
+  @media (min-width: 768px) {
+    padding: 3rem 2rem;
+  }
+}
+
+.welcome-card {
+  background: white;
+  border-radius: 12px;
+  padding: 2.5rem;
+  border: 1px solid $color-border;
+  box-shadow: 0 4px 6px rgba($color-text, 0.05);
+  max-width: 600px;
+  margin: 0 auto;
+
+  @media (min-width: 768px) {
+    margin: 0;
+  }
+
+  h2 {
+    margin-top: 0;
+    color: $color-primary-dark;
+    font-size: 1.75rem;
+    margin-bottom: 1rem;
+  }
+
+  p {
+    color: $color-text;
+    font-size: 1.1rem;
+    margin-bottom: 0.75rem;
+
+    &.email-text {
+      color: $color-text-muted;
+      margin-top: 1.5rem;
+    }
+  }
+}

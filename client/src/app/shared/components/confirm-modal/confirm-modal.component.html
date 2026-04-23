@@ -1,0 +1,39 @@
+<div class="modal-backdrop" (click)="!isLoading() && cancel.emit()">
+  <div class="modal-container" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="icon-wrapper" [class.destructive]="isDestructive()">
+        @if (isDestructive()) {
+          <lucide-icon [name]="icons.AlertTriangle" [size]="24"></lucide-icon>
+        } @else {
+          <lucide-icon [name]="icons.Info" [size]="24"></lucide-icon>
+        }
+      </div>
+      <button class="close-btn" (click)="cancel.emit()" [disabled]="isLoading()">
+        <lucide-icon [name]="icons.X" [size]="20"></lucide-icon>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <h2 class="modal-title">{{ title() }}</h2>
+      <p class="modal-description">{{ message() }}</p>
+    </div>
+
+    <div class="modal-footer">
+      <app-button 
+        variant="ghost" 
+        (click)="cancel.emit()" 
+        [disabled]="isLoading()"
+      >
+        {{ cancelText() }}
+      </app-button>
+      
+      <app-button 
+        [variant]="isDestructive() ? 'danger' : 'solid'" 
+        (click)="confirm.emit()"
+        [isLoading]="isLoading()"
+      >
+        {{ confirmText() }}
+      </app-button>
+    </div>
+  </div>
+</div>
