@@ -1,6 +1,6 @@
 import { Component, ElementRef, ViewChild, input, output, signal, HostListener, afterNextRender, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { LucideAngularModule, X, Check, Undo, RotateCcw, Circle, ArrowUpRight, Pencil, ZoomIn, ZoomOut, Maximize, ChevronUp, ChevronDown } from 'lucide-angular';
+import { LucideAngularModule, X, Check, Undo, RotateCcw, Circle, ArrowUpRight, Pencil, ZoomIn, ZoomOut, Maximize, ChevronUp, ChevronDown, Hand, RotateCw } from 'lucide-angular';
 
 @Component({
   selector: 'app-image-editor-modal',
@@ -21,14 +21,14 @@ export class ImageEditorModalComponent implements OnInit, OnDestroy {
   @ViewChild('paletteScrollArea') paletteScrollRef!: ElementRef<HTMLDivElement>;
 
   readonly icons: Record<string, any> = { 
-    X, Check, Undo, RotateCcw, Pencil, Circle, ArrowUpRight, ZoomIn, ZoomOut, Maximize, ChevronUp, ChevronDown 
+    X, Check, Undo, RotateCcw, Pencil, Circle, ArrowUpRight, ZoomIn, ZoomOut, Maximize, ChevronUp, ChevronDown, Hand, RotateCw 
   };
 
   private ctx!: CanvasRenderingContext2D;
   private isDrawing = false;
   imageElement = new Image();
   
-  activeTool = signal<'brush' | 'circle' | 'arrow'>('brush');
+  activeTool = signal<'brush' | 'circle' | 'arrow' | 'pan'>('brush');
   strokeColor = signal<string>('#ef4444'); // Default Red
   strokeWidth = signal<number>(1); // Default thin (will be scaled)
   zoomLevel = signal<number>(1);
@@ -36,6 +36,10 @@ export class ImageEditorModalComponent implements OnInit, OnDestroy {
   
   isPaletteTop = signal<boolean>(true);
   isPaletteBottom = signal<boolean>(true);
+  
+  // Track the "fitted" size of the image at 1x zoom
+  baseDisplaySize = signal<{width: number, height: number}>({width: 0, height: 0});
+  rotation = signal<number>(0); // 0, 90, 180, 270
   
   private startCoords: {x: number, y: number} | null = null;
   
@@ -90,8 +94,46 @@ export class ImageEditorModalComponent implements OnInit, OnDestroy {
     this.imageElement.crossOrigin = 'anonymous';
     this.imageElement.onload = () => {
       this.resizeCanvas();
+      this.calculateBaseDisplaySize();
     };
     this.imageElement.src = this.imageUrl();
+  }
+
+  @HostListener('window:resize')
+  onResize() {
+    this.calculateBaseDisplaySize();
+  }
+
+  private calculateBaseDisplaySize() {
+    if (!this.containerRef || !this.imageElement.width) return;
+    
+    const container = this.containerRef.nativeElement;
+    const availableWidth = container.offsetWidth;
+    const availableHeight = container.offsetHeight;
+    
+    // If rotated 90 or 270, we swap the aspect ratio for fitting calculation
+    const isVertical = this.rotation() % 180 !== 0;
+    const imgW = isVertical ? this.imageElement.height : this.imageElement.width;
+    const imgH = isVertical ? this.imageElement.width : this.imageElement.height;
+    
+    const imageRatio = imgW / imgH;
+    const containerRatio = availableWidth / availableHeight;
+    
+    let width, height;
+    if (imageRatio > containerRatio) {
+      width = availableWidth;
+      height = width / imageRatio;
+    } else {
+      height = availableHeight;
+      width = height * imageRatio;
+    }
+    
+    this.baseDisplaySize.set({ width, height });
+  }
+
+  rotate() {
+    this.rotation.update(r => (r + 90) % 360);
+    this.calculateBaseDisplaySize();
   }
 
   private resizeCanvas() {
@@ -113,6 +155,7 @@ export class ImageEditorModalComponent implements OnInit, OnDestroy {
   private getEventCoords(event: MouseEvent | TouchEvent): {x: number, y: number} {
     const canvas = this.canvasRef.nativeElement;
     const rect = canvas.getBoundingClientRect();
+    const rot = this.rotation();
     
     let clientX, clientY;
     if (event instanceof TouchEvent) {
@@ -123,16 +166,40 @@ export class ImageEditorModalComponent implements OnInit, OnDestroy {
       clientY = event.clientY;
     }
 
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
+    // Relative position within the visual bounding box
+    const rx = clientX - rect.left;
+    const ry = clientY - rect.top;
+    
+    // Normalize to [0, 1] range within the visual bounding box
+    const nx = rx / rect.width;
+    const ny = ry / rect.height;
 
-    return {
-      x: (clientX - rect.left) * scaleX,
-      y: (clientY - rect.top) * scaleY
-    };
+    let x, y;
+    // Map normalized coordinates back to canvas pixels based on rotation
+    switch(rot) {
+      case 90:
+        x = ny * canvas.width;
+        y = (1 - nx) * canvas.height;
+        break;
+      case 180:
+        x = (1 - nx) * canvas.width;
+        y = (1 - ny) * canvas.height;
+        break;
+      case 270:
+        x = (1 - ny) * canvas.width;
+        y = nx * canvas.height;
+        break;
+      default: // 0
+        x = nx * canvas.width;
+        y = ny * canvas.height;
+        break;
+    }
+
+    return { x, y };
   }
 
   startDrawing(event: MouseEvent | TouchEvent) {
+    if (this.activeTool() === 'pan') return;
     event.preventDefault();
     this.isDrawing = true;
     this.startCoords = this.getEventCoords(event);
@@ -218,6 +285,8 @@ export class ImageEditorModalComponent implements OnInit, OnDestroy {
 
   zoomIn() {
     this.zoomLevel.update(z => Math.min(z + 0.5, 4));
+    // Automatically switch to pan tool when zooming in to help navigation
+    this.activeTool.set('pan');
   }
 
   zoomOut() {

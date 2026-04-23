@@ -38,6 +38,9 @@
 
           <!-- Tools Stacked Vertically -->
           <div class="side-group tool-stack">
+            <button class="tool-btn" [class.active]="activeTool() === 'pan'" (click)="activeTool.set('pan'); togglePalette()" title="Pan / Scroll">
+              <lucide-icon [name]="icons['Hand']" [size]="22"></lucide-icon>
+            </button>
             <button class="tool-btn" [class.active]="activeTool() === 'brush'" (click)="activeTool.set('brush'); togglePalette()">
               <lucide-icon [name]="icons['Pencil']" [size]="22"></lucide-icon>
             </button>
@@ -51,8 +54,12 @@
 
           <div class="v-divider"></div>
 
-          <!-- Zoom Controls -->
+          <!-- Zoom & Orientation Controls -->
           <div class="side-group zoom-stack">
+            <button class="tool-btn" (click)="rotate()" title="Rotate">
+              <lucide-icon [name]="icons['RotateCw']" [size]="20"></lucide-icon>
+            </button>
+            <div class="v-divider" style="opacity: 0.3; height: 1px; width: 15px; margin: 4px 0;"></div>
             <button class="tool-btn" (click)="zoomIn()" [disabled]="zoomLevel() >= 4">
               <lucide-icon [name]="icons['ZoomIn']" [size]="20"></lucide-icon>
             </button>
@@ -72,23 +79,29 @@
     <!-- Side Toggle Pill -->
     <button class="side-pill" (click)="togglePalette()" [class.active]="isPaletteOpen()">
       <div class="color-indicator" [style.background-color]="strokeColor()"></div>
-      <lucide-icon [name]="icons[activeTool() === 'brush' ? 'Pencil' : activeTool() === 'circle' ? 'Circle' : 'ArrowUpRight']" [size]="18"></lucide-icon>
+      <lucide-icon [name]="icons[activeTool() === 'pan' ? 'Hand' : activeTool() === 'brush' ? 'Pencil' : activeTool() === 'circle' ? 'Circle' : 'ArrowUpRight']" [size]="18"></lucide-icon>
     </button>
   </div>
 
-  <div class="canvas-container" #containerElement>
-    <canvas 
-      #canvasElement
-      [style.transform]="'scale(' + zoomLevel() + ')'"
-      [style.transform-origin]="'center center'"
-      (mousedown)="startDrawing($event)"
-      (mousemove)="draw($event)"
-      (mouseup)="stopDrawing()"
-      (mouseleave)="stopDrawing()"
-      (touchstart)="startDrawing($event)"
-      (touchmove)="draw($event)"
-      (touchend)="stopDrawing()"
-      (touchcancel)="stopDrawing()"
-    ></canvas>
+  <div class="canvas-container" #containerElement [style.touch-action]="activeTool() === 'pan' ? 'auto' : 'none'">
+    <div class="canvas-viewport" 
+         [style.width.px]="baseDisplaySize().width * zoomLevel()"
+         [style.height.px]="baseDisplaySize().height * zoomLevel()">
+      <canvas 
+        #canvasElement
+        [style.width.px]="baseDisplaySize().width"
+        [style.height.px]="baseDisplaySize().height"
+        [style.transform]="'scale(' + zoomLevel() + ') rotate(' + rotation() + 'deg)'"
+        [style.transform-origin]="'center center'"
+        (mousedown)="startDrawing($event)"
+        (mousemove)="draw($event)"
+        (mouseup)="stopDrawing()"
+        (mouseleave)="stopDrawing()"
+        (touchstart)="startDrawing($event)"
+        (touchmove)="draw($event)"
+        (touchend)="stopDrawing()"
+        (touchcancel)="stopDrawing()"
+      ></canvas>
+    </div>
   </div>
 </dialog>
