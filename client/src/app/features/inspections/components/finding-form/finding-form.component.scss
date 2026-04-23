@@ -352,7 +352,36 @@
     margin-top: 0.5rem;
     border-top: 1px solid $color-border;
     padding-top: 1.25rem;
+    .ai-status-container {
+      display: flex;
+      align-items: center;
+
+      .ai-error-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+        background: rgba($color-warning, 0.12);
+        border: 1px solid rgba($color-warning, 0.5);
+        color: darken($color-warning, 10%);
+        padding: 0.375rem 0.875rem;
+        border-radius: 0.5rem;
+        font-size: 0.75rem;
+        font-weight: 700;
+        animation: shake 0.4s ease-in-out;
+
+        lucide-icon {
+          flex-shrink: 0;
+          color: $color-warning;
+        }
+      }
+    }
   }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
 }
 
 @keyframes spin {

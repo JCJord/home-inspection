@@ -66,7 +66,8 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
   }
 
   isLoading = signal<boolean>(false);
-  isGeneratingAi = signal<boolean>(false);
+  isGeneratingAi = signal(false);
+  aiErrorMessage = signal<string | null>(null);
   errorMessage = signal<string | null>(null);
 
   isEditMode = computed(() => !!this._finding());
@@ -252,28 +253,36 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
   generateAiComment(): void {
     const { severity, location, short_note } = this.findingForm.value;
     
-    if (!short_note) {
-      this.errorMessage.set('Please provide an observation note first.');
+    // Clear previous errors
+    this.aiErrorMessage.set(null);
+    this.errorMessage.set(null);
+
+    if (!short_note || !location) {
+      if (!short_note) this.findingForm.get('short_note')?.markAsTouched();
+      if (!location) this.findingForm.get('location')?.markAsTouched();
+      
+      this.aiErrorMessage.set('Location and Observation Note are required for AI generation.');
       return;
     }
 
     this.isGeneratingAi.set(true);
-    this.errorMessage.set(null);
 
     this.aiService.generateComment({
       section: this._section(),
       severity,
-      location,
+      location: location || '',
       short_note,
-      year_built: this._yearBuilt()
+      year_built: this.year_built
     }).subscribe({
-      next: (res) => {
-        this.findingForm.patchValue({ ai_comment: res.comment });
+      next: (response) => {
+        this.findingForm.patchValue({
+          ai_comment: response.comment
+        });
         this.isGeneratingAi.set(false);
       },
       error: (err) => {
-        console.error('AI Generation failed', err);
-        this.errorMessage.set('Failed to generate AI comment. Please try again.');
+        console.error('AI error:', err);
+        this.aiErrorMessage.set(err.error?.message || 'Failed to generate AI comment. Please try again.');
         this.isGeneratingAi.set(false);
       }
     });

@@ -94,9 +94,9 @@
     <app-text-input name="location" label="Location (Optional)" placeholder="e.g., North wall, Master bathroom">
     </app-text-input>
 
-    <!-- Short Note -->
-    <app-textarea-input name="short_note" label="Observation Note *" placeholder="Describe the finding...">
-    </app-textarea-input>
+    <!-- Short Note (Observation) -->
+    <app-text-input name="short_note" label="Observation Note *" placeholder="Describe the finding briefly (e.g. double tapped breaker)...">
+    </app-text-input>
 
     <!-- AI Generated Comment -->
     <div class="form-group ai-comment-group">
@@ -115,11 +115,24 @@
       </div>
       <app-textarea-input name="ai_comment" placeholder="The AI generated professional comment will appear here..." [rows]="4" [readonly]="!isPremium() && findingForm.get('ai_comment')?.value === ''">
       </app-textarea-input>
-      @if (!isPremium()) {
-        <p class="field-hint text-amber-600 font-medium">✨ AI Finding generation is available for Active users.</p>
-      } @else {
-        <p class="field-hint">You can edit the AI output or write your own professional comment.</p>
-      }
+      <div class="ai-status-container min-h-[32px] mt-2">
+        @if (aiErrorMessage()) {
+          <div class="flex items-center gap-2 px-3 py-1.5 rounded-md bg-red-50 border border-red-200 text-red-700 text-xs font-bold animate-pulse">
+            <lucide-icon [name]="icons.AlertCircle" [size]="14" class="text-red-500"></lucide-icon>
+            <span>{{ aiErrorMessage() }}</span>
+          </div>
+        } @else if (!isPremium()) {
+          <div class="flex items-center gap-2 px-3 py-1.5 rounded-md bg-amber-50 border border-amber-200 text-amber-700 text-xs font-medium">
+            <span class="text-lg leading-none">✨</span>
+            <span>AI Finding generation is available for Active users.</span>
+          </div>
+        } @else {
+          <div class="flex items-center gap-2 px-3 py-1.5 rounded-md bg-blue-50 border border-blue-100 text-blue-700 text-xs italic">
+            <lucide-icon [name]="icons.Sparkles" [size]="12" class="text-blue-400"></lucide-icon>
+            <span>Location and Observation Note are required for AI generation.</span>
+          </div>
+        }
+      </div>
     </div>
 
     <div class="form-actions flex justify-between">
