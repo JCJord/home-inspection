@@ -32,7 +32,7 @@ export class ReportGeneratorComponent implements OnInit {
   today = new Date();
   apiUrl = environment.apiUrl.replace('/api', '');
 
-  readonly allContentParts = ['cover', 'overview', 'inspection-findings'];
+  readonly allContentParts = ['cover', 'executive-summary', 'general-info', 'inspection-findings'];
   readonly icons = { Loader2, FileText, CheckCircle };
 
   getSeverityColor(severity: string): string {
@@ -66,6 +66,29 @@ export class ReportGeneratorComponent implements OnInit {
     });
 
     return groups;
+  }
+
+  getSevereFindings() {
+    if (!this.inspection?.findings) return [];
+    return this.inspection.findings.filter(f => 
+      f.severity.toLowerCase() === 'safety' || 
+      f.severity.toLowerCase() === 'major'
+    );
+  }
+
+  getCoverPhoto(): string | null {
+    if (!this.inspection?.findings) return null;
+    // Look for an exterior photo first
+    const exteriorFinding = this.inspection.findings.find(f => 
+      f.section.toLowerCase() === 'exterior' && f.photos.length > 0
+    );
+    if (exteriorFinding) return this.apiUrl + exteriorFinding.photos[0].storage_url;
+    
+    // Otherwise just the first photo found
+    const anyPhoto = this.inspection.findings.find(f => f.photos.length > 0);
+    if (anyPhoto) return this.apiUrl + anyPhoto.photos[0].storage_url;
+    
+    return null;
   }
 
   ngOnInit(): void {
@@ -121,9 +144,10 @@ export class ReportGeneratorComponent implements OnInit {
       this.contentPartBeingRendered.set(part);
 
       const partMessages: Record<string, string> = {
-        'cover': 'Crafting cover page...',
-        'overview': 'Synthesizing executive summary...',
-        'inspection-findings': 'Organizing inspection findings...'
+        'cover': 'Crafting high-fidelity cover page...',
+        'executive-summary': 'Identifying critical safety hazards...',
+        'general-info': 'Synthesizing property conditions...',
+        'inspection-findings': 'Organizing detailed findings...'
       };
 
       this.feedbackMessage.set(partMessages[part] || 'Rendering content...');
