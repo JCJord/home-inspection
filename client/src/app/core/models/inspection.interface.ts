@@ -31,6 +31,18 @@ export interface Inspection {
   square_footage?: number;
   status: 'in_progress' | 'published';
   findings?: Finding[];
+  weather?: string;
+  temperature?: string;
+  occupancy?: string;
+  attendees?: string;
+  foundation_type?: string;
+  cover_photo_url?: string;
+  inspector?: {
+    id: string;
+    name: string;
+    license_number: string;
+    signature_url?: string;
+  };
   created_at: string;
   updated_at: string;
 }

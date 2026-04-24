@@ -89,6 +89,17 @@
     gap: 1.5rem;
   }
 
+  .form-section-title {
+    font-size: 0.875rem;
+    font-weight: 800;
+    color: $color-text-muted;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin: 1.5rem 0 0.5rem 0;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba($color-border, 0.5);
+  }
+
   .form-row {
     display: grid;
     grid-template-columns: 1fr 1fr;

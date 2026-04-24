@@ -67,50 +67,45 @@
       <!-- COVER PAGE -->
       @case ('cover') {
       <div class="page cover-page"
-         style="width: 1760px; min-height: 2518px; background: #000; color: white; display: flex; flex-direction: column; padding: 120px; box-sizing: border-box; justify-content: space-between;">
-
-         <!-- Brand Header -->
-         <div style="display: flex; align-items: center; gap: 30px;">
-            <img src="https://i.ibb.co/VcHybzvY/inspectly-logo.png">
-            <span style="font-size: 56px; font-weight: 900; letter-spacing: -0.04em;">Inspectly</span>
+         style="width: 1760px; min-height: 2518px; background: #fff; color: #111; display: flex; flex-direction: column; padding: 0; box-sizing: border-box;">
+         
+         <!-- Large Property Photo Header -->
+         <div style="width: 100%; height: 1100px; background: #f5f5f5; overflow: hidden; position: relative;">
+            @if (getCoverPhoto()) {
+               <img [src]="getCoverPhoto()" style="width: 100%; height: 100%; object-fit: cover;">
+            } @else {
+               <div style="width: 100%; height: 100%; background: #111; display: flex; align-items: center; justify-content: center; color: #444;">
+                  <span style="font-size: 40px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em;">Property Analysis</span>
+               </div>
+            }
+            <!-- Branding Accent Over Photo -->
+            <div style="position: absolute; bottom: 0; left: 0; height: 140px; background: #3B82F6; padding: 0 80px; display: flex; align-items: center; gap: 30px; box-shadow: 20px 0 50px rgba(0,0,0,0.1);">
+               <img src="https://i.ibb.co/VcHybzvY/inspectly-logo.png" style="height: 70px; filter: brightness(0) invert(1);">
+               <span style="font-size: 42px; font-weight: 900; color: white; letter-spacing: -0.03em;">Inspectly</span>
+            </div>
          </div>
 
-         <!-- Hero Title Area -->
-         <div style="flex: 1; display: flex; flex-direction: column; justify-content: center;">
-            <div style="width: 240px; height: 16px; background: #3B82F6; margin-bottom: 60px;"></div>
-            <h1
-               style="font-size: 180px; font-weight: 900; line-height: 0.8; margin: 0; letter-spacing: -0.05em; text-transform: uppercase;">
-               Property<br>
-               Analysis<br>
-               <span style="color: #3B82F6;">Report</span>
-            </h1>
-         </div>
-
-         <!-- Footer Meta Info -->
-         <div style="border-top: 1px solid rgba(255, 255, 255, 0.2); padding-top: 100px;">
-            <div style="font-size: 64px; font-weight: 800; margin-bottom: 80px; line-height: 1.1; max-width: 1300px;">
-               {{ inspection?.address }}
+         <div style="flex: 1; padding: 120px; display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+               <div style="width: 140px; height: 14px; background: #3B82F6; margin-bottom: 50px;"></div>
+               <h1 style="font-size: 140px; font-weight: 900; line-height: 0.85; margin: 0 0 40px 0; letter-spacing: -0.04em; text-transform: uppercase;">
+                  Home <br>Inspection <br>Report
+               </h1>
+               <p style="font-size: 64px; font-weight: 800; color: #111; margin: 0; max-width: 1400px; line-height: 1.1;">{{ inspection?.address }}</p>
             </div>
 
-            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 80px;">
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 60px; border-top: 2px solid #eee; padding-top: 80px;">
                <div class="meta-item">
-                  <label
-                     style="display: block; font-size: 18px; text-transform: uppercase; color: #888; margin-bottom: 15px; font-weight: 800; letter-spacing: 0.15em;">Prepared
-                     For</label>
+                  <label style="display: block; font-size: 18px; text-transform: uppercase; color: #888; margin-bottom: 15px; font-weight: 800; letter-spacing: 0.1em;">Client</label>
                   <span style="font-size: 32px; font-weight: 800;">{{ inspection?.client_name }}</span>
                </div>
                <div class="meta-item">
-                  <label
-                     style="display: block; font-size: 18px; text-transform: uppercase; color: #888; margin-bottom: 15px; font-weight: 800; letter-spacing: 0.15em;">Issue
-                     Date</label>
-                  <span style="font-size: 32px; font-weight: 800;">{{ inspection?.created_at | date:'MMMM d, yyyy'
-                     }}</span>
+                  <label style="display: block; font-size: 18px; text-transform: uppercase; color: #888; margin-bottom: 15px; font-weight: 800; letter-spacing: 0.1em;">Issue Date</label>
+                  <span style="font-size: 32px; font-weight: 800;">{{ (inspection?.created_at || today) | date:'MMMM d, yyyy' }}</span>
                </div>
                <div class="meta-item">
-                  <label
-                     style="display: block; font-size: 18px; text-transform: uppercase; color: #888; margin-bottom: 15px; font-weight: 800; letter-spacing: 0.15em;">Lead
-                     Inspector</label>
-                  <span style="font-size: 32px; font-weight: 800;">Inspectly Professional</span>
+                  <label style="display: block; font-size: 18px; text-transform: uppercase; color: #888; margin-bottom: 15px; font-weight: 800; letter-spacing: 0.1em;">Inspector</label>
+                  <span style="font-size: 32px; font-weight: 800;">{{ inspection?.inspector?.name || 'Inspectly Professional' }}</span>
                </div>
             </div>
          </div>
@@ -271,12 +266,23 @@
                </tr>
                <tr>
                   <td
-                     style="padding: 30px; border: 1px solid #eee; font-size: 22px; color: #888; font-weight: 800; text-transform: uppercase;">
+                     style="padding: 30px; border: 1px solid #eee; width: 40%; font-size: 22px; color: #888; font-weight: 800; text-transform: uppercase;">
                      Foundation Type</td>
-                  <td style="padding: 30px; border: 1px solid #eee; font-size: 24px; font-weight: 800;">Concrete Slab
+                  <td style="padding: 30px; border: 1px solid #eee; font-size: 24px; font-weight: 800;">{{
+                     inspection?.foundation_type || 'Crawlspace / Perimeter' }}
                   </td>
                </tr>
             </table>
+
+            <!-- Legal Disclaimer Block -->
+            <div style="margin-top: 80px; padding: 40px; border: 1px solid #eee; background: #fafafa; border-radius: 8px;">
+               <label style="display: block; font-size: 16px; font-weight: 800; text-transform: uppercase; color: #888; margin-bottom: 15px; letter-spacing: 0.05em;">Scope of Work & Limitations</label>
+               <p style="margin: 0; font-size: 18px; line-height: 1.6; color: #666;">
+                  This report is a subjective visual inspection of the general conditions of the property on the date of inspection. 
+                  It is a non-invasive assessment intended to identify significant visible defects. 
+                  It does not cover hidden or latent defects, nor does it guarantee the future performance of any systems or components.
+               </p>
+            </div>
          </div>
 
          <ng-container *ngTemplateOutlet="footer"></ng-container>
@@ -352,11 +358,11 @@
 
                      @if (finding.ai_comment) {
                      <div class="ai-insight-block"
-                        style="margin-top: 40px; padding: 25px; background: #f4f7ff; border-radius: 8px;">
+                        style="margin-top: 40px; border-left: 5px solid #3B82F6; padding-left: 30px;">
                         <label
-                           style="font-size: 24px; color: #3B82F6; margin-bottom: 8px; display: block; font-weight: 800; text-transform: uppercase;">Expert
+                           style="font-size: 24px; color: #3B82F6; margin-bottom: 12px; display: block; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">Expert
                            Insight</label>
-                        <p style="margin: 0; font-size: 22px; font-style: italic; line-height: 1.4; color: #444;">{{
+                        <p style="margin: 0; font-size: 22px; font-style: italic; line-height: 1.5; color: #111;">{{
                            finding.ai_comment }}</p>
                      </div>
                      }

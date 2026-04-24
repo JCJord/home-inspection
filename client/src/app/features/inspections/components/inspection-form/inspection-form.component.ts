@@ -36,6 +36,11 @@ export class InspectionFormComponent {
     client_email: ['', [Validators.required, Validators.email]],
     year_built: [new Date().getFullYear(), [Validators.required, Validators.min(1800), Validators.max(new Date().getFullYear())]],
     square_footage: [null, [Validators.min(1)]],
+    weather: ['', [Validators.maxLength(100)]],
+    temperature: ['', [Validators.maxLength(50)]],
+    occupancy: ['', [Validators.maxLength(100)]],
+    attendees: ['', [Validators.maxLength(500)]],
+    foundation_type: ['', [Validators.maxLength(200)]],
   });
 
   constructor() {
@@ -48,6 +53,11 @@ export class InspectionFormComponent {
           client_email: data.client_email,
           year_built: data.year_built,
           square_footage: data.square_footage,
+          weather: data.weather || '',
+          temperature: data.temperature || '',
+          occupancy: data.occupancy || '',
+          attendees: data.attendees || '',
+          foundation_type: data.foundation_type || '',
         });
       } else {
         this.inspectionForm.reset({

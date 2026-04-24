@@ -43,6 +43,24 @@ export class Inspection {
   @Column({ default: 'in_progress' })
   status: string;
 
+  @Column({ nullable: true })
+  weather: string;
+
+  @Column({ nullable: true })
+  temperature: string;
+
+  @Column({ nullable: true })
+  occupancy: string;
+
+  @Column({ nullable: true })
+  attendees: string;
+
+  @Column({ nullable: true })
+  foundation_type: string;
+
+  @Column({ nullable: true })
+  cover_photo_url: string;
+
   @OneToMany(() => Finding, (finding) => finding.inspection, { cascade: true, eager: true })
   findings: Finding[];
 
