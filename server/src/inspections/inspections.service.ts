@@ -27,7 +27,7 @@ export class InspectionsService {
 
     if (
       inspector.subscription_status !== SubscriptionStatus.ACTIVE &&
-      inspector.free_inspections_used >= 10
+      inspector.free_inspections_used >= 3
     ) {
       throw new ForbiddenException('Free inspection limit reached. Please upgrade.');
     }
@@ -112,6 +112,24 @@ export class InspectionsService {
         published_at: new Date(),
       });
       await manager.save(report);
+    });
+
+    return inspection;
+  }
+
+  async unpublish(inspectorId: string, id: string): Promise<Inspection> {
+    const inspection = await this.findOne(inspectorId, id);
+
+    if (inspection.status !== 'published') {
+      throw new BadRequestException('Inspection is not published');
+    }
+
+    await this.inspectionRepository.manager.transaction(async (manager) => {
+      inspection.status = 'in_progress';
+      await manager.save(inspection);
+
+      // Remove associated report record
+      await manager.delete(Report, { inspection_id: inspection.id });
     });
 
     return inspection;
