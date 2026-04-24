@@ -112,10 +112,12 @@ export class InspectionDetailsComponent implements OnInit {
   }
 
   generateReport(): void {
+    this.isGeneratingPdf.set(true);
     this.isReportGeneratorActive.set(true);
   }
 
   onReportCompleted(blob: Blob): void {
+    this.isGeneratingPdf.set(false);
     this.isReportGeneratorActive.set(false);
     const inspection = this.inspection();
     if (!inspection) return;
@@ -129,6 +131,7 @@ export class InspectionDetailsComponent implements OnInit {
   }
 
   onReportError(error: string): void {
+    this.isGeneratingPdf.set(false);
     this.isReportGeneratorActive.set(false);
     this.errorMessage.set(error);
   }

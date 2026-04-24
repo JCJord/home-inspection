@@ -36,13 +36,36 @@ export class ReportGeneratorComponent implements OnInit {
   readonly icons = { Loader2, FileText, CheckCircle };
 
   getSeverityColor(severity: string): string {
-    switch (severity?.toLowerCase()) {
-      case 'safety': return '#ef4444'; // Red
-      case 'major': return '#f97316';  // Orange
-      case 'minor': return '#eab308';  // Yellow
-      case 'maintenance': return '#3b82f6'; // Blue
-      default: return '#94a3b8'; // Slate
+    const s = String(severity).toLowerCase();
+    switch (s) {
+      case 'safety': return '#ef4444';
+      case 'major': return '#f97316';
+      case 'minor': return '#eab308';
+      case 'maintenance': return '#3b82f6';
+      default: return '#94a3b8';
     }
+  }
+
+  isSeverityLight(severity: string): boolean {
+    const s = String(severity).toLowerCase();
+    return s === 'minor' || s === 'maintenance';
+  }
+
+  getGroupedFindings() {
+    if (!this.inspection?.findings) return [];
+
+    const groups: { section: string, findings: any[] }[] = [];
+
+    this.inspection.findings.forEach(finding => {
+      let group = groups.find(g => g.section === finding.section);
+      if (!group) {
+        group = { section: finding.section, findings: [] };
+        groups.push(group);
+      }
+      group.findings.push(finding);
+    });
+
+    return groups;
   }
 
   ngOnInit(): void {
@@ -57,11 +80,11 @@ export class ReportGeneratorComponent implements OnInit {
 
     this.isGenerating.set(true);
     this.generationProgress.set(0);
-    
+
     try {
       const finalHtml = await this.prepareContentToExport();
       this.currentStatus.set('Finalizing PDF...');
-      
+
       this.reportsService.generatePdfFromHtml(finalHtml).subscribe({
         next: (blob) => {
           this.generationProgress.set(100);
@@ -88,15 +111,21 @@ export class ReportGeneratorComponent implements OnInit {
     let fullHtmlContent = '';
     const totalParts = this.allContentParts.length;
 
+    // Pre-process container to embed images for accurate height calculation
+    const offScreenContainer = document.querySelector('.off-screen-render') as HTMLElement;
+    if (offScreenContainer) {
+      await this.embedImages(offScreenContainer);
+    }
+
     for (const [index, part] of this.allContentParts.entries()) {
       this.contentPartBeingRendered.set(part);
-      
+
       const partMessages: Record<string, string> = {
         'cover': 'Crafting cover page...',
         'overview': 'Synthesizing executive summary...',
         'inspection-findings': 'Organizing inspection findings...'
       };
-      
+
       this.feedbackMessage.set(partMessages[part] || 'Rendering content...');
       this.currentStatus.set(`Processing Part ${index + 1} of ${totalParts}`);
 
@@ -112,7 +141,7 @@ export class ReportGeneratorComponent implements OnInit {
         helper.preventContentCut();
       }
 
-      await this.embedImages(tableElement);
+      // No need to call embedImages again here since we did it for the whole container
       fullHtmlContent += tableElement.innerHTML;
 
       // Update progress (from 10% to 90%)
@@ -131,16 +160,29 @@ export class ReportGeneratorComponent implements OnInit {
       <head>
           <meta charset="utf-8">
           <style>
+              *, *::before, *::after { box-sizing: border-box; }
               ${styles}
-              @media print {
-                  .page { page-break-after: always; }
-                  html, body { width: 100%; height: 100%; margin: 0; padding: 0; background: white !important; }
-                  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+              html, body { 
+                  margin: 0; 
+                  padding: 0; 
+                  width: 1725px; 
+                  background-color: white; 
+                  -webkit-print-color-adjust: exact;
+              }
+              .page { 
+                  display: block;
+                  page-break-after: always !important; 
+                  break-after: page !important;
+                  width: 1725px;
+                  height: 2518px;
+                  margin: 0 auto;
+                  position: relative;
+                  background-color: white;
               }
           </style>
       </head>
       <body>
-          <div class="main-content">${fullHtmlContent}</div>
+          ${fullHtmlContent}
       </body>
       </html>
     `;
@@ -178,7 +220,7 @@ export class ReportGeneratorComponent implements OnInit {
 
   private async getAllStyles(): Promise<string> {
     let styles = '';
-    
+
     // 1. Capture all <style> tags content
     const styleTags = document.querySelectorAll('style');
     styleTags.forEach(tag => {

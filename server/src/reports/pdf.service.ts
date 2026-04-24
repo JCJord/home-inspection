@@ -25,7 +25,7 @@ export class Semaphore {
   private queue: Array<() => void> = [];
   private active = 0;
 
-  constructor(private max: number) {}
+  constructor(private max: number) { }
 
   get pending(): number {
     return this.queue.length;
@@ -60,7 +60,7 @@ export class PdfService implements OnModuleDestroy {
 
   async onModuleDestroy() {
     if (this.sharedBrowser) {
-      await this.sharedBrowser.close().catch(() => {});
+      await this.sharedBrowser.close().catch(() => { });
     }
   }
 
@@ -71,7 +71,7 @@ export class PdfService implements OnModuleDestroy {
     }
 
     if (this.sharedBrowser) {
-      await this.sharedBrowser.close().catch(() => {});
+      await this.sharedBrowser.close().catch(() => { });
       this.sharedBrowser = null;
       this.logger.log('Browser recycled after use limit');
     }
@@ -109,11 +109,12 @@ export class PdfService implements OnModuleDestroy {
         timeout: 120000,
         printBackground: true,
         margin: {
-          top: '0px',
-          bottom: '0px',
-          left: '0px',
+          top: '20px',
+          bottom: '20px',
+          left: '20px',
           right: '0px',
         },
+
         scale: 0.43,
         displayHeaderFooter: true,
         headerTemplate: `
@@ -148,7 +149,7 @@ export class PdfService implements OnModuleDestroy {
       throw error;
     } finally {
       if (page) {
-        await page.close().catch(() => {});
+        await page.close().catch(() => { });
       }
       this.pdfSemaphore.release();
     }

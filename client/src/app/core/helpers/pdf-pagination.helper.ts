@@ -205,7 +205,7 @@ export class PdfPaginationHelper {
   ): HTMLElement {
     const pageWrapper = document.createElement('div');
     pageWrapper.className = `page ${isFirstPage ? 'first-page' : 'continuation-page'}`;
-    pageWrapper.style.width = '100%';
+    pageWrapper.style.width = '1725px';
     pageWrapper.style.position = 'relative';
     pageWrapper.style.minHeight = '2518px';
 

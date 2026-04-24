@@ -34,20 +34,20 @@
             <app-skeleton width="32px" height="32px" variant="circle"></app-skeleton>
           </div>
         </div>
-        
+
         <!-- Card Content Skeleton (Chips) -->
         <div class="flex flex-wrap gap-2">
-           @for (j of [1,2,3]; track j) {
-             <app-skeleton width="80px" height="24px" borderRadius="12px"></app-skeleton>
-           }
-           <div class="ml-auto">
-             <app-skeleton width="80px" height="18px" borderRadius="4px"></app-skeleton>
-           </div>
+          @for (j of [1,2,3]; track j) {
+          <app-skeleton width="80px" height="24px" borderRadius="12px"></app-skeleton>
+          }
+          <div class="ml-auto">
+            <app-skeleton width="80px" height="18px" borderRadius="4px"></app-skeleton>
+          </div>
         </div>
 
         <!-- Card Footer Skeleton -->
         <div class="flex justify-end pt-3 border-t border-standard border-opacity-50">
-           <app-skeleton width="120px" height="36px" borderRadius="8px"></app-skeleton>
+          <app-skeleton width="120px" height="36px" borderRadius="8px"></app-skeleton>
         </div>
       </div>
       }
@@ -59,11 +59,8 @@
         (delete)="deleteInspection($event)"></app-inspection-card>
       }
     </div>
-    
-    <app-pagination
-      [currentPage]="currentPage()"
-      [totalItems]="totalItems()"
-      [itemsPerPage]="itemsPerPage()"
+
+    <app-pagination [currentPage]="currentPage()" [totalItems]="totalItems()" [itemsPerPage]="itemsPerPage()"
       (pageChanged)="onPageChange($event)">
     </app-pagination>
     } @else if (!isFormOpen()) {

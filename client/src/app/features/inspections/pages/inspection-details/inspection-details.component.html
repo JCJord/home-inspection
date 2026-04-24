@@ -69,49 +69,49 @@
 
     <div class="header-right">
       <div class="publish-workflow-container" [class]="publishState()">
-        
+
         <!-- IDLE STATE -->
         @if (publishState() === 'idle') {
-          @if (isPublished()) {
-            <span class="status-badge published">
-              <span class="dot"></span>
-              Published
-            </span>
-          } @else {
-            <app-button variant="solid" size="sm" (click)="startPublishWorkflow()">
-              <lucide-icon [name]="icons.Send" [size]="16"></lucide-icon>
-              Publish Report
-            </app-button>
-          }
+        @if (isPublished()) {
+        <span class="status-badge published">
+          <span class="dot"></span>
+          Published
+        </span>
+        } @else {
+        <app-button variant="solid" size="sm" (click)="startPublishWorkflow()">
+          <lucide-icon [name]="icons.Send" [size]="16"></lucide-icon>
+          Publish Report
+        </app-button>
+        }
         }
 
         <!-- CONFIRM STATE -->
         @if (publishState() === 'confirm') {
-          <div class="confirm-actions flex items-center overflow-hidden">
-            <button class="action-btn cancel" (click)="cancelPublish()">
-              <lucide-icon [name]="icons.X" [size]="16"></lucide-icon>
-              <span>Cancel</span>
-            </button>
-            <button class="action-btn confirm" (click)="confirmPublishPDF()">
-              <lucide-icon [name]="icons.Check" [size]="16"></lucide-icon>
-              <span>Confirm PDF</span>
-            </button>
-          </div>
+        <div class="confirm-actions flex items-center overflow-hidden">
+          <button class="action-btn cancel" (click)="cancelPublish()">
+            <lucide-icon [name]="icons.X" [size]="16"></lucide-icon>
+            <span>Cancel</span>
+          </button>
+          <button class="action-btn confirm" (click)="confirmPublishPDF()">
+            <lucide-icon [name]="icons.Check" [size]="16"></lucide-icon>
+            <span>Confirm PDF</span>
+          </button>
+        </div>
         }
 
         <!-- LOADING STATE -->
         @if (publishState() === 'loading') {
-          <div class="loading-workflow flex items-center justify-center">
-            <lucide-icon [name]="icons.Loader2" [size]="20" class="animate-spin text-white"></lucide-icon>
-          </div>
+        <div class="loading-workflow flex items-center justify-center">
+          <lucide-icon [name]="icons.Loader2" [size]="20" class="animate-spin text-white"></lucide-icon>
+        </div>
         }
 
         <!-- SUCCESS STATE -->
         @if (publishState() === 'success') {
-          <div class="success-workflow flex items-center gap-2 px-4 py-2 bg-success text-white rounded-lg">
-            <lucide-icon [name]="icons.Check" [size]="18"></lucide-icon>
-            <span class="font-bold">Published</span>
-          </div>
+        <div class="success-workflow flex items-center gap-2 px-4 py-2 bg-success text-white rounded-lg">
+          <lucide-icon [name]="icons.Check" [size]="18"></lucide-icon>
+          <span class="font-bold">Published</span>
+        </div>
         }
       </div>
     </div>
@@ -120,27 +120,28 @@
   <!-- Content area -->
   <div class="details-content" style="overflow-x: hidden; width: 100%;">
     @if (isPublished()) {
-      <div class="report-action-bar flex justify-between items-center bg-light-standard border-b border-standard px-6 py-4 rounded-t-[1.5rem]">
-        <div class="flex items-center gap-2">
-          <lucide-icon [name]="icons.FileText" [size]="18" class="text-primary"></lucide-icon>
-          <span class="text-sm font-semibold text-standard">Inspection Report Generated</span>
-        </div>
-        <app-button variant="outline" size="sm" (click)="generateReport()" [disabled]="isGeneratingPdf()">
-          @if (isGeneratingPdf()) {
-            <lucide-icon [name]="icons.Loader2" [size]="16" class="animate-spin"></lucide-icon>
-            Generating...
-          } @else {
-            <lucide-icon [name]="icons.Download" [size]="16"></lucide-icon>
-            Download Report
-          }
-        </app-button>
+    <div
+      class="report-action-bar flex justify-between items-center bg-light-standard border-b border-standard px-6 py-4 rounded-t-[1.5rem]">
+      <div class="flex items-center gap-2">
+        <lucide-icon [name]="icons.FileText" [size]="18" class="text-primary"></lucide-icon>
+        <span class="text-sm font-semibold text-standard">Inspection Report Generated</span>
       </div>
+      <app-button variant="outline" size="sm" (click)="generateReport()" [disabled]="isGeneratingPdf()">
+        @if (isGeneratingPdf()) {
+        <lucide-icon [name]="icons.Loader2" [size]="16" class="animate-spin"></lucide-icon>
+        Generating...
+        } @else {
+        <lucide-icon [name]="icons.Download" [size]="16"></lucide-icon>
+        Download Report
+        }
+      </app-button>
+    </div>
     }
     <app-section-tabs [selectedSection]="selectedSection()" (sectionChange)="selectedSection.set($event)">
     </app-section-tabs>
     @if (isAddingFinding() || findingToEdit()) {
-    <app-finding-form [inspectionId]="insp.id" [section]="selectedSection()" [finding]="findingToEdit()" [year_built]="insp.year_built"
-      (close)="cancelFindingForm()" (saved)="onFindingSaved($event)">
+    <app-finding-form [inspectionId]="insp.id" [section]="selectedSection()" [finding]="findingToEdit()"
+      [year_built]="insp.year_built" (close)="cancelFindingForm()" (saved)="onFindingSaved($event)">
     </app-finding-form>
     } @else {
     @if (sectionFindings().length === 0) {
@@ -178,11 +179,9 @@
 </div>
 
 @if (isReportGeneratorActive()) {
-  <div style="height: 0; width: 0; overflow: hidden; position: absolute; visibility: hidden;">
-    <app-report-generator 
-      [inspection]="inspection()" 
-      (completed)="onReportCompleted($event)"
-      (error)="onReportError($event)">
-    </app-report-generator>
-  </div>
+<div style="height: 0; width: 0; overflow: hidden; position: absolute; visibility: hidden;">
+  <app-report-generator [inspection]="inspection()" (completed)="onReportCompleted($event)"
+    (error)="onReportError($event)">
+  </app-report-generator>
+</div>
 }
