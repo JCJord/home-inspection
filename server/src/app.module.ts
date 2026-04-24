@@ -13,6 +13,7 @@ import { InspectionsModule } from './inspections/inspections.module';
 import { FindingsModule } from './findings/findings.module';
 import { PhotosModule } from './photos/photos.module';
 import { AiModule } from './ai/ai.module';
+import { ReportsModule } from './reports/reports.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { AiModule } from './ai/ai.module';
     FindingsModule,
     PhotosModule,
     AiModule,
+    ReportsModule,
   ],
   controllers: [AppController],
   providers: [

@@ -1,29 +1,32 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, signal, computed, inject, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { InspectionsService } from '../../../../core/services/inspections.service';
+import { ReportsService } from '../../../../core/services/reports.service';
 import { Finding, Inspection } from '../../../../core/models/inspection.interface';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
-import { ConfirmModalComponent } from '../../../../shared/components/confirm-modal/confirm-modal.component';
 import { SectionTabsComponent } from '../../components/section-tabs/section-tabs.component';
 import { FindingFormComponent } from '../../components/finding-form/finding-form.component';
 import { FindingCardComponent } from '../../components/finding-card/finding-card.component';
 import { Section } from '../../../../core/enums/inspection.enums';
 import { SkeletonComponent } from '../../../../shared/components/skeleton/skeleton.component';
-import { LucideAngularModule, ArrowLeft, Send, RefreshCw, AlertCircle, Plus } from 'lucide-angular';
+import { LucideAngularModule, ArrowLeft, Send, RefreshCw, AlertCircle, Plus, X, Check, Loader2, FileText, Download } from 'lucide-angular';
+import { ReportGeneratorComponent } from '../../../reports/components/report-generator/report-generator.component';
 
 
 @Component({
   selector: 'app-inspection-details',
   standalone: true,
-  imports: [CommonModule, ButtonComponent, ConfirmModalComponent, SectionTabsComponent, FindingFormComponent, FindingCardComponent, LucideAngularModule, SkeletonComponent],
+  imports: [CommonModule, ButtonComponent, SectionTabsComponent, FindingFormComponent, FindingCardComponent, LucideAngularModule, SkeletonComponent, ReportGeneratorComponent],
   templateUrl: './inspection-details.component.html',
   styleUrl: './inspection-details.component.scss',
 })
 export class InspectionDetailsComponent implements OnInit {
+  @ViewChild(ReportGeneratorComponent) reportGenerator!: ReportGeneratorComponent;
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private inspectionsService = inject(InspectionsService);
+  private reportsService = inject(ReportsService);
 
   inspection = signal<Inspection | null>(null);
   isLoading = signal<boolean>(true);
@@ -35,8 +38,11 @@ export class InspectionDetailsComponent implements OnInit {
   isAddingFinding = signal<boolean>(false);
   isDeletingFinding = signal<boolean>(false);
   deletingId = signal<string | null>(null);
+  publishState = signal<'idle' | 'confirm' | 'loading' | 'success'>('idle');
+  isGeneratingPdf = signal<boolean>(false);
+  isReportGeneratorActive = signal<boolean>(false);
 
-  readonly icons = { ArrowLeft, Send, RefreshCw, AlertCircle, Plus };
+  readonly icons = { ArrowLeft, Send, RefreshCw, AlertCircle, Plus, X, Check, Loader2, FileText, Download };
 
   isPublished = computed(() => this.inspection()?.status === 'published');
   hasFindings = computed(() => (this.inspection()?.findings?.length ?? 0) > 0);
@@ -75,26 +81,59 @@ export class InspectionDetailsComponent implements OnInit {
     this.router.navigate(['/inspections']);
   }
 
-  confirmPublish(): void {
+  startPublishWorkflow(): void {
+    this.publishState.set('confirm');
+  }
+
+  cancelPublish(): void {
+    this.publishState.set('idle');
+  }
+
+  confirmPublishPDF(): void {
     const inspection = this.inspection();
     if (!inspection) return;
 
-    this.isPublishing.set(true);
-    this.showPublishModal.set(false);
+    this.publishState.set('loading');
     this.inspectionsService.publishInspection(inspection.id).subscribe({
       next: (updated) => {
         this.inspection.set(updated);
-        this.isPublishing.set(false);
+        this.publishState.set('success');
+        // Reset to idle after a delay if needed, or stay success
+        setTimeout(() => {
+          this.publishState.set('idle');
+        }, 3000);
       },
       error: (err) => {
         console.error('Failed to publish inspection', err);
         this.errorMessage.set(err.error?.message || 'Failed to publish inspection.');
-        this.isPublishing.set(false);
+        this.publishState.set('idle');
       },
     });
   }
 
-  handleDeleteFinding(finding: any): void {
+  generateReport(): void {
+    this.isReportGeneratorActive.set(true);
+  }
+
+  onReportCompleted(blob: Blob): void {
+    this.isReportGeneratorActive.set(false);
+    const inspection = this.inspection();
+    if (!inspection) return;
+
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Report-${inspection.address.replace(/ /g, '_')}.pdf`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  }
+
+  onReportError(error: string): void {
+    this.isReportGeneratorActive.set(false);
+    this.errorMessage.set(error);
+  }
+
+  handleDeleteFinding(finding: Finding): void {
     const inspectionId = this.inspection()?.id;
     if (!inspectionId || !finding.id) return;
 

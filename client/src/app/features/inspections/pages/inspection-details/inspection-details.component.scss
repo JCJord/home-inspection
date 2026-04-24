@@ -102,12 +102,71 @@
       }
     }
 
-    // Button inner layout
-    app-button {
-      ::ng-deep .app-button {
+    // Publish Workflow Morphing Button
+    .publish-workflow-container {
+      display: inline-flex;
+      align-items: center;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      overflow: hidden;
+      height: 2.375rem; 
+      border-radius: 0.75rem;
+      position: relative;
+
+      &.confirm {
+        background: $color-surface-light;
+        border: 1px solid $color-border;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      }
+
+      &.loading {
+        width: 2.375rem;
+        background: $color-primary;
+        border-radius: 50%;
+        padding: 0;
+        justify-content: center;
+      }
+
+      &.success {
+        background: $color-success;
+        border-color: $color-success;
+        color: white;
+      }
+
+      .action-btn {
         display: flex;
         align-items: center;
         gap: 0.5rem;
+        padding: 0 1rem;
+        height: 100%;
+        font-size: 0.875rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: none;
+        background: transparent;
+        white-space: nowrap;
+
+        &.cancel {
+          color: $color-text-muted;
+          border-right: 1px solid $color-border;
+          &:hover {
+            background: rgba($color-text-muted, 0.05);
+            color: $color-text;
+          }
+        }
+
+        &.confirm {
+          color: $color-primary;
+          &:hover {
+            background: rgba($color-primary, 0.05);
+          }
+        }
+      }
+
+      .loading-workflow, .success-workflow {
+        height: 100%;
+        display: flex;
+        align-items: center;
       }
     }
   }
@@ -118,6 +177,16 @@
 .details-content {
   background: $color-surface;
   border-radius: 1.5rem;
+  border: 1px solid $color-border;
+  overflow: hidden;
+
+  .report-action-bar {
+    background: rgba($color-primary, 0.03);
+    
+    .text-standard {
+      color: $color-text-muted;
+    }
+  }
   .empty-section-state {
     display: flex;
     flex-direction: column;
