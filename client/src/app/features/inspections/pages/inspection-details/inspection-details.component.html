@@ -73,10 +73,18 @@
         <!-- IDLE STATE -->
         @if (publishState() === 'idle') {
         @if (isPublished()) {
-        <span class="status-badge published">
-          <span class="dot"></span>
-          Published
-        </span>
+        <div class="flex items-center gap-3">
+          <span class="status-badge published">
+            <span class="dot"></span>
+            Published
+          </span>
+          <button
+            class="text-xs text-standard-muted hover:text-primary transition-colors flex items-center gap-1 font-medium bg-transparent border-none p-0 cursor-pointer"
+            (click)="unpublishInspection()" title="Unlock to edit again">
+            <lucide-icon [name]="icons.LockOpen" [size]="14"></lucide-icon>
+            Unlock to Edit
+          </button>
+        </div>
         } @else {
         <app-button variant="solid" size="sm" (click)="startPublishWorkflow()">
           <lucide-icon [name]="icons.Send" [size]="16"></lucide-icon>

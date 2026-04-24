@@ -10,7 +10,7 @@ import { FindingFormComponent } from '../../components/finding-form/finding-form
 import { FindingCardComponent } from '../../components/finding-card/finding-card.component';
 import { Section } from '../../../../core/enums/inspection.enums';
 import { SkeletonComponent } from '../../../../shared/components/skeleton/skeleton.component';
-import { LucideAngularModule, ArrowLeft, Send, RefreshCw, AlertCircle, Plus, X, Check, Loader2, FileText, Download } from 'lucide-angular';
+import { LucideAngularModule, ArrowLeft, Send, RefreshCw, AlertCircle, Plus, X, Check, Loader2, FileText, Download, LockOpen } from 'lucide-angular';
 import { ReportGeneratorComponent } from '../../../reports/components/report-generator/report-generator.component';
 
 
@@ -42,7 +42,7 @@ export class InspectionDetailsComponent implements OnInit {
   isGeneratingPdf = signal<boolean>(false);
   isReportGeneratorActive = signal<boolean>(false);
 
-  readonly icons = { ArrowLeft, Send, RefreshCw, AlertCircle, Plus, X, Check, Loader2, FileText, Download };
+  readonly icons = { ArrowLeft, Send, RefreshCw, AlertCircle, Plus, X, Check, Loader2, FileText, Download, LockOpen };
 
   isPublished = computed(() => this.inspection()?.status === 'published');
   hasFindings = computed(() => (this.inspection()?.findings?.length ?? 0) > 0);
@@ -107,6 +107,24 @@ export class InspectionDetailsComponent implements OnInit {
         console.error('Failed to publish inspection', err);
         this.errorMessage.set(err.error?.message || 'Failed to publish inspection.');
         this.publishState.set('idle');
+      },
+    });
+  }
+
+  unpublishInspection(): void {
+    const inspection = this.inspection();
+    if (!inspection) return;
+
+    this.isLoading.set(true);
+    this.inspectionsService.unpublishInspection(inspection.id).subscribe({
+      next: (updated) => {
+        this.inspection.set(updated);
+        this.isLoading.set(false);
+      },
+      error: (err) => {
+        console.error('Failed to unpublish inspection', err);
+        this.errorMessage.set(err.error?.message || 'Failed to unlock inspection.');
+        this.isLoading.set(false);
       },
     });
   }

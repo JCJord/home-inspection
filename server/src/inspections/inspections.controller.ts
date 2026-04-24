@@ -58,6 +58,11 @@ export class InspectionsController {
     return this.inspectionsService.publish(inspectorId, id);
   }
 
+  @Post(':id/unpublish')
+  unpublish(@GetUser('sub') inspectorId: string, @Param('id') id: string) {
+    return this.inspectionsService.unpublish(inspectorId, id);
+  }
+
   @Delete(':id')
   remove(@GetUser('sub') inspectorId: string, @Param('id') id: string) {
     return this.inspectionsService.remove(inspectorId, id);

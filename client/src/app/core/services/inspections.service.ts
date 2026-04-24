@@ -47,6 +47,10 @@ export class InspectionsService {
     return this.http.post<Inspection>(`${this.apiUrl}/${id}/publish`, {});
   }
 
+  unpublishInspection(id: string): Observable<Inspection> {
+    return this.http.post<Inspection>(`${this.apiUrl}/${id}/unpublish`, {});
+  }
+
   // --- Finding Methods ---
 
   /**
