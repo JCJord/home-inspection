@@ -38,11 +38,22 @@ export class ReportGeneratorComponent implements OnInit {
   getSeverityColor(severity: string): string {
     const s = String(severity).toLowerCase();
     switch (s) {
-      case 'safety': return '#ef4444';
-      case 'major': return '#f97316';
-      case 'minor': return '#eab308';
-      case 'maintenance': return '#3b82f6';
-      default: return '#94a3b8';
+      case 'safety': return '#EF4444';
+      case 'major': return '#F97316';
+      case 'minor': return '#F3F4F6';
+      case 'maintenance': return '#EFF6FF';
+      default: return '#F3F4F6';
+    }
+  }
+
+  getSeverityTextColor(severity: string): string {
+    const s = String(severity).toLowerCase();
+    switch (s) {
+      case 'safety': return '#FFFFFF';
+      case 'major': return '#FFFFFF';
+      case 'minor': return '#4B5563';
+      case 'maintenance': return '#1E3A8A';
+      default: return '#4B5563';
     }
   }
 
@@ -50,6 +61,7 @@ export class ReportGeneratorComponent implements OnInit {
     const s = String(severity).toLowerCase();
     return s === 'minor' || s === 'maintenance';
   }
+
 
   getGroupedFindings() {
     if (!this.inspection?.findings) return [];
