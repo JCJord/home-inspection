@@ -1,7 +1,7 @@
 import { Section, Severity } from '../enums/inspection.enums';
 
 export interface UpdateFindingDto {
-  section?: Section;
+  section?: string;
   severity?: Severity;
   location?: string;
   short_note?: string;

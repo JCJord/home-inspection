@@ -34,7 +34,7 @@ export class InspectionDetailsComponent implements OnInit {
   errorMessage = signal<string | null>(null);
   showPublishModal = signal(false);
   findingToEdit = signal<Finding | null>(null);
-  selectedSection = signal<Section>(Section.EXTERIOR);
+  selectedSection = signal<string>('');
   isAddingFinding = signal<boolean>(false);
   isDeletingFinding = signal<boolean>(false);
   deletingId = signal<string | null>(null);
@@ -50,6 +50,11 @@ export class InspectionDetailsComponent implements OnInit {
   sectionFindings = computed(() => {
     const findings = this.inspection()?.findings || [];
     return findings.filter(f => f.section === this.selectedSection());
+  });
+
+  currentSection = computed(() => {
+    const sections = this.inspection()?.template_snapshot?.sections || [];
+    return sections.find(s => s.name === this.selectedSection()) || null;
   });
 
   ngOnInit(): void {
@@ -68,6 +73,9 @@ export class InspectionDetailsComponent implements OnInit {
       next: (data) => {
         this.inspection.set(data);
         this.isLoading.set(false);
+        if (data.template_snapshot?.sections?.length && !this.selectedSection()) {
+          this.selectedSection.set(data.template_snapshot.sections[0].name);
+        }
       },
       error: (err) => {
         console.error('Failed to load inspection', err);
@@ -186,6 +194,24 @@ export class InspectionDetailsComponent implements OnInit {
   cancelFindingForm(): void {
     this.isAddingFinding.set(false);
     this.findingToEdit.set(null);
+  }
+
+  updateMetadataValue(key: string, event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const value = input.value;
+    const insp = this.inspection();
+    if (!insp) return;
+
+    const updatedMetadata = { ...insp.metadata_values, [key]: value };
+    
+    this.inspectionsService.updateInspection(insp.id, { metadata_values: updatedMetadata }).subscribe({
+      next: (updated) => {
+        this.inspection.set(updated);
+      },
+      error: (err) => {
+        console.error('Failed to update metadata', err);
+      }
+    });
   }
 
   onFindingSaved(finding: any): void {

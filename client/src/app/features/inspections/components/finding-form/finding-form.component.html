@@ -77,6 +77,22 @@
       }
     </div>
 
+    <!-- Presets (Quick Actions) -->
+    @if (presets && presets.length > 0) {
+    <div class="form-group presets-container mb-4">
+      <label class="control-label block text-sm font-medium text-standard-muted mb-2">Quick Presets</label>
+      <div class="flex flex-wrap gap-2">
+        @for (preset of presets; track preset.title) {
+        <app-preset-button 
+          [preset]="preset" 
+          [isActive]="isPresetActive(preset)"
+          (selected)="applyPreset(preset)"
+        ></app-preset-button>
+        }
+      </div>
+    </div>
+    }
+
     <!-- Severity Selector -->
     <div class="form-group severity-selector">
       <label class="control-label">Severity <span>*</span></label>

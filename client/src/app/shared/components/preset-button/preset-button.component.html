@@ -1,0 +1,11 @@
+<button 
+  type="button" 
+  class="preset-btn flex items-center justify-center"
+  [class.active-safety]="isActive && preset.severity === 'Safety'"
+  [class.active-major]="isActive && preset.severity === 'Major'"
+  [class.active-minor]="isActive && preset.severity === 'Minor'"
+  [class.active-maintenance]="isActive && preset.severity === 'Maintenance'"
+  (click)="onClick()"
+>
+  <span class="preset-btn__title">{{ preset.title }}</span>
+</button>

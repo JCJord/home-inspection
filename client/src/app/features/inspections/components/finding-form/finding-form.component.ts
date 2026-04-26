@@ -14,6 +14,7 @@ import { AiService } from '../../../../core/services/ai.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { environment } from '../../../../../environments/environment';
 import { ImageEditorModalComponent } from '../../../../shared/components/image-editor-modal/image-editor-modal.component';
+import { PresetButtonComponent } from '../../../../shared/components/preset-button/preset-button.component';
 
 interface SelectedPhoto {
   file: File;
@@ -24,10 +25,12 @@ type EditTarget =
   | { type: 'existing', photo: Photo }
   | { type: 'new', index: number, previewUrl: string };
 
+import { TemplatePreset } from '../../../../core/models/inspection.interface';
+
 @Component({
   selector: 'app-finding-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ButtonComponent, TextInputComponent, TextareaInputComponent, LucideAngularModule, ImageEditorModalComponent],
+  imports: [CommonModule, ReactiveFormsModule, ButtonComponent, TextInputComponent, TextareaInputComponent, LucideAngularModule, ImageEditorModalComponent, PresetButtonComponent],
   templateUrl: './finding-form.component.html',
   styleUrl: './finding-form.component.scss',
 })
@@ -41,12 +44,13 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
 
   @Input({ required: true }) inspectionId!: string;
   @Input({ required: true }) year_built!: number;
-  @Input({ required: true }) section!: Section;
+  @Input({ required: true }) section!: string;
+  @Input() presets: TemplatePreset[] = [];
   @Input() finding: Finding | null = null;
 
   private _inspectionId = signal<string>('');
   private _yearBuilt = signal<number>(0);
-  private _section = signal<Section>(Section.EXTERIOR);
+  private _section = signal<string>('');
   private _finding = signal<Finding | null>(null);
 
   // Expose signals for internal use
@@ -286,6 +290,27 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
         this.isGeneratingAi.set(false);
       }
     });
+  }
+
+  applyPreset(preset: TemplatePreset): void {
+    // TODO: Split into explicit title/description fields in Phase 2
+    const shortNoteValue = preset.description 
+      ? `[${preset.title}] ${preset.description}` 
+      : preset.title;
+
+    this.findingForm.patchValue({
+      severity: preset.severity || 'Minor',
+      short_note: shortNoteValue
+    });
+  }
+
+  isPresetActive(preset: TemplatePreset): boolean {
+    const formValue = this.findingForm.value;
+    const expectedShortNote = preset.description 
+      ? `[${preset.title}] ${preset.description}` 
+      : preset.title;
+
+    return formValue.severity === preset.severity && formValue.short_note === expectedShortNote;
   }
 
   onSubmit(): void {

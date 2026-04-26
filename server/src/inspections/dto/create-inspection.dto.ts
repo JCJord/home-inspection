@@ -63,4 +63,11 @@ export class CreateInspectionDto {
   @IsString()
   @MaxLength(1000)
   cover_photo_url?: string;
+
+  @IsOptional()
+  @IsString()
+  template_id?: string;
+
+  @IsOptional()
+  metadata_values?: Record<string, string>;
 }

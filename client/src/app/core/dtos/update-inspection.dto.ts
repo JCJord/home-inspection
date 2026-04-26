@@ -4,4 +4,5 @@ export interface UpdateInspectionDto {
   client_email?: string;
   year_built?: number;
   square_footage?: number;
+  metadata_values?: Record<string, string>;
 }

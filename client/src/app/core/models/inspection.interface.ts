@@ -8,10 +8,33 @@ export interface Photo {
   uploaded_at: string;
 }
 
+export interface TemplatePreset {
+  title: string;
+  description: string;
+  severity: string;
+}
+
+export interface TemplateField {
+  key: string;
+  label: string;
+  type: string;
+}
+
+export interface TemplateSection {
+  name: string;
+  icon_key: string;
+  fields: TemplateField[];
+  presets: TemplatePreset[];
+}
+
+export interface TemplateStructure {
+  sections: TemplateSection[];
+}
+
 export interface Finding {
   id: string;
   inspection_id: string;
-  section: Section;
+  section: string; // Changed from Section enum to string
   severity: Severity;
   location?: string;
   short_note: string;
@@ -37,6 +60,9 @@ export interface Inspection {
   attendees?: string;
   foundation_type?: string;
   cover_photo_url?: string;
+  template_id?: string;
+  template_snapshot?: TemplateStructure;
+  metadata_values?: Record<string, string>;
   inspector?: {
     id: string;
     name: string;
