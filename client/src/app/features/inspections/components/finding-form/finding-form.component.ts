@@ -86,8 +86,8 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
   findingForm: FormGroup = this.fb.group({
     severity: [Severity.MINOR, [Validators.required]],
     location: [''],
-    short_note: ['', [Validators.required]],
-    ai_comment: [''],
+    short_note: ['', [Validators.required, Validators.maxLength(2200)]],
+    ai_comment: ['', [Validators.maxLength(800)]],
   });
 
   constructor() {

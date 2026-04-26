@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsOptional, IsEnum, IsInt, Min } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, IsEnum, IsInt, Min, MaxLength } from 'class-validator';
 import { Section, Severity } from '../enums';
 
 export class CreateFindingDto {
@@ -10,6 +10,7 @@ export class CreateFindingDto {
 
   @IsString()
   @IsNotEmpty()
+  @MaxLength(2200)
   short_note: string;
 
   @IsOptional()
@@ -18,6 +19,7 @@ export class CreateFindingDto {
 
   @IsOptional()
   @IsString()
+  @MaxLength(800)
   ai_comment?: string;
 
   @IsOptional()
