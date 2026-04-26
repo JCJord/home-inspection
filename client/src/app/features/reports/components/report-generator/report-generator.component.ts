@@ -74,7 +74,21 @@ export class ReportGeneratorComponent implements OnInit {
         group = { section: finding.section, findings: [] };
         groups.push(group);
       }
-      group.findings.push(finding);
+      
+      if (finding.photos && finding.photos.length > 12) {
+        const photos = finding.photos;
+        for (let i = 0; i < photos.length; i += 12) {
+          const chunk = photos.slice(i, i + 12);
+          const chunkIndex = Math.floor(i / 12);
+          group.findings.push({
+            ...finding,
+            id: `${finding.id}_chunk_${chunkIndex}`,
+            photos: chunk
+          });
+        }
+      } else {
+        group.findings.push(finding);
+      }
     });
 
     return groups;
