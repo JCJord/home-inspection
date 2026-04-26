@@ -31,6 +31,14 @@
           placeholder="e.g. 2500"></app-text-input>
       </div>
 
+      @if (!isEditMode()) {
+        <app-select-input 
+          name="template_id" 
+          label="Inspection Template (Default applies if left blank)" 
+          [options]="availableTemplates()">
+        </app-select-input>
+      }
+
       <div class="form-section-title">Property Context</div>
 
       <div class="form-row">

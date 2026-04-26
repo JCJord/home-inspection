@@ -1,4 +1,4 @@
-import { Component, inject, signal, input, computed, effect, output } from '@angular/core';
+import { Component, inject, signal, input, computed, effect, output, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
@@ -7,16 +7,20 @@ import { LucideAngularModule, ArrowLeft, AlertCircle } from 'lucide-angular';
 import { InspectionsService } from '../../../../core/services/inspections.service';
 import { Inspection } from '../../../../core/models/inspection.interface';
 
+import { TemplatesService } from '../../../templates/services/templates.service';
+import { SelectInputComponent, SelectOption } from '../../../../shared/components/inputs/select-input/select-input.component';
+
 @Component({
   selector: 'app-inspection-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ButtonComponent, TextInputComponent, LucideAngularModule],
+  imports: [CommonModule, ReactiveFormsModule, ButtonComponent, TextInputComponent, SelectInputComponent, LucideAngularModule],
   templateUrl: './inspection-form.component.html',
   styleUrl: './inspection-form.component.scss',
 })
-export class InspectionFormComponent {
+export class InspectionFormComponent implements OnInit {
   private fb = inject(FormBuilder);
   private inspectionsService = inject(InspectionsService);
+  private templatesService = inject(TemplatesService);
 
   inspection = input<Inspection | null>(null);
 
@@ -28,6 +32,8 @@ export class InspectionFormComponent {
 
   isEditMode = computed(() => !!this.inspection());
 
+  availableTemplates = signal<SelectOption[]>([]);
+
   readonly icons = { ArrowLeft, AlertCircle };
 
   inspectionForm: FormGroup = this.fb.group({
@@ -36,12 +42,33 @@ export class InspectionFormComponent {
     client_email: ['', [Validators.required, Validators.email]],
     year_built: [new Date().getFullYear(), [Validators.required, Validators.min(1800), Validators.max(new Date().getFullYear())]],
     square_footage: [null, [Validators.min(1)]],
+    template_id: [''],
     weather: ['', [Validators.maxLength(100)]],
     temperature: ['', [Validators.maxLength(50)]],
     occupancy: ['', [Validators.maxLength(100)]],
     attendees: ['', [Validators.maxLength(500)]],
     foundation_type: ['', [Validators.maxLength(200)]],
   });
+
+  ngOnInit(): void {
+    this.loadTemplates();
+  }
+
+  loadTemplates(): void {
+    this.templatesService.getTemplates().subscribe({
+      next: (templates) => {
+        const opts = templates.map(t => ({
+          value: t.id,
+          label: t.name
+        }));
+        this.availableTemplates.set(opts);
+        if (opts.length > 0 && !this.isEditMode() && !this.inspectionForm.get('template_id')?.value) {
+          this.inspectionForm.get('template_id')?.setValue(opts[0].value);
+        }
+      },
+      error: (err) => console.error('Failed to load templates', err)
+    });
+  }
 
   constructor() {
     effect(() => {
@@ -58,6 +85,7 @@ export class InspectionFormComponent {
           occupancy: data.occupancy || '',
           attendees: data.attendees || '',
           foundation_type: data.foundation_type || '',
+          template_id: data.template_id || ''
         });
       } else {
         this.inspectionForm.reset({
