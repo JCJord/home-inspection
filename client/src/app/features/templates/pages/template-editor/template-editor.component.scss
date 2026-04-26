@@ -1,0 +1,65 @@
+@use 'variables' as *;
+
+:host {
+  display: block;
+  width: 100%;
+}
+
+.editor-container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.bg-surface-standard {
+  background-color: $color-surface;
+}
+
+.bg-light-standard {
+  background-color: $color-bg;
+}
+
+.border-standard {
+  border-color: $color-border;
+}
+
+.back-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.75rem;
+  border: 1px solid $color-border;
+  background: $color-surface;
+  color: $color-text-muted;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.2s;
+
+  &:hover {
+    background: $color-surface-light;
+    color: $color-text;
+    border-color: $color-primary;
+  }
+}
+
+.section-tab {
+  &.active {
+    background-color: $color-surface-light;
+    border-left: 4px solid $color-primary;
+    padding-left: calc(1rem - 4px);
+
+    .text-standard {
+      color: $color-primary;
+    }
+  }
+
+  &:hover .remove-sec-btn {
+    opacity: 1;
+  }
+}
+
+.text-2xs {
+  font-size: 0.65rem;
+}

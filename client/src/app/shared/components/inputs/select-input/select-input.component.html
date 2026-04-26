@@ -5,15 +5,17 @@
     </label>
   }
 
-  <input
+  <select
     [id]="name()"
     [name]="name()"
-    [type]="type()"
     [formControl]="$any(control)"
-    [placeholder]="placeholder()"
     class="input-field"
     [class.input-field--error]="isInvalid"
-  />
+  >
+    @for (opt of mappedOptions(); track opt.value) {
+      <option [value]="opt.value">{{ opt.label }}</option>
+    }
+  </select>
 
   @if (isInvalid) {
     <span class="input-error">

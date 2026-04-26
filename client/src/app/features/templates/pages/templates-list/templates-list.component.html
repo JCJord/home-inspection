@@ -1,0 +1,134 @@
+@if (!selectedTemplateId()) {
+  <div class="templates-container max-w-7xl mx-auto p-6 pb-24 relative">
+    <div class="flex justify-between items-center mb-6">
+      <div>
+        <h1 class="text-2xl font-bold text-standard mb-2">Inspection Templates</h1>
+        <p class="text-standard-muted text-sm">Manage reusable blueprints for your inspections.</p>
+      </div>
+    </div>
+
+    <!-- Search & Filter -->
+    <div class="mb-8">
+      <input type="text" 
+             [(ngModel)]="searchQuery" 
+             placeholder="Search blueprints by name..." 
+             class="w-full px-4 py-3 rounded-xl border border-standard focus:border-primary focus:ring-1 focus:ring-primary outline-none font-medium text-standard bg-surface-standard shadow-sm transition" />
+    </div>
+
+    <!-- Error State -->
+    @if (errorMessage()) {
+      <div class="bg-red-50 text-red-700 p-4 rounded-lg mb-6">
+        {{ errorMessage() }}
+      </div>
+    }
+
+    <!-- Loading State -->
+    @if (isLoading()) {
+      <div class="flex justify-center items-center py-12">
+        <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></div>
+      </div>
+    } @else {
+      
+      <!-- Empty State for Custom Templates -->
+      @if (customTemplates().length === 0 && !searchQuery()) {
+        <div class="empty-blueprint-card mb-8 p-8 rounded-xl text-center flex flex-col items-center gap-4">
+          <h2 class="text-xl font-semibold text-standard">Start from a Blueprint</h2>
+          <p class="text-standard-muted max-w-md">It looks like you don't have any custom templates. You can clone the System Default blueprint to get started quickly.</p>
+          @if (systemTemplates().length > 0) {
+            <app-button (click)="cloneTemplate(systemTemplates()[0])" 
+                        [isLoading]="isActionLoading()"
+                        variant="solid">
+              <lucide-icon [name]="icons.Plus" [size]="18"></lucide-icon>
+              Clone System Default
+            </app-button>
+          }
+        </div>
+      }
+
+      <!-- Grid of Templates -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" [class.opacity-75]="isActionLoading()">
+        @for (template of filteredTemplates(); track template.id) {
+          <div class="template-card rounded-xl p-6 flex flex-col justify-between transition-all shadow-sm">
+            <div>
+              <div class="flex justify-between items-start gap-4 mb-2">
+                <h3 class="text-lg font-bold text-standard truncate" [title]="template.name">
+                  {{ template.name }}
+                </h3>
+                
+                <div class="flex gap-1 flex-shrink-0">
+                  <!-- System Badge -->
+                  @if (!template.inspector_id) {
+                    <span class="badge-system text-xs font-semibold px-2.5 py-0.5 rounded-full bg-blue-50 text-primary-dark">
+                      System
+                    </span>
+                  }
+                  
+                  <!-- Preferred Indicator -->
+                  @if (template.id === preferredTemplateId()) {
+                    <span class="badge-default text-xs font-semibold px-2.5 py-0.5 rounded-full flex items-center gap-1 bg-amber-50 text-amber-700 border border-amber-200">
+                      <lucide-icon [name]="icons.Star" [size]="12" class="fill-amber-500 stroke-amber-500"></lucide-icon>
+                      Default
+                    </span>
+                  }
+                </div>
+              </div>
+              <p class="text-xs text-standard-muted mb-6">
+                Last Updated: {{ template.updated_at | date:'mediumDate' }}
+              </p>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex items-center gap-2 mt-auto pt-4 border-t border-standard">
+              <app-button (click)="cloneTemplate(template)" 
+                          [isLoading]="isActionLoading()"
+                          variant="subtle"
+                          [full]="true"
+                          class="flex-1"
+                          title="Clone Template">
+                <lucide-icon [name]="icons.Copy" [size]="16"></lucide-icon>
+                <span>Clone</span>
+              </app-button>
+              
+              @if (template.inspector_id) {
+                <app-button (click)="editTemplate(template)" 
+                            [isLoading]="isActionLoading()"
+                            variant="subtle"
+                            [full]="true"
+                            class="flex-1"
+                            title="Edit Template">
+                  <lucide-icon [name]="icons.Edit2" [size]="16"></lucide-icon>
+                  <span>Edit</span>
+                </app-button>
+
+                <app-button (click)="deleteTemplate(template)" 
+                            [isLoading]="isActionLoading()"
+                            variant="danger"
+                            title="Delete Template">
+                  <lucide-icon [name]="icons.Trash2" [size]="16"></lucide-icon>
+                </app-button>
+              }
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- No Results State -->
+      @if (filteredTemplates().length === 0 && searchQuery()) {
+        <div class="text-center py-12 text-standard-muted">
+          <p class="text-lg font-medium">No blueprints found matching "{{ searchQuery() }}"</p>
+        </div>
+      }
+
+    }
+
+    <!-- Floating Action Button -->
+    <button (click)="createNewTemplate()" 
+            [disabled]="isActionLoading()"
+            class="fixed bottom-8 right-8 w-14 h-14 bg-primary text-white rounded-full shadow-2xl hover:bg-primary-dark transition-all flex items-center justify-center z-50 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 active:scale-95"
+            title="Create New Blueprint">
+      <lucide-icon [name]="icons.Plus" [size]="24"></lucide-icon>
+    </button>
+  </div>
+} @else {
+  <app-template-editor [templateId]="selectedTemplateId()" (close)="selectedTemplateId.set(null)"></app-template-editor>
+}
