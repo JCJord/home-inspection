@@ -14,6 +14,7 @@ import { FindingsModule } from './findings/findings.module';
 import { PhotosModule } from './photos/photos.module';
 import { AiModule } from './ai/ai.module';
 import { ReportsModule } from './reports/reports.module';
+import { TemplatesModule } from './templates/templates.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { ReportsModule } from './reports/reports.module';
     PhotosModule,
     AiModule,
     ReportsModule,
+    TemplatesModule,
   ],
   controllers: [AppController],
   providers: [

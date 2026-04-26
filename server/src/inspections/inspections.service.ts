@@ -7,6 +7,7 @@ import { UpdateInspectionDto } from './dto/update-inspection.dto';
 import { Inspector } from '../inspectors/inspector.entity';
 import { Report } from '../reports/report.entity';
 import { SubscriptionStatus } from '../common/enums/subscription-status.enum';
+import { Template } from '../templates/template.entity';
 
 @Injectable()
 export class InspectionsService {
@@ -17,6 +18,8 @@ export class InspectionsService {
     private readonly inspectorRepository: Repository<Inspector>,
     @InjectRepository(Report)
     private readonly reportRepository: Repository<Report>,
+    @InjectRepository(Template)
+    private readonly templateRepository: Repository<Template>,
   ) { }
 
   async create(inspectorId: string, createInspectionDto: CreateInspectionDto): Promise<Inspection> {
@@ -32,9 +35,21 @@ export class InspectionsService {
       throw new ForbiddenException('Free inspection limit reached. Please upgrade.');
     }
 
+    // Load template
+    let template: Template | null = null;
+    if (createInspectionDto.template_id) {
+      template = await this.templateRepository.findOne({ where: { id: createInspectionDto.template_id } });
+    }
+    if (!template) {
+      template = await this.templateRepository.findOne({ where: { name: 'System Default' } });
+    }
+
     const inspection = this.inspectionRepository.create({
       ...createInspectionDto,
       inspector_id: inspector.id,
+      template_id: template?.id || undefined,
+      template_snapshot: template?.structure || undefined,
+      metadata_values: {}
     });
 
     const savedInspection = await this.inspectionRepository.save(inspection);

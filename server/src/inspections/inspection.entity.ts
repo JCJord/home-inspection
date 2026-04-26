@@ -12,6 +12,8 @@ import {
 import { Inspector } from '../inspectors/inspector.entity';
 import { Finding } from '../findings/finding.entity';
 import { Report } from '../reports/report.entity';
+import { Template } from '../templates/template.entity';
+import type { TemplateStructure } from '../templates/template.entity';
 
 @Entity('inspections')
 export class Inspection {
@@ -60,6 +62,19 @@ export class Inspection {
 
   @Column({ nullable: true })
   cover_photo_url: string;
+
+  @Column({ name: 'template_id', nullable: true })
+  template_id: string;
+
+  @ManyToOne(() => Template, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'template_id' })
+  template: Template;
+
+  @Column({ type: 'jsonb', nullable: true })
+  template_snapshot: TemplateStructure;
+
+  @Column({ type: 'jsonb', nullable: true })
+  metadata_values: Record<string, string>;
 
   @OneToMany(() => Finding, (finding) => finding.inspection, { cascade: true, eager: true })
   findings: Finding[];
