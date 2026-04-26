@@ -21,14 +21,26 @@ export class AiService {
       throw new InternalServerErrorException('Gemini API key is not configured');
     }
 
-    const prompt = `You are an experienced home inspector writing a professional finding comment.
-      Property year built: ${yearBuilt}
-      Section: ${section}
-      Severity: ${severity}
-      Location: ${location || 'not specified'}
-      Inspector note: ${shortNote}
+    const prompt = `You are a Certified Master Home Inspector writing an objective, professional finding for a formal inspection report.
 
-      Write a professional 2-3 sentence inspection finding comment. Be specific, use industry language, recommend appropriate action. Do not use filler phrases like "it was observed" or "it was noted".`;
+    CONTEXT:
+    - Property Year Built: ${yearBuilt}
+    - Section: ${section}
+    - Severity: ${severity}
+    - Location: ${location || 'Not specified'}
+    - Inspector's Field Note: ${shortNote}
+
+    TASK:
+    Convert the Inspector's Field Note into a highly professional, clinical 2 to 3 sentence analysis. 
+
+    STRICT RULES & CONSTRAINTS:
+    1. NO LOCAL ENTITIES: Never name specific brands, utility companies (e.g., Comgás, PG&E), or contractors. Use generic terms like "licensed contractor," "local utility provider," or "qualified specialist."
+    2. LIABILITY PROTECTION: Do not use alarmist, emotional, or legally dangerous words like "explosion," "death," "catastrophic," or "illegal." Use clinical terms like "safety hazard," "compromised," or "requires immediate evaluation."
+    3. NO FILLER: Do not use phrases like "It was observed," "I noted," or "The inspector found." Start directly with the system or component.
+    4. LENGTH LIMIT: The output MUST be strictly under 350 characters. Be punchy and direct.
+
+    FORMAT:
+    State the defect, explain the implication (why it matters), and state the recommended professional action.`;
 
     try {
       const response = await fetch(`${this.apiUrl}?key=${this.apiKey}`, {
