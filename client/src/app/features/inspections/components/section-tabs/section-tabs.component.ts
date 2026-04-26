@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter, ViewChild, ElementRef, AfterViewInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { LucideAngularModule, Home, ChevronUp, ChevronDown, Hammer, Zap, Droplets, Wind, Flame, Box, Grid, Monitor, Car, ChevronLeft, ChevronRight } from 'lucide-angular';
+import { LucideAngularModule, Home, ChevronUp, ChevronDown, Hammer, Zap, Droplets, Wind, Flame, Box, Grid, Monitor, Car, ChevronLeft, ChevronRight, Shield, Search, Info, AlertTriangle, Copy, Edit2, Trash2, Plus, Save, Lock, Unlock, ArrowLeft, Wrench, Thermometer, Lightbulb, Paintbrush, Sun, Key, Eye, Power, FileCheck, HardHat, Construction, Ruler, ShieldCheck, ShieldAlert, BrickWall, Trees, Fan, Sparkles, Wifi, WifiOff, Trash, Settings, Check, X, Users, FileText, Image, Cloud, CloudRain, CloudLightning, Snowflake, Umbrella, Compass, MapPin, Clock, Calendar, Activity, Scissors, Heart, AlertCircle, HelpCircle, Ban, LockOpen, Send, Download, Loader2, CheckCircle2, Layers } from 'lucide-angular';
 import { TemplateSection } from '../../../../core/models/inspection.interface';
 
 @Component({
@@ -16,20 +16,8 @@ export class SectionTabsComponent implements AfterViewInit {
   @Output() sectionChange = new EventEmitter<string>();
 
   readonly icons: Record<string, any> = {
-    'Home': Home,
-    'ChevronUp': ChevronUp,
-    'ChevronDown': ChevronDown,
-    'Hammer': Hammer,
-    'Zap': Zap,
-    'Droplets': Droplets,
-    'Wind': Wind,
-    'Flame': Flame,
-    'Box': Box,
-    'Grid': Grid,
-    'Monitor': Monitor,
-    'Car': Car,
-    'ChevronLeft': ChevronLeft,
-    'ChevronRight': ChevronRight
+    Home, ChevronUp, ChevronDown, Hammer, Zap, Droplets, Wind, Flame, Box, Grid, Monitor, Car, ChevronLeft, ChevronRight,
+    Shield, Search, Info, AlertTriangle, Copy, Edit2, Trash2, Plus, Save, Lock, Unlock, ArrowLeft, Wrench, Thermometer, Lightbulb, Paintbrush, Sun, Key, Eye, Power, FileCheck, HardHat, Construction, Ruler, ShieldCheck, ShieldAlert, BrickWall, Trees, Fan, Sparkles, Wifi, WifiOff, Trash, Settings, Check, X, Users, FileText, Image, Cloud, CloudRain, CloudLightning, Snowflake, Umbrella, Compass, MapPin, Clock, Calendar, Activity, Scissors, Heart, AlertCircle, HelpCircle, Ban, LockOpen, Send, Download, Loader2, CheckCircle2, Layers
   };
 
   @ViewChild('scrollArea') scrollArea!: ElementRef<HTMLDivElement>;
