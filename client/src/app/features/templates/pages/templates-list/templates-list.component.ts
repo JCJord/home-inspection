@@ -90,7 +90,7 @@ export class TemplatesListComponent implements OnInit {
       this.templatesService.createTemplate(name.trim()).subscribe({
         next: (created) => {
           this.isActionLoading.set(false);
-          this.selectedTemplateId.set(created.id);
+          this.router.navigate(['/templates', created.id]);
         },
         error: (err) => {
           console.error('Failed to create template', err);
@@ -108,7 +108,7 @@ export class TemplatesListComponent implements OnInit {
       this.templatesService.cloneTemplate(template.id, newName.trim()).subscribe({
         next: (cloned) => {
           this.isActionLoading.set(false);
-          this.selectedTemplateId.set(cloned.id);
+          this.router.navigate(['/templates', cloned.id]);
         },
         error: (err) => {
           console.error('Failed to clone template', err);
@@ -120,7 +120,7 @@ export class TemplatesListComponent implements OnInit {
   }
 
   editTemplate(template: Template): void {
-    this.selectedTemplateId.set(template.id);
+    this.router.navigate(['/templates', template.id]);
   }
 
   deleteTemplate(template: Template): void {
