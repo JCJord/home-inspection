@@ -5,11 +5,12 @@ import { LucideAngularModule, MapPin, Trash2, Edit, Sparkles, ChevronDown, Chevr
 import { environment } from '../../../../../environments/environment';
 import { DropdownMenuComponent, DropdownItem } from '../../../../shared/components/dropdown-menu/dropdown-menu.component';
 import { PhotoCarouselComponent } from '../../../../shared/components/photo-carousel/photo-carousel.component';
+import { ConfirmPillComponent } from '../../../../shared/components/confirm-pill/confirm-pill.component';
 
 @Component({
   selector: 'app-finding-card',
   standalone: true,
-  imports: [CommonModule, LucideAngularModule, DropdownMenuComponent, PhotoCarouselComponent],
+  imports: [CommonModule, LucideAngularModule, DropdownMenuComponent, PhotoCarouselComponent, ConfirmPillComponent],
   templateUrl: './finding-card.component.html',
   styleUrl: './finding-card.component.scss',
 })

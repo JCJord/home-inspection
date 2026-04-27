@@ -24,15 +24,7 @@
 
       <div class="action-area">
         @if (isConfirmingDelete()) {
-          <div class="photo-action-pill confirming">
-            <button type="button" class="action-btn cancel-delete" (click)="isConfirmingDelete.set(false)">
-              <span class="action-text">Cancel</span>
-            </button>
-            <div class="divider"></div>
-            <button type="button" class="action-btn confirm-delete" (click)="delete.emit()">
-              <span class="action-text font-bold">Delete</span>
-            </button>
-          </div>
+          <app-confirm-pill (confirm)="delete.emit()" (cancel)="isConfirmingDelete.set(false)"></app-confirm-pill>
         } @else {
           <app-dropdown-menu [items]="menuItems()" icon="horizontal"></app-dropdown-menu>
         }

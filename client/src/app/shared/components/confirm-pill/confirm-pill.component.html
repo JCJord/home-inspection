@@ -1,0 +1,9 @@
+<div class="photo-action-pill confirming">
+  <button type="button" class="action-btn cancel-delete" (click)="cancel.emit()">
+    <span class="action-text">{{ cancelText() }}</span>
+  </button>
+  <div class="divider"></div>
+  <button type="button" class="action-btn confirm-delete" (click)="confirm.emit()">
+    <span class="action-text font-bold">{{ confirmText() }}</span>
+  </button>
+</div>

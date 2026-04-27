@@ -17,17 +17,9 @@
       </div>
     </div>
 
-    <div class="header-right">
+    <div class="header-right" [class.confirming-pill-active]="isConfirmingDelete()">
       @if (isConfirmingDelete()) {
-        <div class="photo-action-pill confirming">
-          <button type="button" class="action-btn cancel-delete" (click)="isConfirmingDelete.set(false)">
-            <span class="action-text">Cancel</span>
-          </button>
-          <div class="divider"></div>
-          <button type="button" class="action-btn confirm-delete" (click)="confirmDelete()">
-            <span class="action-text font-bold">Delete</span>
-          </button>
-        </div>
+        <app-confirm-pill (confirm)="confirmDelete()" (cancel)="isConfirmingDelete.set(false)"></app-confirm-pill>
       } @else {
         <span class="status-badge" [class]="inspection().status">
           <span class="dot"></span>

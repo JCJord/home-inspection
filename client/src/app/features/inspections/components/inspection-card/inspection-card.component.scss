@@ -79,6 +79,10 @@
       align-items: center;
       gap: 0.5rem;
       min-height: 38px;
+
+      &.confirming-pill-active {
+        justify-content: flex-end !important;
+      }
     }
 
     .photo-action-pill {
