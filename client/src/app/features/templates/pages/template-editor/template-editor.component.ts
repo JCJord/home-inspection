@@ -6,7 +6,7 @@ import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 import { TemplatesService } from '../../services/templates.service';
 import { Template, TemplateStructure, TemplateSection, TemplateField, TemplatePreset } from '../../models/template.interface';
-import { LucideAngularModule, Home, ChevronUp, ChevronDown, Hammer, Zap, Droplets, Wind, Flame, Box, Grid, Monitor, Car, Shield, Search, Info, AlertTriangle, Copy, Edit2, Trash2, Plus, Save, Lock, Unlock, ArrowLeft, Wrench, Thermometer, Lightbulb, Paintbrush, Sun, Key, Eye, Power, FileCheck, HardHat, Construction, Ruler, ShieldCheck, ShieldAlert, BrickWall, Trees, Fan, Sparkles, Wifi, WifiOff, Trash, Settings, Check, X, Users, FileText, Image, Cloud, CloudRain, CloudLightning, Snowflake, Umbrella, Compass, MapPin, Clock, Calendar, Activity, Scissors, Heart, AlertCircle, HelpCircle, Ban, LockOpen, Send, Download, Loader2, CheckCircle2, Layers } from 'lucide-angular';
+import { LucideAngularModule, Home, ChevronUp, ChevronDown, Hammer, Zap, Droplets, Wind, Flame, Box, Grid, Monitor, Car, Shield, Search, Info, AlertTriangle, Copy, Edit2, Trash2, Plus, Save, Lock, Unlock, ArrowLeft, Wrench, Thermometer, Lightbulb, Paintbrush, Sun, Key, Eye, Power, FileCheck, HardHat, Construction, Ruler, ShieldCheck, ShieldAlert, BrickWall, Trees, Fan, Sparkles, Wifi, WifiOff, Trash, Settings, Check, X, Users, FileText, Image, Cloud, CloudRain, CloudLightning, Snowflake, Umbrella, Compass, MapPin, Clock, Calendar, Activity, Scissors, Heart, AlertCircle, HelpCircle, Ban, LockOpen, Send, Download, Loader2, CheckCircle2, Layers, Menu } from 'lucide-angular';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { TextInputComponent } from '../../../../shared/components/inputs/text-input/text-input.component';
 import { TextareaInputComponent } from '../../../../shared/components/inputs/textarea-input/textarea-input.component';
@@ -16,7 +16,7 @@ import { SelectInputComponent } from '../../../../shared/components/inputs/selec
   selector: 'app-template-editor',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, LucideAngularModule, ButtonComponent, TextInputComponent, TextareaInputComponent, SelectInputComponent],
-  providers: [{ provide: 'lucideIcons', useValue: { Home, ChevronUp, ChevronDown, Hammer, Zap, Droplets, Wind, Flame, Box, Grid, Monitor, Car, Shield, Search, Info, AlertTriangle, Copy, Edit2, Trash2, Plus, Save, Lock, Unlock, ArrowLeft, Wrench, Thermometer, Lightbulb, Paintbrush, Sun, Key, Eye, Power, FileCheck, HardHat, Construction, Ruler, ShieldCheck, ShieldAlert, BrickWall, Trees, Fan, Sparkles, Wifi, WifiOff, Trash, Settings, Check, X, Users, FileText, Image, Cloud, CloudRain, CloudLightning, Snowflake, Umbrella, Compass, MapPin, Clock, Calendar, Activity, Scissors, Heart, AlertCircle, HelpCircle, Ban, LockOpen, Send, Download, Loader2, CheckCircle2, Layers } }],
+  providers: [{ provide: 'lucideIcons', useValue: { Home, ChevronUp, ChevronDown, Hammer, Zap, Droplets, Wind, Flame, Box, Grid, Monitor, Car, Shield, Search, Info, AlertTriangle, Copy, Edit2, Trash2, Plus, Save, Lock, Unlock, ArrowLeft, Wrench, Thermometer, Lightbulb, Paintbrush, Sun, Key, Eye, Power, FileCheck, HardHat, Construction, Ruler, ShieldCheck, ShieldAlert, BrickWall, Trees, Fan, Sparkles, Wifi, WifiOff, Trash, Settings, Check, X, Users, FileText, Image, Cloud, CloudRain, CloudLightning, Snowflake, Umbrella, Compass, MapPin, Clock, Calendar, Activity, Scissors, Heart, AlertCircle, HelpCircle, Ban, LockOpen, Send, Download, Loader2, CheckCircle2, Layers, Menu } }],
   templateUrl: './template-editor.component.html',
   styleUrl: './template-editor.component.scss'
 })
@@ -37,6 +37,7 @@ export class TemplateEditorComponent implements OnInit, OnDestroy {
   selectedSectionIndex = signal<number>(0);
   availableIcons = signal<string[]>([]);
   showIconPicker = signal<boolean>(false);
+  isSidebarOpen = signal<boolean>(false);
 
   severityOptions = ['Minor', 'Major', 'Safety', 'Maintenance'];
   form!: FormGroup;
@@ -47,7 +48,7 @@ export class TemplateEditorComponent implements OnInit, OnDestroy {
     Wrench, Thermometer, Lightbulb, Paintbrush, Sun, Key, Eye, Power, FileCheck, HardHat, Construction, Ruler, ShieldCheck, ShieldAlert,
     BrickWall, Trees, Fan, Sparkles, Wifi, WifiOff, Trash, Settings, Check, X, Users, FileText, Image, Cloud, CloudRain, CloudLightning,
     Snowflake, Umbrella, Compass, MapPin, Clock, Calendar, Activity, Scissors, Heart, AlertCircle, HelpCircle, Ban, LockOpen, Send,
-    Download, Loader2, CheckCircle2, Layers
+    Download, Loader2, CheckCircle2, Layers, Menu
   };
 
   isSystemDefault = computed(() => this.template()?.inspector_id === null);
@@ -196,6 +197,11 @@ export class TemplateEditorComponent implements OnInit, OnDestroy {
   selectSection(index: number): void {
     this.selectedSectionIndex.set(index);
     this.showIconPicker.set(false);
+    this.isSidebarOpen.set(false);
+  }
+
+  toggleSidebar(): void {
+    this.isSidebarOpen.set(!this.isSidebarOpen());
   }
 
   addSection(): void {
