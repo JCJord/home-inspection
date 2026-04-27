@@ -8,11 +8,13 @@ import { Template } from '../../models/template.interface';
 import { LucideAngularModule, Copy, Edit2, Trash2, Plus, Star } from 'lucide-angular';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { TemplateEditorComponent } from '../template-editor/template-editor.component';
+import { TemplateCardComponent } from '../../components/template-card/template-card.component';
 
 @Component({
   selector: 'app-templates-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideAngularModule, ButtonComponent, TemplateEditorComponent],
+  imports: [CommonModule, FormsModule, LucideAngularModule, ButtonComponent, TemplateEditorComponent, TemplateCardComponent],
+
   providers: [{ provide: 'lucideIcons', useValue: { Copy, Edit2, Trash2, Plus, Star } }],
   templateUrl: './templates-list.component.html',
   styleUrl: './templates-list.component.scss'

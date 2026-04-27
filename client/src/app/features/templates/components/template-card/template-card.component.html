@@ -1,0 +1,40 @@
+<div class="template-card rounded-xl p-6 flex flex-col justify-between transition-all shadow-sm h-full"
+  (click)="onCardClick()">
+  <div>
+    <div class="flex justify-between items-start gap-4 mb-2">
+      <div class="flex items-center gap-3 min-w-0">
+        <lucide-icon [name]="icons.FileText" [size]="20" class="text-primary flex-shrink-0"></lucide-icon>
+        <h3 class="text-lg font-bold text-standard truncate" [title]="template().name">
+          {{ template().name }}
+        </h3>
+      </div>
+
+      <div class="flex items-center gap-2 flex-shrink-0" (click)="$event.stopPropagation()">
+        @if (isConfirmingDelete()) {
+          <app-confirm-pill (confirm)="delete.emit(template()); isConfirmingDelete.set(false)" (cancel)="isConfirmingDelete.set(false)"></app-confirm-pill>
+        } @else {
+          <!-- System Badge -->
+          @if (!template().inspector_id) {
+          <span class="badge-system text-xs font-semibold px-2.5 py-0.5 rounded-full">
+            System
+          </span>
+          }
+
+          <!-- Preferred Indicator -->
+          @if (template().id === preferredTemplateId()) {
+          <span
+            class="badge-default text-xs font-semibold px-2.5 py-0.5 rounded-full flex items-center gap-1 bg-amber-50 text-amber-700 border border-amber-200">
+            <lucide-icon [name]="icons.Star" [size]="12" class="fill-amber-500 stroke-amber-500"></lucide-icon>
+            Default
+          </span>
+          }
+
+          <app-dropdown-menu [items]="menuItems()"></app-dropdown-menu>
+        }
+      </div>
+    </div>
+    <p class="text-xs text-standard-muted">
+      Last Updated: {{ template().updated_at | date:'mediumDate' }}
+    </p>
+  </div>
+</div>

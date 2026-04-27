@@ -48,58 +48,13 @@
   <!-- Grid of Templates -->
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" [class.opacity-75]="isActionLoading()">
     @for (template of filteredTemplates(); track template.id) {
-    <div class="template-card rounded-xl p-6 flex flex-col justify-between transition-all shadow-sm">
-      <div>
-        <div class="flex justify-between items-start gap-4 mb-2">
-          <h3 class="text-lg font-bold text-standard truncate" [title]="template.name">
-            {{ template.name }}
-          </h3>
-
-          <div class="flex gap-1 flex-shrink-0">
-            <!-- System Badge -->
-            @if (!template.inspector_id) {
-            <span class="badge-system text-xs font-semibold px-2.5 py-0.5 rounded-full bg-blue-50 text-primary-dark">
-              System
-            </span>
-            }
-
-            <!-- Preferred Indicator -->
-            @if (template.id === preferredTemplateId()) {
-            <span
-              class="badge-default text-xs font-semibold px-2.5 py-0.5 rounded-full flex items-center gap-1 bg-amber-50 text-amber-700 border border-amber-200">
-              <lucide-icon [name]="icons.Star" [size]="12" class="fill-amber-500 stroke-amber-500"></lucide-icon>
-              Default
-            </span>
-            }
-          </div>
-        </div>
-        <p class="text-xs text-standard-muted mb-6">
-          Last Updated: {{ template.updated_at | date:'mediumDate' }}
-        </p>
-      </div>
-
-      <!-- Actions -->
-      <div class="flex flex-wrap items-center gap-2 mt-auto pt-4 border-t border-standard">
-        <app-button (click)="cloneTemplate(template)" [isLoading]="isActionLoading()" variant="subtle" [full]="true"
-          class="flex-1" title="Clone Template">
-          <lucide-icon [name]="icons.Copy" [size]="16"></lucide-icon>
-          <span>Clone</span>
-        </app-button>
-
-        @if (template.inspector_id) {
-        <app-button (click)="editTemplate(template)" [isLoading]="isActionLoading()" variant="subtle" [full]="true"
-          class="flex-1" title="Edit Template">
-          <lucide-icon [name]="icons.Edit2" [size]="16"></lucide-icon>
-          <span>Edit</span>
-        </app-button>
-
-        <app-button (click)="deleteTemplate(template)" [isLoading]="isActionLoading()" variant="danger"
-          title="Delete Template">
-          <lucide-icon [name]="icons.Trash2" [size]="16"></lucide-icon>
-        </app-button>
-        }
-      </div>
-    </div>
+    <app-template-card 
+      [template]="template" 
+      [preferredTemplateId]="preferredTemplateId()"
+      (clone)="cloneTemplate($event)"
+      (edit)="editTemplate($event)"
+      (delete)="deleteTemplate($event)">
+    </app-template-card>
     }
   </div>
 
