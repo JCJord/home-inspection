@@ -1,8 +1,11 @@
-<div class="inspections-container">
-  <div class="header">
-    <h1>Inspections</h1>
-    <app-button variant="solid" size="sm" (click)="toggleForm()">
-      <lucide-icon [name]="icons.Plus" [size]="18" class="mr-2"></lucide-icon>
+<div class="inspections-container max-w-7xl mx-auto p-6 pb-24 relative">
+  <div class="flex flex-wrap gap-3 justify-between items-center mb-6">
+    <div>
+      <h1 class="text-2xl font-bold text-standard mb-2">Inspections</h1>
+      <p class="text-standard-muted text-sm">Conduct and manage property assessments.</p>
+    </div>
+    <app-button (click)="toggleForm()" variant="solid">
+      <lucide-icon [name]="icons.Plus" [size]="18"></lucide-icon>
       <span>{{ isFormOpen() ? 'Cancel' : 'Add Inspection' }}</span>
     </app-button>
   </div>
