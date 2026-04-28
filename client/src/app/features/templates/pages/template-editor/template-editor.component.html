@@ -9,16 +9,22 @@
         <button type="button" class="back-btn" (click)="goBack()" title="Go Back">
           <lucide-icon [name]="iconMap['ArrowLeft']" [size]="20"></lucide-icon>
         </button>
-        <button type="button" class="back-btn burger-btn" (click)="toggleSidebar()" title="Toggle Sections">
+        <button type="button" class="burger-btn flex items-center gap-1" (click)="toggleSidebar()" title="Toggle Sections">
           <lucide-icon [name]="iconMap['Menu']" [size]="20"></lucide-icon>
+          <span class="text-sm font-medium">Sections</span>
         </button>
-        <div class="min-w-0">
-          <h1 class="text-lg font-bold text-standard truncate" [title]="template()?.name">
-            {{ template()?.name }}
-          </h1>
-          <p class="text-xs text-standard-muted">
-            {{ isSystemDefault() ? 'Protected System Blueprint' : 'Custom Operational Template (Auto-saving enabled)' }}
-          </p>
+
+        <div class="min-w-0 flex flex-col justify-center">
+          <span class="text-xs text-standard-muted truncate">{{ template()?.name }}</span>
+          
+          @if (currentSection) {
+            <button type="button" (click)="toggleSidebar()" class="flex items-center gap-1 text-lg font-bold text-primary active:scale-95 transition-transform text-left">
+              <span class="truncate">{{ currentSection.get('name')?.value || 'Unnamed Section' }}</span>
+              <lucide-icon [name]="iconMap['ChevronDown']" [size]="16" class="flex-shrink-0"></lucide-icon>
+            </button>
+          } @else {
+            <h1 class="text-lg font-bold text-standard truncate">Edit Blueprint</h1>
+          }
         </div>
       </div>
 

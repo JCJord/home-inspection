@@ -157,13 +157,13 @@
         @if (section.fields && section.fields.length > 0) {
           <div class="flex flex-wrap gap-3 p-4 mb-6 bg-surface-standard rounded-xl border border-standard">
             @for (field of section.fields; track field.key) {
-              <div class="flex items-center gap-2 bg-light-standard px-3 py-1.5 rounded-lg border border-standard shadow-sm">
-                <span class="text-xs font-bold text-standard-muted">{{ field.label }}:</span>
+              <div class="flex items-center gap-2 bg-light-standard px-3 py-1.5 rounded-lg border border-standard shadow-sm w-full sm:w-auto">
+                <span class="text-xs font-bold text-standard-muted whitespace-nowrap">{{ field.label }}:</span>
                 <input 
                   type="text" 
                   [value]="inspection()?.metadata_values?.[field.key] || ''"
                   (change)="updateMetadataValue(field.key, $event)"
-                  class="bg-transparent border-none text-xs text-standard focus:outline-none focus:ring-0 p-0 w-32 font-medium"
+                  class="bg-transparent border-none text-xs text-standard focus:outline-none focus:ring-0 p-0 w-full sm:w-32 font-medium"
                   placeholder="Tap to set..."
                 />
               </div>
