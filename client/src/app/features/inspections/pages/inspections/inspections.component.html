@@ -1,13 +1,22 @@
 <div class="inspections-container max-w-7xl mx-auto p-6 pb-24 relative min-h-full h-auto">
   <div class="flex flex-wrap gap-3 justify-between items-center mb-6">
-    <div>
-      <h1 class="text-2xl font-bold text-standard mb-2">Inspections</h1>
-      <p class="text-standard-muted text-sm">Conduct and manage property assessments.</p>
+    <div class="flex items-center gap-3">
+      @if (isFormOpen()) {
+      <button class="back-btn" (click)="closeForm()">
+        <lucide-icon [name]="icons.ArrowLeft" [size]="20"></lucide-icon>
+      </button>
+      }
+      <div>
+        <h1 class="text-2xl font-bold text-standard mb-2">Inspections</h1>
+        <p class="text-standard-muted text-sm">Conduct and manage property assessments.</p>
+      </div>
     </div>
+    @if (!isFormOpen()) {
     <app-button (click)="toggleForm()" variant="solid">
       <lucide-icon [name]="icons.Plus" [size]="18"></lucide-icon>
-      <span>{{ isFormOpen() ? 'Cancel' : 'Add Inspection' }}</span>
+      <span>Add Inspection</span>
     </app-button>
+    }
   </div>
 
   <div class="content">

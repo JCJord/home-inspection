@@ -3,6 +3,32 @@
 .inspections-container {
 
 
+  .back-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 0.75rem;
+    border: 1px solid $color-border;
+    background: $color-surface;
+    color: $color-text-muted;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all 0.2s;
+
+    &:hover:not(:disabled) {
+      background: $color-surface-light;
+      color: $color-text;
+      border-color: $color-primary;
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+
   .content {
 
     .loading-state,

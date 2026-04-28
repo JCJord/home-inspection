@@ -4,7 +4,7 @@ import { InspectionsService } from '../../../../core/services/inspections.servic
 import { Inspection } from '../../../../core/models/inspection.interface';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { SkeletonComponent } from '../../../../shared/components/skeleton/skeleton.component';
-import { ClipboardList, LucideAngularModule, Plus } from 'lucide-angular';
+import { ArrowLeft, ClipboardList, LucideAngularModule, Plus } from 'lucide-angular';
 import { InspectionFormComponent } from '../../components/inspection-form/inspection-form.component';
 import { InspectionCardComponent } from '../../components/inspection-card/inspection-card.component';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
@@ -28,7 +28,7 @@ export class InspectionsComponent implements OnInit {
   totalItems = signal<number>(0);
   itemsPerPage = signal<number>(10);
 
-  readonly icons = { Plus, ClipboardList };
+  readonly icons = { ArrowLeft, Plus, ClipboardList };
 
   ngOnInit(): void {
     this.loadInspections();

@@ -1,8 +1,5 @@
 <div class="form-container" [class.edit-mode]="isEditMode()">
   <div class="form-header">
-    <button class="back-btn" (click)="close.emit()" [disabled]="isLoading()">
-      <lucide-icon [name]="icons.ArrowLeft" [size]="20"></lucide-icon>
-    </button>
     <h2>{{ isEditMode() ? 'Edit Inspection' : 'New Inspection' }}</h2>
   </div>
 
