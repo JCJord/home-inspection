@@ -126,9 +126,9 @@ export class TemplateEditorComponent implements OnInit, OnDestroy {
             ),
             presets: this.fb.array(
               (sec.presets || []).map(p => this.fb.group({
-                title: [p.title, Validators.required],
+                title: [p.title, [Validators.required, Validators.maxLength(200)]],
                 severity: [p.severity || 'Minor', Validators.required],
-                description: [p.description || '']
+                description: [p.description || '', [Validators.maxLength(2200)]]
               }))
             )
           }))
@@ -278,8 +278,8 @@ export class TemplateEditorComponent implements OnInit, OnDestroy {
     if (this.isSystemDefault()) return;
     const presets = this.getPresetsFormArray(this.selectedSectionIndex());
     presets.push(this.fb.group({
-      title: ['New Finding Preset', Validators.required],
-      description: [''],
+      title: ['New Finding Preset', [Validators.required, Validators.maxLength(200)]],
+      description: ['', [Validators.maxLength(2200)]],
       severity: ['Minor', Validators.required]
     }));
   }
