@@ -1,30 +1,16 @@
 <div class="inspections-container max-w-7xl mx-auto p-6 pb-24 relative min-h-full h-auto">
   <div class="flex flex-wrap gap-3 justify-between items-center mb-6">
-    <div class="flex items-center gap-3">
-      @if (isFormOpen()) {
-      <button class="back-btn" (click)="closeForm()">
-        <lucide-icon [name]="icons.ArrowLeft" [size]="20"></lucide-icon>
-      </button>
-      }
-      <div>
-        <h1 class="text-2xl font-bold text-standard mb-2">Inspections</h1>
-        <p class="text-standard-muted text-sm">Conduct and manage property assessments.</p>
-      </div>
+    <div>
+      <h1 class="text-2xl font-bold text-standard mb-2">Inspections</h1>
+      <p class="text-standard-muted text-sm">Conduct and manage property assessments.</p>
     </div>
-    @if (!isFormOpen()) {
-    <app-button (click)="toggleForm()" variant="solid">
+    <app-button (click)="addInspection()" variant="solid">
       <lucide-icon [name]="icons.Plus" [size]="18"></lucide-icon>
       <span>Add Inspection</span>
     </app-button>
-    }
   </div>
 
   <div class="content">
-    @if (isFormOpen()) {
-    <app-inspection-form [inspection]="editingInspection()" (close)="closeForm()"
-      (saved)="onSaved($event)"></app-inspection-form>
-    }
-
     @if (isLoading()) {
     <div class="flex flex-col gap-6 animate-pulse">
       @for (i of [1,2,3]; track i) {
@@ -64,7 +50,7 @@
       </div>
       }
     </div>
-    } @else if (inspections().length > 0 && !isFormOpen()) {
+    } @else if (inspections().length > 0) {
     <div class="inspections-list">
       @for (inspection of inspections(); track inspection.id) {
       <app-inspection-card [inspection]="inspection" (edit)="editInspection($event)"
@@ -75,7 +61,7 @@
     <app-pagination [currentPage]="currentPage()" [totalItems]="totalItems()" [itemsPerPage]="itemsPerPage()"
       (pageChanged)="onPageChange($event)">
     </app-pagination>
-    } @else if (!isFormOpen()) {
+    } @else {
     <div class="empty-state">
       <lucide-icon [name]="icons.ClipboardList" class="mb-4 text-muted"></lucide-icon>
       <p>No inspections found. Start by creating a new one!</p>

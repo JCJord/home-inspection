@@ -1,19 +1,20 @@
-import { Component, inject, signal, input, computed, effect, output, OnInit } from '@angular/core';
+import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { TextInputComponent } from '../../../../shared/components/inputs/text-input/text-input.component';
-import { LucideAngularModule, ArrowLeft, AlertCircle } from 'lucide-angular';
+import { SkeletonComponent } from '../../../../shared/components/skeleton/skeleton.component';
+import { LucideAngularModule, AlertCircle, ArrowLeft } from 'lucide-angular';
 import { InspectionsService } from '../../../../core/services/inspections.service';
 import { Inspection } from '../../../../core/models/inspection.interface';
-
 import { TemplatesService } from '../../../templates/services/templates.service';
 import { SelectInputComponent, SelectOption } from '../../../../shared/components/inputs/select-input/select-input.component';
 
 @Component({
   selector: 'app-inspection-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ButtonComponent, TextInputComponent, SelectInputComponent, LucideAngularModule],
+  imports: [CommonModule, ReactiveFormsModule, ButtonComponent, TextInputComponent, SelectInputComponent, LucideAngularModule, SkeletonComponent],
   templateUrl: './inspection-form.component.html',
   styleUrl: './inspection-form.component.scss',
 })
@@ -21,20 +22,21 @@ export class InspectionFormComponent implements OnInit {
   private fb = inject(FormBuilder);
   private inspectionsService = inject(InspectionsService);
   private templatesService = inject(TemplatesService);
-
-  inspection = input<Inspection | null>(null);
-
-  close = output<void>();
-  saved = output<Inspection>();
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
 
   isLoading = signal<boolean>(false);
+  isFetching = signal<boolean>(false);
   errorMessage = signal<string | null>(null);
 
-  isEditMode = computed(() => !!this.inspection());
+  private inspectionId = signal<string | null>(null);
+  private inspection = signal<Inspection | null>(null);
+
+  isEditMode = computed(() => !!this.inspectionId());
 
   availableTemplates = signal<SelectOption[]>([]);
 
-  readonly icons = { ArrowLeft, AlertCircle };
+  readonly icons = { AlertCircle, ArrowLeft };
 
   inspectionForm: FormGroup = this.fb.group({
     address: ['', [Validators.required]],
@@ -51,29 +53,20 @@ export class InspectionFormComponent implements OnInit {
   });
 
   ngOnInit(): void {
+    const id = this.route.snapshot.paramMap.get('id');
+    if (id) {
+      this.inspectionId.set(id);
+      this.fetchInspection(id);
+    }
     this.loadTemplates();
   }
 
-  loadTemplates(): void {
-    this.templatesService.getTemplates().subscribe({
-      next: (templates) => {
-        const opts = templates.map(t => ({
-          value: t.id,
-          label: t.name
-        }));
-        this.availableTemplates.set(opts);
-        if (opts.length > 0 && !this.isEditMode() && !this.inspectionForm.get('template_id')?.value) {
-          this.inspectionForm.get('template_id')?.setValue(opts[0].value);
-        }
-      },
-      error: (err) => console.error('Failed to load templates', err)
-    });
-  }
-
-  constructor() {
-    effect(() => {
-      const data = this.inspection();
-      if (data) {
+  private fetchInspection(id: string): void {
+    this.isFetching.set(true);
+    this.errorMessage.set(null);
+    this.inspectionsService.getInspectionById(id).subscribe({
+      next: (data) => {
+        this.inspection.set(data);
         this.inspectionForm.patchValue({
           address: data.address,
           client_name: data.client_name,
@@ -85,14 +78,36 @@ export class InspectionFormComponent implements OnInit {
           occupancy: data.occupancy || '',
           attendees: data.attendees || '',
           foundation_type: data.foundation_type || '',
-          template_id: data.template_id || ''
+          template_id: data.template_id || '',
         });
-      } else {
-        this.inspectionForm.reset({
-          year_built: new Date().getFullYear()
-        });
-      }
+        this.isFetching.set(false);
+      },
+      error: (err) => {
+        console.error('Failed to load inspection for editing', err);
+        this.errorMessage.set('Could not load inspection data. Please go back and try again.');
+        this.isFetching.set(false);
+      },
     });
+  }
+
+  private loadTemplates(): void {
+    this.templatesService.getTemplates().subscribe({
+      next: (templates) => {
+        const opts = templates.map(t => ({
+          value: t.id,
+          label: t.name,
+        }));
+        this.availableTemplates.set(opts);
+        if (opts.length > 0 && !this.isEditMode() && !this.inspectionForm.get('template_id')?.value) {
+          this.inspectionForm.get('template_id')?.setValue(opts[0].value);
+        }
+      },
+      error: (err) => console.error('Failed to load templates', err),
+    });
+  }
+
+  goBack(): void {
+    this.router.navigate(['/inspections']);
   }
 
   onSubmit(): void {
@@ -112,25 +127,21 @@ export class InspectionFormComponent implements OnInit {
         formValue.year_built = Number(formValue.year_built);
       }
 
-      const request$ = this.isEditMode()
-        ? this.inspectionsService.updateInspection(this.inspection()!.id, formValue)
+      const id = this.inspectionId();
+      const request$ = id
+        ? this.inspectionsService.updateInspection(id, formValue)
         : this.inspectionsService.createInspection(formValue);
 
       request$.subscribe({
-        next: (response) => {
+        next: () => {
           this.isLoading.set(false);
-          this.saved.emit(response);
-          if (!this.isEditMode()) {
-            this.inspectionForm.reset({
-              year_built: new Date().getFullYear()
-            });
-          }
+          this.router.navigate(['/inspections']);
         },
         error: (err) => {
-          console.error(`Failed to ${this.isEditMode() ? 'update' : 'create'} inspection`, err);
+          console.error(`Failed to ${id ? 'update' : 'create'} inspection`, err);
           this.errorMessage.set(err.error?.message || 'An unexpected error occurred. Please try again.');
           this.isLoading.set(false);
-        }
+        },
       });
     } else {
       this.inspectionForm.markAllAsTouched();

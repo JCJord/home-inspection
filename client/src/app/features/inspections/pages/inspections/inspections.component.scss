@@ -1,94 +1,41 @@
 @use 'variables' as *;
 
 .inspections-container {
-
-
-  .back-btn {
+  .loading-state,
+  .empty-state {
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    width: 2.5rem;
-    height: 2.5rem;
-    border-radius: 0.75rem;
-    border: 1px solid $color-border;
-    background: $color-surface;
+    padding: 5rem 2rem;
     color: $color-text-muted;
-    cursor: pointer;
-    flex-shrink: 0;
-    transition: all 0.2s;
+    background: $color-surface;
+    border-radius: 1.5rem;
+    border: 1px solid $color-border;
+    text-align: center;
 
-    &:hover:not(:disabled) {
-      background: $color-surface-light;
-      color: $color-text;
+    .spinner-primary {
       border-color: $color-primary;
+      border-top-color: transparent;
+      margin-bottom: 1.5rem;
     }
 
-    &:disabled {
+    lucide-icon {
+      width: 3rem;
+      height: 3rem;
+      margin-bottom: 1.5rem;
       opacity: 0.5;
-      cursor: not-allowed;
+    }
+
+    span,
+    p {
+      font-size: 1.125rem;
     }
   }
 
-  .content {
-
-    .loading-state,
-    .empty-state {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 5rem 2rem;
-      color: $color-text-muted;
-      background: $color-surface;
-      border-radius: 1.5rem;
-      border: 1px solid $color-border;
-      text-align: center;
-
-      .spinner-primary {
-        border-color: $color-primary;
-        border-top-color: transparent;
-        margin-bottom: 1.5rem;
-      }
-
-      lucide-icon {
-        width: 3rem;
-        height: 3rem;
-        margin-bottom: 1.5rem;
-        opacity: 0.5;
-      }
-
-      span,
-      p {
-        font-size: 1.125rem;
-      }
-    }
-
-    .inspections-list {
-      display: grid;
-      gap: 1.5rem;
-
-      .inspection-card {
-        background: $color-surface;
-        padding: 1.5rem;
-        border-radius: 1rem;
-        border: 1px solid $color-border;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-        transition: transform 0.2s;
-
-        &:hover {
-          border-color: $color-primary;
-        }
-
-        pre {
-          font-family: 'JetBrains Mono', 'Fira Code', monospace;
-          font-size: 0.75rem;
-          color: $color-text-muted;
-          margin: 0;
-          white-space: pre-wrap;
-          word-break: break-all;
-        }
-      }
-    }
+  .inspections-list {
+    display: grid;
+    gap: 1.5rem;
   }
 }
 
