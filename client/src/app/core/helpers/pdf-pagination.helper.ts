@@ -82,7 +82,9 @@ export class PdfPaginationHelper {
             const row = dataRows[rowIndex];
             const rowHeight = this.calculateRowHeight(row, dataRows, groupsProcessed);
 
-            if (rowHeight > availableSpace) {
+            const hasDataRows = currentTable.querySelectorAll('tr:not(.table-header)').length > 0;
+
+            if (rowHeight > 0 && rowHeight > availableSpace && hasDataRows) {
               this.addFooterToPage(currentPageWrapper, footerElement as HTMLElement);
               currentPageWrapper = this.createNewPage(headerElement as HTMLElement, [], false);
               pages.push(currentPageWrapper);
@@ -127,7 +129,9 @@ export class PdfPaginationHelper {
           dataRows.forEach((row) => {
             const rowHeight = this.calculateRowHeight(row, dataRows, groupsProcessed);
 
-            if (rowHeight > availableSpace) {
+            const hasDataRows = currentTable.querySelectorAll('tr:not(.table-header)').length > 0;
+
+            if (rowHeight > 0 && rowHeight > availableSpace && hasDataRows) {
               this.addFooterToPage(currentPageWrapper, footerElement as HTMLElement);
               currentPageWrapper = this.createNewPage(headerElement as HTMLElement, [], false);
               pages.push(currentPageWrapper);
