@@ -102,6 +102,16 @@ export class ReportGeneratorComponent implements OnInit {
     );
   }
 
+  getSectionFields(sectionName: string): any[] {
+    if (!this.inspection?.template_snapshot?.sections) return [];
+    const section = this.inspection.template_snapshot.sections.find(s => s.name === sectionName);
+    return section?.fields || [];
+  }
+
+  getSectionMetadata(key: string): string | null {
+    return this.inspection?.metadata_values?.[key] || null;
+  }
+
   getCoverPhoto(): string | null {
     if (!this.inspection?.findings) return null;
     // Look for an exterior photo first

@@ -333,12 +333,29 @@
                <tr class="table-header" style="background: #111;">
                   <td colspan="2" style="padding: 0; border: none;">
                      <div class="finding-header-cell"
-                        style="padding: 30px; display: flex; align-items: center; gap: 25px; color: white;">
-                        <span class="index" style="font-size: 32px; font-weight: 900; opacity: 0.4;">3.{{ groupIndex + 1
-                           }}</span>
-                        <span class="category"
-                           style="font-size: 28px; font-weight: 800; flex: 1; text-transform: uppercase;">{{
-                           group.section }} Assessment</span>
+                        style="padding: 30px; display: flex; flex-direction: column; gap: 10px; color: white;">
+                        
+                        <div style="display: flex; align-items: center; gap: 25px;">
+                            <span class="index" style="font-size: 32px; font-weight: 900; opacity: 0.4;">3.{{ groupIndex + 1 }}</span>
+                            <span class="category"
+                               style="font-size: 28px; font-weight: 800; flex: 1; text-transform: uppercase;">{{
+                               group.section }} Assessment</span>
+                        </div>
+                        
+                        <!-- Metadata Sub-Header for Section -->
+                        @if (getSectionFields(group.section).length > 0) {
+                        <div style="display: flex; flex-wrap: wrap; gap: 30px; padding-left: 60px; margin-top: 5px;">
+                            @for (field of getSectionFields(group.section); track field.key) {
+                              @if (getSectionMetadata(field.key)) {
+                                 <div style="font-size: 18px; font-weight: 500; color: #ccc;">
+                                    <span style="text-transform: uppercase; font-weight: 800; color: #888; font-size: 14px; margin-right: 8px;">{{ field.label }}:</span>
+                                    {{ getSectionMetadata(field.key) }}
+                                 </div>
+                              }
+                            }
+                        </div>
+                        }
+
                      </div>
                   </td>
                </tr>
