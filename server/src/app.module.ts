@@ -21,7 +21,7 @@ import { TemplatesModule } from './templates/templates.module';
     ConfigModule.forRoot({ isGlobal: true }),
     ThrottlerModule.forRoot([{
       ttl: 60000,
-      limit: 10,
+      limit: 300,
     }]),
     ServeStaticModule.forRoot({
       rootPath: join(process.cwd(), 'uploads'),
@@ -46,4 +46,4 @@ import { TemplatesModule } from './templates/templates.module';
     },
   ],
 })
-export class AppModule {}
+export class AppModule { }
