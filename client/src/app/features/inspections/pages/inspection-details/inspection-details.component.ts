@@ -96,7 +96,11 @@ export class InspectionDetailsComponent implements OnInit {
   }
 
   goBack(): void {
-    this.router.navigate(['/inspections']);
+    if (this.isAddingFinding() || this.findingToEdit()) {
+      this.cancelFindingForm();
+    } else {
+      this.router.navigate(['/inspections']);
+    }
   }
 
   startPublishWorkflow(): void {

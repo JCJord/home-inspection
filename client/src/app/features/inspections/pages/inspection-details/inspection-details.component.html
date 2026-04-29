@@ -58,7 +58,7 @@
   <!-- Header -->
   <div class="details-header">
     <div class="header-left">
-      <app-back-button fallbackUrl="/inspections"></app-back-button>
+      <app-back-button (clicked)="goBack()"></app-back-button>
       <div class="header-info">
         <h1 class="address">{{ insp.address }}</h1>
         <span class="client-name">{{ insp.client_name }}</span>
