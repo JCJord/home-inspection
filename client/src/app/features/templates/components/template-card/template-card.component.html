@@ -1,5 +1,15 @@
-<div class="template-card rounded-xl p-6 flex flex-col justify-between transition-all shadow-sm h-full"
+<div class="template-card rounded-xl p-6 flex flex-col justify-between transition-all shadow-sm h-full relative overflow-hidden"
+  [class.pt-12]="!template().inspector_id"
   (click)="onCardClick()">
+
+  <!-- Official Framed Ribbon Badge -->
+  @if (!template().inspector_id) {
+  <div class="official-ribbon-badge absolute top-0 left-0 flex items-center gap-1 px-3 py-1 rounded-br-xl font-bold text-[10px] uppercase tracking-wider shadow-sm z-10">
+    <lucide-icon [name]="icons.Award" [size]="14" class="text-white fill-white fill-opacity-20"></lucide-icon>
+    <span>Official Blueprint</span>
+  </div>
+  }
+
   <div>
     <div class="flex justify-between items-start gap-4 mb-2">
       <div class="flex items-center gap-3 min-w-0">
@@ -13,12 +23,6 @@
         @if (isConfirmingDelete()) {
           <app-confirm-pill (confirm)="delete.emit(template()); isConfirmingDelete.set(false)" (cancel)="isConfirmingDelete.set(false)"></app-confirm-pill>
         } @else {
-          <!-- System Badge -->
-          @if (!template().inspector_id) {
-          <span class="badge-system text-xs font-semibold px-2.5 py-0.5 rounded-full">
-            System
-          </span>
-          }
 
           <!-- Preferred Indicator -->
           @if (template().id === preferredTemplateId()) {

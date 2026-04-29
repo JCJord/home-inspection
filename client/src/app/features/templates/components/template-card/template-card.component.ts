@@ -1,7 +1,7 @@
 import { Component, computed, input, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Template } from '../../models/template.interface';
-import { LucideAngularModule, Copy, Trash2, Star, FileText, LayoutGrid, Database, CheckCircle } from 'lucide-angular';
+import { LucideAngularModule, Copy, Trash2, Star, FileText, LayoutGrid, Database, CheckCircle, Award } from 'lucide-angular';
 import { DropdownMenuComponent, DropdownItem } from '../../../../shared/components/dropdown-menu/dropdown-menu.component';
 import { ConfirmPillComponent } from '../../../../shared/components/confirm-pill/confirm-pill.component';
 
@@ -29,7 +29,8 @@ export class TemplateCardComponent {
     FileText,
     LayoutGrid,
     Database,
-    CheckCircle
+    CheckCircle,
+    Award
   };
 
   sectionCount = computed(() => this.template().structure?.sections?.length || 0);
