@@ -86,39 +86,11 @@ export class TemplatesListComponent implements OnInit {
   }
 
   createNewTemplate(): void {
-    const name = window.prompt('Enter a name for your new custom template:', 'New Blueprint');
-    if (name && name.trim()) {
-      this.isActionLoading.set(true);
-      this.templatesService.createTemplate(name.trim()).subscribe({
-        next: (created) => {
-          this.isActionLoading.set(false);
-          this.router.navigate(['/templates', created.id]);
-        },
-        error: (err) => {
-          console.error('Failed to create template', err);
-          this.isActionLoading.set(false);
-          alert('Failed to create template.');
-        }
-      });
-    }
+    this.router.navigate(['/templates/new']);
   }
 
   cloneTemplate(template: Template): void {
-    const newName = window.prompt('Enter a name for the cloned template:', `Copy of ${template.name}`);
-    if (newName && newName.trim()) {
-      this.isActionLoading.set(true);
-      this.templatesService.cloneTemplate(template.id, newName.trim()).subscribe({
-        next: (cloned) => {
-          this.isActionLoading.set(false);
-          this.router.navigate(['/templates', cloned.id]);
-        },
-        error: (err) => {
-          console.error('Failed to clone template', err);
-          this.isActionLoading.set(false);
-          alert('Failed to clone template.');
-        }
-      });
-    }
+    this.router.navigate(['/templates/new'], { queryParams: { cloneOf: template.id } });
   }
 
   editTemplate(template: Template): void {
