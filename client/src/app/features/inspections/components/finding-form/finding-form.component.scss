@@ -3,10 +3,8 @@
 .finding-form-container {
   background: $color-surface;
   border-radius: 1rem;
-  border: 1px solid $color-border;
   padding: 1.5rem;
   margin-top: 1rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
   animation: slideDown 0.3s ease-out;
 
   .form-body {
@@ -196,11 +194,12 @@
             transition: all 0.2s;
 
             .action-text {
-              font-size: 0.75rem; /* 12px */
+              font-size: 0.75rem;
+              /* 12px */
               font-weight: 500;
               letter-spacing: 0.02em;
               white-space: nowrap;
-              
+
               &.font-bold {
                 font-weight: 700;
               }
@@ -208,24 +207,40 @@
 
             &.edit {
               color: white;
-              &:hover { color: $color-primary; transform: scale(1.1); }
+
+              &:hover {
+                color: $color-primary;
+                transform: scale(1.1);
+              }
             }
 
             &.delete {
               color: $color-error;
-              &:hover { opacity: 0.8; transform: scale(1.1); }
+
+              &:hover {
+                opacity: 0.8;
+                transform: scale(1.1);
+              }
             }
 
             &.cancel-delete {
               color: white;
               padding: 0 4px;
-              &:hover { color: $color-primary; transform: scale(1.05); }
+
+              &:hover {
+                color: $color-primary;
+                transform: scale(1.05);
+              }
             }
-            
+
             &.confirm-delete {
               color: white;
               padding: 0 4px;
-              &:hover { color: $color-error; transform: scale(1.05); }
+
+              &:hover {
+                color: $color-error;
+                transform: scale(1.05);
+              }
             }
           }
         }
@@ -324,7 +339,7 @@
         background: rgba($color-text-muted, 0.05);
         color: $color-text-muted;
         border-color: $color-border;
-        
+
         &:hover {
           transform: none;
         }
@@ -352,6 +367,7 @@
     margin-top: 0.5rem;
     border-top: 1px solid $color-border;
     padding-top: 1.25rem;
+
     .ai-status-container {
       display: flex;
       align-items: center;
@@ -379,13 +395,25 @@
 }
 
 @keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-4px); }
-  75% { transform: translateX(4px); }
+
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  25% {
+    transform: translateX(-4px);
+  }
+
+  75% {
+    transform: translateX(4px);
+  }
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes slideDown {
