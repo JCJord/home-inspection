@@ -1,9 +1,7 @@
 <div class="max-w-7xl mx-auto p-6 pb-24 relative min-h-full h-auto">
   <div class="form-page-header">
     <div class="flex items-center gap-3">
-      <button class="back-btn" (click)="goBack()">
-        <lucide-icon [name]="icons.ArrowLeft" [size]="20"></lucide-icon>
-      </button>
+      <app-back-button fallbackUrl="/inspections"></app-back-button>
       <div>
         <h1 class="text-2xl font-bold text-standard mb-1">
           {{ isEditMode() ? 'Edit Inspection' : 'New Inspection' }}

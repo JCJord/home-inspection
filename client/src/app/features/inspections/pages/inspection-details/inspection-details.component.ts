@@ -12,12 +12,22 @@ import { Section } from '../../../../core/enums/inspection.enums';
 import { SkeletonComponent } from '../../../../shared/components/skeleton/skeleton.component';
 import { LucideAngularModule, ArrowLeft, Send, RefreshCw, AlertCircle, Plus, X, Check, Loader2, FileText, Download, LockOpen } from 'lucide-angular';
 import { ReportGeneratorComponent } from '../../../reports/components/report-generator/report-generator.component';
-
+import { BackButtonComponent } from '../../../../shared/components/back-button/back-button.component';
 
 @Component({
   selector: 'app-inspection-details',
   standalone: true,
-  imports: [CommonModule, ButtonComponent, SectionTabsComponent, FindingFormComponent, FindingCardComponent, LucideAngularModule, SkeletonComponent, ReportGeneratorComponent],
+  imports: [
+    CommonModule,
+    ButtonComponent,
+    SectionTabsComponent,
+    FindingFormComponent,
+    FindingCardComponent,
+    LucideAngularModule,
+    SkeletonComponent,
+    ReportGeneratorComponent,
+    BackButtonComponent
+  ],
   templateUrl: './inspection-details.component.html',
   styleUrl: './inspection-details.component.scss',
 })

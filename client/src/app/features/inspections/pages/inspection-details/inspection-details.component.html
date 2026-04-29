@@ -58,9 +58,7 @@
   <!-- Header -->
   <div class="details-header">
     <div class="header-left">
-      <button class="back-btn" (click)="goBack()">
-        <lucide-icon [name]="icons.ArrowLeft" [size]="20"></lucide-icon>
-      </button>
+      <app-back-button fallbackUrl="/inspections"></app-back-button>
       <div class="header-info">
         <h1 class="address">{{ insp.address }}</h1>
         <span class="client-name">{{ insp.client_name }}</span>

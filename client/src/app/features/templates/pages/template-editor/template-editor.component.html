@@ -6,9 +6,7 @@
     <header
       class="editor-header flex justify-between items-center px-6 py-4 border-b border-standard bg-surface-standard shadow-sm z-10">
       <div class="flex items-center gap-3 min-w-0">
-        <button type="button" class="back-btn" (click)="goBack()" title="Go Back">
-          <lucide-icon [name]="iconMap['ArrowLeft']" [size]="20"></lucide-icon>
-        </button>
+        <app-back-button (clicked)="goBack()"></app-back-button>
         <button type="button" class="burger-btn flex items-center gap-1" (click)="toggleSidebar()" title="Toggle Sections">
           <lucide-icon [name]="iconMap['Menu']" [size]="20"></lucide-icon>
           <span class="text-sm font-medium">Sections</span>

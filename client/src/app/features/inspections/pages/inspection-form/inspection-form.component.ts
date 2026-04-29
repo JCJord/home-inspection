@@ -10,11 +10,21 @@ import { InspectionsService } from '../../../../core/services/inspections.servic
 import { Inspection } from '../../../../core/models/inspection.interface';
 import { TemplatesService } from '../../../templates/services/templates.service';
 import { SelectInputComponent, SelectOption } from '../../../../shared/components/inputs/select-input/select-input.component';
+import { BackButtonComponent } from '../../../../shared/components/back-button/back-button.component';
 
 @Component({
   selector: 'app-inspection-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ButtonComponent, TextInputComponent, SelectInputComponent, LucideAngularModule, SkeletonComponent],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    ButtonComponent,
+    TextInputComponent,
+    SelectInputComponent,
+    LucideAngularModule,
+    SkeletonComponent,
+    BackButtonComponent
+  ],
   templateUrl: './inspection-form.component.html',
   styleUrl: './inspection-form.component.scss',
 })

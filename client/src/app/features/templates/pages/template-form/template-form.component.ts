@@ -6,6 +6,7 @@ import { TemplatesService } from '../../services/templates.service';
 import { LucideAngularModule, ArrowLeft, AlertCircle, FileText } from 'lucide-angular';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { TextInputComponent } from '../../../../shared/components/inputs/text-input/text-input.component';
+import { BackButtonComponent } from '../../../../shared/components/back-button/back-button.component';
 
 @Component({
   selector: 'app-template-form',
@@ -15,7 +16,8 @@ import { TextInputComponent } from '../../../../shared/components/inputs/text-in
     ReactiveFormsModule,
     LucideAngularModule,
     ButtonComponent,
-    TextInputComponent
+    TextInputComponent,
+    BackButtonComponent
   ],
   templateUrl: './template-form.component.html',
   styleUrl: './template-form.component.scss',
