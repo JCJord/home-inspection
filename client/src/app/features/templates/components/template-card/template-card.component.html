@@ -33,8 +33,34 @@
         }
       </div>
     </div>
-    <p class="text-xs text-standard-muted">
+    <p class="text-xs text-standard-muted mb-4">
       Last Updated: {{ template().updated_at | date:'mediumDate' }}
     </p>
+
+    <!-- Blueprint Stats Section -->
+    <div class="grid grid-cols-3 gap-2 py-4 border-t border-b border-standard border-opacity-50 my-4 bg-light-standard bg-opacity-50 rounded-xl px-2">
+      <div class="flex flex-col items-center text-center p-2">
+        <lucide-icon [name]="icons.LayoutGrid" [size]="18" class="text-primary mb-1"></lucide-icon>
+        <span class="text-base font-bold text-standard">{{ sectionCount() }}</span>
+        <span class="text-[10px] uppercase tracking-wider text-standard-muted font-semibold">Sections</span>
+      </div>
+      <div class="flex flex-col items-center text-center p-2 border-x border-standard border-opacity-30">
+        <lucide-icon [name]="icons.Database" [size]="18" class="text-success mb-1"></lucide-icon>
+        <span class="text-base font-bold text-standard">{{ fieldCount() }}</span>
+        <span class="text-[10px] uppercase tracking-wider text-standard-muted font-semibold">Fields</span>
+      </div>
+      <div class="flex flex-col items-center text-center p-2">
+        <lucide-icon [name]="icons.CheckCircle" [size]="18" class="text-amber-500 mb-1"></lucide-icon>
+        <span class="text-base font-bold text-standard">{{ presetCount() }}</span>
+        <span class="text-[10px] uppercase tracking-wider text-standard-muted font-semibold">Presets</span>
+      </div>
+    </div>
+
+    <!-- Footer/Action Hint -->
+    <div class="flex items-center justify-between mt-2">
+      <span class="text-xs font-medium text-primary flex items-center gap-1 group-hover:underline">
+        View Details & Edit
+      </span>
+    </div>
   </div>
 </div>

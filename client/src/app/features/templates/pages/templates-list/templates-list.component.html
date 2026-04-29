@@ -46,7 +46,7 @@
   }
 
   <!-- Grid of Templates -->
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" [class.opacity-75]="isActionLoading()">
+  <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8" [class.opacity-75]="isActionLoading()">
     @for (template of filteredTemplates(); track template.id) {
     <app-template-card 
       [template]="template" 

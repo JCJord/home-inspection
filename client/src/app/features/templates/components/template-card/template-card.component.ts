@@ -1,7 +1,7 @@
 import { Component, computed, input, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Template } from '../../models/template.interface';
-import { LucideAngularModule, Copy, Trash2, Star, FileText } from 'lucide-angular';
+import { LucideAngularModule, Copy, Trash2, Star, FileText, LayoutGrid, Database, CheckCircle } from 'lucide-angular';
 import { DropdownMenuComponent, DropdownItem } from '../../../../shared/components/dropdown-menu/dropdown-menu.component';
 import { ConfirmPillComponent } from '../../../../shared/components/confirm-pill/confirm-pill.component';
 
@@ -26,8 +26,21 @@ export class TemplateCardComponent {
     Copy,
     Trash2,
     Star,
-    FileText
+    FileText,
+    LayoutGrid,
+    Database,
+    CheckCircle
   };
+
+  sectionCount = computed(() => this.template().structure?.sections?.length || 0);
+  
+  fieldCount = computed(() => 
+    this.template().structure?.sections?.reduce((total, section) => total + (section.fields?.length || 0), 0) || 0
+  );
+
+  presetCount = computed(() => 
+    this.template().structure?.sections?.reduce((total, section) => total + (section.presets?.length || 0), 0) || 0
+  );
 
   menuItems = computed<DropdownItem[]>(() => {
     const items: DropdownItem[] = [
