@@ -4,8 +4,7 @@ import { ConfigService } from '@nestjs/config';
 @Injectable()
 export class AiService {
   private readonly apiKey: string;
-  private readonly apiUrl = 'https://generativelanguage.googleapis.com/v1/models/gemini-flash-latest:generateContent';
-
+  private readonly apiUrl = 'https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent';
   constructor(private config: ConfigService) {
     this.apiKey = this.config.get<string>('GEMINI_API_KEY') || '';
   }

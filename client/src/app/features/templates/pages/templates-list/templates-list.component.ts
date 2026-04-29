@@ -13,7 +13,7 @@ import { TemplateCardComponent } from '../../components/template-card/template-c
 @Component({
   selector: 'app-templates-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideAngularModule, ButtonComponent, TemplateEditorComponent, TemplateCardComponent],
+  imports: [CommonModule, FormsModule, LucideAngularModule, ButtonComponent, TemplateCardComponent],
 
   providers: [{ provide: 'lucideIcons', useValue: { Copy, Edit2, Trash2, Plus, Star } }],
   templateUrl: './templates-list.component.html',
@@ -28,7 +28,7 @@ export class TemplatesListComponent implements OnInit {
   templates = signal<Template[]>([]);
   isLoading = signal<boolean>(true);
   errorMessage = signal<string | null>(null);
-  
+
   preferredTemplateId = signal<string | null>(null);
   searchQuery = signal<string>('');
   isActionLoading = signal<boolean>(false);
@@ -75,8 +75,8 @@ export class TemplatesListComponent implements OnInit {
       },
       error: (err) => {
         console.error('Failed to load templates', err);
-        const msg = err.status === 401 
-          ? 'Session expired. Please log in again.' 
+        const msg = err.status === 401
+          ? 'Session expired. Please log in again.'
           : (err.status === 0 ? 'Cannot connect to backend server.' : 'Could not load inspection templates.');
         this.errorMessage.set(msg);
         this.isLoading.set(false);
