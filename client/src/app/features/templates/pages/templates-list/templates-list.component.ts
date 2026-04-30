@@ -9,11 +9,12 @@ import { LucideAngularModule, Copy, Edit2, Trash2, Plus, Star } from 'lucide-ang
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { TemplateEditorComponent } from '../template-editor/template-editor.component';
 import { TemplateCardComponent } from '../../components/template-card/template-card.component';
+import { SearchInputComponent } from '../../../../shared/components/inputs/search-input/search-input.component';
 
 @Component({
   selector: 'app-templates-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideAngularModule, ButtonComponent, TemplateCardComponent],
+  imports: [CommonModule, FormsModule, LucideAngularModule, ButtonComponent, TemplateCardComponent, SearchInputComponent],
 
   providers: [{ provide: 'lucideIcons', useValue: { Copy, Edit2, Trash2, Plus, Star } }],
   templateUrl: './templates-list.component.html',
