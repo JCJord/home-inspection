@@ -152,8 +152,8 @@
                 <div class="flex justify-between items-center px-4 py-2 border-b border-standard bg-standard/5">
                   <span class="text-[10px] font-bold uppercase tracking-wider text-standard-muted">Field #{{ fi + 1 }}</span>
                   @if (!isSystemDefault()) {
-                  <button type="button" (click)="removeField(fi)" class="text-standard-muted hover:text-safety transition-colors p-1">
-                    <lucide-icon [name]="iconMap['Trash2']" [size]="14"></lucide-icon>
+                  <button type="button" (click)="removeField(fi)" class="text-standard-muted hover:text-red-500 hover:bg-red-50 rounded-lg cursor-pointer transition-all p-2">
+                    <lucide-icon [name]="iconMap['Trash2']" [size]="18"></lucide-icon>
                   </button>
                   }
                 </div>
@@ -194,8 +194,8 @@
                 <div class="flex justify-between items-center px-4 py-2 border-b border-standard bg-standard/5">
                   <span class="text-[10px] font-bold uppercase tracking-wider text-standard-muted">Preset #{{ pi + 1 }}</span>
                   @if (!isSystemDefault()) {
-                  <button type="button" (click)="removePreset(pi)" class="text-standard-muted hover:text-safety transition-colors p-1">
-                    <lucide-icon [name]="iconMap['Trash2']" [size]="14"></lucide-icon>
+                  <button type="button" (click)="removePreset(pi)" class="text-standard-muted hover:text-red-500 hover:bg-red-50 rounded-lg cursor-pointer transition-all p-2">
+                    <lucide-icon [name]="iconMap['Trash2']" [size]="18"></lucide-icon>
                   </button>
                   }
                 </div>
