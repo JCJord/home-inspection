@@ -3,35 +3,41 @@
   @if (form) {
   <form [formGroup]="form" class="flex flex-col h-full">
     <!-- Header -->
-    <header
-      class="editor-header flex justify-between items-center px-6 py-4 border-b border-standard bg-surface-standard shadow-sm z-10">
-      <div class="flex items-center gap-3 min-w-0">
+    <header class="editor-header sticky top-0 flex items-center px-4 md:px-6 py-3 border-b border-standard bg-surface-standard shadow-sm z-20">
+  
+      <!-- Left Side: Navigation -->
+      <div class="flex items-center gap-3 md:gap-4 flex-1">
         <app-back-button (clicked)="goBack()"></app-back-button>
-        <button type="button" class="burger-btn flex items-center gap-1" (click)="toggleSidebar()" title="Toggle Sections">
-          <lucide-icon [name]="iconMap['Menu']" [size]="20"></lucide-icon>
-          <span class="text-sm font-medium">Sections</span>
-        </button>
-
-        <div class="min-w-0 flex flex-col justify-center">
-          <span class="text-xs text-standard-muted truncate">{{ template()?.name }}</span>
-          
-          @if (currentSection) {
-            <button type="button" (click)="toggleSidebar()" class="flex items-center gap-1 text-lg font-bold text-primary active:scale-95 transition-transform text-left">
-              <span class="truncate">{{ currentSection.get('name')?.value || 'Unnamed Section' }}</span>
-              <lucide-icon [name]="iconMap['ChevronDown']" [size]="16" class="flex-shrink-0"></lucide-icon>
-            </button>
-          } @else {
-            <h1 class="text-lg font-bold text-standard truncate">Edit Blueprint</h1>
-          }
-        </div>
+        <div class="h-8 w-px bg-standard hidden md:block"></div>
       </div>
 
-      <div class="flex items-center gap-2">
-        <!-- Clone if system default -->
+      <!-- Center Side: Title Area -->
+      <div class="flex flex-col items-center justify-center min-w-0 px-4">
+        <span class="text-[10px] uppercase font-bold text-standard-muted tracking-wide truncate mb-0.5">
+          {{ template()?.name }}
+        </span>
+        
+        @if (currentSection) {
+          <button type="button" 
+                  (click)="toggleSidebar()" 
+                  class="flex items-center justify-center gap-1.5 text-base md:text-lg font-bold text-standard md:pointer-events-none active:scale-95 transition-all text-center group">
+            <span class="truncate">{{ currentSection.get('name')?.value || 'Unnamed Section' }}</span>
+            
+            <div class="md:hidden flex items-center justify-center p-1 rounded-md bg-light-standard group-active:bg-primary/10 transition-colors">
+              <lucide-icon [name]="iconMap['ChevronDown']" [size]="16" class="flex-shrink-0 text-primary"></lucide-icon>
+            </div>
+          </button>
+        } @else {
+          <h1 class="text-base md:text-lg font-bold text-standard truncate">Edit Blueprint</h1>
+        }
+      </div>
+
+      <!-- Right Side: Actions -->
+      <div class="flex items-center justify-end gap-2 flex-1">
         @if (isSystemDefault()) {
-        <app-button type="button" (click)="cloneTemplate()" variant="solid">
-          <lucide-icon [name]="iconMap['Copy']" [size]="18"></lucide-icon>
-          Clone Blueprint
+        <app-button type="button" (click)="cloneTemplate()" variant="solid" size="sm">
+          <lucide-icon [name]="iconMap['Copy']" [size]="16"></lucide-icon>
+          <span class="hidden sm:inline">Clone Blueprint</span>
         </app-button>
         }
       </div>
