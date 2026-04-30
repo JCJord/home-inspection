@@ -108,29 +108,41 @@
 
           <!-- Section Info / Icon Picker -->
           <div class="bg-surface-standard p-6 rounded-xl border border-standard shadow-sm space-y-4">
-            <div class="flex items-start gap-4">
-              <!-- Icon Picker Button -->
-              <div class="relative">
-                <button type="button" (click)="toggleIconPicker()" [disabled]="isSystemDefault()"
-                  class="w-12 h-12 rounded-xl border border-standard flex items-center justify-center text-standard bg-light-standard hover:border-primary transition cursor-pointer">
-                  <lucide-icon [name]="iconMap[currentSection.get('icon_key')?.value] || iconMap['Home']"
-                    [size]="24"></lucide-icon>
-                </button>
-
-                <!-- Icon Picker Grid Dropdown -->
-                @if (showIconPicker()) {
-                <div
-                  class="absolute left-0 top-14 bg-surface-standard border border-standard shadow-xl p-3 rounded-xl z-20 grid grid-cols-4 gap-2 w-60 max-h-60 overflow-y-auto">
-                  @for (iconKey of availableIcons(); track iconKey) {
-                  <button type="button" (click)="selectIcon(iconKey)"
-                    class="p-2 rounded-lg hover:bg-light-standard flex items-center justify-center text-standard-muted hover:text-primary transition">
-                    <lucide-icon [name]="iconMap[iconKey] || iconMap['Home']" [size]="20"></lucide-icon>
+            <div class="flex items-start gap-6">
+              <!-- Icon Picker Section -->
+              <div class="flex flex-col gap-1.5">
+                <label class="text-[11px] font-bold uppercase tracking-wider text-standard-muted ml-1">Icon</label>
+                <div class="relative">
+                  <button type="button" (click)="toggleIconPicker()" [disabled]="isSystemDefault()"
+                    class="w-12 h-12 rounded-xl border-2 border-dashed border-standard-muted flex items-center justify-center bg-light-standard hover:border-solid hover:border-primary hover:bg-primary/5 transition-all cursor-pointer relative group">
+                    <lucide-icon [name]="iconMap[currentSection.get('icon_key')?.value] || iconMap['Home']"
+                      [size]="22" class="text-primary transition-colors"></lucide-icon>
+                    
+                    @if (!isSystemDefault()) {
+                      <div class="absolute -bottom-1.5 -right-1.5 bg-white text-primary rounded-full p-1 shadow-md border-2 border-standard group-hover:scale-110 transition-transform flex items-center justify-center">
+                        <lucide-icon [name]="iconMap['ChevronDown']" [size]="10" class="stroke-[3px]"></lucide-icon>
+                      </div>
+                    }
                   </button>
+  
+                  <!-- Icon Picker Grid Dropdown -->
+                  @if (showIconPicker()) {
+                  <div
+                    class="absolute left-0 top-14 bg-surface-standard border border-standard shadow-2xl p-3 rounded-2xl z-30 grid grid-cols-4 gap-2 w-64 max-h-72 overflow-y-auto animate-in fade-in zoom-in duration-200">
+                    @for (iconKey of availableIcons(); track iconKey) {
+                    <button type="button" (click)="selectIcon(iconKey)"
+                      [class.bg-primary/10]="currentSection.get('icon_key')?.value === iconKey"
+                      [class.text-primary]="currentSection.get('icon_key')?.value === iconKey"
+                      class="p-2.5 rounded-xl hover:bg-light-standard flex items-center justify-center text-standard-muted hover:text-primary transition-all">
+                      <lucide-icon [name]="iconMap[iconKey] || iconMap['Home']" [size]="20"></lucide-icon>
+                    </button>
+                    }
+                  </div>
                   }
                 </div>
-                }
               </div>
 
+              <!-- Section Name Section -->
               <div class="flex-1">
                 <app-text-input [name]="'structure.sections.' + selectedSectionIndex() + '.name'" label="Section Name"
                   placeholder="e.g., Exterior, Roofing">
