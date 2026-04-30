@@ -55,17 +55,19 @@
     <div class="flex-1 flex overflow-hidden relative">
 
       <!-- Left Column: Sections -->
-      <!-- Backdrop Overlay for Absolute Sidebar -->
+      <!-- Backdrop Overlay for Mobile Bottom Sheet -->
       @if (isSidebarOpen()) {
-      <div class="absolute inset-0 bg-black/30 backdrop-blur-sm z-20 transition-opacity backdrop-overlay"
-        (click)="toggleSidebar()"></div>
+        <div class="backdrop-overlay" (click)="toggleSidebar()"></div>
       }
 
-      <!-- Left Column: Sections -->
-      <aside class="sidebar-drawer border-r border-standard bg-surface-standard flex flex-col overflow-hidden"
-        [class.closed]="!isSidebarOpen()">
-        <div class="p-4 border-b border-standard">
+      <!-- Mobile Bottom Sheet / Desktop Sidebar -->
+      <aside class="sidebar-drawer bg-surface-standard" [class.closed]="!isSidebarOpen()">
+        <!-- Handle for mobile -->
+        <div class="bottom-sheet-handle" (click)="toggleSidebar()"></div>
+
+        <div class="p-4 border-b border-standard flex justify-between items-center">
           <h2 class="text-xs font-bold text-standard-muted tracking-wider uppercase">Sections</h2>
+          <!-- Close button for accessibility on mobile if needed, or just the handle -->
         </div>
 
         <div class="flex-1 overflow-y-auto p-2 space-y-1">
@@ -88,7 +90,7 @@
         </div>
 
         @if (!isSystemDefault()) {
-        <div class="p-4 border-t border-standard bg-light-standard">
+        <div class="p-4 border-t border-standard bg-light-standard pb-safe">
           <app-button type="button" (click)="addSection()" variant="subtle" [full]="true">
             <lucide-icon [name]="iconMap['Plus']" [size]="18"></lucide-icon>
             Add Section
