@@ -165,6 +165,7 @@
             <div class="space-y-3">
               @for (field of getFieldsFormArray(selectedSectionIndex()).controls; track $index; let fi = $index) {
               <div class="bg-light-standard rounded-xl border border-standard overflow-hidden editor-item-anim"
+                [class.adding]="addingFieldIndex() === fi"
                 [class.deleting]="deletingFieldIndex() === fi">
                 <div class="flex justify-between items-center px-4 py-2 border-b border-standard bg-standard/5">
                   <span class="text-[10px] font-bold uppercase tracking-wider text-standard-muted">Field #{{ fi + 1
@@ -210,6 +211,7 @@
             <div class="space-y-4">
               @for (preset of getPresetsFormArray(selectedSectionIndex()).controls; track $index; let pi = $index) {
               <div class="border border-standard rounded-xl overflow-hidden bg-surface-standard editor-item-anim"
+                [class.adding]="addingPresetIndex() === pi"
                 [class.deleting]="deletingPresetIndex() === pi">
                 <div class="flex justify-between items-center px-4 py-2 border-b border-standard bg-standard/5">
                   <span class="text-[10px] font-bold uppercase tracking-wider text-standard-muted">Preset #{{ pi + 1

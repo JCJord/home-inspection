@@ -76,7 +76,9 @@
 
 // Generic animation for Fields and Presets
 .editor-item-anim {
-  animation: item-pop-in 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  &.adding {
+    animation: item-pop-in 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  }
   
   &.deleting {
     animation: item-slide-out 0.25s ease-in forwards !important;

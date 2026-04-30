@@ -43,6 +43,8 @@ export class TemplateEditorComponent implements OnInit, OnDestroy {
   deletingFieldIndex = signal<number | null>(null);
   deletingPresetIndex = signal<number | null>(null);
   addingIndex = signal<number | null>(null);
+  addingFieldIndex = signal<number | null>(null);
+  addingPresetIndex = signal<number | null>(null);
   
   @ViewChild('sidebarContent') sidebarContent!: ElementRef;
 
@@ -289,6 +291,9 @@ export class TemplateEditorComponent implements OnInit, OnDestroy {
     if (this.isSystemDefault()) return;
     const fields = this.getFieldsFormArray(this.selectedSectionIndex());
     fields.push(this.createFieldGroup('New Field', 'new_field'));
+    
+    this.addingFieldIndex.set(fields.length - 1);
+    setTimeout(() => this.addingFieldIndex.set(null), 1000);
   }
 
   removeField(index: number): void {
@@ -315,6 +320,9 @@ export class TemplateEditorComponent implements OnInit, OnDestroy {
       description: ['Provide standard defect description.', [Validators.required, Validators.maxLength(2200)]],
       severity: ['Minor', Validators.required]
     }));
+
+    this.addingPresetIndex.set(presets.length - 1);
+    setTimeout(() => this.addingPresetIndex.set(null), 1000);
   }
 
   removePreset(index: number): void {
