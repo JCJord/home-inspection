@@ -11,7 +11,7 @@ import { LightboxComponent } from '../../../../shared/components/lightbox/lightb
 @Component({
   selector: 'app-finding-card',
   standalone: true,
-  imports: [CommonModule, LucideAngularModule, DropdownMenuComponent, PhotoCarouselComponent, ConfirmPillComponent, LightboxComponent],
+  imports: [CommonModule, LucideAngularModule, DropdownMenuComponent, ConfirmPillComponent, LightboxComponent],
   templateUrl: './finding-card.component.html',
   styleUrl: './finding-card.component.scss',
 })

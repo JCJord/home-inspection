@@ -39,6 +39,10 @@ export class TemplateEditorComponent implements OnInit, OnDestroy {
   availableIcons = signal<string[]>([]);
   showIconPicker = signal<boolean>(false);
   isSidebarOpen = signal<boolean>(false);
+  deletingIndex = signal<number | null>(null);
+  deletingFieldIndex = signal<number | null>(null);
+  deletingPresetIndex = signal<number | null>(null);
+  addingIndex = signal<number | null>(null);
   
   @ViewChild('sidebarContent') sidebarContent!: ElementRef;
 
@@ -224,6 +228,10 @@ export class TemplateEditorComponent implements OnInit, OnDestroy {
 
     this.sectionsFormArray.insert(0, newSec);
     this.selectedSectionIndex.set(0);
+    this.addingIndex.set(0);
+
+    // Reset adding state after animation
+    setTimeout(() => this.addingIndex.set(null), 1000);
 
     // Scroll to top after view updates
     setTimeout(() => {
@@ -241,10 +249,18 @@ export class TemplateEditorComponent implements OnInit, OnDestroy {
     if (this.isSystemDefault()) return;
 
     if (window.confirm('Are you sure you want to delete this section and all its fields/presets?')) {
-      this.sectionsFormArray.removeAt(index);
-      if (this.selectedSectionIndex() >= this.sectionsFormArray.length) {
-        this.selectedSectionIndex.set(Math.max(0, this.sectionsFormArray.length - 1));
-      }
+      // Set the deleting index to trigger CSS animation
+      this.deletingIndex.set(index);
+
+      // Wait for animation to finish (250ms)
+      setTimeout(() => {
+        this.sectionsFormArray.removeAt(index);
+        this.deletingIndex.set(null);
+
+        if (this.selectedSectionIndex() >= this.sectionsFormArray.length) {
+          this.selectedSectionIndex.set(Math.max(0, this.sectionsFormArray.length - 1));
+        }
+      }, 250);
     }
   }
 
@@ -277,7 +293,11 @@ export class TemplateEditorComponent implements OnInit, OnDestroy {
 
   removeField(index: number): void {
     if (this.isSystemDefault()) return;
-    this.getFieldsFormArray(this.selectedSectionIndex()).removeAt(index);
+    this.deletingFieldIndex.set(index);
+    setTimeout(() => {
+      this.getFieldsFormArray(this.selectedSectionIndex()).removeAt(index);
+      this.deletingFieldIndex.set(null);
+    }, 250);
   }
 
   slugify(text: string): string {
@@ -299,7 +319,11 @@ export class TemplateEditorComponent implements OnInit, OnDestroy {
 
   removePreset(index: number): void {
     if (this.isSystemDefault()) return;
-    this.getPresetsFormArray(this.selectedSectionIndex()).removeAt(index);
+    this.deletingPresetIndex.set(index);
+    setTimeout(() => {
+      this.getPresetsFormArray(this.selectedSectionIndex()).removeAt(index);
+      this.deletingPresetIndex.set(null);
+    }, 250);
   }
 
   cloneTemplate(): void {
