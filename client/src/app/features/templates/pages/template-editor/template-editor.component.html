@@ -148,22 +148,27 @@
 
             <div class="space-y-3">
               @for (field of getFieldsFormArray(selectedSectionIndex()).controls; track $index; let fi = $index) {
-              <div class="responsive-stack items-start bg-light-standard p-4 rounded-xl">
-                <div class="flex-1">
-                  <app-text-input [name]="'structure.sections.' + selectedSectionIndex() + '.fields.' + fi + '.label'"
-                    label="Field Label" placeholder="e.g., Siding Material">
-                  </app-text-input>
+              <div class="bg-light-standard rounded-xl border border-standard overflow-hidden">
+                <div class="flex justify-between items-center px-4 py-2 border-b border-standard bg-standard/5">
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-standard-muted">Field #{{ fi + 1 }}</span>
+                  @if (!isSystemDefault()) {
+                  <button type="button" (click)="removeField(fi)" class="text-standard-muted hover:text-safety transition-colors p-1">
+                    <lucide-icon [name]="iconMap['Trash2']" [size]="14"></lucide-icon>
+                  </button>
+                  }
                 </div>
-                <div class="flex-1">
-                  <app-text-input [name]="'structure.sections.' + selectedSectionIndex() + '.fields.' + fi + '.key'"
-                    label="Key Slug (Auto-Generated)" placeholder="siding_material">
-                  </app-text-input>
+                <div class="p-4 responsive-stack items-start">
+                  <div class="flex-1">
+                    <app-text-input [name]="'structure.sections.' + selectedSectionIndex() + '.fields.' + fi + '.label'"
+                      label="Field Label" placeholder="e.g., Siding Material">
+                    </app-text-input>
+                  </div>
+                  <div class="flex-1">
+                    <app-text-input [name]="'structure.sections.' + selectedSectionIndex() + '.fields.' + fi + '.key'"
+                      label="Key Slug (Auto-Generated)" placeholder="siding_material">
+                    </app-text-input>
+                  </div>
                 </div>
-                @if (!isSystemDefault()) {
-                <button type="button" (click)="removeField(fi)" class="text-standard-muted hover:text-red-500 cursor-pointer transition-colors p-2 rounded-lg flex-shrink-0 mt-8">
-                  <lucide-icon [name]="iconMap['Trash2']" [size]="16"></lucide-icon>
-                </button>
-                }
               </div>
               }
             </div>
@@ -185,34 +190,39 @@
 
             <div class="space-y-4">
               @for (preset of getPresetsFormArray(selectedSectionIndex()).controls; track $index; let pi = $index) {
-              <div class="border border-standard p-4 rounded-xl space-y-3 relative">
-                <div class="responsive-stack justify-between items-start">
-                  <div class="flex-1">
-                    <app-text-input
-                      [name]="'structure.sections.' + selectedSectionIndex() + '.presets.' + pi + '.title'"
-                      label="Preset Title" placeholder="e.g., Missing Shingles">
-                    </app-text-input>
-                  </div>
-
-                  <div class="w-40">
-                    <app-select-input
-                      [name]="'structure.sections.' + selectedSectionIndex() + '.presets.' + pi + '.severity'"
-                      label="Severity" [options]="severityOptions">
-                    </app-select-input>
-                  </div>
-
+              <div class="border border-standard rounded-xl overflow-hidden bg-surface-standard">
+                <div class="flex justify-between items-center px-4 py-2 border-b border-standard bg-standard/5">
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-standard-muted">Preset #{{ pi + 1 }}</span>
                   @if (!isSystemDefault()) {
-                  <button type="button" (click)="removePreset(pi)" class="text-standard-muted hover:text-red-500 cursor-pointer transition-colors p-2 rounded-lg mt-8 flex-shrink-0">
-                    <lucide-icon [name]="iconMap['Trash2']" [size]="16"></lucide-icon>
+                  <button type="button" (click)="removePreset(pi)" class="text-standard-muted hover:text-safety transition-colors p-1">
+                    <lucide-icon [name]="iconMap['Trash2']" [size]="14"></lucide-icon>
                   </button>
                   }
                 </div>
+                
+                <div class="p-4 space-y-4">
+                  <div class="responsive-stack justify-between items-start">
+                    <div class="flex-1">
+                      <app-text-input
+                        [name]="'structure.sections.' + selectedSectionIndex() + '.presets.' + pi + '.title'"
+                        label="Preset Title" placeholder="e.g., Missing Shingles">
+                      </app-text-input>
+                    </div>
 
-                <div>
-                  <app-textarea-input
-                    [name]="'structure.sections.' + selectedSectionIndex() + '.presets.' + pi + '.description'"
-                    label="Default Description" [rows]="3" placeholder="Add standard defect findings description...">
-                  </app-textarea-input>
+                    <div class="w-40">
+                      <app-select-input
+                        [name]="'structure.sections.' + selectedSectionIndex() + '.presets.' + pi + '.severity'"
+                        label="Severity" [options]="severityOptions">
+                      </app-select-input>
+                    </div>
+                  </div>
+
+                  <div>
+                    <app-textarea-input
+                      [name]="'structure.sections.' + selectedSectionIndex() + '.presets.' + pi + '.description'"
+                      label="Default Description" [rows]="3" placeholder="Add standard defect findings description...">
+                    </app-textarea-input>
+                  </div>
                 </div>
               </div>
               }
