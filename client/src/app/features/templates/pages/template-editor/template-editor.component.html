@@ -140,7 +140,7 @@
 
             <div class="space-y-3">
               @for (field of getFieldsFormArray(selectedSectionIndex()).controls; track $index; let fi = $index) {
-              <div class="responsive-stack items-end bg-light-standard p-4 rounded-xl">
+              <div class="responsive-stack items-start bg-light-standard p-4 rounded-xl">
                 <div class="flex-1">
                   <app-text-input [name]="'structure.sections.' + selectedSectionIndex() + '.fields.' + fi + '.label'"
                     label="Field Label" placeholder="e.g., Siding Material">
@@ -152,9 +152,9 @@
                   </app-text-input>
                 </div>
                 @if (!isSystemDefault()) {
-                <app-button type="button" (click)="removeField(fi)" variant="danger">
+                <button type="button" (click)="removeField(fi)" class="text-standard-muted hover:text-red-500 cursor-pointer transition-colors p-2 rounded-lg flex-shrink-0 mt-8">
                   <lucide-icon [name]="iconMap['Trash2']" [size]="16"></lucide-icon>
-                </app-button>
+                </button>
                 }
               </div>
               }
@@ -194,9 +194,9 @@
                   </div>
 
                   @if (!isSystemDefault()) {
-                  <app-button type="button" (click)="removePreset(pi)" variant="danger" class="mt-8">
+                  <button type="button" (click)="removePreset(pi)" class="text-standard-muted hover:text-red-500 cursor-pointer transition-colors p-2 rounded-lg mt-8 flex-shrink-0">
                     <lucide-icon [name]="iconMap['Trash2']" [size]="16"></lucide-icon>
-                  </app-button>
+                  </button>
                   }
                 </div>
 
