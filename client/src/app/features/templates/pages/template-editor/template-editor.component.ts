@@ -280,7 +280,7 @@ export class TemplateEditorComponent implements OnInit, OnDestroy {
     const presets = this.getPresetsFormArray(this.selectedSectionIndex());
     presets.push(this.fb.group({
       title: ['New Finding Preset', [Validators.required, Validators.maxLength(200)]],
-      description: ['', [Validators.maxLength(2200)]],
+      description: ['Provide standard defect description.', [Validators.required, Validators.maxLength(2200)]],
       severity: ['Minor', Validators.required]
     }));
   }
