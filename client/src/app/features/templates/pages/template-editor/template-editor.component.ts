@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, signal, inject, computed, input, output, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, inject, computed, input, output, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule } from '@angular/forms';
@@ -39,6 +39,8 @@ export class TemplateEditorComponent implements OnInit, OnDestroy {
   availableIcons = signal<string[]>([]);
   showIconPicker = signal<boolean>(false);
   isSidebarOpen = signal<boolean>(false);
+  
+  @ViewChild('sidebarContent') sidebarContent!: ElementRef;
 
   severityOptions = ['Minor', 'Major', 'Safety', 'Maintenance'];
   form!: FormGroup;
@@ -220,8 +222,18 @@ export class TemplateEditorComponent implements OnInit, OnDestroy {
       ])
     });
 
-    this.sectionsFormArray.push(newSec);
-    this.selectedSectionIndex.set(this.sectionsFormArray.length - 1);
+    this.sectionsFormArray.insert(0, newSec);
+    this.selectedSectionIndex.set(0);
+
+    // Scroll to top after view updates
+    setTimeout(() => {
+      if (this.sidebarContent) {
+        this.sidebarContent.nativeElement.scrollTo({
+          top: 0,
+          behavior: 'smooth'
+        });
+      }
+    }, 100);
   }
 
   removeSection(index: number, event: Event): void {

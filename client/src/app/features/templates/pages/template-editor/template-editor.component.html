@@ -66,12 +66,11 @@
         <!-- Handle for mobile -->
         <div class="bottom-sheet-handle" (click)="toggleSidebar()"></div>
 
-        <div class="p-4 border-b border-standard flex justify-between items-center">
+        <div class="p-4 border-b border-standard flex justify-between items-center bg-surface-standard">
           <h2 class="text-xs font-bold text-standard-muted tracking-wider uppercase">Sections</h2>
-          <!-- Close button for accessibility on mobile if needed, or just the handle -->
         </div>
 
-        <div class="flex-1 overflow-y-auto p-2 space-y-1">
+        <div #sidebarContent class="flex-1 overflow-y-auto p-2 space-y-1">
           @for (sec of sectionsFormArray.controls; track $index; let i = $index) {
           <div (click)="selectSection(i)" [class.active]="selectedSectionIndex() === i"
             class="section-tab flex items-center justify-between px-4 py-3 rounded-xl cursor-pointer hover:bg-light-standard transition">
@@ -91,7 +90,7 @@
         </div>
 
         @if (!isSystemDefault()) {
-        <div class="p-4 border-t border-standard bg-light-standard pb-safe mb-3">
+        <div class="p-4 border-t border-standard bg-light-standard pb-safe mb-4">
           <app-button type="button" (click)="addSection()" variant="subtle" [full]="true">
             <lucide-icon [name]="iconMap['Plus']" [size]="18"></lucide-icon>
             Add Section
@@ -115,16 +114,17 @@
                 <div class="relative">
                   <button type="button" (click)="toggleIconPicker()" [disabled]="isSystemDefault()"
                     class="w-12 h-12 rounded-xl border-2 border-dashed border-standard-muted flex items-center justify-center bg-light-standard hover:border-solid hover:border-primary hover:bg-primary/5 transition-all cursor-pointer relative group">
-                    <lucide-icon [name]="iconMap[currentSection.get('icon_key')?.value] || iconMap['Home']"
-                      [size]="22" class="text-primary transition-colors"></lucide-icon>
-                    
+                    <lucide-icon [name]="iconMap[currentSection.get('icon_key')?.value] || iconMap['Home']" [size]="22"
+                      class="text-primary transition-colors"></lucide-icon>
+
                     @if (!isSystemDefault()) {
-                      <div class="absolute -bottom-1.5 -right-1.5 bg-white text-primary rounded-full p-1 shadow-md border-2 border-standard group-hover:scale-110 transition-transform flex items-center justify-center">
-                        <lucide-icon [name]="iconMap['ChevronDown']" [size]="10" class="stroke-[3px]"></lucide-icon>
-                      </div>
+                    <div
+                      class="absolute -bottom-1.5 -right-1.5 bg-white text-primary rounded-full p-1 shadow-md border-2 border-standard group-hover:scale-110 transition-transform flex items-center justify-center">
+                      <lucide-icon [name]="iconMap['ChevronDown']" [size]="10" class="stroke-[3px]"></lucide-icon>
+                    </div>
                     }
                   </button>
-  
+
                   <!-- Icon Picker Grid Dropdown -->
                   @if (showIconPicker()) {
                   <div
