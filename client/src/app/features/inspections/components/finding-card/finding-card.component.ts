@@ -1,16 +1,17 @@
 import { Component, input, output, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Finding } from '../../../../core/models/inspection.interface';
-import { LucideAngularModule, MapPin, Trash2, Edit, Sparkles, ChevronDown, ChevronUp } from 'lucide-angular';
+import { LucideAngularModule, MapPin, Trash2, Edit, Sparkles, ChevronDown, ChevronUp, Eye } from 'lucide-angular';
 import { environment } from '../../../../../environments/environment';
 import { DropdownMenuComponent, DropdownItem } from '../../../../shared/components/dropdown-menu/dropdown-menu.component';
 import { PhotoCarouselComponent } from '../../../../shared/components/photo-carousel/photo-carousel.component';
 import { ConfirmPillComponent } from '../../../../shared/components/confirm-pill/confirm-pill.component';
+import { LightboxComponent } from '../../../../shared/components/lightbox/lightbox.component';
 
 @Component({
   selector: 'app-finding-card',
   standalone: true,
-  imports: [CommonModule, LucideAngularModule, DropdownMenuComponent, PhotoCarouselComponent, ConfirmPillComponent],
+  imports: [CommonModule, LucideAngularModule, DropdownMenuComponent, PhotoCarouselComponent, ConfirmPillComponent, LightboxComponent],
   templateUrl: './finding-card.component.html',
   styleUrl: './finding-card.component.scss',
 })
@@ -22,8 +23,15 @@ export class FindingCardComponent {
   isConfirmingDelete = signal(false);
   isAiExpanded = signal(false);
   isNoteExpanded = signal(false);
+  isLightboxOpen = signal(false);
+  activePhotoIndex = signal(0);
 
-  readonly icons = { MapPin, Sparkles, ChevronDown, ChevronUp };
+  readonly icons = { MapPin, Sparkles, ChevronDown, ChevronUp, Eye };
+
+  openLightbox(index: number) {
+    this.activePhotoIndex.set(index);
+    this.isLightboxOpen.set(true);
+  }
 
   shouldShowAiExpand = computed(() => (this.finding().ai_comment?.length || 0) > 140);
   shouldShowNoteExpand = computed(() => (this.finding().short_note?.length || 0) > 140);
