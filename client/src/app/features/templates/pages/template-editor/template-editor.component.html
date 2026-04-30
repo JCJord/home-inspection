@@ -68,6 +68,12 @@
 
         <div class="p-4 border-b border-standard flex justify-between items-center bg-surface-standard">
           <h2 class="text-xs font-bold text-standard-muted tracking-wider uppercase">Sections</h2>
+          @if (!isSystemDefault()) {
+          <app-button type="button" (click)="addSection()" variant="subtle" size="sm">
+            <lucide-icon [name]="iconMap['Plus']" [size]="16"></lucide-icon>
+            Add
+          </app-button>
+          }
         </div>
 
         <div #sidebarContent class="flex-1 overflow-y-auto p-2 space-y-1">
@@ -92,14 +98,6 @@
           }
         </div>
 
-        @if (!isSystemDefault()) {
-        <div class="p-4 border-t border-standard bg-light-standard pb-safe mb-4">
-          <app-button type="button" (click)="addSection()" variant="subtle" [full]="true">
-            <lucide-icon [name]="iconMap['Plus']" [size]="18"></lucide-icon>
-            Add Section
-          </app-button>
-        </div>
-        }
       </aside>
 
       <!-- Right Column: Section Content -->
@@ -267,9 +265,21 @@
           </div>
         </div>
         } @else {
-        <div class="text-center py-20 text-standard-muted">
-          <p class="text-lg">No Sections configured.</p>
-          <p class="text-sm mt-2">Click 'Add Section' on the left to begin building your layout.</p>
+        <div class="flex flex-col items-center justify-center py-20 px-4 text-center">
+          <div class="w-16 h-16 bg-light-standard rounded-2xl flex items-center justify-center mb-6 text-standard-muted/50">
+            <lucide-icon [name]="iconMap['Layers']" [size]="32"></lucide-icon>
+          </div>
+          <h3 class="text-xl font-bold text-standard mb-2">No Sections Yet</h3>
+          <p class="text-standard-muted max-w-sm mb-8">
+            Start building your inspection blueprint by adding your first section (e.g., Exterior, Roofing, Electrical).
+          </p>
+
+          @if (!isSystemDefault()) {
+          <app-button type="button" (click)="addSection()" variant="solid" size="lg">
+            <lucide-icon [name]="iconMap['Plus']" [size]="20"></lucide-icon>
+            Add First Section
+          </app-button>
+          }
         </div>
         }
       </main>
