@@ -1,9 +1,12 @@
-<div class="inspection-card" [class.is-deleting]="isDeleting()">
+<div class="inspection-card group" [class.is-deleting]="isDeleting()" (click)="viewDetails()">
   <div class="card-header">
     <div class="header-left">
       <div class="address-row">
-        <lucide-icon [name]="icons.MapPin" [size]="20" class="text-primary"></lucide-icon>
-        <h3 class="address">{{ inspection().address }}</h3>
+        <lucide-icon [name]="icons.MapPin" [size]="20" class="text-slate-400 group-hover:text-primary transition-colors"></lucide-icon>
+        <div class="address-container flex items-center gap-2">
+          <h3 class="address group-hover:text-primary transition-colors">{{ inspection().address }}</h3>
+          <lucide-icon [name]="icons.ChevronRight" [size]="18" class="text-slate-300 opacity-50 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300"></lucide-icon>
+        </div>
       </div>
       <div class="client-row">
         <div class="info-item">
@@ -17,7 +20,7 @@
       </div>
     </div>
 
-    <div class="header-right" [class.confirming-pill-active]="isConfirmingDelete()">
+    <div class="header-right" [class.confirming-pill-active]="isConfirmingDelete()" (click)="$event.stopPropagation()">
       @if (isConfirmingDelete()) {
         <app-confirm-pill (confirm)="confirmDelete()" (cancel)="isConfirmingDelete.set(false)"></app-confirm-pill>
       } @else {
@@ -68,10 +71,10 @@
 
   <div class="card-footer">
     <div class="footer-actions">
-      <app-button variant="subtle" size="sm" (click)="viewDetails()">
-        View Details
-        <lucide-icon [name]="icons.ChevronRight" [size]="16"></lucide-icon>
-      </app-button>
+      <div class="text-xs font-bold text-primary flex items-center gap-1 opacity-70 group-hover:opacity-100 transition-opacity">
+        View Details 
+        <lucide-icon [name]="icons.ChevronRight" [size]="14"></lucide-icon>
+      </div>
     </div>
   </div>
 </div>

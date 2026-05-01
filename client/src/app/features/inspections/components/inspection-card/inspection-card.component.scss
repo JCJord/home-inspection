@@ -11,11 +11,13 @@
   gap: 1.25rem;
   position: relative;
   overflow: hidden;
+  cursor: pointer;
 
   &:hover {
     border-color: $color-primary;
     transform: translateY(-4px);
     box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.08);
+    background: rgba($color-primary, 0.02);
   }
 
   &.is-deleting {
