@@ -12,11 +12,12 @@ import { TextInputComponent } from '../../../../shared/components/inputs/text-in
 import { TextareaInputComponent } from '../../../../shared/components/inputs/textarea-input/textarea-input.component';
 import { SelectInputComponent } from '../../../../shared/components/inputs/select-input/select-input.component';
 import { BackButtonComponent } from '../../../../shared/components/back-button/back-button.component';
+import { ConfirmPillComponent } from '../../../../shared/components/confirm-pill/confirm-pill.component';
 
 @Component({
   selector: 'app-template-editor',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, LucideAngularModule, ButtonComponent, TextInputComponent, TextareaInputComponent, SelectInputComponent, BackButtonComponent],
+  imports: [CommonModule, ReactiveFormsModule, LucideAngularModule, ButtonComponent, TextInputComponent, TextareaInputComponent, SelectInputComponent, BackButtonComponent, ConfirmPillComponent],
   providers: [{ provide: 'lucideIcons', useValue: { Home, ChevronUp, ChevronDown, Hammer, Zap, Droplets, Wind, Flame, Box, Grid, Monitor, Car, Shield, Search, Info, AlertTriangle, Copy, Edit2, Trash2, Plus, Save, Lock, Unlock, ArrowLeft, Wrench, Thermometer, Lightbulb, Paintbrush, Sun, Key, Eye, Power, FileCheck, HardHat, Construction, Ruler, ShieldCheck, ShieldAlert, BrickWall, Trees, Fan, Sparkles, Wifi, WifiOff, Trash, Settings, Check, X, Users, FileText, Image, Cloud, CloudRain, CloudLightning, Snowflake, Umbrella, Compass, MapPin, Clock, Calendar, Activity, Scissors, Heart, AlertCircle, HelpCircle, Ban, LockOpen, Send, Download, Loader2, CheckCircle2, Layers, Menu } }],
   templateUrl: './template-editor.component.html',
   styleUrl: './template-editor.component.scss'
@@ -34,7 +35,7 @@ export class TemplateEditorComponent implements OnInit, OnDestroy {
   template = signal<Template | null>(null);
   isLoading = signal<boolean>(true);
   errorMessage = signal<string | null>(null);
-  
+
   selectedSectionIndex = signal<number>(0);
   availableIcons = signal<string[]>([]);
   showIconPicker = signal<boolean>(false);
@@ -45,7 +46,11 @@ export class TemplateEditorComponent implements OnInit, OnDestroy {
   addingIndex = signal<number | null>(null);
   addingFieldIndex = signal<number | null>(null);
   addingPresetIndex = signal<number | null>(null);
-  
+
+  confirmingDeleteSectionIndex = signal<number | null>(null);
+  confirmingDeleteFieldIndex = signal<number | null>(null);
+  confirmingDeletePresetIndex = signal<number | null>(null);
+
   @ViewChild('sidebarContent') sidebarContent!: ElementRef;
 
   severityOptions = ['Minor', 'Major', 'Safety', 'Maintenance'];
@@ -76,7 +81,7 @@ export class TemplateEditorComponent implements OnInit, OnDestroy {
     this.loadIcons();
     const idFromRoute = this.route.snapshot.paramMap.get('id');
     const id = this.templateId() || idFromRoute;
-    
+
     if (id) {
       this.loadTemplate(id);
     } else {
@@ -143,6 +148,13 @@ export class TemplateEditorComponent implements OnInit, OnDestroy {
           }))
         )
       })
+    });
+
+    this.form.valueChanges.pipe(
+      takeUntil(this.destroy$)
+    ).subscribe(() => {
+      this.cdr.markForCheck();
+      this.cdr.detectChanges();
     });
 
     this.form.valueChanges.pipe(
@@ -249,21 +261,29 @@ export class TemplateEditorComponent implements OnInit, OnDestroy {
   removeSection(index: number, event: Event): void {
     event.stopPropagation();
     if (this.isSystemDefault()) return;
+    this.confirmingDeleteSectionIndex.set(index);
+  }
 
-    if (window.confirm('Are you sure you want to delete this section and all its fields/presets?')) {
-      // Set the deleting index to trigger CSS animation
-      this.deletingIndex.set(index);
+  cancelDeleteSection(): void {
+    this.confirmingDeleteSectionIndex.set(null);
+  }
 
-      // Wait for animation to finish (250ms)
-      setTimeout(() => {
-        this.sectionsFormArray.removeAt(index);
-        this.deletingIndex.set(null);
+  confirmRemoveSection(index: number): void {
+    if (this.isSystemDefault()) return;
 
-        if (this.selectedSectionIndex() >= this.sectionsFormArray.length) {
-          this.selectedSectionIndex.set(Math.max(0, this.sectionsFormArray.length - 1));
-        }
-      }, 250);
-    }
+    // Set the deleting index to trigger CSS animation
+    this.deletingIndex.set(index);
+    this.confirmingDeleteSectionIndex.set(null);
+
+    // Wait for animation to finish (250ms)
+    setTimeout(() => {
+      this.sectionsFormArray.removeAt(index);
+      this.deletingIndex.set(null);
+
+      if (this.selectedSectionIndex() >= this.sectionsFormArray.length) {
+        this.selectedSectionIndex.set(Math.max(0, this.sectionsFormArray.length - 1));
+      }
+    }, 250);
   }
 
   toggleIconPicker(): void {
@@ -291,14 +311,25 @@ export class TemplateEditorComponent implements OnInit, OnDestroy {
     if (this.isSystemDefault()) return;
     const fields = this.getFieldsFormArray(this.selectedSectionIndex());
     fields.push(this.createFieldGroup('New Field', 'new_field'));
-    
+
     this.addingFieldIndex.set(fields.length - 1);
     setTimeout(() => this.addingFieldIndex.set(null), 1000);
   }
 
   removeField(index: number): void {
     if (this.isSystemDefault()) return;
+    this.confirmingDeleteFieldIndex.set(index);
+  }
+
+  cancelDeleteField(): void {
+    this.confirmingDeleteFieldIndex.set(null);
+  }
+
+  confirmRemoveField(index: number): void {
+    if (this.isSystemDefault()) return;
     this.deletingFieldIndex.set(index);
+    this.confirmingDeleteFieldIndex.set(null);
+
     setTimeout(() => {
       this.getFieldsFormArray(this.selectedSectionIndex()).removeAt(index);
       this.deletingFieldIndex.set(null);
@@ -327,7 +358,18 @@ export class TemplateEditorComponent implements OnInit, OnDestroy {
 
   removePreset(index: number): void {
     if (this.isSystemDefault()) return;
+    this.confirmingDeletePresetIndex.set(index);
+  }
+
+  cancelDeletePreset(): void {
+    this.confirmingDeletePresetIndex.set(null);
+  }
+
+  confirmRemovePreset(index: number): void {
+    if (this.isSystemDefault()) return;
     this.deletingPresetIndex.set(index);
+    this.confirmingDeletePresetIndex.set(null);
+
     setTimeout(() => {
       this.getPresetsFormArray(this.selectedSectionIndex()).removeAt(index);
       this.deletingPresetIndex.set(null);
@@ -337,7 +379,7 @@ export class TemplateEditorComponent implements OnInit, OnDestroy {
   cloneTemplate(): void {
     const currentTemplate = this.template();
     if (!currentTemplate) return;
-    
+
     const newName = window.prompt('Enter a name for the cloned template:', `Copy of ${currentTemplate.name}`);
     if (newName && newName.trim()) {
       this.templatesService.cloneTemplate(currentTemplate.id, newName.trim()).subscribe({
@@ -351,4 +393,6 @@ export class TemplateEditorComponent implements OnInit, OnDestroy {
       });
     }
   }
+
 }
+

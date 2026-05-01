@@ -4,23 +4,23 @@
   <form [formGroup]="form" class="flex flex-col h-full">
     <!-- Header -->
     <header
-      class="editor-header sticky top-0 flex items-center px-4 md:px-6 py-3 border-b border-standard bg-surface-standard shadow-sm z-20">
+      class="editor-header sticky top-0 flex items-center justify-between px-4 md:px-6 py-3 border-b border-standard bg-surface-standard shadow-sm z-20 gap-4">
 
       <!-- Left Side: Navigation -->
-      <div class="flex items-center gap-3 md:gap-4 flex-1">
+      <div class="flex items-center gap-3 md:gap-4 flex-shrink-0">
         <app-back-button (clicked)="goBack()"></app-back-button>
         <div class="h-8 w-px bg-standard hidden md:block"></div>
       </div>
 
       <!-- Center Side: Title Area -->
-      <div class="flex flex-col items-center justify-center min-w-0 px-4">
-        <span class="text-[10px] uppercase font-bold text-standard-muted tracking-wide truncate mb-0.5">
+      <div class="flex flex-col items-center justify-center min-w-0 flex-1 overflow-hidden px-2">
+        <span class="text-[10px] uppercase font-bold text-standard-muted tracking-wide block truncate w-full text-center opacity-70">
           {{ template()?.name }}
         </span>
 
         @if (currentSection) {
         <button type="button" (click)="toggleSidebar()"
-          class="flex items-center justify-center gap-1.5 text-base md:text-lg font-bold text-standard md:pointer-events-none active:scale-95 transition-all text-center group">
+          class="flex items-center justify-center gap-1.5 text-base md:text-lg font-bold text-standard md:pointer-events-none active:scale-95 transition-all text-center group w-full min-w-0">
           <span class="truncate">{{ currentSection.get('name')?.value || 'Unnamed Section' }}</span>
 
           <div
@@ -34,7 +34,7 @@
       </div>
 
       <!-- Right Side: Actions -->
-      <div class="flex items-center justify-end gap-2 flex-1">
+      <div class="flex items-center justify-end gap-2 flex-shrink-0">
         @if (isSystemDefault()) {
         <app-button type="button" (click)="cloneTemplate()" variant="solid" size="sm">
           <lucide-icon [name]="iconMap['Copy']" [size]="16"></lucide-icon>
@@ -76,7 +76,7 @@
           }
         </div>
 
-        <div #sidebarContent class="flex-1 overflow-y-auto p-2 space-y-1">
+        <div #sidebarContent class="flex-1 overflow-y-auto p-2 pb-20 md:pb-4 space-y-1">
           @for (sec of sectionsFormArray.controls; track sec; let i = $index) {
           <div (click)="selectSection(i)" 
             [class.active]="selectedSectionIndex() === i"
@@ -84,15 +84,21 @@
             [class.adding]="addingIndex() === i"
             class="section-tab flex items-center justify-between px-4 py-3 rounded-xl cursor-pointer hover:bg-light-standard transition">
             <div class="flex items-center gap-3 min-w-0">
-              <lucide-icon [name]="iconMap[sec.get('icon_key')?.value] || iconMap['Home']"
+              <lucide-icon [name]="iconMap[sectionsFormArray.at(i).get('icon_key')?.value] || iconMap['Home']"
                 class="text-standard-muted flex-shrink-0" [size]="20"></lucide-icon>
-              <span class="text-sm font-medium text-standard truncate">{{ sec.get('name')?.value }}</span>
+              <span class="text-sm font-medium text-standard truncate">{{ sectionsFormArray.at(i).get('name')?.value }}</span>
             </div>
             @if (!isSystemDefault()) {
-            <button type="button" (click)="removeSection(i, $event)"
-              class="remove-sec-btn text-standard-muted hover:text-safety p-1 rounded-lg opacity-0 transition">
-              <lucide-icon [name]="iconMap['Trash2']" [size]="16"></lucide-icon>
-            </button>
+              <div class="flex items-center" (click)="$event.stopPropagation()">
+                @if (confirmingDeleteSectionIndex() === i) {
+                  <app-confirm-pill (confirm)="confirmRemoveSection(i)" (cancel)="cancelDeleteSection()"></app-confirm-pill>
+                } @else {
+                  <button type="button" (click)="removeSection(i, $event)"
+                    class="remove-sec-btn text-standard-muted hover:text-safety p-1 rounded-lg transition">
+                    <lucide-icon [name]="iconMap['Trash2']" [size]="16"></lucide-icon>
+                  </button>
+                }
+              </div>
             }
           </div>
           }
@@ -165,14 +171,20 @@
               <div class="bg-light-standard rounded-xl border border-standard overflow-hidden editor-item-anim"
                 [class.adding]="addingFieldIndex() === fi"
                 [class.deleting]="deletingFieldIndex() === fi">
-                <div class="flex justify-between items-center px-4 py-2 border-b border-standard bg-standard/5">
+                <div class="flex justify-between items-center px-4 py-2 border-b border-standard bg-standard/5 min-h-[51px]">
                   <span class="text-[10px] font-bold uppercase tracking-wider text-standard-muted">Field #{{ fi + 1
                     }}</span>
                   @if (!isSystemDefault()) {
-                  <button type="button" (click)="removeField(fi)"
-                    class="text-standard-muted hover:text-red-500 hover:bg-red-50 rounded-lg cursor-pointer transition-all p-2">
-                    <lucide-icon [name]="iconMap['Trash2']" [size]="18"></lucide-icon>
-                  </button>
+                    <div class="flex items-center">
+                      @if (confirmingDeleteFieldIndex() === fi) {
+                        <app-confirm-pill (confirm)="confirmRemoveField(fi)" (cancel)="cancelDeleteField()"></app-confirm-pill>
+                      } @else {
+                        <button type="button" (click)="removeField(fi)"
+                          class="text-standard-muted hover:text-red-500 hover:bg-red-50 rounded-lg cursor-pointer transition-all p-2">
+                          <lucide-icon [name]="iconMap['Trash2']" [size]="18"></lucide-icon>
+                        </button>
+                      }
+                    </div>
                   }
                 </div>
                 <div class="p-4 responsive-stack items-start">
@@ -211,14 +223,20 @@
               <div class="border border-standard rounded-xl overflow-hidden bg-surface-standard editor-item-anim"
                 [class.adding]="addingPresetIndex() === pi"
                 [class.deleting]="deletingPresetIndex() === pi">
-                <div class="flex justify-between items-center px-4 py-2 border-b border-standard bg-standard/5">
+                <div class="flex justify-between items-center px-4 py-2 border-b border-standard bg-standard/5 min-h-[51px]">
                   <span class="text-[10px] font-bold uppercase tracking-wider text-standard-muted">Preset #{{ pi + 1
                     }}</span>
                   @if (!isSystemDefault()) {
-                  <button type="button" (click)="removePreset(pi)"
-                    class="text-standard-muted hover:text-red-500 hover:bg-red-50 rounded-lg cursor-pointer transition-all p-2">
-                    <lucide-icon [name]="iconMap['Trash2']" [size]="18"></lucide-icon>
-                  </button>
+                    <div class="flex items-center">
+                      @if (confirmingDeletePresetIndex() === pi) {
+                        <app-confirm-pill (confirm)="confirmRemovePreset(pi)" (cancel)="cancelDeletePreset()"></app-confirm-pill>
+                      } @else {
+                        <button type="button" (click)="removePreset(pi)"
+                          class="text-standard-muted hover:text-red-500 hover:bg-red-50 rounded-lg cursor-pointer transition-all p-2">
+                          <lucide-icon [name]="iconMap['Trash2']" [size]="18"></lucide-icon>
+                        </button>
+                      }
+                    </div>
                   }
                 </div>
 
@@ -307,4 +325,4 @@
     }
   </form>
   }
-</div>
+</div>

@@ -46,6 +46,7 @@
 
 .section-tab {
   position: relative;
+  min-height: 54px;
   
   &.adding {
     animation: section-slide-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
@@ -69,8 +70,22 @@
     z-index: 10;
   }
 
+  .remove-sec-btn {
+    opacity: 0;
+  }
+
   &:hover .remove-sec-btn {
     opacity: 1;
+  }
+
+  &.active .remove-sec-btn {
+    opacity: 1;
+  }
+
+  // Ensure confirm pill doesn't break sidebar layout
+  app-confirm-pill {
+    flex-shrink: 0;
+    margin-left: 0.5rem;
   }
 }
 
