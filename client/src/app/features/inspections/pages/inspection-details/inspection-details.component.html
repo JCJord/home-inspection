@@ -143,39 +143,55 @@
       </app-button>
     </div>
     }
-    <app-section-tabs [selectedSection]="selectedSection()" [sections]="insp.template_snapshot?.sections || []"
-      (sectionChange)="selectedSection.set($event)">
-    </app-section-tabs>
-    
-    @if (sectionFindings().length === 0) {
-    <div class="empty-section-state">
-      <p>No findings for {{ selectedSection() }} yet.</p>
-      <app-button (click)="addFinding()">
-        <lucide-icon [name]="icons.Plus" [size]="16"></lucide-icon>
-        Add Finding
-      </app-button>
-    </div>
-    } @else {
-    <div class="findings-list">
-      <!-- Findings Header & Add Action -->
-      <div class="findings-header">
-        <h3>Findings for {{ selectedSection() }}</h3>
-        <app-button size="sm" (click)="addFinding()">
-          <lucide-icon [name]="icons.Plus" [size]="14"></lucide-icon>
-          Add Finding
+    <div class="summary-container mt-8 flex flex-col gap-8">
+      <div class="summary-header flex justify-between items-center pb-4 border-b border-standard">
+        <div class="flex flex-col gap-1">
+          <h2 class="text-2xl font-bold text-standard">Executive Summary</h2>
+          <p class="text-sm text-standard-muted">Overview of all recorded findings grouped by severity</p>
+        </div>
+        <app-button variant="outline" size="sm" (click)="routeToWorkbench()">
+          <lucide-icon [name]="icons.Edit" [size]="16"></lucide-icon>
+          Manage Findings
         </app-button>
       </div>
 
-      <!-- List of findings -->
-      <div class="findings-cards">
-        @for (finding of sectionFindings(); track finding.id) {
-        <app-finding-card [finding]="finding" [isDeleting]="deletingId() === finding.id"
-          (delete)="handleDeleteFinding(finding)" (edit)="editFinding(finding)">
-        </app-finding-card>
-        }
+      @for (group of groupedFindings(); track group.severity) {
+      <div class="severity-group flex flex-col gap-6">
+        <div class="group-header flex items-center justify-between px-5 py-3 border"
+          [class]="group.colorClass">
+          <div class="flex items-center gap-3">
+            <span class="group-label text-sm font-bold uppercase tracking-wider">{{ group.label }}</span>
+          </div>
+          <span class="item-count-badge text-[10px] font-bold px-2 py-0.5 rounded-full">
+            {{ group.items.length }} {{ group.items.length === 1 ? 'item' : 'items' }}
+          </span>
+        </div>
+
+        <div class="findings-grid flex flex-col gap-4">
+          @for (finding of group.items; track finding.id) {
+          <app-finding-card [finding]="finding" [readOnly]="true"></app-finding-card>
+          }
+        </div>
       </div>
+      }
+
+      @if (groupedFindings().length === 0) {
+      <div
+        class="empty-state-summary flex flex-col items-center justify-center py-20 px-6 bg-surface-standard rounded-[2rem] border border-dashed border-standard">
+        <div class="w-16 h-16 rounded-full bg-light-standard flex items-center justify-center mb-4">
+          <lucide-icon [name]="icons.FileText" [size]="32" class="text-standard-muted"></lucide-icon>
+        </div>
+        <h3 class="text-lg font-bold text-standard mb-2">No findings recorded yet</h3>
+        <p class="text-standard-muted text-center max-w-sm mb-8">
+          This inspection doesn't have any findings yet. Start recording observations to generate the summary.
+        </p>
+        <app-button (click)="routeToWorkbench()">
+          <lucide-icon [name]="icons.Plus" [size]="18"></lucide-icon>
+          Start Inspection
+        </app-button>
+      </div>
+      }
     </div>
-    }
   </div>
   }
 </div>

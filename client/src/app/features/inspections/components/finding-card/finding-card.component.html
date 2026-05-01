@@ -14,6 +14,12 @@
           {{ finding().severity }}
         </span>
 
+        @if (finding().section) {
+          <span class="finding-section flex items-center gap-1 px-2 py-0.5 rounded bg-surface-standard border border-standard text-[10px] font-bold uppercase tracking-wider text-standard-muted">
+            {{ finding().section }}
+          </span>
+        }
+
         @if (finding().location) {
           <span class="finding-location">
             <lucide-icon [name]="icons.MapPin" [size]="12"></lucide-icon>
@@ -22,13 +28,15 @@
         }
       </div>
 
-      <div class="action-area">
-        @if (isConfirmingDelete()) {
-          <app-confirm-pill (confirm)="delete.emit()" (cancel)="isConfirmingDelete.set(false)"></app-confirm-pill>
-        } @else {
-          <app-dropdown-menu [items]="menuItems()" icon="horizontal"></app-dropdown-menu>
-        }
-      </div>
+      @if (!readOnly()) {
+        <div class="action-area">
+          @if (isConfirmingDelete()) {
+            <app-confirm-pill (confirm)="delete.emit()" (cancel)="isConfirmingDelete.set(false)"></app-confirm-pill>
+          } @else {
+            <app-dropdown-menu [items]="menuItems()" icon="horizontal"></app-dropdown-menu>
+          }
+        </div>
+      }
     </div>
 
     @if (finding().ai_comment) {

@@ -17,6 +17,7 @@ import { LightboxComponent } from '../../../../shared/components/lightbox/lightb
 })
 export class FindingCardComponent {
   finding = input.required<Finding>();
+  readOnly = input<boolean>(false);
   isDeleting = input<boolean>(false);
   delete = output<void>();
   edit = output<void>();

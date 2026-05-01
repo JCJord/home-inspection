@@ -9,7 +9,7 @@ import { SectionTabsComponent } from '../../components/section-tabs/section-tabs
 import { FindingCardComponent } from '../../components/finding-card/finding-card.component';
 import { Section } from '../../../../core/enums/inspection.enums';
 import { SkeletonComponent } from '../../../../shared/components/skeleton/skeleton.component';
-import { LucideAngularModule, ArrowLeft, Send, RefreshCw, AlertCircle, Plus, X, Check, Loader2, FileText, Download, LockOpen } from 'lucide-angular';
+import { LucideAngularModule, ArrowLeft, Send, RefreshCw, AlertCircle, Plus, X, Check, Loader2, FileText, Download, LockOpen, Edit } from 'lucide-angular';
 import { ReportGeneratorComponent } from '../../../reports/components/report-generator/report-generator.component';
 import { BackButtonComponent } from '../../../../shared/components/back-button/back-button.component';
 
@@ -48,14 +48,49 @@ export class InspectionDetailsComponent implements OnInit {
   isGeneratingPdf = signal<boolean>(false);
   isReportGeneratorActive = signal<boolean>(false);
 
-  readonly icons = { ArrowLeft, Send, RefreshCw, AlertCircle, Plus, X, Check, Loader2, FileText, Download, LockOpen };
+  readonly icons = { ArrowLeft, Send, RefreshCw, AlertCircle, Plus, X, Check, Loader2, FileText, Download, LockOpen, Edit };
 
   isPublished = computed(() => this.inspection()?.status === 'published');
   hasFindings = computed(() => (this.inspection()?.findings?.length ?? 0) > 0);
 
-  sectionFindings = computed(() => {
+  groupedFindings = computed(() => {
     const findings = this.inspection()?.findings || [];
-    return findings.filter(f => f.section === this.selectedSection());
+    
+    const groups = [
+      { 
+        label: 'Critical & Safety Hazards', 
+        severity: 'critical', 
+        colorClass: 'group-critical', 
+        items: [] as Finding[] 
+      },
+      { 
+        label: 'Major Defects', 
+        severity: 'major', 
+        colorClass: 'group-major', 
+        items: [] as Finding[] 
+      },
+      { 
+        label: 'Maintenance & Minor Items', 
+        severity: 'minor', 
+        colorClass: 'group-minor', 
+        items: [] as Finding[] 
+      }
+    ];
+
+    findings.forEach(f => {
+      const severity = f.severity.toLowerCase();
+      // Map 'safety' to 'critical', and 'maintenance' to 'minor'
+      let targetSeverity = severity;
+      if (severity === 'safety') targetSeverity = 'critical';
+      if (severity === 'maintenance') targetSeverity = 'minor';
+
+      const group = groups.find(g => g.severity === targetSeverity);
+      if (group) {
+        group.items.push(f);
+      }
+    });
+
+    return groups.filter(g => g.items.length > 0);
   });
 
   currentSection = computed(() => {
@@ -201,6 +236,10 @@ export class InspectionDetailsComponent implements OnInit {
 
   editFinding(finding: Finding): void {
     this.router.navigate(['/inspections', this.inspection()!.id, 'findings', finding.id]);
+  }
+
+  routeToWorkbench(): void {
+    this.router.navigate(['/inspections', this.inspection()!.id, 'findings', 'new']);
   }
 
 
