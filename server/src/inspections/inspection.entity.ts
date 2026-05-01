@@ -76,7 +76,7 @@ export class Inspection {
   @Column({ type: 'jsonb', nullable: true })
   metadata_values: Record<string, string>;
 
-  @OneToMany(() => Finding, (finding) => finding.inspection, { cascade: true, eager: true })
+  @OneToMany(() => Finding, (finding) => finding.inspection, { cascade: true })
   findings: Finding[];
 
   @OneToOne(() => Report, (report) => report.inspection, { cascade: true })
