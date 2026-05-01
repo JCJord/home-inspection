@@ -89,13 +89,24 @@
         <app-select-input name="template_id" label="Inspection Template (Default applies if left blank)"
           [options]="availableTemplates()">
         </app-select-input>
+        } @else {
+        <div class="blueprint-card">
+          <div class="badge-icon">
+            <lucide-icon [name]="icons.Layers" [size]="20"></lucide-icon>
+          </div>
+          <div class="badge-content">
+            <span class="badge-label">Active Blueprint</span>
+            <span class="badge-value">{{ selectedTemplateName() }}</span>
+          </div>
+        </div>
         }
 
         <div class="form-section-title">Property Context</div>
 
         <div class="form-row">
           <app-text-input name="weather" label="Weather" placeholder="e.g. Sunny / Raining"></app-text-input>
-          <app-text-input name="temperature" label="Temperature" placeholder="e.g. 75°F"></app-text-input>
+          <app-text-input name="temperature" label="Temperature" type="number" suffix="°F"
+            placeholder="e.g. 75"></app-text-input>
         </div>
 
         <div class="form-row">

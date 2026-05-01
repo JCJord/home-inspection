@@ -127,6 +127,59 @@
   }
 }
 
+.blueprint-card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 1rem;
+  background: $color-surface-light;
+  border: 1px solid $color-border;
+  border-radius: 0.75rem;
+  margin-bottom: 1.5rem;
+
+  .badge-icon {
+    color: $color-primary;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .badge-content {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 0;
+    
+    .badge-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: $color-text-muted;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+
+      &::after {
+        content: '•';
+        margin-left: 0.75rem;
+        opacity: 0.4;
+        color: $color-text-muted;
+      }
+    }
+
+    .badge-value {
+      font-size: 13px;
+      font-weight: 500;
+      color: $color-text;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+}
+
 @keyframes slideDown {
   from {
     opacity: 0;

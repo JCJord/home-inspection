@@ -42,6 +42,16 @@ export class TextInputComponent {
   type = input<'text' | 'email' | 'number'>('text');
 
   /**
+   * Optional prefix text displayed before the input value.
+   */
+  prefix = input<string>();
+
+  /**
+   * Optional suffix text displayed after the input value.
+   */
+  suffix = input<string>();
+
+  /**
    * Accesses the injected form control.
    */
   get control() {
@@ -67,8 +77,10 @@ export class TextInputComponent {
     if (errors['emailExists']) return 'This email is already registered';
     if (errors['minlength']) return `Minimum length is ${errors['minlength'].requiredLength} characters`;
     if (errors['maxlength']) return `Maximum length is ${errors['maxlength'].requiredLength} characters`;
+    if (errors['min']) return `Minimum value is ${errors['min'].min}`;
+    if (errors['max']) return `Maximum value is ${errors['max'].max}`;
     if (errors['pattern']) return 'Invalid format';
 
-    return 'Invalid field';
+    return 'Please check this field';
   }
 }

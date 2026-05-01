@@ -5,15 +5,24 @@
     </label>
   }
 
-  <input
-    [id]="name()"
-    [name]="name()"
-    [type]="type()"
-    [formControl]="$any(control)"
-    [placeholder]="placeholder()"
-    class="input-field"
-    [class.input-field--error]="isInvalid"
-  />
+  <div class="input-wrapper" [class.input-wrapper--error]="isInvalid">
+    @if (prefix()) {
+      <span class="input-prefix">{{ prefix() }}</span>
+    }
+    
+    <input
+      [id]="name()"
+      [name]="name()"
+      [type]="type()"
+      [formControl]="$any(control)"
+      [placeholder]="placeholder()"
+      class="input-field"
+    />
+
+    @if (suffix()) {
+      <span class="input-suffix">{{ suffix() }}</span>
+    }
+  </div>
 
   @if (isInvalid) {
     <span class="input-error">

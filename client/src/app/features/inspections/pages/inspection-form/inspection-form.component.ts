@@ -5,7 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { TextInputComponent } from '../../../../shared/components/inputs/text-input/text-input.component';
 import { SkeletonComponent } from '../../../../shared/components/skeleton/skeleton.component';
-import { LucideAngularModule, AlertCircle, ArrowLeft } from 'lucide-angular';
+import { LucideAngularModule, AlertCircle, ArrowLeft, Layers } from 'lucide-angular';
 import { InspectionsService } from '../../../../core/services/inspections.service';
 import { Inspection } from '../../../../core/models/inspection.interface';
 import { TemplatesService } from '../../../templates/services/templates.service';
@@ -27,6 +27,12 @@ import { BackButtonComponent } from '../../../../shared/components/back-button/b
   ],
   templateUrl: './inspection-form.component.html',
   styleUrl: './inspection-form.component.scss',
+  providers: [
+    {
+      provide: 'lucideIcons',
+      useValue: { AlertCircle, ArrowLeft, Layers }
+    }
+  ],
 })
 export class InspectionFormComponent implements OnInit {
   private fb = inject(FormBuilder);
@@ -43,10 +49,16 @@ export class InspectionFormComponent implements OnInit {
   private inspection = signal<Inspection | null>(null);
 
   isEditMode = computed(() => !!this.inspectionId());
+  selectedTemplateName = computed(() => {
+    const tid = this.inspectionForm.get('template_id')?.value;
+    if (!tid) return 'Default Template';
+    const opt = this.availableTemplates().find(o => o.value === tid);
+    return opt ? opt.label : 'Custom Blueprint';
+  });
 
   availableTemplates = signal<SelectOption[]>([]);
 
-  readonly icons = { AlertCircle, ArrowLeft };
+  readonly icons = { AlertCircle, ArrowLeft, Layers };
 
   inspectionForm: FormGroup = this.fb.group({
     address: ['', [Validators.required]],
@@ -56,7 +68,7 @@ export class InspectionFormComponent implements OnInit {
     square_footage: [null, [Validators.min(1)]],
     template_id: [''],
     weather: ['', [Validators.maxLength(100)]],
-    temperature: ['', [Validators.maxLength(50)]],
+    temperature: [null, [Validators.min(-100), Validators.max(150)]],
     occupancy: ['', [Validators.maxLength(100)]],
     attendees: ['', [Validators.maxLength(500)]],
     foundation_type: ['', [Validators.maxLength(200)]],
@@ -135,6 +147,10 @@ export class InspectionFormComponent implements OnInit {
 
       if (formValue.year_built) {
         formValue.year_built = Number(formValue.year_built);
+      }
+
+      if (formValue.temperature !== null && formValue.temperature !== undefined && formValue.temperature !== '') {
+        formValue.temperature = Number(formValue.temperature);
       }
 
       const id = this.inspectionId();
