@@ -6,7 +6,6 @@ import { ReportsService } from '../../../../core/services/reports.service';
 import { Finding, Inspection } from '../../../../core/models/inspection.interface';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { SectionTabsComponent } from '../../components/section-tabs/section-tabs.component';
-import { FindingFormComponent } from '../../components/finding-form/finding-form.component';
 import { FindingCardComponent } from '../../components/finding-card/finding-card.component';
 import { Section } from '../../../../core/enums/inspection.enums';
 import { SkeletonComponent } from '../../../../shared/components/skeleton/skeleton.component';
@@ -21,7 +20,6 @@ import { BackButtonComponent } from '../../../../shared/components/back-button/b
     CommonModule,
     ButtonComponent,
     SectionTabsComponent,
-    FindingFormComponent,
     FindingCardComponent,
     LucideAngularModule,
     SkeletonComponent,
@@ -43,9 +41,7 @@ export class InspectionDetailsComponent implements OnInit {
   isPublishing = signal<boolean>(false);
   errorMessage = signal<string | null>(null);
   showPublishModal = signal(false);
-  findingToEdit = signal<Finding | null>(null);
   selectedSection = signal<string>('');
-  isAddingFinding = signal<boolean>(false);
   isDeletingFinding = signal<boolean>(false);
   deletingId = signal<string | null>(null);
   publishState = signal<'idle' | 'confirm' | 'loading' | 'success'>('idle');
@@ -96,11 +92,7 @@ export class InspectionDetailsComponent implements OnInit {
   }
 
   goBack(): void {
-    if (this.isAddingFinding() || this.findingToEdit()) {
-      this.cancelFindingForm();
-    } else {
-      this.router.navigate(['/inspections']);
-    }
+    this.router.navigate(['/inspections']);
   }
 
   startPublishWorkflow(): void {
@@ -201,37 +193,16 @@ export class InspectionDetailsComponent implements OnInit {
     }, 400);
   }
 
-  editFinding(finding: any): void {
-    this.findingToEdit.set(finding);
-  }
-
-  cancelFindingForm(): void {
-    this.isAddingFinding.set(false);
-    this.findingToEdit.set(null);
-  }
-
-  updateMetadataValue(key: string, event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const value = input.value;
-    const insp = this.inspection();
-    if (!insp) return;
-
-    const updatedMetadata = { ...insp.metadata_values, [key]: value };
-    
-    this.inspectionsService.updateInspection(insp.id, { metadata_values: updatedMetadata }).subscribe({
-      next: (updated) => {
-        this.inspection.set(updated);
-      },
-      error: (err) => {
-        console.error('Failed to update metadata', err);
-      }
+  addFinding(): void {
+    this.router.navigate(['/inspections', this.inspection()!.id, 'findings', 'new'], {
+      queryParams: { section: this.selectedSection() }
     });
   }
 
-  onFindingSaved(finding: any): void {
-    this.cancelFindingForm();
-    // Reload inspection to get updated findings
-    this.loadInspection(this.inspection()!.id);
+  editFinding(finding: Finding): void {
+    this.router.navigate(['/inspections', this.inspection()!.id, 'findings', finding.id]);
   }
+
+
 
 }

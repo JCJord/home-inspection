@@ -17,4 +17,12 @@ export const INSPECTIONS_ROUTES: Routes = [
     path: ':id',
     loadComponent: () => import('./pages/inspection-details/inspection-details.component').then(m => m.InspectionDetailsComponent),
   },
+  {
+    path: ':id/findings/new',
+    loadComponent: () => import('./pages/finding-details/finding-details.component').then(m => m.FindingDetailsComponent),
+  },
+  {
+    path: ':id/findings/:findingId',
+    loadComponent: () => import('./pages/finding-details/finding-details.component').then(m => m.FindingDetailsComponent),
+  },
 ];

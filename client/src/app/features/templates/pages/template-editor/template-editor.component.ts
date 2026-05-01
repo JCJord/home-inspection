@@ -13,11 +13,12 @@ import { TextareaInputComponent } from '../../../../shared/components/inputs/tex
 import { SelectInputComponent } from '../../../../shared/components/inputs/select-input/select-input.component';
 import { BackButtonComponent } from '../../../../shared/components/back-button/back-button.component';
 import { ConfirmPillComponent } from '../../../../shared/components/confirm-pill/confirm-pill.component';
+import { WorkbenchLayoutComponent } from '../../../../shared/components/workbench-layout/workbench-layout.component';
 
 @Component({
   selector: 'app-template-editor',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, LucideAngularModule, ButtonComponent, TextInputComponent, TextareaInputComponent, SelectInputComponent, BackButtonComponent, ConfirmPillComponent],
+  imports: [CommonModule, ReactiveFormsModule, LucideAngularModule, ButtonComponent, TextInputComponent, TextareaInputComponent, SelectInputComponent, BackButtonComponent, ConfirmPillComponent, WorkbenchLayoutComponent],
   providers: [{ provide: 'lucideIcons', useValue: { Home, ChevronUp, ChevronDown, Hammer, Zap, Droplets, Wind, Flame, Box, Grid, Monitor, Car, Shield, Search, Info, AlertTriangle, Copy, Edit2, Trash2, Plus, Save, Lock, Unlock, ArrowLeft, Wrench, Thermometer, Lightbulb, Paintbrush, Sun, Key, Eye, Power, FileCheck, HardHat, Construction, Ruler, ShieldCheck, ShieldAlert, BrickWall, Trees, Fan, Sparkles, Wifi, WifiOff, Trash, Settings, Check, X, Users, FileText, Image, Cloud, CloudRain, CloudLightning, Snowflake, Umbrella, Compass, MapPin, Clock, Calendar, Activity, Scissors, Heart, AlertCircle, HelpCircle, Ban, LockOpen, Send, Download, Loader2, CheckCircle2, Layers, Menu } }],
   templateUrl: './template-editor.component.html',
   styleUrl: './template-editor.component.scss'
@@ -39,7 +40,6 @@ export class TemplateEditorComponent implements OnInit, OnDestroy {
   selectedSectionIndex = signal<number>(0);
   availableIcons = signal<string[]>([]);
   showIconPicker = signal<boolean>(false);
-  isSidebarOpen = signal<boolean>(false);
   deletingIndex = signal<number | null>(null);
   deletingFieldIndex = signal<number | null>(null);
   deletingPresetIndex = signal<number | null>(null);
@@ -52,6 +52,7 @@ export class TemplateEditorComponent implements OnInit, OnDestroy {
   confirmingDeletePresetIndex = signal<number | null>(null);
 
   @ViewChild('sidebarContent') sidebarContent!: ElementRef;
+  @ViewChild('workbench') workbench!: WorkbenchLayoutComponent;
 
   severityOptions = ['Minor', 'Major', 'Safety', 'Maintenance'];
   form!: FormGroup;
@@ -218,11 +219,11 @@ export class TemplateEditorComponent implements OnInit, OnDestroy {
   selectSection(index: number): void {
     this.selectedSectionIndex.set(index);
     this.showIconPicker.set(false);
-    this.isSidebarOpen.set(false);
+    this.workbench?.closeSidebar();
   }
 
   toggleSidebar(): void {
-    this.isSidebarOpen.set(!this.isSidebarOpen());
+    this.workbench?.toggleSidebar();
   }
 
   addSection(): void {

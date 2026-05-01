@@ -1,328 +1,304 @@
-<div class="editor-container fixed inset-0 z-50 flex flex-col h-screen bg-light-standard">
+<app-workbench-layout #workbench>
+  
+  <!-- Header Left -->
+  <div header-left class="flex items-center gap-3 md:gap-4">
+    <app-back-button (clicked)="goBack()"></app-back-button>
+    <div class="h-8 w-px bg-standard hidden md:block"></div>
+  </div>
 
-  @if (form) {
-  <form [formGroup]="form" class="flex flex-col h-full">
-    <!-- Header -->
-    <header
-      class="editor-header sticky top-0 flex items-center justify-between px-4 md:px-6 py-3 border-b border-standard bg-surface-standard shadow-sm z-20 gap-4">
+  <!-- Header Center -->
+  <div header-center class="flex flex-col items-center justify-center min-w-0 flex-1 overflow-hidden">
+    <span class="text-[10px] uppercase font-bold text-standard-muted tracking-wide block truncate w-full text-center opacity-70">
+      {{ template()?.name }}
+    </span>
 
-      <!-- Left Side: Navigation -->
-      <div class="flex items-center gap-3 md:gap-4 flex-shrink-0">
-        <app-back-button (clicked)="goBack()"></app-back-button>
-        <div class="h-8 w-px bg-standard hidden md:block"></div>
+    @if (currentSection) {
+    <button type="button" (click)="workbench.toggleSidebar()"
+      class="flex items-center justify-center gap-1.5 text-base md:text-lg font-bold text-standard md:pointer-events-none active:scale-95 transition-all text-center group w-full min-w-0">
+      <span class="truncate">{{ currentSection.get('name')?.value || 'Unnamed Section' }}</span>
+
+      <div
+        class="md:hidden flex items-center justify-center p-1 rounded-md bg-light-standard group-active:bg-primary/10 transition-colors">
+        <lucide-icon [name]="iconMap['ChevronDown']" [size]="16" class="flex-shrink-0 text-primary"></lucide-icon>
       </div>
-
-      <!-- Center Side: Title Area -->
-      <div class="flex flex-col items-center justify-center min-w-0 flex-1 overflow-hidden px-2">
-        <span class="text-[10px] uppercase font-bold text-standard-muted tracking-wide block truncate w-full text-center opacity-70">
-          {{ template()?.name }}
-        </span>
-
-        @if (currentSection) {
-        <button type="button" (click)="toggleSidebar()"
-          class="flex items-center justify-center gap-1.5 text-base md:text-lg font-bold text-standard md:pointer-events-none active:scale-95 transition-all text-center group w-full min-w-0">
-          <span class="truncate">{{ currentSection.get('name')?.value || 'Unnamed Section' }}</span>
-
-          <div
-            class="md:hidden flex items-center justify-center p-1 rounded-md bg-light-standard group-active:bg-primary/10 transition-colors">
-            <lucide-icon [name]="iconMap['ChevronDown']" [size]="16" class="flex-shrink-0 text-primary"></lucide-icon>
-          </div>
-        </button>
-        } @else {
-        <h1 class="text-base md:text-lg font-bold text-standard truncate">Edit Blueprint</h1>
-        }
-      </div>
-
-      <!-- Right Side: Actions -->
-      <div class="flex items-center justify-end gap-2 flex-shrink-0">
-        @if (isSystemDefault()) {
-        <app-button type="button" (click)="cloneTemplate()" variant="solid" size="sm">
-          <lucide-icon [name]="iconMap['Copy']" [size]="16"></lucide-icon>
-          <span class="hidden sm:inline">Clone Blueprint</span>
-        </app-button>
-        }
-      </div>
-    </header>
-
-    <!-- Loading State -->
-    @if (isLoading()) {
-    <div class="flex-1 flex justify-center items-center">
-      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-    </div>
+    </button>
+    } @else {
+    <h1 class="text-base md:text-lg font-bold text-standard truncate">Edit Blueprint</h1>
     }
+  </div>
 
-    <!-- Workbench Split Pane -->
-    @if (!isLoading() && template() && sectionsFormArray) {
-    <div class="flex-1 flex overflow-hidden relative">
+  <!-- Header Right -->
+  <div header-right class="flex items-center justify-end gap-2">
+    @if (isSystemDefault()) {
+    <app-button type="button" (click)="cloneTemplate()" variant="solid" size="sm">
+      <lucide-icon [name]="iconMap['Copy']" [size]="16"></lucide-icon>
+      <span class="hidden sm:inline">Clone Blueprint</span>
+    </app-button>
+    }
+  </div>
 
-      <!-- Left Column: Sections -->
-      <!-- Backdrop Overlay for Mobile Bottom Sheet -->
-      @if (isSidebarOpen()) {
-      <div class="backdrop-overlay" (click)="toggleSidebar()"></div>
+  <!-- Sidebar Content -->
+  <div sidebar class="flex-1 flex flex-col overflow-hidden">
+    <div class="p-4 border-b border-standard flex justify-between items-center bg-surface-standard">
+      <h2 class="text-xs font-bold text-standard-muted tracking-wider uppercase">Sections</h2>
+      @if (!isSystemDefault()) {
+      <app-button type="button" (click)="addSection()" variant="subtle" size="sm">
+        <lucide-icon [name]="iconMap['Plus']" [size]="16"></lucide-icon>
+        Add
+      </app-button>
+      }
+    </div>
+
+    <div #sidebarContent class="flex-1 overflow-y-auto p-2 pb-20 md:pb-4 space-y-1">
+      @for (sec of sectionsFormArray.controls; track sec; let i = $index) {
+      <div (click)="selectSection(i)" 
+        [class.active]="selectedSectionIndex() === i"
+        [class.deleting]="deletingIndex() === i"
+        [class.adding]="addingIndex() === i"
+        class="section-tab flex items-center justify-between px-4 py-3 rounded-xl cursor-pointer hover:bg-light-standard transition">
+        <div class="flex items-center gap-3 min-w-0">
+          <lucide-icon [name]="iconMap[sectionsFormArray.at(i).get('icon_key')?.value] || iconMap['Home']"
+            class="text-standard-muted flex-shrink-0" [size]="20"></lucide-icon>
+          <span class="text-sm font-medium text-standard truncate">{{ sectionsFormArray.at(i).get('name')?.value }}</span>
+        </div>
+        @if (!isSystemDefault()) {
+          <div class="flex items-center" (click)="$event.stopPropagation()">
+            @if (confirmingDeleteSectionIndex() === i) {
+              <app-confirm-pill (confirm)="confirmRemoveSection(i)" (cancel)="cancelDeleteSection()"></app-confirm-pill>
+            } @else {
+              <button type="button" (click)="removeSection(i, $event)"
+                class="remove-sec-btn text-standard-muted hover:text-safety p-1 rounded-lg transition">
+                <lucide-icon [name]="iconMap['Trash2']" [size]="16"></lucide-icon>
+              </button>
+            }
+          </div>
+        }
+      </div>
+      }
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  @if (form) {
+    <form [formGroup]="form" class="h-full">
+      <!-- Loading State -->
+      @if (isLoading()) {
+      <div class="h-full flex justify-center items-center">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
       }
 
-      <!-- Mobile Bottom Sheet / Desktop Sidebar -->
-      <aside class="sidebar-drawer bg-surface-standard" [class.closed]="!isSidebarOpen()">
-        <!-- Handle for mobile -->
-        <div class="bottom-sheet-handle" (click)="toggleSidebar()"></div>
+      <!-- Workbench Split Pane -->
+      @if (!isLoading() && template() && sectionsFormArray) {
+        <div class="p-4 md:p-8 relative min-h-full">
+          @if (currentSection) {
+          <div class="max-w-3xl mx-auto space-y-8">
 
-        <div class="p-4 border-b border-standard flex justify-between items-center bg-surface-standard">
-          <h2 class="text-xs font-bold text-standard-muted tracking-wider uppercase">Sections</h2>
-          @if (!isSystemDefault()) {
-          <app-button type="button" (click)="addSection()" variant="subtle" size="sm">
-            <lucide-icon [name]="iconMap['Plus']" [size]="16"></lucide-icon>
-            Add
-          </app-button>
-          }
-        </div>
+            <!-- Section Info / Icon Picker -->
+            <div class="bg-surface-standard p-6 rounded-xl border border-standard shadow-sm space-y-4">
+              <div class="flex items-start gap-6">
+                <!-- Icon Picker Section -->
+                <div class="flex flex-col gap-1.5">
+                  <label class="text-[11px] font-bold uppercase tracking-wider text-standard-muted ml-1">Icon</label>
+                  <div class="relative">
+                    <button type="button" (click)="toggleIconPicker()" [disabled]="isSystemDefault()"
+                      class="w-12 h-12 rounded-xl border-2 border-dashed border-standard-muted flex items-center justify-center bg-light-standard hover:border-solid hover:border-primary hover:bg-primary/5 transition-all cursor-pointer relative group">
+                      <lucide-icon [name]="iconMap[currentSection.get('icon_key')?.value] || iconMap['Home']" [size]="22"
+                        class="text-primary transition-colors"></lucide-icon>
 
-        <div #sidebarContent class="flex-1 overflow-y-auto p-2 pb-20 md:pb-4 space-y-1">
-          @for (sec of sectionsFormArray.controls; track sec; let i = $index) {
-          <div (click)="selectSection(i)" 
-            [class.active]="selectedSectionIndex() === i"
-            [class.deleting]="deletingIndex() === i"
-            [class.adding]="addingIndex() === i"
-            class="section-tab flex items-center justify-between px-4 py-3 rounded-xl cursor-pointer hover:bg-light-standard transition">
-            <div class="flex items-center gap-3 min-w-0">
-              <lucide-icon [name]="iconMap[sectionsFormArray.at(i).get('icon_key')?.value] || iconMap['Home']"
-                class="text-standard-muted flex-shrink-0" [size]="20"></lucide-icon>
-              <span class="text-sm font-medium text-standard truncate">{{ sectionsFormArray.at(i).get('name')?.value }}</span>
-            </div>
-            @if (!isSystemDefault()) {
-              <div class="flex items-center" (click)="$event.stopPropagation()">
-                @if (confirmingDeleteSectionIndex() === i) {
-                  <app-confirm-pill (confirm)="confirmRemoveSection(i)" (cancel)="cancelDeleteSection()"></app-confirm-pill>
-                } @else {
-                  <button type="button" (click)="removeSection(i, $event)"
-                    class="remove-sec-btn text-standard-muted hover:text-safety p-1 rounded-lg transition">
-                    <lucide-icon [name]="iconMap['Trash2']" [size]="16"></lucide-icon>
-                  </button>
-                }
-              </div>
-            }
-          </div>
-          }
-        </div>
-
-      </aside>
-
-      <!-- Right Column: Section Content -->
-      <main class="flex-1 bg-light-standard overflow-y-auto p-8">
-
-        @if (currentSection) {
-        <div class="max-w-3xl mx-auto space-y-8">
-
-          <!-- Section Info / Icon Picker -->
-          <div class="bg-surface-standard p-6 rounded-xl border border-standard shadow-sm space-y-4">
-            <div class="flex items-start gap-6">
-              <!-- Icon Picker Section -->
-              <div class="flex flex-col gap-1.5">
-                <label class="text-[11px] font-bold uppercase tracking-wider text-standard-muted ml-1">Icon</label>
-                <div class="relative">
-                  <button type="button" (click)="toggleIconPicker()" [disabled]="isSystemDefault()"
-                    class="w-12 h-12 rounded-xl border-2 border-dashed border-standard-muted flex items-center justify-center bg-light-standard hover:border-solid hover:border-primary hover:bg-primary/5 transition-all cursor-pointer relative group">
-                    <lucide-icon [name]="iconMap[currentSection.get('icon_key')?.value] || iconMap['Home']" [size]="22"
-                      class="text-primary transition-colors"></lucide-icon>
-
-                    @if (!isSystemDefault()) {
-                    <div
-                      class="absolute -bottom-1.5 -right-1.5 bg-white text-primary rounded-full p-1 shadow-md border-2 border-standard group-hover:scale-110 transition-transform flex items-center justify-center">
-                      <lucide-icon [name]="iconMap['ChevronDown']" [size]="10" class="stroke-[3px]"></lucide-icon>
-                    </div>
-                    }
-                  </button>
-
-                  <!-- Icon Picker Grid Dropdown -->
-                  @if (showIconPicker()) {
-                  <div
-                    class="absolute left-0 top-14 bg-surface-standard border border-standard shadow-2xl p-3 rounded-2xl z-30 grid grid-cols-4 gap-2 w-64 max-h-72 overflow-y-auto animate-in fade-in zoom-in duration-200">
-                    @for (iconKey of availableIcons(); track iconKey) {
-                    <button type="button" (click)="selectIcon(iconKey)"
-                      [class.bg-primary/10]="currentSection.get('icon_key')?.value === iconKey"
-                      [class.text-primary]="currentSection.get('icon_key')?.value === iconKey"
-                      class="p-2.5 rounded-xl hover:bg-light-standard flex items-center justify-center text-standard-muted hover:text-primary transition-all">
-                      <lucide-icon [name]="iconMap[iconKey] || iconMap['Home']" [size]="20"></lucide-icon>
+                      @if (!isSystemDefault()) {
+                      <div
+                        class="absolute -bottom-1.5 -right-1.5 bg-white text-primary rounded-full p-1 shadow-md border-2 border-standard group-hover:scale-110 transition-transform flex items-center justify-center">
+                        <lucide-icon [name]="iconMap['ChevronDown']" [size]="10" class="stroke-[3px]"></lucide-icon>
+                      </div>
+                      }
                     </button>
+
+                    <!-- Icon Picker Grid Dropdown -->
+                    @if (showIconPicker()) {
+                    <div
+                      class="absolute left-0 top-14 bg-surface-standard border border-standard shadow-2xl p-3 rounded-2xl z-30 grid grid-cols-4 gap-2 w-64 max-h-72 overflow-y-auto animate-in fade-in zoom-in duration-200">
+                      @for (iconKey of availableIcons(); track iconKey) {
+                      <button type="button" (click)="selectIcon(iconKey)"
+                        [class.bg-primary/10]="currentSection.get('icon_key')?.value === iconKey"
+                        [class.text-primary]="currentSection.get('icon_key')?.value === iconKey"
+                        class="p-2.5 rounded-xl hover:bg-light-standard flex items-center justify-center text-standard-muted hover:text-primary transition-all">
+                        <lucide-icon [name]="iconMap[iconKey] || iconMap['Home']" [size]="20"></lucide-icon>
+                      </button>
+                      }
+                    </div>
                     }
                   </div>
-                  }
+                </div>
+
+                <!-- Section Name Section -->
+                <div class="flex-1">
+                  <app-text-input [name]="'structure.sections.' + selectedSectionIndex() + '.name'" label="Section Name"
+                    placeholder="e.g., Exterior, Roofing">
+                  </app-text-input>
                 </div>
               </div>
+            </div>
 
-              <!-- Section Name Section -->
-              <div class="flex-1">
-                <app-text-input [name]="'structure.sections.' + selectedSectionIndex() + '.name'" label="Section Name"
-                  placeholder="e.g., Exterior, Roofing">
-                </app-text-input>
+            <!-- Metadata Fields Management -->
+            <div class="bg-surface-standard p-6 rounded-xl border border-standard shadow-sm space-y-4">
+              <div>
+                <h3 class="text-base font-bold text-standard">Metadata Fields</h3>
+                <p class="text-xs text-standard-muted mt-1">Define inspection attributes (e.g., Materials, Setup methods).
+                </p>
               </div>
-            </div>
-          </div>
 
-          <!-- Metadata Fields Management -->
-          <div class="bg-surface-standard p-6 rounded-xl border border-standard shadow-sm space-y-4">
-            <div>
-              <h3 class="text-base font-bold text-standard">Metadata Fields</h3>
-              <p class="text-xs text-standard-muted mt-1">Define inspection attributes (e.g., Materials, Setup methods).
-              </p>
-            </div>
-
-            <div class="space-y-3">
-              @for (field of getFieldsFormArray(selectedSectionIndex()).controls; track $index; let fi = $index) {
-              <div class="bg-light-standard rounded-xl border border-standard overflow-hidden editor-item-anim"
-                [class.adding]="addingFieldIndex() === fi"
-                [class.deleting]="deletingFieldIndex() === fi">
-                <div class="flex justify-between items-center px-4 py-2 border-b border-standard bg-standard/5 min-h-[51px]">
-                  <span class="text-[10px] font-bold uppercase tracking-wider text-standard-muted">Field #{{ fi + 1
-                    }}</span>
-                  @if (!isSystemDefault()) {
-                    <div class="flex items-center">
-                      @if (confirmingDeleteFieldIndex() === fi) {
-                        <app-confirm-pill (confirm)="confirmRemoveField(fi)" (cancel)="cancelDeleteField()"></app-confirm-pill>
-                      } @else {
-                        <button type="button" (click)="removeField(fi)"
-                          class="text-standard-muted hover:text-red-500 hover:bg-red-50 rounded-lg cursor-pointer transition-all p-2">
-                          <lucide-icon [name]="iconMap['Trash2']" [size]="18"></lucide-icon>
-                        </button>
-                      }
-                    </div>
-                  }
-                </div>
-                <div class="p-4 responsive-stack items-start">
-                  <div class="flex-1">
-                    <app-text-input [name]="'structure.sections.' + selectedSectionIndex() + '.fields.' + fi + '.label'"
-                      label="Field Label" placeholder="e.g., Siding Material">
-                    </app-text-input>
+              <div class="space-y-3">
+                @for (field of getFieldsFormArray(selectedSectionIndex()).controls; track $index; let fi = $index) {
+                <div class="bg-light-standard rounded-xl border border-standard overflow-hidden editor-item-anim"
+                  [class.adding]="addingFieldIndex() === fi"
+                  [class.deleting]="deletingFieldIndex() === fi">
+                  <div class="flex justify-between items-center px-4 py-2 border-b border-standard bg-standard/5 min-h-[51px]">
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-standard-muted">Field #{{ fi + 1
+                      }}</span>
+                    @if (!isSystemDefault()) {
+                      <div class="flex items-center">
+                        @if (confirmingDeleteFieldIndex() === fi) {
+                          <app-confirm-pill (confirm)="confirmRemoveField(fi)" (cancel)="cancelDeleteField()"></app-confirm-pill>
+                        } @else {
+                          <button type="button" (click)="removeField(fi)"
+                            class="text-standard-muted hover:text-red-500 hover:bg-red-50 rounded-lg cursor-pointer transition-all p-2">
+                            <lucide-icon [name]="iconMap['Trash2']" [size]="18"></lucide-icon>
+                          </button>
+                        }
+                      </div>
+                    }
                   </div>
-                  <div class="flex-1">
-                    <app-text-input [name]="'structure.sections.' + selectedSectionIndex() + '.fields.' + fi + '.key'"
-                      label="Key Slug (Auto-Generated)" placeholder="siding_material">
-                    </app-text-input>
-                  </div>
-                </div>
-              </div>
-              }
-            </div>
-
-            @if (!isSystemDefault()) {
-            <app-button type="button" (click)="addField()" variant="subtle" [full]="true">
-              <lucide-icon [name]="iconMap['Plus']" [size]="16"></lucide-icon>
-              Add Metadata Field
-            </app-button>
-            }
-          </div>
-
-          <!-- Presets Management -->
-          <div class="bg-surface-standard p-6 rounded-xl border border-standard shadow-sm space-y-4 ">
-            <div>
-              <h3 class="text-base font-bold text-standard">Quick-Tap Presets</h3>
-              <p class="text-xs text-standard-muted mt-1">Standard defect findings templates inspectors use on-site.</p>
-            </div>
-
-            <div class="space-y-4">
-              @for (preset of getPresetsFormArray(selectedSectionIndex()).controls; track $index; let pi = $index) {
-              <div class="border border-standard rounded-xl overflow-hidden bg-surface-standard editor-item-anim"
-                [class.adding]="addingPresetIndex() === pi"
-                [class.deleting]="deletingPresetIndex() === pi">
-                <div class="flex justify-between items-center px-4 py-2 border-b border-standard bg-standard/5 min-h-[51px]">
-                  <span class="text-[10px] font-bold uppercase tracking-wider text-standard-muted">Preset #{{ pi + 1
-                    }}</span>
-                  @if (!isSystemDefault()) {
-                    <div class="flex items-center">
-                      @if (confirmingDeletePresetIndex() === pi) {
-                        <app-confirm-pill (confirm)="confirmRemovePreset(pi)" (cancel)="cancelDeletePreset()"></app-confirm-pill>
-                      } @else {
-                        <button type="button" (click)="removePreset(pi)"
-                          class="text-standard-muted hover:text-red-500 hover:bg-red-50 rounded-lg cursor-pointer transition-all p-2">
-                          <lucide-icon [name]="iconMap['Trash2']" [size]="18"></lucide-icon>
-                        </button>
-                      }
-                    </div>
-                  }
-                </div>
-
-                <div class="p-4 space-y-4">
-                  <div class="responsive-stack justify-between items-start">
+                  <div class="p-4 responsive-stack items-start">
                     <div class="flex-1">
-                      <app-text-input
-                        [name]="'structure.sections.' + selectedSectionIndex() + '.presets.' + pi + '.title'"
-                        label="Preset Title" placeholder="e.g., Missing Shingles">
+                      <app-text-input [name]="'structure.sections.' + selectedSectionIndex() + '.fields.' + fi + '.label'"
+                        label="Field Label" placeholder="e.g., Siding Material">
                       </app-text-input>
                     </div>
-
-                    <div class="w-40">
-                      <app-select-input
-                        [name]="'structure.sections.' + selectedSectionIndex() + '.presets.' + pi + '.severity'"
-                        label="Severity" [options]="severityOptions">
-                      </app-select-input>
+                    <div class="flex-1">
+                      <app-text-input [name]="'structure.sections.' + selectedSectionIndex() + '.fields.' + fi + '.key'"
+                        label="Key Slug (Auto-Generated)" placeholder="siding_material">
+                      </app-text-input>
                     </div>
                   </div>
-
-                  <div>
-                    <app-textarea-input
-                      [name]="'structure.sections.' + selectedSectionIndex() + '.presets.' + pi + '.description'"
-                      label="Default Description" [rows]="3" placeholder="Add standard defect findings description...">
-                    </app-textarea-input>
-                  </div>
                 </div>
+                }
               </div>
+
+              @if (!isSystemDefault()) {
+              <app-button type="button" (click)="addField()" variant="subtle" [full]="true">
+                <lucide-icon [name]="iconMap['Plus']" [size]="16"></lucide-icon>
+                Add Metadata Field
+              </app-button>
               }
             </div>
 
+            <!-- Presets Management -->
+            <div class="bg-surface-standard p-6 rounded-xl border border-standard shadow-sm space-y-4 ">
+              <div>
+                <h3 class="text-base font-bold text-standard">Quick-Tap Presets</h3>
+                <p class="text-xs text-standard-muted mt-1">Standard defect findings templates inspectors use on-site.</p>
+              </div>
+
+              <div class="space-y-4">
+                @for (preset of getPresetsFormArray(selectedSectionIndex()).controls; track $index; let pi = $index) {
+                <div class="border border-standard rounded-xl overflow-hidden bg-surface-standard editor-item-anim"
+                  [class.adding]="addingPresetIndex() === pi"
+                  [class.deleting]="deletingPresetIndex() === pi">
+                  <div class="flex justify-between items-center px-4 py-2 border-b border-standard bg-standard/5 min-h-[51px]">
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-standard-muted">Preset #{{ pi + 1
+                      }}</span>
+                    @if (!isSystemDefault()) {
+                      <div class="flex items-center">
+                        @if (confirmingDeletePresetIndex() === pi) {
+                          <app-confirm-pill (confirm)="confirmRemovePreset(pi)" (cancel)="cancelDeletePreset()"></app-confirm-pill>
+                        } @else {
+                          <button type="button" (click)="removePreset(pi)"
+                            class="text-standard-muted hover:text-red-500 hover:bg-red-50 rounded-lg cursor-pointer transition-all p-2">
+                            <lucide-icon [name]="iconMap['Trash2']" [size]="18"></lucide-icon>
+                          </button>
+                        }
+                      </div>
+                    }
+                  </div>
+
+                  <div class="p-4 space-y-4">
+                    <div class="responsive-stack justify-between items-start">
+                      <div class="flex-1">
+                        <app-text-input
+                          [name]="'structure.sections.' + selectedSectionIndex() + '.presets.' + pi + '.title'"
+                          label="Preset Title" placeholder="e.g., Missing Shingles">
+                        </app-text-input>
+                      </div>
+
+                      <div class="w-40">
+                        <app-select-input
+                          [name]="'structure.sections.' + selectedSectionIndex() + '.presets.' + pi + '.severity'"
+                          label="Severity" [options]="severityOptions">
+                        </app-select-input>
+                      </div>
+                    </div>
+
+                    <div>
+                      <app-textarea-input
+                        [name]="'structure.sections.' + selectedSectionIndex() + '.presets.' + pi + '.description'"
+                        label="Default Description" [rows]="3" placeholder="Add standard defect findings description...">
+                      </app-textarea-input>
+                    </div>
+                  </div>
+                </div>
+                }
+              </div>
+
+              @if (!isSystemDefault()) {
+              <app-button type="button" (click)="addPreset()" variant="subtle" [full]="true">
+                <lucide-icon [name]="iconMap['Plus']" [size]="16"></lucide-icon>
+                Add Preset
+              </app-button>
+              }
+            </div>
+            
+            <div class="pb-20 md:pb-5"></div>
+          </div>
+          } @else {
+          <div class="flex flex-col items-center justify-center py-20 px-4 text-center">
+            <div class="w-16 h-16 bg-light-standard rounded-2xl flex items-center justify-center mb-6 text-standard-muted/50">
+              <lucide-icon [name]="iconMap['Layers']" [size]="32"></lucide-icon>
+            </div>
+            <h3 class="text-xl font-bold text-standard mb-2">No Sections Yet</h3>
+            <p class="text-standard-muted max-w-sm mb-8">
+              Start building your inspection blueprint by adding your first section (e.g., Exterior, Roofing, Electrical).
+            </p>
+
             @if (!isSystemDefault()) {
-            <app-button type="button" (click)="addPreset()" variant="subtle" [full]="true">
-              <lucide-icon [name]="iconMap['Plus']" [size]="16"></lucide-icon>
-              Add Preset
+            <app-button type="button" (click)="addSection()" variant="solid" size="lg">
+              <lucide-icon [name]="iconMap['Plus']" [size]="20"></lucide-icon>
+              Add First Section
             </app-button>
             }
           </div>
-          <div class="mb-10">
+          }
 
+          <!-- Protected Overlay for System Blueprint -->
+          @if (isSystemDefault()) {
+          <div
+            class="absolute inset-0 bg-white bg-opacity-60 backdrop-blur-sm flex flex-col items-center justify-center z-30">
+            <div
+              class="bg-surface-standard p-8 rounded-2xl border border-standard shadow-2xl text-center max-w-sm mx-4 flex flex-col items-center gap-4">
+              <lucide-icon [name]="iconMap['Lock']" class="text-primary" [size]="36"></lucide-icon>
+              <div>
+                <h2 class="text-xl font-bold text-standard mb-2">Protected Blueprint</h2>
+                <p class="text-sm text-standard-muted">This is a system default setup. You cannot modify it directly.</p>
+              </div>
+              <app-button type="button" (click)="cloneTemplate()" variant="solid" [full]="true">
+                <lucide-icon [name]="iconMap['Copy']" [size]="18"></lucide-icon>
+                Clone to Customize
+              </app-button>
+            </div>
           </div>
-          <div class="pb-5">
-
-          </div>
-        </div>
-        } @else {
-        <div class="flex flex-col items-center justify-center py-20 px-4 text-center">
-          <div class="w-16 h-16 bg-light-standard rounded-2xl flex items-center justify-center mb-6 text-standard-muted/50">
-            <lucide-icon [name]="iconMap['Layers']" [size]="32"></lucide-icon>
-          </div>
-          <h3 class="text-xl font-bold text-standard mb-2">No Sections Yet</h3>
-          <p class="text-standard-muted max-w-sm mb-8">
-            Start building your inspection blueprint by adding your first section (e.g., Exterior, Roofing, Electrical).
-          </p>
-
-          @if (!isSystemDefault()) {
-          <app-button type="button" (click)="addSection()" variant="solid" size="lg">
-            <lucide-icon [name]="iconMap['Plus']" [size]="20"></lucide-icon>
-            Add First Section
-          </app-button>
           }
         </div>
-        }
-      </main>
-
-      <!-- Protected Overlay for System Blueprint -->
-      @if (isSystemDefault()) {
-      <div
-        class="absolute inset-0 bg-white bg-opacity-60 backdrop-blur-sm flex flex-col items-center justify-center z-30">
-        <div
-          class="bg-surface-standard p-8 rounded-2xl border border-standard shadow-2xl text-center max-w-sm mx-4 flex flex-col items-center gap-4">
-          <lucide-icon [name]="iconMap['Lock']" class="text-primary" [size]="36"></lucide-icon>
-          <div>
-            <h2 class="text-xl font-bold text-standard mb-2">Protected Blueprint</h2>
-            <p class="text-sm text-standard-muted">This is a system default setup. You cannot modify it directly.</p>
-          </div>
-          <app-button type="button" (click)="cloneTemplate()" variant="solid" [full]="true">
-            <lucide-icon [name]="iconMap['Copy']" [size]="18"></lucide-icon>
-            Clone to Customize
-          </app-button>
-        </div>
-      </div>
       }
-
-    </div>
-    }
-  </form>
+    </form>
   }
-</div>
+</app-workbench-layout>

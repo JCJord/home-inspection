@@ -1,0 +1,42 @@
+<div class="workbench-container fixed inset-0 z-50 flex flex-col h-screen bg-light-standard">
+  <!-- Header -->
+  <header class="workbench-header sticky top-0 flex items-center justify-between px-4 md:px-6 py-3 border-b border-standard bg-surface-standard shadow-sm z-20 gap-4">
+    <!-- Left Side -->
+    <div class="flex items-center gap-3 md:gap-4 flex-shrink-0">
+      <ng-content select="[header-left]"></ng-content>
+    </div>
+
+    <!-- Center Side -->
+    <div class="flex flex-col items-center justify-center min-w-0 flex-1 overflow-hidden px-2">
+      <ng-content select="[header-center]"></ng-content>
+    </div>
+
+    <!-- Right Side -->
+    <div class="flex items-center justify-end gap-2 flex-shrink-0">
+      <ng-content select="[header-right]"></ng-content>
+    </div>
+  </header>
+
+  <!-- Workbench Split Pane -->
+  <div class="flex-1 flex overflow-hidden relative">
+    <!-- Backdrop Overlay for Mobile -->
+    @if (isSidebarOpen()) {
+      <div class="backdrop-overlay" (click)="toggleSidebar()"></div>
+    }
+
+    <!-- Sidebar Drawer -->
+    <aside class="sidebar-drawer bg-surface-standard" [class.closed]="!isSidebarOpen()">
+      <!-- Handle for mobile -->
+      <div class="bottom-sheet-handle" (click)="toggleSidebar()"></div>
+      
+      <div class="sidebar-content flex-1 flex flex-col overflow-hidden">
+        <ng-content select="[sidebar]"></ng-content>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 bg-light-standard overflow-y-auto">
+      <ng-content></ng-content>
+    </main>
+  </div>
+</div>

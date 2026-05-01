@@ -146,34 +146,11 @@
     <app-section-tabs [selectedSection]="selectedSection()" [sections]="insp.template_snapshot?.sections || []"
       (sectionChange)="selectedSection.set($event)">
     </app-section-tabs>
-    @if (isAddingFinding() || findingToEdit()) {
-    <app-finding-form [inspectionId]="insp.id" [section]="selectedSection()" [presets]="currentSection()?.presets || []"
-      [finding]="findingToEdit()" [year_built]="insp.year_built" (close)="cancelFindingForm()"
-      (saved)="onFindingSaved($event)">
-    </app-finding-form>
-    } @else {
-    <!-- Quick-Tap Attributes Area -->
-    @if (currentSection(); as section) {
-    @if (section.fields && section.fields.length > 0) {
-    <div class="flex flex-wrap gap-3 p-4 mb-6 bg-surface-standard border-b border-standard">
-      @for (field of section.fields; track field.key) {
-      <div
-        class="flex items-center gap-2 bg-light-standard px-3 py-1.5 rounded-lg border border-standard shadow-sm w-full sm:w-auto">
-        <span class="text-xs font-bold text-standard-muted whitespace-nowrap">{{ field.label }}:</span>
-        <input type="text" [value]="inspection()?.metadata_values?.[field.key] || ''"
-          (change)="updateMetadataValue(field.key, $event)"
-          class="bg-transparent border-none text-xs text-standard focus:outline-none focus:ring-0 p-0 w-full sm:w-32 font-medium"
-          placeholder="Tap to set..." />
-      </div>
-      }
-    </div>
-    }
-    }
-
+    
     @if (sectionFindings().length === 0) {
     <div class="empty-section-state">
       <p>No findings for {{ selectedSection() }} yet.</p>
-      <app-button (click)="isAddingFinding.set(true)">
+      <app-button (click)="addFinding()">
         <lucide-icon [name]="icons.Plus" [size]="16"></lucide-icon>
         Add Finding
       </app-button>
@@ -183,7 +160,7 @@
       <!-- Findings Header & Add Action -->
       <div class="findings-header">
         <h3>Findings for {{ selectedSection() }}</h3>
-        <app-button size="sm" (click)="isAddingFinding.set(true)">
+        <app-button size="sm" (click)="addFinding()">
           <lucide-icon [name]="icons.Plus" [size]="14"></lucide-icon>
           Add Finding
         </app-button>
@@ -198,7 +175,6 @@
         }
       </div>
     </div>
-    }
     }
   </div>
   }

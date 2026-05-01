@@ -124,7 +124,7 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
     if (!url) return '';
     if (url.startsWith('http')) return url;
     const path = url.startsWith('/') ? url : `/${url}`;
-    return `http://localhost:3000${path}`; 
+    return `${environment.apiUrl}${path}`; 
   }
 
   // Two-step Delete Flow

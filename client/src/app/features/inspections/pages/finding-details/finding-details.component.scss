@@ -1,0 +1,33 @@
+@use 'variables' as *;
+
+:host {
+  display: block;
+  width: 100%;
+}
+
+.section-tab {
+  position: relative;
+  min-height: 54px;
+  
+  &.active {
+    background-color: $color-surface-light;
+    border-left: 4px solid $color-primary;
+    padding-left: calc(1rem - 4px);
+
+    .text-standard {
+      color: $color-primary;
+    }
+    
+    lucide-icon {
+      color: $color-primary !important;
+    }
+  }
+}
+
+.bg-surface-standard {
+  background-color: $color-surface;
+}
+
+.border-standard {
+  border-color: $color-border;
+}

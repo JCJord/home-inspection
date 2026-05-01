@@ -66,6 +66,10 @@ export class InspectionsService {
     return this.http.get<Finding[]>(`${this.apiUrl}/${inspectionId}/findings`, { params });
   }
 
+  getFinding(inspectionId: string, findingId: string): Observable<Finding> {
+    return this.http.get<Finding>(`${this.apiUrl}/${inspectionId}/findings/${findingId}`);
+  }
+
   createFinding(inspectionId: string, dto: CreateFindingDto): Observable<Finding> {
     return this.http.post<Finding>(`${this.apiUrl}/${inspectionId}/findings`, dto);
   }
