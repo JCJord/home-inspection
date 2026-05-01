@@ -66,6 +66,7 @@ export class InspectionsService {
     const [data, total] = await this.inspectionRepository.findAndCount({
       where: { inspector_id: inspectorId },
       order: { updated_at: 'DESC' },
+      relations: ['findings'],
       skip,
       take: limit,
     });
