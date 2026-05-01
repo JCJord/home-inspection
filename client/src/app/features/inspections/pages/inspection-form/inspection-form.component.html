@@ -123,7 +123,14 @@
       </div>
 
       <div class="form-actions">
-        <app-button type="submit" [disabled]="inspectionForm.invalid || isLoading()" [isLoading]="isLoading()"
+        @if (inspectionForm.invalid && inspectionForm.touched) {
+          <div class="footer-error-hint flex items-center gap-2 text-safety text-sm font-bold mr-auto animate-pulse">
+            <lucide-icon [name]="icons.AlertCircle" [size]="16"></lucide-icon>
+            <span>Please check required fields above</span>
+          </div>
+        }
+        
+        <app-button type="submit" [disabled]="isLoading()" [isLoading]="isLoading()"
           variant="solid">
           {{ isEditMode() ? 'Save Changes' : 'Create Inspection' }}
         </app-button>

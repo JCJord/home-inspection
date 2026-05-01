@@ -169,10 +169,22 @@ export class InspectionFormComponent implements OnInit {
           console.error(`Failed to ${id ? 'update' : 'create'} inspection`, err);
           this.errorMessage.set(err.error?.message || 'An unexpected error occurred. Please try again.');
           this.isLoading.set(false);
+          this.scrollToFirstError();
         },
       });
     } else {
       this.inspectionForm.markAllAsTouched();
+      // Give Angular a moment to render the error classes before we scroll
+      setTimeout(() => this.scrollToFirstError(), 100);
+    }
+  }
+
+  private scrollToFirstError(): void {
+    const firstInvalid = document.querySelector('.input-wrapper--error');
+    if (firstInvalid) {
+      firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }
 }

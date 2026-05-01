@@ -33,32 +33,12 @@
   border-radius: 1.5rem;
   border: 1px solid $color-border;
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
+  /* Removed overflow:hidden to allow sticky footer/banner */
   animation: fadeIn 0.3s ease-out forwards;
 
   &.edit-mode {
     border-color: rgba($color-primary, 0.3);
     box-shadow: 0 10px 30px -5px rgba($color-primary, 0.1);
-  }
-}
-
-
-
-.form-error-banner {
-  background: rgba($color-error, 0.1);
-  color: $color-error;
-  padding: 1rem;
-  border-radius: 0.75rem;
-  margin-bottom: 1.5rem;
-  display: flex;
-  align-items: center;
-  font-size: 0.875rem;
-  font-weight: 500;
-  border: 1px solid rgba($color-error, 0.2);
-  animation: slideDown 0.3s ease-out;
-
-  lucide-icon {
-    flex-shrink: 0;
   }
 }
 
@@ -93,23 +73,90 @@
       gap: 1.25rem;
     }
   }
-}
 
+  .form-error-banner {
+    position: sticky;
+    top: 1.5rem;
+    z-index: 110;
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    color: $color-error;
+    padding: 0.875rem 1.25rem;
+    border-radius: 0.875rem;
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    font-size: 0.875rem;
+    font-weight: 600;
+    border: 1px solid rgba($color-error, 0.15);
+    border-left: 4px solid $color-error;
+    box-shadow: 0 12px 30px -10px rgba($color-error, 0.15);
+    animation: slideDown 0.3s ease-out, shake 0.5s cubic-bezier(.36, .07, .19, .97) both;
+    animation-delay: 0s, 0.2s;
 
+    lucide-icon {
+      flex-shrink: 0;
+      color: $color-error;
+    }
+  }
 
-.form-actions {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 1.5rem;
+  /* Pulse animation for invalid fields when form is submitted */
+  ::ng-deep .input-wrapper--error {
+    animation: fieldPulse 2s infinite;
+  }
 
-  @media (max-width: 640px) {
-    app-button {
-      width: 100%;
+  .form-actions {
+    position: sticky;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    background: rgba($color-surface, 0.8);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 1.25rem 2rem;
+    margin: 2rem -2rem -2rem -2rem;
+    border-top: 1px solid rgba($color-border, 0.6);
+    display: flex;
+    justify-content: flex-end;
+    box-shadow: 0 -10px 20px -5px rgba(0, 0, 0, 0.04);
 
-      ::ng-deep .app-button {
+    @media (max-width: 640px) {
+      padding: 1rem;
+
+      app-button {
         width: 100%;
+
+        ::ng-deep .app-button {
+          width: 100%;
+        }
       }
     }
+  }
+}
+
+@keyframes shake {
+
+  10%,
+  90% {
+    transform: translate3d(-1px, 0, 0);
+  }
+
+  20%,
+  80% {
+    transform: translate3d(2px, 0, 0);
+  }
+
+  30%,
+  50%,
+  70% {
+    transform: translate3d(-4px, 0, 0);
+  }
+
+  40%,
+  60% {
+    transform: translate3d(4px, 0, 0);
   }
 }
 
@@ -150,7 +197,7 @@
     align-items: center;
     gap: 0.75rem;
     min-width: 0;
-    
+
     .badge-label {
       font-size: 11px;
       font-weight: 600;
@@ -177,6 +224,23 @@
       overflow: hidden;
       text-overflow: ellipsis;
     }
+  }
+}
+
+@keyframes fieldPulse {
+  0% {
+    border-color: rgba($color-error, 0.5);
+    box-shadow: 0 0 0 0 rgba($color-error, 0.2);
+  }
+
+  50% {
+    border-color: $color-error;
+    box-shadow: 0 0 0 4px rgba($color-error, 0.1);
+  }
+
+  100% {
+    border-color: rgba($color-error, 0.5);
+    box-shadow: 0 0 0 0 rgba($color-error, 0.2);
   }
 }
 
