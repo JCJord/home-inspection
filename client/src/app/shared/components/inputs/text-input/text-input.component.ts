@@ -39,7 +39,7 @@ export class TextInputComponent {
    * The HTML type of the input.
    * @default 'text'
    */
-  type = input<'text' | 'email' | 'number'>('text');
+  type = input<'text' | 'email' | 'number' | 'tel'>('text');
 
   /**
    * Optional prefix text displayed before the input value.

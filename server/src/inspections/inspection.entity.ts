@@ -33,8 +33,11 @@ export class Inspection {
   @Column()
   client_name: string;
 
-  @Column()
+  @Column({ nullable: true })
   client_email: string;
+
+  @Column({ nullable: true })
+  client_phone: string;
 
   @Column()
   year_built: number;
@@ -48,8 +51,8 @@ export class Inspection {
   @Column({ nullable: true })
   weather: string;
 
-  @Column({ nullable: true })
-  temperature: string;
+  @Column({ type: 'float', nullable: true })
+  temperature: number;
 
   @Column({ nullable: true })
   occupancy: string;

@@ -7,6 +7,7 @@ import {
   IsInt,
   Min,
   Max,
+  IsNumber,
 } from 'class-validator';
 
 export class CreateInspectionDto {
@@ -20,8 +21,13 @@ export class CreateInspectionDto {
   @MaxLength(100)
   client_name: string;
 
+  @IsOptional()
   @IsEmail()
-  client_email: string;
+  client_email?: string;
+
+  @IsOptional()
+  @IsString()
+  client_phone?: string;
 
   @IsInt()
   @Min(1800)
@@ -40,9 +46,8 @@ export class CreateInspectionDto {
   weather?: string;
 
   @IsOptional()
-  @IsString()
-  @MaxLength(50)
-  temperature?: string;
+  @IsNumber()
+  temperature?: number;
 
   @IsOptional()
   @IsString()

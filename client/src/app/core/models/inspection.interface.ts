@@ -49,13 +49,14 @@ export interface Inspection {
   id: string;
   address: string;
   client_name: string;
-  client_email: string;
+  client_email?: string;
+  client_phone?: string;
   year_built: number;
   square_footage?: number;
   status: 'in_progress' | 'published';
   findings?: Finding[];
   weather?: string;
-  temperature?: string;
+  temperature?: number;
   occupancy?: string;
   attendees?: string;
   foundation_type?: string;

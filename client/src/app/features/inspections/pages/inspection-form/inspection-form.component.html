@@ -22,7 +22,8 @@
           <!-- Property Address -->
           <app-skeleton width="100%" height="56px" borderRadius="10px"></app-skeleton>
 
-          <!-- Client Name / Email -->
+          <!-- Client Info -->
+          <app-skeleton width="100%" height="56px" borderRadius="10px"></app-skeleton>
           <div class="form-row">
             <app-skeleton width="100%" height="56px" borderRadius="10px"></app-skeleton>
             <app-skeleton width="100%" height="56px" borderRadius="10px"></app-skeleton>
@@ -71,11 +72,13 @@
       <div class="form-grid">
         <app-text-input name="address" label="Property Address" placeholder="123 Main St, City, State"></app-text-input>
 
+        <app-text-input name="client_name" label="Client Name" placeholder="John Doe"></app-text-input>
+        
         <div class="form-row">
-          <app-text-input name="client_name" label="Client Name" placeholder="John Doe"></app-text-input>
-
-          <app-text-input name="client_email" label="Client Email" type="email"
+          <app-text-input name="client_email" label="Client Email (Optional)" type="email"
             placeholder="john@example.com"></app-text-input>
+          <app-text-input name="client_phone" label="Client Phone (Optional)" type="tel"
+            placeholder="e.g. 555-0123"></app-text-input>
         </div>
 
         <div class="form-row">

@@ -63,7 +63,8 @@ export class InspectionFormComponent implements OnInit {
   inspectionForm: FormGroup = this.fb.group({
     address: ['', [Validators.required]],
     client_name: ['', [Validators.required]],
-    client_email: ['', [Validators.required, Validators.email]],
+    client_email: ['', [Validators.email]],
+    client_phone: [''],
     year_built: [new Date().getFullYear(), [Validators.required, Validators.min(1800), Validators.max(new Date().getFullYear())]],
     square_footage: [null, [Validators.min(1)]],
     template_id: [''],
@@ -93,6 +94,7 @@ export class InspectionFormComponent implements OnInit {
           address: data.address,
           client_name: data.client_name,
           client_email: data.client_email,
+          client_phone: data.client_phone || '',
           year_built: data.year_built,
           square_footage: data.square_footage,
           weather: data.weather || '',
