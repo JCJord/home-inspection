@@ -1,9 +1,26 @@
-<div class="photo-action-pill confirming">
-  <button type="button" class="action-btn cancel-delete" (click)="cancel.emit()">
-    <span class="action-text">{{ cancelText() }}</span>
+<div class="photo-action-pill flex items-center bg-white/95 backdrop-blur-sm rounded-full p-0.5 gap-0.5 shadow-sm hover:shadow-md border border-slate-200 transition-all duration-300">
+  
+  <!-- Cancel Button -->
+  <button type="button" 
+          class="flex items-center gap-2 px-3 py-1.5 rounded-full group transition-all duration-200 hover:bg-primary/10 active:scale-95" 
+          (click)="cancel.emit()">
+    <lucide-icon [name]="icons.X" [size]="12" 
+                 class="text-slate-400 group-hover:text-primary group-hover:scale-110 transition-all duration-200"></lucide-icon>
+    <span class="text-xs leading-none uppercase font-bold tracking-wider text-slate-500 group-hover:text-primary transition-colors">
+      {{ cancelText() }}
+    </span>
   </button>
-  <div class="divider"></div>
-  <button type="button" class="action-btn confirm-delete" (click)="confirm.emit()">
-    <span class="action-text font-bold">{{ confirmText() }}</span>
+
+  <div class="w-px h-4 bg-slate-200 mx-0.5"></div>
+
+  <!-- Confirm Button -->
+  <button type="button" 
+          class="flex items-center gap-2 px-3 py-1.5 rounded-full group transition-all duration-200 hover:bg-safety/10 active:scale-95" 
+          (click)="confirm.emit()">
+    <lucide-icon [name]="icons.Check" [size]="12" 
+                 class="text-slate-400 group-hover:text-safety group-hover:scale-110 transition-all duration-200"></lucide-icon>
+    <span class="text-xs leading-none uppercase font-bold tracking-wider text-slate-600 group-hover:text-safety transition-colors">
+      {{ confirmText() }}
+    </span>
   </button>
 </div>
