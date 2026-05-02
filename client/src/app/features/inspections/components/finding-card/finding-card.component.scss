@@ -25,17 +25,17 @@
     }
 
     &:active {
-      transform: scale(0.985);
+      transform: scale(0.98);
       background: rgba($color-primary, 0.04);
-      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02);
+      border-color: rgba($color-primary, 0.2);
     }
 
     .clickable-cue {
       display: flex;
       align-items: center;
-      justify-content: center;
-      width: 32px;
-      height: 32px;
+      justify-content: flex-end;
+      min-width: 2.5rem;
+      padding-right: 0.25rem;
     }
   }
 
@@ -99,6 +99,12 @@
           &[data-severity='major'] { background: rgba($color-major, 0.1); color: $color-major; }
           &[data-severity='minor'] { background: rgba($color-minor, 0.1); color: $color-minor; }
           &[data-severity='maintenance'] { background: rgba($color-maintenance, 0.1); color: $color-maintenance; }
+        }
+
+        .finding-metadata-row {
+          display: flex;
+          align-items: center;
+          gap: 1rem;
         }
 
         .finding-location {
@@ -254,39 +260,81 @@
       }
     }
 
-    .finding-observation {
-      &.cursor-pointer:hover {
-        background: rgba(0, 0, 0, 0.02);
-      }
-
-      .observation-label {
-        font-size: 0.6875rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        color: $color-text-muted;
-        display: block;
-        margin-bottom: 0.25rem;
-      }
-
-      .finding-note {
-        margin: 0;
-        font-size: 0.875rem;
-        line-height: 1.5;
-        color: $color-text-muted;
-        font-style: italic;
-
-        &.line-clamp-2 {
-          display: -webkit-box;
-          -webkit-line-clamp: 2;
-          -webkit-box-orient: vertical;
-          overflow: hidden;
-        }
-      }
+  .finding-observation {
+    &.cursor-pointer:hover {
+      background: rgba(0, 0, 0, 0.02);
     }
 
-    .finding-photos-carousel {
-      margin-top: 0.5rem;
-      width: 100%;
+    .observation-label {
+      font-size: 0.6875rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: $color-text-muted;
+      display: block;
+      margin-bottom: 0.25rem;
+    }
+
+    .finding-note {
+      margin: 0;
+      font-size: 0.875rem;
+      line-height: 1.5;
+      color: $color-text-muted;
+      font-style: italic;
+
+      &.line-clamp-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
     }
   }
+
+  .finding-photos-carousel {
+    margin-top: 0.5rem;
+    width: 100%;
+  }
+  }
 }
+
+// ─── Responsive Adjustments ────────────────────────────
+
+@media (max-width: 640px) {
+  .finding-top-row {
+    display: grid !important;
+    grid-template-columns: 1fr auto;
+    gap: 0.75rem 0.5rem;
+    align-items: center;
+    
+    .finding-top-left {
+      display: contents !important;
+    }
+
+    .finding-severity {
+      grid-column: 1;
+      grid-row: 1;
+      width: fit-content;
+    }
+
+    .action-area {
+      grid-column: 2;
+      grid-row: 1;
+      justify-self: end;
+      margin-top: 0;
+    }
+
+    .finding-metadata-row {
+      grid-column: 1 / span 2;
+      grid-row: 2;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      width: 100%;
+
+      .finding-location {
+        padding-left: 0;
+      }
+    }
+  }
+}
