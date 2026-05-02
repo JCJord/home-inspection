@@ -339,15 +339,37 @@
 
 @media (max-width: 640px) {
   .details-container {
-    padding: 1.25rem;
+    padding: 1rem 0.75rem;
   }
 
   .details-header {
-    .header-left {
-      .header-info {
-        .address {
-          font-size: 1.125rem;
-        }
+    gap: 1rem;
+    padding-bottom: 1.25rem;
+    
+    .header-right {
+      width: 100%;
+      display: flex;
+      justify-content: flex-end;
+    }
+  }
+
+  .details-content {
+    border-radius: 1rem;
+
+    .summary-container {
+      padding: 1.25rem 0.875rem 2rem;
+    }
+
+    .report-action-bar {
+      padding: 0.75rem 1rem !important;
+    }
+
+    .summary-header {
+      h2 {
+        font-size: 1.25rem;
+      }
+      p {
+        font-size: 0.8125rem;
       }
     }
   }

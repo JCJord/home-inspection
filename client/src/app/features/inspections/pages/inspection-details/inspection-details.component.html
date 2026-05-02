@@ -56,7 +56,7 @@
   </div>
   } @else if (inspection(); as insp) {
   <!-- Header -->
-  <div class="details-header">
+  <div class="details-header flex flex-wrap justify-between items-center gap-4">
     <div class="header-left">
       <app-back-button (clicked)="goBack()"></app-back-button>
       <div class="header-info">
@@ -144,7 +144,7 @@
     </div>
     }
     <div class="summary-container mt-8 flex flex-col gap-8">
-      <div class="summary-header flex justify-between items-center pb-4 border-b border-standard">
+      <div class="summary-header flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-standard">
         <div class="flex flex-col gap-1">
           <h2 class="text-2xl font-bold text-standard">Executive Summary</h2>
           <p class="text-sm text-standard-muted">Overview of all recorded findings grouped by severity</p>
@@ -162,7 +162,7 @@
             <span class="group-label text-sm font-bold uppercase tracking-wider">{{ group.label }}</span>
           </div>
           <span class="item-count-badge text-[10px] font-bold px-2 py-0.5 rounded-full">
-            {{ group.items.length }} {{ group.items.length === 1 ? 'item' : 'items' }}
+            {{ group.items.length }} <span class="hidden sm:inline">{{ group.items.length === 1 ? 'item' : 'items' }}</span>
           </span>
         </div>
 
