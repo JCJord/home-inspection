@@ -1,4 +1,4 @@
-import { Component, signal, input } from '@angular/core';
+import { Component, signal, input, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -8,8 +8,16 @@ import { CommonModule } from '@angular/common';
   templateUrl: './workbench-layout.component.html',
   styleUrl: './workbench-layout.component.scss'
 })
-export class WorkbenchLayoutComponent {
+export class WorkbenchLayoutComponent implements AfterViewInit {
   isSidebarOpen = signal<boolean>(false);
+  isReady = signal<boolean>(false);
+
+  ngAfterViewInit(): void {
+    // Small delay to ensure browser has rendered initial state without transitions
+    setTimeout(() => {
+      this.isReady.set(true);
+    }, 50);
+  }
 
   toggleSidebar(): void {
     this.isSidebarOpen.set(!this.isSidebarOpen());
