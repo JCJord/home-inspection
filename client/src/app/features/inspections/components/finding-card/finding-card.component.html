@@ -48,29 +48,35 @@
     </div>
 
     @if (finding().ai_comment) {
-      <div class="ai-comment-box" [class.expanded]="isAiExpanded()">
+      <div class="ai-comment-box" 
+           [class.expanded]="isAiExpanded()"
+           [class.cursor-pointer]="shouldShowAiExpand()"
+           (click)="toggleAiExpansion($event)">
         <div class="flex justify-between items-start mb-1.5">
           <div class="ai-comment-header m-0">
             <lucide-icon [name]="icons.Sparkles" [size]="12" class="mr-1"></lucide-icon>
             <span>Report Comment</span>
           </div>
           @if (shouldShowAiExpand()) {
-            <button type="button" class="expand-toggle-btn" (click)="$event.stopPropagation(); isAiExpanded.set(!isAiExpanded())">
+            <div class="expand-indicator">
               <lucide-icon [name]="isAiExpanded() ? icons.ChevronUp : icons.ChevronDown" [size]="14"></lucide-icon>
-            </button>
+            </div>
           }
         </div>
         <p class="finding-ai-comment" [class.line-clamp-2]="!isAiExpanded() && shouldShowAiExpand()">{{ finding().ai_comment }}</p>
       </div>
     }
 
-    <div class="finding-observation" [class.expanded]="isNoteExpanded()">
+    <div class="finding-observation" 
+         [class.expanded]="isNoteExpanded()"
+         [class.cursor-pointer]="shouldShowNoteExpand()"
+         (click)="toggleNoteExpansion($event)">
       <div class="flex justify-between items-start mb-1">
         <span class="observation-label m-0">Observation:</span>
         @if (shouldShowNoteExpand()) {
-          <button type="button" class="expand-toggle-btn" (click)="$event.stopPropagation(); isNoteExpanded.set(!isNoteExpanded())">
+          <div class="expand-indicator">
             <lucide-icon [name]="isNoteExpanded() ? icons.ChevronUp : icons.ChevronDown" [size]="14"></lucide-icon>
-          </button>
+          </div>
         }
       </div>
       <p class="finding-note" [class.line-clamp-2]="!isNoteExpanded() && shouldShowNoteExpand()">{{ finding().short_note }}</p>

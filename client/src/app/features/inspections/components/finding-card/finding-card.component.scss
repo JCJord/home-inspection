@@ -187,21 +187,25 @@
       to { opacity: 1; transform: scale(1) translateX(0); }
     }
 
-    .expand-toggle-btn {
-      background: transparent;
-      border: none;
-      padding: 2px;
+    .expand-indicator {
       display: flex;
       align-items: center;
       justify-content: center;
       color: $color-text-muted;
-      cursor: pointer;
       border-radius: 4px;
       transition: all 0.2s;
+      opacity: 0.5;
+    }
 
-      &:hover {
-        background: rgba(0, 0, 0, 0.05);
-        color: $color-primary;
+    .ai-comment-box, .finding-observation {
+      transition: all 0.2s ease-in-out;
+
+      &.cursor-pointer:hover {
+        .expand-indicator {
+          opacity: 1;
+          color: $color-primary;
+          transform: translateY(1px);
+        }
       }
     }
 
@@ -211,6 +215,12 @@
       border-radius: 0.75rem;
       padding: 0.75rem 1rem;
       margin-bottom: 0.25rem;
+
+      &.cursor-pointer:hover {
+        background: rgba($color-primary, 0.06);
+        border-style: solid;
+        border-color: rgba($color-primary, 0.3);
+      }
 
       .ai-comment-header {
         display: flex;
@@ -245,6 +255,10 @@
     }
 
     .finding-observation {
+      &.cursor-pointer:hover {
+        background: rgba(0, 0, 0, 0.02);
+      }
+
       .observation-label {
         font-size: 0.6875rem;
         font-weight: 700;

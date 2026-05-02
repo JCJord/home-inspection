@@ -61,4 +61,18 @@ export class FindingCardComponent {
     const path = url.startsWith('/') ? url : `/${url}`;
     return `${environment.apiUrl}${path}`;
   }
+
+  toggleAiExpansion(event: Event) {
+    event.stopPropagation();
+    if (this.shouldShowAiExpand()) {
+      this.isAiExpanded.set(!this.isAiExpanded());
+    }
+  }
+
+  toggleNoteExpansion(event: Event) {
+    event.stopPropagation();
+    if (this.shouldShowNoteExpand()) {
+      this.isNoteExpanded.set(!this.isNoteExpanded());
+    }
+  }
 }
