@@ -1,5 +1,4 @@
 <app-workbench-layout #workbench>
-
   <!-- Header Left -->
   <div header-left class="flex items-center gap-3 md:gap-4">
     <app-back-button (clicked)="goBack()"></app-back-button>
@@ -13,12 +12,17 @@
     </span>
 
     <button type="button" (click)="workbench.toggleSidebar()"
-      class="flex items-center justify-center gap-1.5 text-base md:text-lg font-bold text-standard md:pointer-events-none active:scale-95 transition-all text-center group w-full min-w-0">
+      class="flex items-center justify-center gap-1.5 text-base md:text-lg font-bold text-standard md:pointer-events-none active:scale-95 transition-all text-center group w-full min-w-0 relative">
       <span class="truncate">{{ selectedSection() || 'Select Section' }}</span>
 
       <div
-        class="md:hidden flex items-center justify-center p-1 rounded-md bg-light-standard group-active:bg-primary/10 transition-colors">
+        class="md:hidden flex items-center justify-center p-1 rounded-md bg-light-standard group-active:bg-primary/10 transition-colors relative">
         <lucide-icon [name]="icons.ChevronDown" [size]="16" class="flex-shrink-0 text-primary"></lucide-icon>
+        @if (totalFindings()) {
+          <span class="absolute -top-1 -right-1 flex items-center justify-center min-w-[14px] h-3.5 px-0.5 rounded-full badge-count text-[8px] font-bold border border-white">
+            {{ totalFindings() }}
+          </span>
+        }
       </div>
     </button>
   </div>
@@ -26,9 +30,11 @@
   <!-- Header Right -->
   <div header-right class="flex items-center justify-end gap-2">
     <div
-      class="hidden sm:flex items-center gap-2 px-3 py-1 bg-primary/10 text-primary rounded-full border border-primary/20">
-      <lucide-icon [name]="icons.CheckCircle2" [size]="14"></lucide-icon>
-      <span class="text-[10px] font-bold uppercase tracking-wider">Finding Workbench</span>
+      class="flex items-center gap-2 px-2 sm:px-3 py-1 bg-primary/10 text-primary rounded-full border border-primary/20">
+      <lucide-icon [name]="icons.CheckCircle2" [size]="14" class="hidden xs:block"></lucide-icon>
+      <span class="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider whitespace-nowrap">
+        <span class="hidden xs:inline">Workbench •</span> {{ totalFindings() }} <span class="hidden sm:inline">Findings</span><span class="sm:hidden">Items</span>
+      </span>
     </div>
   </div>
 
@@ -45,7 +51,15 @@
         <div class="flex items-center gap-3 min-w-0">
           <lucide-icon [name]="getIconForSection(sec.icon_key)" class="text-standard-muted flex-shrink-0"
             [size]="20"></lucide-icon>
-          <span class="text-sm font-medium text-standard truncate">{{ sec.name }}</span>
+          
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="text-sm font-medium text-standard truncate">{{ sec.name }}</span>
+            @if (sectionCounts()[sec.name]) {
+              <span class="flex-shrink-0 badge-count text-[10px] font-bold px-1.5 py-0.5 rounded-md">
+                {{ sectionCounts()[sec.name] }}
+              </span>
+            }
+          </div>
         </div>
       </div>
       }

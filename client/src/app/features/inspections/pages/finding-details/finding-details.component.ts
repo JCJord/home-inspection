@@ -3,13 +3,12 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { combineLatest } from 'rxjs';
 import { InspectionsService } from '../../../../core/services/inspections.service';
-import { Inspection, Finding, TemplateSection } from '../../../../core/models/inspection.interface';
+import { Inspection, Finding } from '../../../../core/models/inspection.interface';
 import { WorkbenchLayoutComponent } from '../../../../shared/components/workbench-layout/workbench-layout.component';
 import { FindingFormComponent } from '../../components/finding-form/finding-form.component';
 import { FindingSwitcherComponent } from '../../components/finding-switcher/finding-switcher.component';
 import { LucideAngularModule, Home, ChevronUp, ChevronDown, Hammer, Zap, Droplets, Wind, Flame, Box, Grid, Monitor, Car, Shield, Search, Info, AlertTriangle, Copy, Edit2, Trash2, Plus, Save, Lock, Unlock, ArrowLeft, Wrench, Thermometer, Lightbulb, Paintbrush, Sun, Key, Eye, Power, FileCheck, HardHat, Construction, Ruler, ShieldCheck, ShieldAlert, BrickWall, Trees, Fan, Sparkles, Wifi, WifiOff, Trash, Settings, Check, X, Users, FileText, Image, Cloud, CloudRain, CloudLightning, Snowflake, Umbrella, Compass, MapPin, Clock, Calendar, Activity, Scissors, Heart, AlertCircle, HelpCircle, Ban, LockOpen, Send, Download, Loader2, CheckCircle2, Layers, Menu, ChevronLeft, LayoutGrid } from 'lucide-angular';
 import { BackButtonComponent } from '../../../../shared/components/back-button/back-button.component';
-import { ButtonComponent } from '../../../../shared/components/button/button.component';
 
 @Component({
   selector: 'app-finding-details',
@@ -62,6 +61,17 @@ export class FindingDetailsComponent implements OnInit {
     if (!section) return [];
     return findings.filter(f => f.section === section);
   });
+
+  sectionCounts = computed(() => {
+    const findings = this.inspection()?.findings || [];
+    const counts: Record<string, number> = {};
+    findings.forEach(f => {
+      counts[f.section] = (counts[f.section] || 0) + 1;
+    });
+    return counts;
+  });
+
+  totalFindings = computed(() => this.inspection()?.findings?.length || 0);
 
   ngOnInit() {
     combineLatest([
