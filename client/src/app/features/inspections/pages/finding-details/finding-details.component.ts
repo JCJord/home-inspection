@@ -5,7 +5,7 @@ import { InspectionsService } from '../../../../core/services/inspections.servic
 import { Inspection, Finding, TemplateSection } from '../../../../core/models/inspection.interface';
 import { WorkbenchLayoutComponent } from '../../../../shared/components/workbench-layout/workbench-layout.component';
 import { FindingFormComponent } from '../../components/finding-form/finding-form.component';
-import { FindingCardComponent } from '../../components/finding-card/finding-card.component';
+import { FindingSwitcherComponent } from '../../components/finding-switcher/finding-switcher.component';
 import { LucideAngularModule, Home, ChevronUp, ChevronDown, Hammer, Zap, Droplets, Wind, Flame, Box, Grid, Monitor, Car, Shield, Search, Info, AlertTriangle, Copy, Edit2, Trash2, Plus, Save, Lock, Unlock, ArrowLeft, Wrench, Thermometer, Lightbulb, Paintbrush, Sun, Key, Eye, Power, FileCheck, HardHat, Construction, Ruler, ShieldCheck, ShieldAlert, BrickWall, Trees, Fan, Sparkles, Wifi, WifiOff, Trash, Settings, Check, X, Users, FileText, Image, Cloud, CloudRain, CloudLightning, Snowflake, Umbrella, Compass, MapPin, Clock, Calendar, Activity, Scissors, Heart, AlertCircle, HelpCircle, Ban, LockOpen, Send, Download, Loader2, CheckCircle2, Layers, Menu, ChevronLeft, LayoutGrid } from 'lucide-angular';
 import { BackButtonComponent } from '../../../../shared/components/back-button/back-button.component';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
@@ -13,7 +13,7 @@ import { ButtonComponent } from '../../../../shared/components/button/button.com
 @Component({
   selector: 'app-finding-details',
   standalone: true,
-  imports: [CommonModule, WorkbenchLayoutComponent, FindingFormComponent, FindingCardComponent, LucideAngularModule, BackButtonComponent, ButtonComponent],
+  imports: [CommonModule, WorkbenchLayoutComponent, FindingFormComponent, FindingSwitcherComponent, LucideAngularModule, BackButtonComponent],
   providers: [{ provide: 'lucideIcons', useValue: { Home, ChevronUp, ChevronDown, Hammer, Zap, Droplets, Wind, Flame, Box, Grid, Monitor, Car, Shield, Search, Info, AlertTriangle, Copy, Edit2, Trash2, Plus, Save, Lock, Unlock, ArrowLeft, Wrench, Thermometer, Lightbulb, Paintbrush, Sun, Key, Eye, Power, FileCheck, HardHat, Construction, Ruler, ShieldCheck, ShieldAlert, BrickWall, Trees, Fan, Sparkles, Wifi, WifiOff, Trash, Settings, Check, X, Users, FileText, Image, Cloud, CloudRain, CloudLightning, Snowflake, Umbrella, Compass, MapPin, Clock, Calendar, Activity, Scissors, Heart, AlertCircle, HelpCircle, Ban, LockOpen, Send, Download, Loader2, CheckCircle2, Layers, Menu, ChevronLeft, LayoutGrid } }],
   templateUrl: './finding-details.component.html',
   styleUrl: './finding-details.component.scss'
@@ -26,7 +26,7 @@ export class FindingDetailsComponent implements OnInit {
   inspection = signal<Inspection | null>(null);
   finding = signal<Finding | null>(null);
   isLoading = signal(true);
-  
+
   inspectionId = signal<string | null>(null);
   findingId = signal<string | null>(null);
   selectedSection = signal<string | null>(null);
@@ -44,7 +44,7 @@ export class FindingDetailsComponent implements OnInit {
   readonly icons = { ChevronLeft, LayoutGrid, Plus, Home, ChevronDown, CheckCircle2, FileText };
 
   sections = computed(() => this.inspection()?.template_snapshot?.sections || []);
-  
+
   currentSection = computed(() => {
     const sections = this.inspection()?.template_snapshot?.sections || [];
     return sections.find(s => s.name === this.selectedSection()) || null;
@@ -70,14 +70,14 @@ export class FindingDetailsComponent implements OnInit {
       ]).subscribe(([params, queryParams]) => {
         const prevInspId = this.inspectionId();
         const prevFindingId = this.findingId();
-        
+
         const inspId = params.get('id');
         const findingId = params.get('findingId');
         const section = queryParams.get('section');
-        
+
         this.inspectionId.set(inspId);
         this.findingId.set(findingId);
-        
+
         if (section) {
           this.selectedSection.set(section);
         }
@@ -101,7 +101,7 @@ export class FindingDetailsComponent implements OnInit {
     this.inspectionsService.getInspectionById(inspId).subscribe({
       next: (insp) => {
         this.inspection.set(insp);
-        
+
         const fId = this.findingId();
         if (fId && fId !== 'new') {
           // Optimization: try to find in the already loaded inspection
@@ -115,11 +115,11 @@ export class FindingDetailsComponent implements OnInit {
             this.loadFinding(inspId, fId);
           }
         } else {
-           this.isLoading.set(false);
-           // If no section selected, use the first one from template
-           if (!this.selectedSection() && insp.template_snapshot?.sections?.length) {
-             this.selectedSection.set(insp.template_snapshot.sections[0].name);
-           }
+          this.isLoading.set(false);
+          // If no section selected, use the first one from template
+          if (!this.selectedSection() && insp.template_snapshot?.sections?.length) {
+            this.selectedSection.set(insp.template_snapshot.sections[0].name);
+          }
         }
       },
       error: () => this.isLoading.set(false)
@@ -148,7 +148,7 @@ export class FindingDetailsComponent implements OnInit {
   selectSection(sectionName: string) {
     const findings = this.inspection()?.findings || [];
     const sectionFindings = findings.filter(f => f.section === sectionName);
-    
+
     this.workbench.closeSidebar();
 
     if (sectionFindings.length > 0) {
@@ -159,7 +159,7 @@ export class FindingDetailsComponent implements OnInit {
     } else {
       // Only go to 'new' if there truly is no data for this category
       this.router.navigate(['/inspections', this.inspectionId(), 'findings', 'new'], {
-          queryParams: { section: sectionName }
+        queryParams: { section: sectionName }
       });
     }
   }
@@ -176,6 +176,14 @@ export class FindingDetailsComponent implements OnInit {
     });
   }
 
+  onFindingSelected(finding: Finding | null) {
+    if (finding) {
+      this.editFinding(finding);
+    } else {
+      this.startNewFinding();
+    }
+  }
+
   getIconForSection(iconKey: string | undefined): any {
     return this.iconMap[iconKey || 'Home'] || Home;
   }
@@ -187,7 +195,7 @@ export class FindingDetailsComponent implements OnInit {
     if (!insp) return;
 
     const updatedMetadata = { ...insp.metadata_values, [key]: value };
-    
+
     this.inspectionsService.updateInspection(insp.id, { metadata_values: updatedMetadata }).subscribe({
       next: (updated) => {
         this.inspection.set(updated);

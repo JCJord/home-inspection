@@ -1,0 +1,61 @@
+<!-- COMPACT SWITCHER HEADER -->
+<div class="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-4 p-2 sm:p-3 border-b border-standard bg-light-standard">
+  
+  <!-- The Context Dropdown: Row 1 on Mobile (Order 1), Center on Desktop (Order 2) -->
+  <div class="w-full sm:flex-1 min-w-0 order-1 sm:order-2">
+    <div class="relative">
+      <div class="absolute inset-y-0 left-3 flex items-center pointer-events-none z-10">
+        @if (finding()) {
+          <div class="indicator-dot" [attr.data-severity]="finding()!.severity.toLowerCase()"></div>
+        } @else {
+          <div class="indicator-dot bg-primary"></div>
+        }
+      </div>
+      
+      <select 
+        class="input-field-switcher truncate"
+        [ngModel]="finding()?.id || 'new'"
+        (ngModelChange)="selectFindingById($event)">
+        
+        <option value="new">✨ New Finding</option>
+        
+        @for (f of sectionFindings(); track f.id) {
+          <option [value]="f.id">
+            [{{ f.severity | uppercase }}] {{ getFindingLabel(f) }}
+          </option>
+        }
+      </select>
+
+      <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none">
+        <lucide-icon [name]="icons.ChevronDown" [size]="16" class="text-standard-muted"></lucide-icon>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stepper Arrows: Row 2 Left on Mobile (Order 2), Left on Desktop (Order 1) -->
+  <div class="flex items-center gap-1 order-2 sm:order-1">
+    <app-button 
+      variant="ghost"
+      size="sm"
+      (click)="goToPreviousFinding()"
+      [disabled]="currentIndex() === 0 || !finding() || sectionFindings().length === 0">
+      <lucide-icon [name]="icons.ChevronLeft" [size]="20"></lucide-icon>
+    </app-button>
+    <app-button 
+      variant="ghost"
+      size="sm"
+      (click)="goToNextFinding()"
+      [disabled]="currentIndex() === sectionFindings().length - 1 || !finding() || sectionFindings().length === 0">
+      <lucide-icon [name]="icons.ChevronRight" [size]="20"></lucide-icon>
+    </app-button>
+  </div>
+
+  <!-- Add New Action: Row 2 Right on Mobile (Order 3), Right on Desktop (Order 3) -->
+  <div class="flex-1 flex justify-end order-3 sm:order-3 sm:flex-none">
+    <app-button variant="outline" size="sm" (click)="startNewFinding()">
+      <lucide-icon [name]="icons.Plus" [size]="16" class="sm:mr-1"></lucide-icon>
+      <span class="hidden sm:inline">Add</span>
+    </app-button>
+  </div>
+  
+</div>
