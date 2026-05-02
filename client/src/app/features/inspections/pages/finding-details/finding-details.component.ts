@@ -5,13 +5,15 @@ import { InspectionsService } from '../../../../core/services/inspections.servic
 import { Inspection, Finding, TemplateSection } from '../../../../core/models/inspection.interface';
 import { WorkbenchLayoutComponent } from '../../../../shared/components/workbench-layout/workbench-layout.component';
 import { FindingFormComponent } from '../../components/finding-form/finding-form.component';
+import { FindingCardComponent } from '../../components/finding-card/finding-card.component';
 import { LucideAngularModule, Home, ChevronUp, ChevronDown, Hammer, Zap, Droplets, Wind, Flame, Box, Grid, Monitor, Car, Shield, Search, Info, AlertTriangle, Copy, Edit2, Trash2, Plus, Save, Lock, Unlock, ArrowLeft, Wrench, Thermometer, Lightbulb, Paintbrush, Sun, Key, Eye, Power, FileCheck, HardHat, Construction, Ruler, ShieldCheck, ShieldAlert, BrickWall, Trees, Fan, Sparkles, Wifi, WifiOff, Trash, Settings, Check, X, Users, FileText, Image, Cloud, CloudRain, CloudLightning, Snowflake, Umbrella, Compass, MapPin, Clock, Calendar, Activity, Scissors, Heart, AlertCircle, HelpCircle, Ban, LockOpen, Send, Download, Loader2, CheckCircle2, Layers, Menu, ChevronLeft, LayoutGrid } from 'lucide-angular';
 import { BackButtonComponent } from '../../../../shared/components/back-button/back-button.component';
+import { ButtonComponent } from '../../../../shared/components/button/button.component';
 
 @Component({
   selector: 'app-finding-details',
   standalone: true,
-  imports: [CommonModule, WorkbenchLayoutComponent, FindingFormComponent, LucideAngularModule, BackButtonComponent],
+  imports: [CommonModule, WorkbenchLayoutComponent, FindingFormComponent, FindingCardComponent, LucideAngularModule, BackButtonComponent, ButtonComponent],
   providers: [{ provide: 'lucideIcons', useValue: { Home, ChevronUp, ChevronDown, Hammer, Zap, Droplets, Wind, Flame, Box, Grid, Monitor, Car, Shield, Search, Info, AlertTriangle, Copy, Edit2, Trash2, Plus, Save, Lock, Unlock, ArrowLeft, Wrench, Thermometer, Lightbulb, Paintbrush, Sun, Key, Eye, Power, FileCheck, HardHat, Construction, Ruler, ShieldCheck, ShieldAlert, BrickWall, Trees, Fan, Sparkles, Wifi, WifiOff, Trash, Settings, Check, X, Users, FileText, Image, Cloud, CloudRain, CloudLightning, Snowflake, Umbrella, Compass, MapPin, Clock, Calendar, Activity, Scissors, Heart, AlertCircle, HelpCircle, Ban, LockOpen, Send, Download, Loader2, CheckCircle2, Layers, Menu, ChevronLeft, LayoutGrid } }],
   templateUrl: './finding-details.component.html',
   styleUrl: './finding-details.component.scss'
@@ -39,7 +41,7 @@ export class FindingDetailsComponent implements OnInit {
     Download, Loader2, CheckCircle2, Layers, Menu
   };
 
-  readonly icons = { ChevronLeft, LayoutGrid, Plus, Home, ChevronDown, CheckCircle2 };
+  readonly icons = { ChevronLeft, LayoutGrid, Plus, Home, ChevronDown, CheckCircle2, FileText };
 
   sections = computed(() => this.inspection()?.template_snapshot?.sections || []);
   
@@ -53,19 +55,38 @@ export class FindingDetailsComponent implements OnInit {
     return section?.presets || [];
   });
 
-  ngOnInit() {
-    this.route.paramMap.subscribe(params => {
-      this.inspectionId.set(params.get('id'));
-      this.findingId.set(params.get('findingId'));
-      
-      this.loadData();
-    });
+  sectionFindings = computed(() => {
+    const section = this.selectedSection();
+    const findings = this.inspection()?.findings || [];
+    if (!section) return [];
+    return findings.filter(f => f.section === section);
+  });
 
-    this.route.queryParamMap.subscribe(params => {
-      const qSection = params.get('section');
-      if (qSection) {
-        this.selectedSection.set(qSection);
-      }
+  ngOnInit() {
+    import('rxjs').then(({ combineLatest }) => {
+      combineLatest([
+        this.route.paramMap,
+        this.route.queryParamMap
+      ]).subscribe(([params, queryParams]) => {
+        const prevInspId = this.inspectionId();
+        const prevFindingId = this.findingId();
+        
+        const inspId = params.get('id');
+        const findingId = params.get('findingId');
+        const section = queryParams.get('section');
+        
+        this.inspectionId.set(inspId);
+        this.findingId.set(findingId);
+        
+        if (section) {
+          this.selectedSection.set(section);
+        }
+
+        // Only reload data if IDs changed or if inspection hasn't been loaded yet
+        if (inspId !== prevInspId || findingId !== prevFindingId || !this.inspection()) {
+          this.loadData();
+        }
+      });
     });
   }
 
@@ -95,7 +116,7 @@ export class FindingDetailsComponent implements OnInit {
           }
         } else {
            this.isLoading.set(false);
-           // If no section selected from query, use the first one
+           // If no section selected, use the first one from template
            if (!this.selectedSection() && insp.template_snapshot?.sections?.length) {
              this.selectedSection.set(insp.template_snapshot.sections[0].name);
            }
@@ -125,21 +146,34 @@ export class FindingDetailsComponent implements OnInit {
   }
 
   selectSection(sectionName: string) {
-    this.selectedSection.set(sectionName);
-    this.workbench.closeSidebar();
+    const findings = this.inspection()?.findings || [];
+    const sectionFindings = findings.filter(f => f.section === sectionName);
     
-    // If we were editing a finding, switch to "new finding" mode for the new section
-    if (this.findingId()) {
-        this.router.navigate(['/inspections', this.inspectionId(), 'findings', 'new'], {
-            queryParams: { section: sectionName }
-        });
+    this.workbench.closeSidebar();
+
+    if (sectionFindings.length > 0) {
+      // If there's already data in this section, load the first finding instead of a blank 'new'
+      this.router.navigate(['/inspections', this.inspectionId(), 'findings', sectionFindings[0].id], {
+        queryParams: { section: sectionName }
+      });
     } else {
-        this.router.navigate([], {
-            relativeTo: this.route,
-            queryParams: { section: sectionName },
-            queryParamsHandling: 'merge'
-        });
+      // Only go to 'new' if there truly is no data for this category
+      this.router.navigate(['/inspections', this.inspectionId(), 'findings', 'new'], {
+          queryParams: { section: sectionName }
+      });
     }
+  }
+
+  editFinding(finding: Finding) {
+    this.router.navigate(['/inspections', this.inspectionId(), 'findings', finding.id], {
+      queryParams: { section: finding.section }
+    });
+  }
+
+  startNewFinding() {
+    this.router.navigate(['/inspections', this.inspectionId(), 'findings', 'new'], {
+      queryParams: { section: this.selectedSection() }
+    });
   }
 
   getIconForSection(iconKey: string | undefined): any {

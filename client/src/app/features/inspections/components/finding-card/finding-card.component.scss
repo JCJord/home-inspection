@@ -16,6 +16,29 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   }
 
+  &.read-only {
+    cursor: pointer;
+    
+    &:hover {
+      border-color: rgba($color-primary, 0.3);
+      background: linear-gradient(to right, rgba($color-primary, 0.02), transparent);
+    }
+
+    &:active {
+      transform: scale(0.985);
+      background: rgba($color-primary, 0.04);
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02);
+    }
+
+    .clickable-cue {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+    }
+  }
+
   &.is-deleting {
     opacity: 0;
     transform: scale(0.95) translateY(10px);

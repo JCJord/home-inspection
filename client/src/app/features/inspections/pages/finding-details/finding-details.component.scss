@@ -31,3 +31,9 @@
 .border-standard {
   border-color: $color-border;
 }
+
+.active-editing {
+  border-color: $color-primary !important;
+  background: linear-gradient(to right, rgba($color-primary, 0.05), transparent) !important;
+  box-shadow: 0 4px 12px rgba($color-primary, 0.1) !important;
+}

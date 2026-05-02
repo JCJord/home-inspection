@@ -5,9 +5,7 @@ import { InspectionsService } from '../../../../core/services/inspections.servic
 import { ReportsService } from '../../../../core/services/reports.service';
 import { Finding, Inspection } from '../../../../core/models/inspection.interface';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
-import { SectionTabsComponent } from '../../components/section-tabs/section-tabs.component';
 import { FindingCardComponent } from '../../components/finding-card/finding-card.component';
-import { Section } from '../../../../core/enums/inspection.enums';
 import { SkeletonComponent } from '../../../../shared/components/skeleton/skeleton.component';
 import { LucideAngularModule, ArrowLeft, Send, RefreshCw, AlertCircle, Plus, X, Check, Loader2, FileText, Download, LockOpen, Edit } from 'lucide-angular';
 import { ReportGeneratorComponent } from '../../../reports/components/report-generator/report-generator.component';
@@ -19,7 +17,6 @@ import { BackButtonComponent } from '../../../../shared/components/back-button/b
   imports: [
     CommonModule,
     ButtonComponent,
-    SectionTabsComponent,
     FindingCardComponent,
     LucideAngularModule,
     SkeletonComponent,
@@ -55,25 +52,25 @@ export class InspectionDetailsComponent implements OnInit {
 
   groupedFindings = computed(() => {
     const findings = this.inspection()?.findings || [];
-    
+
     const groups = [
-      { 
-        label: 'Critical & Safety Hazards', 
-        severity: 'critical', 
-        colorClass: 'group-critical', 
-        items: [] as Finding[] 
+      {
+        label: 'Critical & Safety Hazards',
+        severity: 'critical',
+        colorClass: 'group-critical',
+        items: [] as Finding[]
       },
-      { 
-        label: 'Major Defects', 
-        severity: 'major', 
-        colorClass: 'group-major', 
-        items: [] as Finding[] 
+      {
+        label: 'Major Defects',
+        severity: 'major',
+        colorClass: 'group-major',
+        items: [] as Finding[]
       },
-      { 
-        label: 'Maintenance & Minor Items', 
-        severity: 'minor', 
-        colorClass: 'group-minor', 
-        items: [] as Finding[] 
+      {
+        label: 'Maintenance & Minor Items',
+        severity: 'minor',
+        colorClass: 'group-minor',
+        items: [] as Finding[]
       }
     ];
 

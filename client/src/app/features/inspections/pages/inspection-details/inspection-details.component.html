@@ -157,8 +157,7 @@
 
       @for (group of groupedFindings(); track group.severity) {
       <div class="severity-group flex flex-col gap-6">
-        <div class="group-header flex items-center justify-between px-5 py-3 border"
-          [class]="group.colorClass">
+        <div class="group-header flex items-center justify-between px-5 py-3 border" [class]="group.colorClass">
           <div class="flex items-center gap-3">
             <span class="group-label text-sm font-bold uppercase tracking-wider">{{ group.label }}</span>
           </div>
@@ -169,7 +168,7 @@
 
         <div class="findings-grid flex flex-col gap-4">
           @for (finding of group.items; track finding.id) {
-          <app-finding-card [finding]="finding" [readOnly]="true"></app-finding-card>
+          <app-finding-card [finding]="finding" [readOnly]="true" (edit)="editFinding(finding)"></app-finding-card>
           }
         </div>
       </div>
