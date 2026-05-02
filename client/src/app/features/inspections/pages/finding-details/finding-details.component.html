@@ -18,9 +18,9 @@
       <div
         class="md:hidden flex items-center justify-center p-1 rounded-md bg-light-standard group-active:bg-primary/10 transition-colors relative">
         <lucide-icon [name]="icons.ChevronDown" [size]="16" class="flex-shrink-0 text-primary"></lucide-icon>
-        @if (totalFindings()) {
+        @if (sectionFindings().length) {
           <span class="absolute -top-1 -right-1 flex items-center justify-center min-w-[14px] h-3.5 px-0.5 rounded-full badge-count text-[8px] font-bold border border-white">
-            {{ totalFindings() }}
+            {{ sectionFindings().length }}
           </span>
         }
       </div>
@@ -33,7 +33,7 @@
       class="flex items-center gap-2 px-2 sm:px-3 py-1 bg-primary/10 text-primary rounded-full border border-primary/20">
       <lucide-icon [name]="icons.CheckCircle2" [size]="14" class="hidden xs:block"></lucide-icon>
       <span class="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider whitespace-nowrap">
-        <span class="hidden xs:inline">Workbench •</span> {{ totalFindings() }} <span class="hidden sm:inline">Findings</span><span class="sm:hidden">Items</span>
+        <span class="hidden xs:inline">Workbench •</span> {{ sectionFindings().length }} <span class="hidden sm:inline">Findings</span><span class="sm:hidden">Items</span>
       </span>
     </div>
   </div>
