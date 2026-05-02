@@ -236,7 +236,41 @@ export class InspectionDetailsComponent implements OnInit {
   }
 
   routeToWorkbench(): void {
-    this.router.navigate(['/inspections', this.inspection()!.id, 'findings', 'new']);
+    const insp = this.inspection();
+    if (!insp) return;
+
+    // Determine target section: current selection OR first section with findings OR first section
+    const findings = insp.findings || [];
+    let targetSection = this.selectedSection();
+
+    // If no findings in current section, try to find a section that HAS findings
+    if (!findings.some(f => f.section === targetSection)) {
+      const sectionWithFindings = insp.template_snapshot?.sections?.find(s =>
+        findings.some(f => f.section === s.name)
+      );
+      if (sectionWithFindings) {
+        targetSection = sectionWithFindings.name;
+      }
+    }
+
+    // Default to first section if still empty
+    if (!targetSection && insp.template_snapshot?.sections?.length) {
+      targetSection = insp.template_snapshot.sections[0].name;
+    }
+
+    const sectionFindings = findings.filter(f => f.section === targetSection);
+
+    if (sectionFindings.length > 0) {
+      // Land on first existing finding
+      this.router.navigate(['/inspections', insp.id, 'findings', sectionFindings[0].id], {
+        queryParams: { section: targetSection }
+      });
+    } else {
+      // Land on 'new' state
+      this.router.navigate(['/inspections', insp.id, 'findings', 'new'], {
+        queryParams: { section: targetSection }
+      });
+    }
   }
 
 

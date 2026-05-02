@@ -1,6 +1,7 @@
 import { Component, OnInit, inject, signal, computed, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
+import { combineLatest } from 'rxjs';
 import { InspectionsService } from '../../../../core/services/inspections.service';
 import { Inspection, Finding, TemplateSection } from '../../../../core/models/inspection.interface';
 import { WorkbenchLayoutComponent } from '../../../../shared/components/workbench-layout/workbench-layout.component';
@@ -63,30 +64,27 @@ export class FindingDetailsComponent implements OnInit {
   });
 
   ngOnInit() {
-    import('rxjs').then(({ combineLatest }) => {
-      combineLatest([
-        this.route.paramMap,
-        this.route.queryParamMap
-      ]).subscribe(([params, queryParams]) => {
-        const prevInspId = this.inspectionId();
-        const prevFindingId = this.findingId();
+    combineLatest([
+      this.route.paramMap,
+      this.route.queryParamMap
+    ]).subscribe(([params, queryParams]) => {
+      const prevInspId = this.inspectionId();
+      const prevFindingId = this.findingId();
 
-        const inspId = params.get('id');
-        const findingId = params.get('findingId');
-        const section = queryParams.get('section');
+      const inspId = params.get('id');
+      const findingId = params.get('findingId');
+      const section = queryParams.get('section');
 
-        this.inspectionId.set(inspId);
-        this.findingId.set(findingId);
+      this.inspectionId.set(inspId);
+      this.findingId.set(findingId);
 
-        if (section) {
-          this.selectedSection.set(section);
-        }
+      // Update section from query params (always update to keep in sync with URL)
+      this.selectedSection.set(section);
 
-        // Only reload data if IDs changed or if inspection hasn't been loaded yet
-        if (inspId !== prevInspId || findingId !== prevFindingId || !this.inspection()) {
-          this.loadData();
-        }
-      });
+      // Only reload data if IDs changed or if inspection hasn't been loaded yet
+      if (inspId !== prevInspId || findingId !== prevFindingId || !this.inspection()) {
+        this.loadData();
+      }
     });
   }
 
