@@ -1,17 +1,12 @@
-@use 'variables' as *;
+@use '/variables' as *;
+@use '/cards' as *;
 
 .template-card {
-  background-color: $color-surface;
-  border: 1px solid $color-border;
-  cursor: pointer;
-  transition: all 0.2s ease-in-out;
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 20px rgba(0, 163, 255, 0.08);
-    border-color: $color-primary;
-    background-color: $color-surface-light;
-  }
+  @include card-premium(true);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .official-ribbon-badge {
