@@ -22,6 +22,13 @@
         @for (item of selectedFiles(); track item.previewUrl; let i = $index) {
         <div class="existing-photo-item">
           <img [src]="item.previewUrl" alt="Selected photo preview">
+          
+          @if (item.isCompressing) {
+            <div class="compression-loader">
+              <lucide-icon [name]="icons.Loader2" class="animate-spin text-white" [size]="20"></lucide-icon>
+            </div>
+          }
+
           <div class="photo-action-pill" [class.confirming]="activeDeleteNewIndex() === i">
             @if (activeDeleteNewIndex() === i) {
               <button type="button" class="action-btn cancel-delete" (click)="cancelDelete()" aria-label="Cancel">

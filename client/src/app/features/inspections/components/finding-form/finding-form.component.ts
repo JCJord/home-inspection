@@ -7,11 +7,12 @@ import { Finding, Photo } from '../../../../core/models/inspection.interface';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { TextInputComponent } from '../../../../shared/components/inputs/text-input/text-input.component';
 import { TextareaInputComponent } from '../../../../shared/components/inputs/textarea-input/textarea-input.component';
-import { LucideAngularModule, AlertCircle, FileImage, Upload, Trash2, Edit, X, Check, Sparkles } from 'lucide-angular';
+import { LucideAngularModule, AlertCircle, FileImage, Upload, Trash2, Edit, X, Check, Sparkles, Loader2 } from 'lucide-angular';
 import { CreateFindingDto } from '../../../../core/dtos/create-finding.dto';
 import { UpdateFindingDto } from '../../../../core/dtos/update-finding.dto';
 import { AiService } from '../../../../core/services/ai.service';
 import { AuthService } from '../../../../core/services/auth.service';
+import { ImageCompressionService } from '../../../../core/services/image-compression.service';
 import { environment } from '../../../../../environments/environment';
 import { ImageEditorModalComponent } from '../../../../shared/components/image-editor-modal/image-editor-modal.component';
 import { PresetButtonComponent } from '../../../../shared/components/preset-button/preset-button.component';
@@ -19,6 +20,7 @@ import { PresetButtonComponent } from '../../../../shared/components/preset-butt
 interface SelectedPhoto {
   file: File;
   previewUrl: string;
+  isCompressing?: boolean;
 }
 
 type EditTarget = 
@@ -39,6 +41,7 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
   private inspectionsService = inject(InspectionsService);
   private aiService = inject(AiService);
   private authService = inject(AuthService);
+  private compressionService = inject(ImageCompressionService);
 
   isPremium = this.authService.isPremium;
 
@@ -85,7 +88,7 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
   activeDeleteNewIndex = signal<number | null>(null);
 
   severities = Object.values(Severity);
-  readonly icons = { AlertCircle, FileImage, Upload, Trash2, Edit, X, Check, Sparkles };
+  readonly icons = { AlertCircle, FileImage, Upload, Trash2, Edit, X, Check, Sparkles, Loader2 };
 
   findingForm: FormGroup = this.fb.group({
     severity: [Severity.MINOR, [Validators.required]],
@@ -183,70 +186,110 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
     
     this.photoToEdit.set(null);
 
-    const file = new File([blob], `edited_${Date.now()}.jpg`, { type: 'image/jpeg' });
-
-    if (target.type === 'existing') {
-        const photo = target.photo;
-        this.isLoading.set(true);
-
-        // Upload new photo
-        this.inspectionsService.uploadPhoto(this._inspectionId(), this._finding()!.id, file).subscribe({
-          next: (newPhoto) => {
-            // Delete the old photo
-            this.inspectionsService.deletePhoto(this._inspectionId(), this._finding()!.id, photo.id).subscribe({
-              next: () => {
-                this.existingPhotos.update(photos => {
-                  const newPhotos = [...photos];
-                  const idx = newPhotos.findIndex(p => p.id === photo.id);
-                  if (idx > -1) {
-                    newPhotos[idx] = newPhoto; 
-                  } else {
-                    newPhotos.push(newPhoto);
-                  }
-                  return newPhotos;
-                });
-                this.isLoading.set(false);
-              },
-              error: (err) => {
-                console.error('Failed to delete old photo', err);
-                this.errorMessage.set('Photo updated but old version failed to delete from server.');
-                this.isLoading.set(false);
-              }
-            });
-          },
-          error: (err) => {
-            console.error('Failed to upload edited photo', err);
-            this.errorMessage.set('Failed to save edited photo.');
-            this.isLoading.set(false);
-          }
-        });
-    } else {
-        // New file: just update the local array natively!
-        this.selectedFiles.update(files => {
-            const newArray = [...files];
-            URL.revokeObjectURL(newArray[target.index].previewUrl); 
-            newArray[target.index] = {
-               file,
-               previewUrl: URL.createObjectURL(file)
-            };
-            return newArray;
-        });
-    }
+    this.isLoading.set(true);
+    const rawFile = new File([blob], `edited_${Date.now()}.jpg`, { type: 'image/jpeg' });
+    
+    // Compress edited image too
+    this.compressionService.compressImage(rawFile).then(file => {
+      if (target.type === 'existing') {
+          const photo = target.photo;
+          // Upload new photo
+          this.inspectionsService.uploadPhoto(this._inspectionId(), this._finding()!.id, file).subscribe({
+            next: (newPhoto) => {
+              // Delete the old photo
+              this.inspectionsService.deletePhoto(this._inspectionId(), this._finding()!.id, photo.id).subscribe({
+                next: () => {
+                  this.existingPhotos.update(photos => {
+                    const newPhotos = [...photos];
+                    const idx = newPhotos.findIndex(p => p.id === photo.id);
+                    if (idx > -1) {
+                      newPhotos[idx] = newPhoto; 
+                    } else {
+                      newPhotos.push(newPhoto);
+                    }
+                    return newPhotos;
+                  });
+                  this.isLoading.set(false);
+                },
+                error: (err) => {
+                  console.error('Failed to delete old photo', err);
+                  this.errorMessage.set('Photo updated but old version failed to delete from server.');
+                  this.isLoading.set(false);
+                }
+              });
+            },
+            error: (err) => {
+              console.error('Failed to upload edited photo', err);
+              this.errorMessage.set('Failed to save edited photo.');
+              this.isLoading.set(false);
+            }
+          });
+      } else {
+          // New file: just update the local array natively!
+          this.selectedFiles.update(files => {
+              const newArray = [...files];
+              URL.revokeObjectURL(newArray[target.index].previewUrl); 
+              newArray[target.index] = {
+                 file,
+                 previewUrl: URL.createObjectURL(file),
+                 isCompressing: false
+              };
+              return newArray;
+          });
+          this.isLoading.set(false);
+      }
+    });
   }
 
   setSeverity(severity: Severity): void {
     this.findingForm.patchValue({ severity });
   }
 
-  onFileSelected(event: Event): void {
+  async onFileSelected(event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
     if (input.files) {
       const filesArray = Array.from(input.files);
-      const newItems = filesArray.map(file => ({
-        file,
-        previewUrl: URL.createObjectURL(file)
-      }));
-      this.selectedFiles.update(files => [...newItems, ...files]);
+      
+      // 1. Add all files with a loading state first
+      const initialIndices: number[] = [];
+      this.selectedFiles.update(files => {
+        const currentCount = files.length;
+        const newItems = filesArray.map((file, i) => {
+          initialIndices.push(currentCount + i);
+          return {
+            file,
+            previewUrl: URL.createObjectURL(file),
+            isCompressing: true
+          };
+        });
+        return [...newItems, ...files];
+      });
+
+      // 2. Compress each file and update individually
+      // We process them in parallel but update the signal for each
+      filesArray.forEach(async (file, index) => {
+        const compressedFile = await this.compressionService.compressImage(file);
+        
+        this.selectedFiles.update(files => {
+          const newFiles = [...files];
+          // Note: Since we prepend, we need to find the correct index if it shifted.
+          // But since we are doing this immediately, the index should be stable for this batch
+          // relative to the start of the array.
+          if (newFiles[index]) {
+            // Revoke old preview and create new one for compressed file
+            URL.revokeObjectURL(newFiles[index].previewUrl);
+            newFiles[index] = {
+              file: compressedFile,
+              previewUrl: URL.createObjectURL(compressedFile),
+              isCompressing: false
+            };
+          }
+          return newFiles;
+        });
+      });
+
+      // Reset input
+      input.value = '';
     }
   }
 
