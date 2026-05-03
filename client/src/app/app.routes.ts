@@ -37,7 +37,7 @@ export const routes: Routes = [
         loadChildren: () => import('./features/templates/templates.routes').then(m => m.TEMPLATES_ROUTES),
       },
       {
-        path: 'profile',
+        path: 'settings',
         loadChildren: () => import('./features/profile/profile.routes').then(m => m.PROFILE_ROUTES),
       },
     ],

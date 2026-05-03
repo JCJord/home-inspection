@@ -2,13 +2,13 @@
   @if (isLoading()) {
   <div class="loading-state">
     <app-spinner [size]="40" class="spinner-primary"></app-spinner>
-    <p>Loading your profile...</p>
+    <p>Loading settings...</p>
   </div>
   } @else {
   <div class="profile-header">
     <div class="header-content">
       <div class="title-with-status">
-        <h1>My Profile</h1>
+        <h1>Settings</h1>
         <div class="auto-save-status">
           @if (isSaving()) {
           <div class="status-indicator saving">
