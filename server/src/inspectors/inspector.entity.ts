@@ -8,6 +8,7 @@ import {
 } from 'typeorm';
 import { Inspection } from '../inspections/inspection.entity';
 import { SubscriptionStatus } from '../common/enums/subscription-status.enum';
+import { SOPType } from '../common/enums/sop.enum';
 
 @Entity('inspectors')
 export class Inspector {
@@ -53,6 +54,25 @@ export class Inspector {
   @Column({ type: 'varchar', length: 150, nullable: true })
   report_footer_text: string;
 
+  @Column({
+    type: 'enum',
+    enum: SOPType,
+    default: SOPType.INTERNACHI
+  })
+  sop_name: SOPType;
+
+  @Column({ type: 'text', nullable: true })
+  custom_legal_disclaimer: string;
+
+  @Column({ type: 'boolean', default: true })
+  use_standard_definitions: boolean;
+
+  @Column({ type: 'text', nullable: true })
+  custom_safety_hazard_def: string;
+
+  @Column({ type: 'text', nullable: true })
+  custom_major_defect_def: string;
+
   @OneToMany(() => Inspection, (inspection) => inspection.inspector)
   inspections: Inspection[];
 
@@ -62,4 +82,3 @@ export class Inspector {
   @UpdateDateColumn()
   updated_at: Date;
 }
-

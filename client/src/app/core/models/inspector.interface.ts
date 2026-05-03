@@ -12,6 +12,11 @@ export interface Inspector {
   brand_font_family?: string;
   report_footer_text?: string;
   signature_url?: string;
+  sop_name?: string;
+  custom_legal_disclaimer?: string;
+  use_standard_definitions?: boolean;
+  custom_safety_hazard_def?: string;
+  custom_major_defect_def?: string;
   subscription_status: SubscriptionStatus;
   free_inspections_used: number;
   created_at: Date;

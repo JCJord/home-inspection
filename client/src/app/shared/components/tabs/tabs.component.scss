@@ -1,0 +1,61 @@
+@use '/variables' as *;
+
+:host {
+  display: block;
+  width: 100%;
+}
+
+.tabs-nav {
+  display: flex;
+  gap: 1.5rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+
+  .tab-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 0.25rem 1.25rem 0.25rem;
+    color: $color-text-muted;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+
+    lucide-icon {
+      opacity: 0.7;
+    }
+
+    &:hover {
+      color: $color-text;
+      
+      lucide-icon {
+        opacity: 1;
+      }
+    }
+
+    &.active {
+      color: $color-primary;
+      border-bottom-color: $color-primary;
+
+      lucide-icon {
+        opacity: 1;
+      }
+    }
+  }
+}
+
+@media (max-width: 640px) {
+  .tabs-nav {
+    gap: 1rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+    &::-webkit-scrollbar { display: none; }
+
+    .tab-item {
+      font-size: 0.9375rem;
+      white-space: nowrap;
+    }
+  }
+}

@@ -8,6 +8,7 @@ import { Inspector } from '../../../../core/models/inspector.interface';
 import { TextInputComponent } from '../../../../shared/components/inputs/text-input/text-input.component';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
+import { SelectInputComponent } from '../../../../shared/components/inputs/select-input/select-input.component';
 import { AuthService } from '../../../../core/services/auth.service';
 import { Router } from '@angular/router';
 import { LucideAngularModule, Camera, User, BadgeCheck, Phone, Mail, Building, FileText, CheckCircle2, LogOut } from 'lucide-angular';
@@ -22,6 +23,8 @@ import { Palette, Type, FileText as FileTextIcon } from 'lucide-angular';
     CommonModule,
     ReactiveFormsModule,
     TextInputComponent,
+    SelectInputComponent,
+    ButtonComponent,
     SpinnerComponent,
     LucideAngularModule
   ],

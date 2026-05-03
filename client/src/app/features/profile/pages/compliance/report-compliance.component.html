@@ -1,0 +1,101 @@
+<div class="compliance-container">
+  @if (isLoading()) {
+  <div class="loading-state">
+    <app-spinner [size]="40" class="spinner-primary"></app-spinner>
+    <p>Loading compliance settings...</p>
+  </div>
+  } @else {
+  <div class="auto-save-status-floating">
+    @if (isSaving()) {
+    <div class="status-indicator saving">
+      <app-spinner [size]="14"></app-spinner>
+      <span>Saving...</span>
+    </div>
+    } @else if (lastSavedAt()) {
+    <div class="status-indicator saved">
+      <lucide-icon [img]="icons.CheckCircle2" [size]="14"></lucide-icon>
+      <span>Saved at {{ lastSavedAt() | date:'HH:mm:ss' }}</span>
+    </div>
+    }
+  </div>
+
+  <div class="settings-stack">
+    <form [formGroup]="complianceForm" class="compliance-form">
+      <!-- Section 1: Standard of Practice -->
+      <div class="card">
+        <div class="card-header">
+          <lucide-icon [img]="icons.ShieldCheck" [size]="20"></lucide-icon>
+          <h3>Standard of Practice</h3>
+        </div>
+        <div class="card-body">
+          <p class="section-desc">Select the regulatory standard you follow for your inspections.</p>
+          <app-select-input
+            name="sop_name"
+            label="SOP Name"
+            [options]="sopOptions">
+          </app-select-input>
+        </div>
+      </div>
+
+      <!-- Section 2: Report Disclaimer -->
+      <div class="card">
+        <div class="card-header">
+          <lucide-icon [img]="icons.FileSignature" [size]="20"></lucide-icon>
+          <h3>Report Disclaimer</h3>
+        </div>
+        <div class="card-body">
+          <p class="section-desc">Manage your "Scope & Limitations" boilerplate. This will be injected into every report.</p>
+          <div class="form-group">
+            <label class="form-label">Custom Legal Disclaimer</label>
+            <textarea formControlName="custom_legal_disclaimer" class="form-textarea" 
+              placeholder="Enter your legal disclaimer here..." 
+              rows="8"></textarea>
+            <p class="helper-text">Line breaks are supported and will be preserved in the generated PDF.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 3: Severity Definitions -->
+      <div class="card">
+        <div class="card-header">
+          <lucide-icon [img]="icons.Scale" [size]="20"></lucide-icon>
+          <h3>Severity Definitions</h3>
+        </div>
+        <div class="card-body">
+          <div class="toggle-container">
+            <div class="toggle-label">
+              <span class="title">Use Standard Definitions</span>
+              <span class="desc">Use Inspectly's safe, hardcoded definitions for "Safety Hazard" and "Major Defect".</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" formControlName="use_standard_definitions">
+              <span class="slider round"></span>
+            </label>
+          </div>
+
+          @if (!complianceForm.get('use_standard_definitions')?.value) {
+          <div class="custom-definitions-grid">
+            <div class="info-alert">
+              <lucide-icon [img]="icons.Info" [size]="18"></lucide-icon>
+              <p>You are using custom definitions. Ensure these align with your local regulations.</p>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">Custom Safety Hazard Definition</label>
+              <textarea formControlName="custom_safety_hazard_def" class="form-textarea" 
+                placeholder="A condition that poses a direct threat to life or limb..."></textarea>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Custom Major Defect Definition</label>
+              <textarea formControlName="custom_major_defect_def" class="form-textarea" 
+                placeholder="A condition that significantly affects the value or safety of the property..."></textarea>
+            </div>
+          </div>
+          }
+        </div>
+      </div>
+    </form>
+  </div>
+  }
+</div>

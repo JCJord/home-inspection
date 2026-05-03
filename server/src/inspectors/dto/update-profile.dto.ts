@@ -1,5 +1,15 @@
-import { IsEmail, IsEnum, IsHexColor, IsOptional, IsString, MaxLength } from 'class-validator';
+import {
+  IsBoolean,
+  IsEnum,
+  IsHexColor,
+  IsOptional,
+  IsString,
+  MaxLength,
+  MinLength,
+  ValidateIf
+} from 'class-validator';
 import { BrandFont } from '../../common/enums/brand-font.enum';
+import { SOPType } from '../../common/enums/sop.enum';
 
 export class UpdateProfileDto {
 
@@ -31,4 +41,31 @@ export class UpdateProfileDto {
   @IsString()
   @MaxLength(150)
   report_footer_text?: string;
+
+  @IsOptional()
+  @IsEnum(SOPType, { message: 'Invalid Standard of Practice provided.' })
+  sop_name?: SOPType;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(10000, { message: 'Legal disclaimer exceeds maximum length.' })
+  custom_legal_disclaimer?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  use_standard_definitions?: boolean;
+
+  @ValidateIf(o => o.use_standard_definitions === false)
+  @IsOptional()
+  @IsString()
+  @MinLength(10, { message: 'Custom safety hazard definition is too short.' })
+  @MaxLength(1000)
+  custom_safety_hazard_def?: string;
+
+  @ValidateIf(o => o.use_standard_definitions === false)
+  @IsOptional()
+  @IsString()
+  @MinLength(10, { message: 'Custom major defect definition is too short.' })
+  @MaxLength(1000)
+  custom_major_defect_def?: string;
 }
