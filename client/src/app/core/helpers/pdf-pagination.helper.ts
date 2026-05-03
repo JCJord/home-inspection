@@ -8,186 +8,166 @@ export class PdfPaginationHelper {
     const sourceContent = document.querySelectorAll('.snippet');
 
     sourceContent.forEach((snippet) => {
-      const headerElement = document.getElementById('page-header');
-      const footerElement = document.getElementById('report-footer');
+      // Robust selection for header and footer
+      const headerElement = snippet.querySelector('header') || snippet.querySelector('#page-header') || document.getElementById('page-header');
+      const footerElement = snippet.querySelector('footer') || snippet.querySelector('#report-footer') || document.getElementById('report-footer');
 
       if (!headerElement || !footerElement) {
-        console.error('Header or footer element not found');
+        console.error('Pagination Helper: Header or footer element not found for snippet.');
         return;
       }
 
-      (headerElement as HTMLElement).style.minWidth = '1725px';
+      // Ensure header has minimum width for layout stability
+      (headerElement as HTMLElement).style.minWidth = '1750px';
 
       const headerHeight = this.getElementHeight(headerElement as HTMLElement);
       const footerHeight = this.getElementHeight(footerElement as HTMLElement);
 
-      const contentBodyElement = snippet.querySelector('.content-body') as HTMLElement;
-      if (!contentBodyElement) return;
+      // Identify upper elements (intro content)
+      const upperElements = Array.from(snippet.querySelectorAll('.upperElement'));
+      const upperElementsTotalHeight = upperElements.reduce((totalHeight, element) => {
+        return totalHeight + this.getElementHeight(element as HTMLElement);
+      }, 0);
 
-      const bodyPadding = getComputedStyle(contentBodyElement).padding || '60px';
-
-      // Track created pages
+      const tables = Array.from(snippet.querySelectorAll('table'));
       const pages: HTMLElement[] = [];
 
-      let currentPage = this.createNewPage(headerElement as HTMLElement, [], true, bodyPadding);
-      pages.push(currentPage);
-      let currentPageWrapper = currentPage.querySelector('.content-body') as HTMLElement || currentPage;
+      // Create the first page with header and upper elements
+      let currentPageWrapper = this.createNewPage(headerElement as HTMLElement, upperElements, true);
+      pages.push(currentPageWrapper);
 
-      let availableSpace = this.A4_HEIGHT - (headerHeight + footerHeight + margin);
+      let availableSpace = this.A4_HEIGHT - (headerHeight + footerHeight + upperElementsTotalHeight + margin);
 
-      const originalChildren = Array.from(contentBodyElement.children) as HTMLElement[];
+      tables.forEach((originalTable: HTMLTableElement) => {
+        const tableHeaders = Array.from(originalTable.querySelectorAll('.table-header')) as HTMLElement[];
+        const dataRows = Array.from(originalTable.querySelectorAll('tr:not(.table-header)')) as HTMLElement[];
+        const groupsProcessed: Set<string> = new Set();
 
-      originalChildren.forEach((child) => {
-        if (child.tagName.toLowerCase() === 'table') {
-          this.processTable(
-            child as HTMLTableElement,
-            {
-              currentPage,
-              currentPageWrapper,
-              availableSpace,
-              headerElement: headerElement as HTMLElement,
-              footerElement: footerElement as HTMLElement,
-              headerHeight,
-              footerHeight,
-              bodyPadding,
-              margin
-            },
-            (newPage, newWrapper, newSpace) => {
-              currentPage = newPage;
-              currentPageWrapper = newWrapper;
-              availableSpace = newSpace;
-              pages.push(currentPage);
-            }
+        if (dataRows.length === 0 && tableHeaders.length === 0) {
+          return;
+        }
+
+        const headerRowsHeight = tableHeaders.reduce((total, header) => total + this.getElementHeight(header), 0);
+
+        const areRemainingRowsAllBottomElements = (currentIndex: number): boolean => {
+          const remainingRows = dataRows.slice(currentIndex);
+          return remainingRows.length > 0 && remainingRows.every((row: HTMLElement) =>
+            row.classList.contains('bottom-element') || row.querySelector('.bottom-element') !== null
           );
-        } else {
-          const elementHeight = this.getElementHeight(child);
+        };
 
-          // If element doesn't fit, move to new page
-          if (elementHeight > availableSpace && currentPageWrapper.children.length > 0) {
-            this.addFooterToPage(currentPage, footerElement as HTMLElement);
-            currentPage = this.createNewPage(headerElement as HTMLElement, [], false, bodyPadding);
-            pages.push(currentPage);
-            currentPageWrapper = currentPage.querySelector('.content-body') as HTMLElement || currentPage;
-            availableSpace = this.A4_HEIGHT - (headerHeight + footerHeight + margin);
+        let firstRowHeight = 0;
+        if (dataRows[0]) {
+          firstRowHeight = this.calculateRowHeight(dataRows[0], dataRows, new Set<string>());
+        }
+
+        // If the table fits (at least header + first row) on the current page
+        if (availableSpace >= (headerRowsHeight + firstRowHeight + this.TABLE_MARGIN_BOTTOM)) {
+          let currentTable = this.createTable(originalTable);
+          currentPageWrapper.appendChild(currentTable);
+
+          if (!areRemainingRowsAllBottomElements(0)) {
+            tableHeaders.forEach(header => {
+              currentTable.appendChild(header.cloneNode(true));
+            });
+            availableSpace -= (headerRowsHeight + this.TABLE_MARGIN_BOTTOM);
+          } else {
+            availableSpace -= this.TABLE_MARGIN_BOTTOM;
           }
 
-          currentPageWrapper.appendChild(child.cloneNode(true));
-          availableSpace -= elementHeight;
+          let rowIndex = 0;
+          while (rowIndex < dataRows.length) {
+            const row = dataRows[rowIndex];
+            const rowHeight = this.calculateRowHeight(row, dataRows, groupsProcessed);
+
+            if (rowHeight > availableSpace && rowIndex < dataRows.length) {
+              this.addFooterToPage(currentPageWrapper, footerElement as HTMLElement);
+              currentPageWrapper = this.createNewPage(headerElement as HTMLElement, [], false);
+              pages.push(currentPageWrapper);
+
+              currentTable = this.createTable(originalTable);
+
+              if (!areRemainingRowsAllBottomElements(rowIndex)) {
+                tableHeaders.forEach(header => {
+                  currentTable.appendChild(header.cloneNode(true));
+                });
+                availableSpace = this.A4_HEIGHT - (headerHeight + footerHeight + headerRowsHeight + margin + this.TABLE_MARGIN_BOTTOM);
+              } else {
+                availableSpace = this.A4_HEIGHT - (headerHeight + footerHeight + margin + this.TABLE_MARGIN_BOTTOM);
+              }
+
+              currentPageWrapper.appendChild(currentTable);
+            }
+
+            if (rowHeight > 0) {
+                currentTable.appendChild(row.cloneNode(true));
+                availableSpace -= rowHeight;
+            }
+            rowIndex++;
+          }
+        } else {
+          // Table doesn't fit at all, start on a new page
+          this.addFooterToPage(currentPageWrapper, footerElement as HTMLElement);
+          currentPageWrapper = this.createNewPage(headerElement as HTMLElement, [], false);
+          pages.push(currentPageWrapper);
+
+          let currentTable = this.createTable(originalTable);
+
+          if (!areRemainingRowsAllBottomElements(0)) {
+            tableHeaders.forEach(header => {
+              currentTable.appendChild(header.cloneNode(true));
+            });
+            availableSpace = this.A4_HEIGHT - (headerHeight + footerHeight + headerRowsHeight + margin + this.TABLE_MARGIN_BOTTOM);
+          } else {
+            availableSpace = this.A4_HEIGHT - (headerHeight + footerHeight + margin + this.TABLE_MARGIN_BOTTOM);
+          }
+
+          currentPageWrapper.appendChild(currentTable);
+
+          let rowIndex = 0;
+          dataRows.forEach((row) => {
+            const rowHeight = this.calculateRowHeight(row, dataRows, groupsProcessed);
+
+            if (rowHeight > availableSpace) {
+              this.addFooterToPage(currentPageWrapper, footerElement as HTMLElement);
+              currentPageWrapper = this.createNewPage(headerElement as HTMLElement, [], false);
+              pages.push(currentPageWrapper);
+
+              currentTable = this.createTable(originalTable);
+
+              if (!areRemainingRowsAllBottomElements(rowIndex)) {
+                tableHeaders.forEach(header => {
+                  currentTable.appendChild(header.cloneNode(true));
+                });
+                availableSpace = this.A4_HEIGHT - (headerHeight + footerHeight + headerRowsHeight + margin + this.TABLE_MARGIN_BOTTOM);
+              } else {
+                availableSpace = this.A4_HEIGHT - (headerHeight + footerHeight + margin + this.TABLE_MARGIN_BOTTOM);
+              }
+
+              currentPageWrapper.appendChild(currentTable);
+            }
+
+            if (rowHeight > 0) {
+                currentTable.appendChild(row.cloneNode(true));
+                availableSpace -= rowHeight;
+            }
+            rowIndex++;
+          });
         }
       });
 
-      this.addFooterToPage(currentPage, footerElement as HTMLElement);
+      // Add footer to the last page
+      this.addFooterToPage(currentPageWrapper, footerElement as HTMLElement);
 
-      // Clear original content
+      // Clear original content and replace with pages
       (snippet as HTMLElement).innerHTML = '';
-
-      // Append the new pages
       pages.forEach(page => snippet.appendChild(page));
     });
   }
 
-  private processTable(
-    originalTable: HTMLTableElement,
-    state: {
-      currentPage: HTMLElement,
-      currentPageWrapper: HTMLElement,
-      availableSpace: number,
-      headerElement: HTMLElement,
-      footerElement: HTMLElement,
-      headerHeight: number,
-      footerHeight: number,
-      bodyPadding: string,
-      margin: number
-    },
-    onNewPage: (newPage: HTMLElement, newWrapper: HTMLElement, newSpace: number) => void
-  ): void {
-    const tableHeaders = Array.from(originalTable.querySelectorAll('.table-header')) as HTMLElement[];
-    const headerRowsHeight = tableHeaders.reduce((total, header) => total + this.getElementHeight(header), 0);
-    const dataRows = Array.from(originalTable.querySelectorAll('tr:not(.table-header)')) as HTMLElement[];
-    const groupsProcessed: Set<string> = new Set();
-
-    if (tableHeaders.length === 0 || dataRows.length === 0) {
-      // If table is not paginatable or empty, treat as a single block
-      const tableHeight = this.getElementHeight(originalTable);
-      if (tableHeight > state.availableSpace && state.currentPageWrapper.children.length > 0) {
-        this.addFooterToPage(state.currentPage, state.footerElement);
-        const newPage = this.createNewPage(state.headerElement, [], false, state.bodyPadding);
-        const newWrapper = newPage.querySelector('.content-body') as HTMLElement || newPage;
-        const newSpace = this.A4_HEIGHT - (state.headerHeight + state.footerHeight + state.margin);
-        onNewPage(newPage, newWrapper, newSpace);
-        state.currentPage = newPage;
-        state.currentPageWrapper = newWrapper;
-        state.availableSpace = newSpace;
-      }
-      state.currentPageWrapper.appendChild(originalTable.cloneNode(true));
-      state.availableSpace -= tableHeight;
-      return;
-    }
-
-    const areRemainingRowsAllBottomElements = (currentIndex: number): boolean => {
-      const remainingRows = dataRows.slice(currentIndex);
-      return remainingRows.length > 0 && remainingRows.every((row: HTMLElement) =>
-        row.classList.contains('bottom-element') || row.querySelector('.bottom-element') !== null
-      );
-    };
-
-    let currentTable = this.createTable();
-    let rowIndex = 0;
-
-    // Check if at least header + first row fit
-    let firstRowHeight = this.calculateRowHeight(dataRows[0], dataRows, new Set<string>());
-    if (state.availableSpace < (headerRowsHeight + firstRowHeight + this.TABLE_MARGIN_BOTTOM)) {
-      this.addFooterToPage(state.currentPage, state.footerElement);
-      const newPage = this.createNewPage(state.headerElement, [], false, state.bodyPadding);
-      const newWrapper = newPage.querySelector('.content-body') as HTMLElement || newPage;
-      const newSpace = this.A4_HEIGHT - (state.headerHeight + state.footerHeight + state.margin);
-      onNewPage(newPage, newWrapper, newSpace);
-      state.currentPage = newPage;
-      state.currentPageWrapper = newWrapper;
-      state.availableSpace = newSpace;
-    }
-
-    state.currentPageWrapper.appendChild(currentTable);
-    if (!areRemainingRowsAllBottomElements(0)) {
-      tableHeaders.forEach(h => currentTable.appendChild(h.cloneNode(true)));
-      state.availableSpace -= (headerRowsHeight + this.TABLE_MARGIN_BOTTOM);
-    } else {
-      state.availableSpace -= this.TABLE_MARGIN_BOTTOM;
-    }
-
-    while (rowIndex < dataRows.length) {
-      const row = dataRows[rowIndex];
-      const rowHeight = this.calculateRowHeight(row, dataRows, groupsProcessed);
-      const hasDataRows = currentTable.querySelectorAll('tr:not(.table-header)').length > 0;
-
-      if (rowHeight > 0 && rowHeight > state.availableSpace && hasDataRows) {
-        this.addFooterToPage(state.currentPage, state.footerElement);
-        const newPage = this.createNewPage(state.headerElement, [], false, state.bodyPadding);
-        const newWrapper = newPage.querySelector('.content-body') as HTMLElement || newPage;
-        const newSpace = this.A4_HEIGHT - (state.headerHeight + state.footerHeight + state.margin);
-        onNewPage(newPage, newWrapper, newSpace);
-        state.currentPage = newPage;
-        state.currentPageWrapper = newWrapper;
-        state.availableSpace = newSpace;
-
-        currentTable = this.createTable();
-        if (!areRemainingRowsAllBottomElements(rowIndex)) {
-          tableHeaders.forEach(h => currentTable.appendChild(h.cloneNode(true)));
-          state.availableSpace -= (headerRowsHeight + this.TABLE_MARGIN_BOTTOM);
-        } else {
-          state.availableSpace -= this.TABLE_MARGIN_BOTTOM;
-        }
-        state.currentPageWrapper.appendChild(currentTable);
-      }
-
-      currentTable.appendChild(row.cloneNode(true));
-      state.availableSpace -= rowHeight;
-      rowIndex++;
-    }
-  }
-
-  private createTable(): HTMLTableElement {
-    const table = document.createElement('table');
+  private createTable(originalTable?: HTMLTableElement): HTMLTableElement {
+    const table = originalTable ? originalTable.cloneNode(false) as HTMLTableElement : document.createElement('table');
+    table.innerHTML = ''; // Ensure it's empty
     table.style.width = '100%';
     table.style.marginBottom = `${this.TABLE_MARGIN_BOTTOM}px`;
     return table;
@@ -204,9 +184,8 @@ export class PdfPaginationHelper {
       return 0;
     }
 
-    const groupHeight = allRows
-      .filter(r => r.dataset['group'] === group)
-      .reduce((total, r) => total + this.getElementHeight(r), 0);
+    const groupRows = allRows.filter(r => r.dataset['group'] === group);
+    const groupHeight = groupRows.reduce((total, r) => total + this.getElementHeight(r), 0);
 
     processedGroups.add(group);
 
@@ -224,31 +203,22 @@ export class PdfPaginationHelper {
   private createNewPage(
     headerElement: HTMLElement,
     upperElements: Element[],
-    isFirstPage: boolean,
-    padding: string = '60px'
+    isFirstPage: boolean
   ): HTMLElement {
     const pageWrapper = document.createElement('div');
     pageWrapper.className = `page ${isFirstPage ? 'first-page' : 'continuation-page'}`;
-    pageWrapper.style.width = '1725px';
+    pageWrapper.style.width = '100%';
     pageWrapper.style.position = 'relative';
     pageWrapper.style.minHeight = '2518px';
-    pageWrapper.style.display = 'flex';
-    pageWrapper.style.flexDirection = 'column';
     pageWrapper.style.backgroundColor = 'white';
+    pageWrapper.style.boxSizing = 'border-box';
 
     const clonedPageHeader = headerElement.cloneNode(true) as HTMLElement;
     pageWrapper.appendChild(clonedPageHeader);
 
-    const contentBody = document.createElement('div');
-    contentBody.className = 'content-body';
-    contentBody.style.flex = '1';
-    contentBody.style.padding = padding;
-    contentBody.style.boxSizing = 'border-box';
-    pageWrapper.appendChild(contentBody);
-
     if (isFirstPage) {
       upperElements.forEach(element => {
-        contentBody.appendChild(element.cloneNode(true));
+        pageWrapper.appendChild(element.cloneNode(true));
       });
     }
 

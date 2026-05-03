@@ -204,13 +204,14 @@ export class ReportGeneratorComponent implements OnInit {
       this.feedbackMessage.set(partMessages[part] || 'Rendering content...');
       this.currentStatus.set(`Processing Part ${index + 1} of ${totalParts}`);
 
-      // Allow Angular render cycle
-      await new Promise<void>(resolve => setTimeout(resolve, 500));
-
+      // Allow Angular render cycle and embed images
+      await new Promise<void>(resolve => setTimeout(resolve, 600));
+      
       const tableElement = document.querySelector('.main-content') as HTMLElement;
       if (!tableElement) continue;
 
-      // Pagination prevention and page structure normalization
+      await this.embedImages(tableElement);
+
       if (document.querySelector('.snippet')) {
         const helper = new PdfPaginationHelper();
         helper.preventContentCut();
@@ -240,7 +241,7 @@ export class ReportGeneratorComponent implements OnInit {
               html, body { 
                   margin: 0; 
                   padding: 0; 
-                  width: 1725px; 
+                  width: 1750px; 
                   background-color: white; 
                   -webkit-print-color-adjust: exact;
               }
@@ -248,7 +249,7 @@ export class ReportGeneratorComponent implements OnInit {
                   display: block;
                   page-break-after: always !important; 
                   break-after: page !important;
-                  width: 1725px;
+                  width: 1750px;
                   height: 2518px;
                   margin: 0 auto;
                   position: relative;
