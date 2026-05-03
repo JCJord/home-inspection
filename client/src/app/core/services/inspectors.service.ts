@@ -1,4 +1,4 @@
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
@@ -11,6 +11,10 @@ import { UpdateProfileDto } from '../dtos/update-profile.dto';
 export class InspectorsService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/inspectors`;
+
+  // Global Auto-save state
+  readonly isSaving = signal<boolean>(false);
+  readonly lastSavedAt = signal<Date | null>(null);
 
   /**
    * Fetches the profile of the currently logged-in inspector.

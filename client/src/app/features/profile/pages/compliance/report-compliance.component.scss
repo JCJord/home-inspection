@@ -21,41 +21,6 @@
   }
 }
 
-.auto-save-status-floating {
-  position: sticky;
-  top: 1rem;
-  z-index: 10;
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: 1rem;
-  pointer-events: none;
-
-  .status-indicator {
-    pointer-events: auto;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.8125rem;
-    font-weight: 500;
-    padding: 0.5rem 1rem;
-    border-radius: 2rem;
-    background: white;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    border: 1px solid rgba(0, 0, 0, 0.05);
-    transition: all 0.3s ease;
-
-    &.saving {
-      color: $color-primary;
-      border-color: rgba($color-primary, 0.2);
-    }
-
-    &.saved {
-      color: $color-success;
-      border-color: rgba($color-success, 0.2);
-    }
-  }
-}
-
 .compliance-container {
   width: 100%;
 }

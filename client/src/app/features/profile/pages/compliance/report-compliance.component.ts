@@ -47,8 +47,6 @@ export class ReportComplianceComponent implements OnInit {
   });
 
   isLoading = signal<boolean>(true);
-  isSaving = signal<boolean>(false);
-  lastSavedAt = signal<Date | null>(null);
 
   ngOnInit(): void {
     this.loadComplianceData();
@@ -96,14 +94,14 @@ export class ReportComplianceComponent implements OnInit {
       .pipe(
         debounceTime(environment.defaultDebounceTime),
         distinctUntilChanged((prev, curr) => JSON.stringify(prev) === JSON.stringify(curr)),
-        tap(() => this.isSaving.set(true)),
+        tap(() => this.inspectorsService.isSaving.set(true)),
         switchMap(values => this.inspectorsService.updateProfile(values).pipe(
-          finalize(() => this.isSaving.set(false))
+          finalize(() => this.inspectorsService.isSaving.set(false))
         )),
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe({
-        next: () => this.lastSavedAt.set(new Date()),
+        next: () => this.inspectorsService.lastSavedAt.set(new Date()),
         error: (err) => console.error('Auto-save failed', err)
       });
   }

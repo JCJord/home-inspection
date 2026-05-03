@@ -5,20 +5,6 @@
     <p>Loading compliance settings...</p>
   </div>
   } @else {
-  <div class="auto-save-status-floating">
-    @if (isSaving()) {
-    <div class="status-indicator saving">
-      <app-spinner [size]="14"></app-spinner>
-      <span>Saving...</span>
-    </div>
-    } @else if (lastSavedAt()) {
-    <div class="status-indicator saved">
-      <lucide-icon [img]="icons.CheckCircle2" [size]="14"></lucide-icon>
-      <span>Saved at {{ lastSavedAt() | date:'HH:mm:ss' }}</span>
-    </div>
-    }
-  </div>
-
   <div class="settings-stack">
     <form [formGroup]="complianceForm" class="compliance-form">
       <!-- Section 1: Standard of Practice -->

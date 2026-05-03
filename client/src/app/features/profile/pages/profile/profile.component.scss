@@ -26,40 +26,6 @@
   width: 100%;
 }
 
-.auto-save-status-floating {
-  position: sticky;
-  top: 1rem;
-  z-index: 20;
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: 1.5rem;
-  pointer-events: none;
-
-  .status-indicator {
-    pointer-events: auto;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.8125rem;
-    font-weight: 600;
-    padding: 0.5rem 1rem;
-    border-radius: 2rem;
-    background: white;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    border: 1px solid rgba(0, 0, 0, 0.05);
-
-    &.saving {
-      color: $color-primary;
-      border-color: rgba($color-primary, 0.2);
-    }
-
-    &.saved {
-      color: $color-success;
-      border-color: rgba($color-success, 0.2);
-    }
-  }
-}
-
 .settings-stack {
   display: flex;
   flex-direction: column;
@@ -303,6 +269,11 @@
 // ─── Usage Card ──────────────────────────────────────
 
 .usage-card {
+  &.is-pro {
+    border-color: rgba($color-primary, 0.2);
+    background: linear-gradient(135deg, white 0%, rgba($color-primary, 0.02) 100%);
+  }
+
   .usage-content {
     display: flex;
     align-items: center;
@@ -310,10 +281,77 @@
 
     @media (max-width: 576px) {
       flex-direction: column;
-      gap: 1rem;
+      gap: 1.5rem;
     }
   }
 
+  // Pro Layout
+  .pro-status-layout {
+    width: 100%;
+
+    .pro-badge-container {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+
+      .pro-badge {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        background: linear-gradient(135deg, $color-primary 0%, $color-primary-dark 100%);
+        color: white;
+        border-radius: 2rem;
+        font-size: 0.875rem;
+        font-weight: 700;
+        box-shadow: 0 4px 12px rgba($color-primary, 0.2);
+      }
+
+      .status-indicator {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: $color-success;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+
+        .dot {
+          width: 8px;
+          height: 8px;
+          background: $color-success;
+          border-radius: 50%;
+          box-shadow: 0 0 0 4px rgba($color-success, 0.1);
+        }
+      }
+    }
+
+    .benefits-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+
+      @media (max-width: 640px) {
+        grid-template-columns: 1fr;
+      }
+
+      .benefit-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-size: 0.9375rem;
+        color: $color-text;
+
+        strong {
+          color: $color-primary-dark;
+        }
+      }
+    }
+  }
+
+  // Free Layout Stats
   .usage-stats {
     text-align: center;
     min-width: 120px;

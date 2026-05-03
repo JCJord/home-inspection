@@ -14,7 +14,7 @@ import { Router } from '@angular/router';
 import { LucideAngularModule, Camera, User, BadgeCheck, Phone, Mail, Building, FileText, CheckCircle2, LogOut } from 'lucide-angular';
 import { environment } from '../../../../../environments/environment';
 import { ImageCompressionService } from '../../../../core/services/image-compression.service';
-import { Palette, Type, FileText as FileTextIcon } from 'lucide-angular';
+import { Palette, Type, FileText as FileTextIcon, Zap, Check, TrendingUp } from 'lucide-angular';
 
 @Component({
   selector: 'app-profile',
@@ -39,7 +39,7 @@ export class ProfileComponent implements OnInit {
   private destroyRef = inject(DestroyRef);
   private compressionService = inject(ImageCompressionService);
 
-  readonly icons = { Camera, User, BadgeCheck, Phone, Mail, Building, FileText, CheckCircle2, LogOut, Palette, Type, FileTextIcon };
+  readonly icons = { Camera, User, BadgeCheck, Phone, Mail, Building, FileText, CheckCircle2, LogOut, Palette, Type, FileTextIcon, Zap, Check, TrendingUp };
 
   readonly brandFontOptions = [
     { value: 'modern', label: 'Modern (Sans-serif)' },
@@ -59,11 +59,9 @@ export class ProfileComponent implements OnInit {
 
   profile = signal<Inspector | null>(null);
   isLoading = signal<boolean>(true);
-  isSaving = signal<boolean>(false);
   isUploading = signal<boolean>(false);
   message = signal<{ type: 'success' | 'error', text: string } | null>(null);
   logoPreview = signal<string | null>(null);
-  lastSavedAt = signal<Date | null>(null);
 
   private messageTimeout: any;
 
@@ -102,18 +100,18 @@ export class ProfileComponent implements OnInit {
         debounceTime(environment.defaultDebounceTime),
         distinctUntilChanged((prev, curr) => JSON.stringify(prev) === JSON.stringify(curr)),
         tap(() => {
-          this.isSaving.set(true);
+          this.inspectorsService.isSaving.set(true);
           this.message.set(null);
         }),
         switchMap(values => this.inspectorsService.updateProfile(values).pipe(
-          finalize(() => this.isSaving.set(false))
+          finalize(() => this.inspectorsService.isSaving.set(false))
         )),
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe({
         next: (updated) => {
           this.profile.set(updated);
-          this.lastSavedAt.set(new Date());
+          this.inspectorsService.lastSavedAt.set(new Date());
         },
         error: (err) => {
           this.showMessage('error', 'Auto-save failed. Your changes might not be saved.');
