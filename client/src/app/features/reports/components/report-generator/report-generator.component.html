@@ -192,6 +192,74 @@
       </div>
       }
 
+      <!-- SCOPE, LIMITATIONS & DEFINITIONS -->
+      @case ('legal-shield') {
+      <div class="page snippet"
+         style="width: 1750px; min-height: 2518px; background: white; display: flex; flex-direction: column; box-sizing: border-box;">
+         <ng-container *ngTemplateOutlet="header"></ng-container>
+
+         <div class="content-body" style="flex: 1; padding: 80px 100px;">
+            
+            <!-- Page Header -->
+            <div style="margin-bottom: 60px;">
+               <div style="display: flex; align-items: center; gap: 20px;">
+                  <span [style.color]="inspection?.inspector?.brand_primary_color || '#3B82F6'" 
+                     style="font-size: 40px; font-weight: 900; opacity: 0.3;">02</span>
+                  <h3 style="font-size: 42px; font-weight: 900; text-transform: uppercase; margin: 0; letter-spacing: -0.01em;">Scope, Limitations & Definitions</h3>
+               </div>
+            </div>
+
+            <!-- 1. SOP Declaration -->
+            <div style="margin-bottom: 60px;">
+               <h4 style="font-size: 32px; font-weight: 800; color: #111; margin-bottom: 15px;">Standard of Practice (SOP)</h4>
+               <p style="font-size: 24px; color: #444; line-height: 1.6;">
+                  This inspection was performed in accordance with the <strong>{{ inspection?.inspector?.sop_name || 'Industry Standard' }}</strong> Standards of Practice.
+               </p>
+            </div>
+
+            <!-- 2. The Liability Boilerplate -->
+            <div style="margin-bottom: 60px; padding: 40px; background: #f8f8f8; border-left: 6px solid #111; border-radius: 4px;">
+               <h4 style="font-size: 28px; font-weight: 800; color: #111; margin-bottom: 15px;">General Scope & Limitations</h4>
+               <p style="font-size: 24px; color: #666; line-height: 1.6; white-space: pre-wrap; margin: 0;">{{ inspection?.inspector?.custom_legal_disclaimer || 'It is a visual inspection of the property and its accessible components at the time of the inspection. The goal is to identify material defects that are both observed and deemed significant.' }}</p>
+            </div>
+
+            <!-- 3. Severity Definitions -->
+            <div style="margin-bottom: 50px;">
+               <h4 style="font-size: 32px; font-weight: 800; color: #111; margin-bottom: 25px;">Finding Severity Definitions</h4>
+               <div style="display: grid; gap: 20px;">
+
+                  <!-- Safety Hazard Definition -->
+                  <div style="padding: 25px; border: 2px solid #eee; border-radius: 8px; display: flex; flex-direction: column; gap: 10px;">
+                     <strong style="color: #ef4444; font-size: 24px; text-transform: uppercase; letter-spacing: 0.05em;">Safety Hazard</strong>
+                     <span style="font-size: 24px; color: #555; line-height: 1.5;">
+                        @if (inspection?.inspector?.use_standard_definitions !== false) {
+                           A condition, system, or component that poses a significant, immediate risk of personal injury during normal, day-to-day use.
+                        } @else {
+                           {{ inspection?.inspector?.custom_safety_hazard_def }}
+                        }
+                     </span>
+                  </div>
+
+                  <!-- Major Defect Definition -->
+                  <div style="padding: 25px; border: 2px solid #eee; border-radius: 8px; display: flex; flex-direction: column; gap: 10px;">
+                     <strong style="color: #f97316; font-size: 24px; text-transform: uppercase; letter-spacing: 0.05em;">Major Defect</strong>
+                     <span style="font-size: 24px; color: #555; line-height: 1.5;">
+                        @if (inspection?.inspector?.use_standard_definitions !== false) {
+                           A system or component that is unsafe, not functioning properly, or is at the end of its useful life, requiring immediate professional repair or replacement.
+                        } @else {
+                           {{ inspection?.inspector?.custom_major_defect_def }}
+                        }
+                     </span>
+                  </div>
+
+               </div>
+            </div>
+         </div>
+
+         <ng-container *ngTemplateOutlet="footer"></ng-container>
+      </div>
+      }
+
       <!-- GENERAL INFO PAGE -->
       @case ('general-info') {
       <div class="page snippet"
@@ -202,7 +270,7 @@
             <div class="upperElement" style="margin-bottom: 60px;">
                <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 20px;">
                   <span [style.color]="inspection?.inspector?.brand_primary_color || '#3B82F6'" 
-                     style="font-size: 40px; font-weight: 900; opacity: 0.3;">02</span>
+                     style="font-size: 40px; font-weight: 900; opacity: 0.3;">03</span>
                   <h3
                      style="font-size: 42px; font-weight: 900; text-transform: uppercase; letter-spacing: -0.01em; margin: 0;">
                      Property Conditions</h3>
@@ -321,7 +389,7 @@
             <div class="upperElement mb-8" style="margin-bottom: 40px;">
                <div style="display: flex; align-items: center; gap: 20px;">
                   <span [style.color]="inspection?.inspector?.brand_primary_color || '#3B82F6'" 
-                     style="font-size: 40px; font-weight: 900; opacity: 0.3;">03</span>
+                     style="font-size: 40px; font-weight: 900; opacity: 0.3;">04</span>
                   <h3
                      style="font-size: 36px; font-weight: 800; text-transform: uppercase; letter-spacing: -0.01em; margin: 0;">
                      Detailed Findings by Category</h3>
@@ -338,7 +406,7 @@
                         style="padding: 30px; display: flex; flex-direction: column; gap: 10px; color: white;">
                         
                         <div style="display: flex; align-items: center; gap: 25px;">
-                            <span class="index" style="font-size: 32px; font-weight: 900; opacity: 0.4;">3.{{ groupIndex + 1 }}</span>
+                            <span class="index" style="font-size: 32px; font-weight: 900; opacity: 0.4;">4.{{ groupIndex + 1 }}</span>
                             <span class="category"
                                style="font-size: 28px; font-weight: 800; flex: 1; text-transform: uppercase;">{{
                                group.section }} Assessment</span>
@@ -443,6 +511,7 @@
          <ng-container *ngTemplateOutlet="footer"></ng-container>
       </div>
       }
+
       }
    </div>
 </div>

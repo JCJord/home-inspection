@@ -32,7 +32,7 @@ export class ReportGeneratorComponent implements OnInit {
   today = new Date();
   apiUrl = environment.apiUrl.replace('/api', '');
 
-  readonly allContentParts = ['cover', 'executive-summary', 'general-info', 'inspection-findings'];
+  readonly allContentParts = ['cover', 'executive-summary', 'legal-shield', 'general-info', 'inspection-findings'];
   readonly icons = { Loader2, FileText, CheckCircle };
 
   getSeverityColor(severity: string): string {
@@ -191,6 +191,7 @@ export class ReportGeneratorComponent implements OnInit {
       const partMessages: Record<string, string> = {
         'cover': 'Crafting high-fidelity cover page...',
         'executive-summary': 'Identifying critical safety hazards...',
+        'legal-shield': 'Injecting compliance & legal boilerplate...',
         'general-info': 'Synthesizing property conditions...',
         'inspection-findings': 'Organizing detailed findings...'
       };

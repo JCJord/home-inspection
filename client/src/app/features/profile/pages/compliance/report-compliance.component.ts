@@ -32,9 +32,9 @@ export class ReportComplianceComponent implements OnInit {
   readonly sopOptions = ['InterNACHI', 'ASHI', 'TREC', 'Custom'];
 
   private readonly legalTemplates: Record<string, string> = {
-    'InterNACHI': 'This inspection was performed in accordance with InterNACHI Standards of Practice. It is a visual inspection of the property and its accessible components at the time of the inspection. The goal is to identify material defects that are both observed and deemed significant.',
-    'ASHI': 'This inspection was performed in accordance with ASHI Standards of Practice. The inspector will report on those systems and components specified by the ASHI Standards of Practice that, in the professional judgment of the inspector, are not functioning properly, are significantly deficient, or are unsafe.',
-    'TREC': 'This inspection is governed by the Texas Real Estate Commission (TREC). The standard inspection report form is used, and the inspection is performed according to TREC rules and Standards of Practice.',
+    'InterNACHI': 'It is a visual inspection of the property and its accessible components at the time of the inspection. The goal is to identify material defects that are both observed and deemed significant.',
+    'ASHI': 'The inspector will report on those systems and components specified by the ASHI Standards of Practice that, in the professional judgment of the inspector, are not functioning properly, are significantly deficient, or are unsafe.',
+    'TREC': 'The standard inspection report form is used, and the inspection is performed according to TREC rules and Standards of Practice.',
     'Custom': ''
   };
 
