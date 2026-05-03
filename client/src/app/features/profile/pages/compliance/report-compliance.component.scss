@@ -43,7 +43,6 @@
 .card {
   @include card-premium(false);
   padding: 1.5rem;
-  margin-bottom: 2rem;
 
   .card-header {
     display: flex;
