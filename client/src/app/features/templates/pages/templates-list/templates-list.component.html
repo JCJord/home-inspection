@@ -1,21 +1,36 @@
 <div class="templates-container max-w-7xl mx-auto p-6 pb-24 relative">
   <div class="flex flex-wrap gap-3 justify-between items-center mb-6">
     <div>
-      <h1 class="text-2xl font-bold text-standard mb-2">Inspection Templates</h1>
-      <p class="text-standard-muted text-sm">Manage reusable blueprints for your inspections.</p>
+      @if (isLoading()) {
+        <div class="flex flex-col gap-2">
+          <app-skeleton width="220px" height="28px" borderRadius="6px"></app-skeleton>
+          <app-skeleton width="320px" height="16px" borderRadius="4px"></app-skeleton>
+        </div>
+      } @else {
+        <h1 class="text-2xl font-bold text-standard mb-2">Inspection Templates</h1>
+        <p class="text-standard-muted text-sm">Manage reusable blueprints for your inspections.</p>
+      }
     </div>
-    <app-button (click)="createNewTemplate()" [isLoading]="isActionLoading()" variant="solid">
-      <lucide-icon [name]="icons.Plus" [size]="18"></lucide-icon>
-      <span>New Blueprint</span>
-    </app-button>
+    @if (isLoading()) {
+      <app-skeleton width="140px" height="42px" borderRadius="10px"></app-skeleton>
+    } @else {
+      <app-button (click)="createNewTemplate()" [isLoading]="isActionLoading()" variant="solid">
+        <lucide-icon [name]="icons.Plus" [size]="18"></lucide-icon>
+        <span>New Blueprint</span>
+      </app-button>
+    }
   </div>
 
   <!-- Search & Filter -->
   <div class="mb-8">
-    <app-search-input 
-      [(ngModel)]="searchQuery" 
-      placeholder="Search blueprints by name...">
-    </app-search-input>
+    @if (isLoading()) {
+      <app-skeleton width="100%" height="42px" borderRadius="8px"></app-skeleton>
+    } @else {
+      <app-search-input 
+        [(ngModel)]="searchQuery" 
+        placeholder="Search blueprints by name...">
+      </app-search-input>
+    }
   </div>
 
   <!-- Error State -->
@@ -27,8 +42,38 @@
 
   <!-- Loading State -->
   @if (isLoading()) {
-  <div class="flex justify-center items-center py-12">
-    <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></div>
+  <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+    @for (i of [1,2,3]; track i) {
+    <div class="skeleton-template-card">
+      <div class="flex justify-between items-start">
+        <div class="flex items-center gap-3 flex-1">
+          <app-skeleton width="20px" height="20px" borderRadius="4px"></app-skeleton>
+          <app-skeleton width="60%" height="22px" borderRadius="4px"></app-skeleton>
+        </div>
+        <app-skeleton width="24px" height="24px" variant="circle"></app-skeleton>
+      </div>
+      <app-skeleton width="120px" height="14px" borderRadius="4px"></app-skeleton>
+      
+      <div class="stats-skeleton-grid">
+        <div class="flex flex-col items-center gap-2">
+          <app-skeleton width="18px" height="18px" borderRadius="4px"></app-skeleton>
+          <app-skeleton width="30px" height="16px" borderRadius="4px"></app-skeleton>
+        </div>
+        <div class="flex flex-col items-center gap-2">
+          <app-skeleton width="18px" height="18px" borderRadius="4px"></app-skeleton>
+          <app-skeleton width="30px" height="16px" borderRadius="4px"></app-skeleton>
+        </div>
+        <div class="flex flex-col items-center gap-2">
+          <app-skeleton width="18px" height="18px" borderRadius="4px"></app-skeleton>
+          <app-skeleton width="30px" height="16px" borderRadius="4px"></app-skeleton>
+        </div>
+      </div>
+
+      <div class="flex justify-between items-center">
+        <app-skeleton width="120px" height="14px" borderRadius="4px"></app-skeleton>
+      </div>
+    </div>
+    }
   </div>
   } @else {
 

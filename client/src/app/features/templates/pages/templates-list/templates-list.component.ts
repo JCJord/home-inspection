@@ -7,6 +7,7 @@ import { InspectorsService } from '../../../../core/services/inspectors.service'
 import { Template } from '../../models/template.interface';
 import { LucideAngularModule, Copy, Edit2, Trash2, Plus, Star } from 'lucide-angular';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
+import { SkeletonComponent } from '../../../../shared/components/skeleton/skeleton.component';
 import { TemplateEditorComponent } from '../template-editor/template-editor.component';
 import { TemplateCardComponent } from '../../components/template-card/template-card.component';
 import { SearchInputComponent } from '../../../../shared/components/inputs/search-input/search-input.component';
@@ -14,7 +15,7 @@ import { SearchInputComponent } from '../../../../shared/components/inputs/searc
 @Component({
   selector: 'app-templates-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideAngularModule, ButtonComponent, TemplateCardComponent, SearchInputComponent],
+  imports: [CommonModule, FormsModule, LucideAngularModule, ButtonComponent, TemplateCardComponent, SearchInputComponent, SkeletonComponent],
 
   providers: [{ provide: 'lucideIcons', useValue: { Copy, Edit2, Trash2, Plus, Star } }],
   templateUrl: './templates-list.component.html',

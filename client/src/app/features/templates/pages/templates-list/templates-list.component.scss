@@ -1,17 +1,28 @@
-@use 'variables' as *;
+@use '/variables' as *;
+@use '/cards' as *;
+
 
 .templates-container {
   animation: fadeIn 0.3s ease-out forwards;
 }
 
-.template-card {
-  background-color: $color-surface;
-  border: 1px solid $color-border;
+.skeleton-template-card {
+  @include card-premium(false);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
 
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.05);
-    border-color: rgba($color-primary, 0.3);
+  .stats-skeleton-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+    padding: 1rem 0;
+    margin: 1rem 0;
+    border-top: 1px solid rgba($color-border, 0.5);
+    border-bottom: 1px solid rgba($color-border, 0.5);
+    background-color: rgba($color-surface-light, 0.5);
+    border-radius: 0.75rem;
   }
 }
 
