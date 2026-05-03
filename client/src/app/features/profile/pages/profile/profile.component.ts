@@ -9,6 +9,7 @@ import { TextInputComponent } from '../../../../shared/components/inputs/text-in
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
 import { SelectInputComponent } from '../../../../shared/components/inputs/select-input/select-input.component';
+import { SkeletonComponent } from '../../../../shared/components/skeleton/skeleton.component';
 import { AuthService } from '../../../../core/services/auth.service';
 import { Router } from '@angular/router';
 import { LucideAngularModule, Camera, User, BadgeCheck, Phone, Mail, Building, FileText, CheckCircle2, LogOut } from 'lucide-angular';
@@ -26,6 +27,7 @@ import { Palette, Type, FileText as FileTextIcon, Zap, Check, TrendingUp } from 
     SelectInputComponent,
     ButtonComponent,
     SpinnerComponent,
+    SkeletonComponent,
     LucideAngularModule
   ],
   templateUrl: './profile.component.html',
