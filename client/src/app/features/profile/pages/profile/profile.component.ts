@@ -12,6 +12,8 @@ import { AuthService } from '../../../../core/services/auth.service';
 import { Router } from '@angular/router';
 import { LucideAngularModule, Camera, User, BadgeCheck, Phone, Mail, Building, FileText, CheckCircle2, LogOut } from 'lucide-angular';
 import { environment } from '../../../../../environments/environment';
+import { ImageCompressionService } from '../../../../core/services/image-compression.service';
+import { Palette, Type, FileText as FileTextIcon } from 'lucide-angular';
 
 @Component({
   selector: 'app-profile',
@@ -32,14 +34,24 @@ export class ProfileComponent implements OnInit {
   private authService = inject(AuthService);
   private router = inject(Router);
   private destroyRef = inject(DestroyRef);
+  private compressionService = inject(ImageCompressionService);
 
-  readonly icons = { Camera, User, BadgeCheck, Phone, Mail, Building, FileText, CheckCircle2, LogOut };
+  readonly icons = { Camera, User, BadgeCheck, Phone, Mail, Building, FileText, CheckCircle2, LogOut, Palette, Type, FileTextIcon };
+
+  readonly brandFontOptions = [
+    { value: 'modern', label: 'Modern (Sans-serif)' },
+    { value: 'classic', label: 'Classic (Serif)' },
+    { value: 'technical', label: 'Technical (Monospace)' }
+  ];
 
   profileForm: FormGroup = this.fb.group({
     name: ['', [Validators.required]],
     company_name: [''],
     phone: [''],
     license_number: [''],
+    brand_primary_color: ['#1E40AF'],
+    brand_font_family: ['modern'],
+    report_footer_text: ['', [Validators.maxLength(150)]],
   });
 
   profile = signal<Inspector | null>(null);
@@ -130,9 +142,17 @@ export class ProfileComponent implements OnInit {
     }
   }
 
-  private uploadLogo(file: File): void {
+  private async uploadLogo(file: File): Promise<void> {
     this.isUploading.set(true);
-    this.inspectorsService.uploadLogo(file)
+
+    // Compress logo
+    const compressedFile = await this.compressionService.compressImage(file, {
+      maxSizeMB: 0.2, // Smaller for logos
+      maxWidthOrHeight: 800,
+      useWebWorker: true
+    });
+
+    this.inspectorsService.uploadLogo(compressedFile)
       .pipe(finalize(() => this.isUploading.set(false)))
       .subscribe({
         next: (updated) => {

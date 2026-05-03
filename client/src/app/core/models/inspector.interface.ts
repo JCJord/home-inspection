@@ -8,6 +8,10 @@ export interface Inspector {
   phone?: string;
   license_number?: string;
   logo_url?: string;
+  brand_primary_color?: string;
+  brand_font_family?: string;
+  report_footer_text?: string;
+  signature_url?: string;
   subscription_status: SubscriptionStatus;
   free_inspections_used: number;
   created_at: Date;

@@ -1,4 +1,5 @@
 import { Section, Severity } from '../enums/inspection.enums';
+import { Inspector } from './inspector.interface';
 
 export interface Photo {
   id: string;
@@ -64,12 +65,7 @@ export interface Inspection {
   template_id?: string;
   template_snapshot?: TemplateStructure;
   metadata_values?: Record<string, string>;
-  inspector?: {
-    id: string;
-    name: string;
-    license_number: string;
-    signature_url?: string;
-  };
+  inspector?: Inspector;
   created_at: string;
   updated_at: string;
 }

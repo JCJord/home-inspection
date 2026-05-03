@@ -44,6 +44,15 @@ export class Inspector {
   @Column({ default: 0 })
   free_inspections_used: number;
 
+  @Column({ type: 'varchar', default: '#1E40AF' })
+  brand_primary_color: string;
+
+  @Column({ type: 'varchar', default: 'modern' })
+  brand_font_family: string;
+
+  @Column({ type: 'varchar', length: 150, nullable: true })
+  report_footer_text: string;
+
   @OneToMany(() => Inspection, (inspection) => inspection.inspector)
   inspections: Inspection[];
 

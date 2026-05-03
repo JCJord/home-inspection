@@ -102,6 +102,18 @@
 
   .main-content {
     background: white;
+
+    &[data-font="modern"] {
+      font-family: 'Inter', 'Roboto', 'Helvetica Neue', sans-serif;
+    }
+
+    &[data-font="classic"] {
+      font-family: 'Merriweather', 'Georgia', serif;
+    }
+
+    &[data-font="technical"] {
+      font-family: 'Roboto Mono', 'Courier New', monospace;
+    }
   }
 
   .page {

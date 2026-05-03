@@ -85,7 +85,7 @@ export class InspectionsService {
   async findOne(inspectorId: string, id: string): Promise<Inspection> {
     const inspection = await this.inspectionRepository.findOne({
       where: { id, inspector_id: inspectorId },
-      relations: ['findings', 'findings.photos'],
+      relations: ['findings', 'findings.photos', 'inspector'],
     });
 
     if (!inspection) {

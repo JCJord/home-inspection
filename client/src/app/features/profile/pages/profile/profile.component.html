@@ -120,6 +120,40 @@
             <app-text-input name="license_number" label="License Number" placeholder="ABC-123456"></app-text-input>
           </div>
         </div>
+
+        <div class="card">
+          <div class="card-header">
+            <lucide-icon [img]="icons.Palette" [size]="20"></lucide-icon>
+            <h3>Branding & Report Styles</h3>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Brand Primary Color</label>
+              <div class="color-picker-wrapper">
+                <input type="color" formControlName="brand_primary_color" class="color-picker">
+                <span class="color-value">{{ profileForm.get('brand_primary_color')?.value }}</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Report Font Family</label>
+              <select formControlName="brand_font_family" class="form-select">
+                @for (option of brandFontOptions; track option.value) {
+                <option [value]="option.value">{{ option.label }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="form-group full-width">
+              <label class="form-label">Report Footer Text (Max 150 chars)</label>
+              <textarea formControlName="report_footer_text" class="form-textarea" placeholder="Confidential Property Inspection Report" maxlength="150"></textarea>
+              <div class="char-count" [class.warning]="(profileForm.get('report_footer_text')?.value?.length || 0) > 130">
+                {{ profileForm.get('report_footer_text')?.value?.length || 0 }} / 150
+              </div>
+            </div>
+          </div>
+        </div>
       </form>
 
       <div class="logout-card mobile-only-action">

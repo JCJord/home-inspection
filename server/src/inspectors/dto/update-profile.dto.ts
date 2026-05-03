@@ -1,4 +1,5 @@
-import { IsEmail, IsOptional, IsString } from 'class-validator';
+import { IsEmail, IsEnum, IsHexColor, IsOptional, IsString, MaxLength } from 'class-validator';
+import { BrandFont } from '../../common/enums/brand-font.enum';
 
 export class UpdateProfileDto {
 
@@ -17,4 +18,17 @@ export class UpdateProfileDto {
   @IsOptional()
   @IsString()
   license_number?: string;
+
+  @IsOptional()
+  @IsHexColor()
+  brand_primary_color?: string;
+
+  @IsOptional()
+  @IsEnum(BrandFont)
+  brand_font_family?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(150)
+  report_footer_text?: string;
 }

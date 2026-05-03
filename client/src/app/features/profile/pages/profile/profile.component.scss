@@ -370,3 +370,96 @@
     transform: translateY(0);
   }
 }
+
+// ─── Branding & Style Fields ─────────────────────────
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  &.full-width {
+    grid-column: 1 / -1;
+  }
+
+  .form-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: $color-text-muted;
+  }
+
+  .form-select,
+  .form-textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border-radius: 0.75rem;
+    border: 1px solid $color-surface-light;
+    background: white;
+    font-size: 0.9375rem;
+    color: $color-text;
+    transition: all 0.2s ease;
+
+    &:focus {
+      outline: none;
+      border-color: $color-primary;
+      box-shadow: 0 0 0 4px rgba($color-primary, 0.1);
+    }
+  }
+
+  .form-textarea {
+    min-height: 100px;
+    resize: vertical;
+  }
+
+  .char-count {
+    font-size: 0.75rem;
+    color: $color-text-muted;
+    text-align: right;
+    margin-top: 0.25rem;
+
+    &.warning {
+      color: $color-error;
+    }
+  }
+
+  .color-picker-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.5rem;
+    background: $color-bg;
+    border-radius: 0.75rem;
+    border: 1px solid $color-surface-light;
+
+    .color-picker {
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      width: 40px;
+      height: 40px;
+      background-color: transparent;
+      border: none;
+      cursor: pointer;
+
+      &::-webkit-color-swatch {
+        border-radius: 0.5rem;
+        border: 2px solid white;
+        box-shadow: 0 0 0 1px $color-border;
+      }
+
+      &::-moz-color-swatch {
+        border-radius: 0.5rem;
+        border: 2px solid white;
+        box-shadow: 0 0 0 1px $color-border;
+      }
+    }
+
+    .color-value {
+      font-family: 'Roboto Mono', monospace;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: $color-text;
+      text-transform: uppercase;
+    }
+  }
+}

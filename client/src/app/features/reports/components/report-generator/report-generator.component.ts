@@ -127,6 +127,11 @@ export class ReportGeneratorComponent implements OnInit {
     return null;
   }
 
+  getLogoUrl(url?: string): string {
+    if (!url) return 'https://i.ibb.co/VcHybzvY/inspectly-logo.png';
+    return url.startsWith('http') ? url : `${this.apiUrl}${url}`;
+  }
+
   ngOnInit(): void {
     // Small delay to ensure inputs are resolved and we are off-thread
     setTimeout(() => {
