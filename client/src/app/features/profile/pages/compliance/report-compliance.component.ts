@@ -7,6 +7,7 @@ import { InspectorsService } from '../../../../core/services/inspectors.service'
 import { Inspector } from '../../../../core/models/inspector.interface';
 import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
 import { SelectInputComponent } from '../../../../shared/components/inputs/select-input/select-input.component';
+import { SkeletonComponent } from '../../../../shared/components/skeleton/skeleton.component';
 import { LucideAngularModule, ShieldCheck, Scale, FileSignature, CheckCircle2, Info } from 'lucide-angular';
 import { environment } from '../../../../../environments/environment';
 
@@ -18,6 +19,7 @@ import { environment } from '../../../../../environments/environment';
     ReactiveFormsModule,
     SpinnerComponent,
     SelectInputComponent,
+    SkeletonComponent,
     LucideAngularModule
   ],
   templateUrl: './report-compliance.component.html',
