@@ -136,6 +136,11 @@ export class ReportGeneratorComponent implements OnInit {
     return url.startsWith('http') ? url : `${this.apiUrl}${url}`;
   }
 
+  splitNoteIntoParagraphs(note: string): string[] {
+    if (!note) return [];
+    return note.split('\n').filter(p => p.trim().length > 0);
+  }
+
   ngOnInit(): void {
     // Small delay to ensure inputs are resolved and we are off-thread
     setTimeout(() => {
@@ -205,8 +210,8 @@ export class ReportGeneratorComponent implements OnInit {
       const tableElement = document.querySelector('.main-content') as HTMLElement;
       if (!tableElement) continue;
 
-      // Pagination prevention for detail sections
-      if (part === 'inspection-findings') {
+      // Pagination prevention and page structure normalization
+      if (document.querySelector('.snippet')) {
         const helper = new PdfPaginationHelper();
         helper.preventContentCut();
       }
