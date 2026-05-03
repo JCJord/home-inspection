@@ -155,4 +155,10 @@ export class InspectionsService {
     const inspection = await this.findOne(inspectorId, id);
     await this.inspectionRepository.remove(inspection);
   }
+
+  async uploadCoverPhoto(inspectorId: string, id: string, coverPhotoUrl: string): Promise<Inspection> {
+    const inspection = await this.findOne(inspectorId, id);
+    inspection.cover_photo_url = coverPhotoUrl;
+    return await this.inspectionRepository.save(inspection);
+  }
 }

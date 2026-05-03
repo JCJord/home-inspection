@@ -113,6 +113,10 @@ export class ReportGeneratorComponent implements OnInit {
   }
 
   getCoverPhoto(): string | null {
+    if (this.inspection?.cover_photo_url) {
+      return this.apiUrl + this.inspection.cover_photo_url;
+    }
+
     if (!this.inspection?.findings) return null;
     // Look for an exterior photo first
     const exteriorFinding = this.inspection.findings.find(f => 

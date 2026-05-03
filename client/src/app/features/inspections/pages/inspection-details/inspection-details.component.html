@@ -144,6 +144,43 @@
     </div>
     }
     <div class="summary-container flex flex-col gap-8">
+      <!-- Cover Photo Section -->
+      <div class="cover-photo-section bg-surface-standard border border-standard rounded-[2rem] overflow-hidden">
+        <div class="relative group min-h-[260px] flex items-center justify-center bg-light-standard overflow-hidden">
+          @if (insp.cover_photo_url) {
+          <img [src]="apiUrl + insp.cover_photo_url" alt="Cover Photo" class="w-full h-full object-cover absolute inset-0">
+          <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+            <button class="bg-white text-standard px-4 py-2 rounded-xl font-bold flex items-center gap-2 hover:bg-white/90 transition-all transform hover:scale-105" (click)="coverInput.click()">
+              <lucide-icon [name]="icons.RefreshCw" [size]="18"></lucide-icon>
+              Change Photo
+            </button>
+          </div>
+          } @else {
+          <div class="flex flex-col items-center gap-4 py-12 px-6 text-center" (click)="coverInput.click()" class="cursor-pointer hover:bg-light-standard/50 transition-colors w-full h-full flex flex-col items-center justify-center">
+            <div class="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
+              <lucide-icon [name]="icons.Camera" [size]="32"></lucide-icon>
+            </div>
+            <div>
+              <h3 class="font-bold text-lg text-standard">Add Report Cover Photo</h3>
+              <p class="text-sm text-standard-muted">Upload a professional hero shot of the property</p>
+            </div>
+            <app-button variant="outline" size="sm" class="mt-2">
+              Select Image
+            </app-button>
+          </div>
+          }
+
+          @if (isUploadingCover()) {
+          <div class="absolute inset-0 bg-white/60 backdrop-blur-sm flex flex-col items-center justify-center z-10">
+            <lucide-icon [name]="icons.Loader2" [size]="40" class="animate-spin text-primary mb-2"></lucide-icon>
+            <span class="font-bold text-primary">Uploading...</span>
+          </div>
+          }
+          
+          <input #coverInput type="file" (change)="onCoverPhotoSelected($event)" accept="image/*" class="hidden">
+        </div>
+      </div>
+
       <div
         class="summary-header flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-standard">
         <div class="flex flex-col gap-1">

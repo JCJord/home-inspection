@@ -7,9 +7,11 @@ import { Finding, Inspection } from '../../../../core/models/inspection.interfac
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { FindingCardComponent } from '../../components/finding-card/finding-card.component';
 import { SkeletonComponent } from '../../../../shared/components/skeleton/skeleton.component';
-import { LucideAngularModule, ArrowLeft, Send, RefreshCw, AlertCircle, Plus, X, Check, Loader2, FileText, Download, LockOpen, Edit } from 'lucide-angular';
+import { LucideAngularModule, ArrowLeft, Send, RefreshCw, AlertCircle, Plus, X, Check, Loader2, FileText, Download, LockOpen, Edit, Camera, Image } from 'lucide-angular';
 import { ReportGeneratorComponent } from '../../../reports/components/report-generator/report-generator.component';
 import { BackButtonComponent } from '../../../../shared/components/back-button/back-button.component';
+import { ImageCompressionService } from '../../../../core/services/image-compression.service';
+import { environment } from '../../../../../environments/environment';
 
 @Component({
   selector: 'app-inspection-details',
@@ -32,10 +34,12 @@ export class InspectionDetailsComponent implements OnInit {
   private router = inject(Router);
   private inspectionsService = inject(InspectionsService);
   private reportsService = inject(ReportsService);
+  private compressionService = inject(ImageCompressionService);
 
   inspection = signal<Inspection | null>(null);
   isLoading = signal<boolean>(true);
   isPublishing = signal<boolean>(false);
+  isUploadingCover = signal<boolean>(false);
   errorMessage = signal<string | null>(null);
   showPublishModal = signal(false);
   selectedSection = signal<string>('');
@@ -45,7 +49,8 @@ export class InspectionDetailsComponent implements OnInit {
   isGeneratingPdf = signal<boolean>(false);
   isReportGeneratorActive = signal<boolean>(false);
 
-  readonly icons = { ArrowLeft, Send, RefreshCw, AlertCircle, Plus, X, Check, Loader2, FileText, Download, LockOpen, Edit };
+  readonly icons = { ArrowLeft, Send, RefreshCw, AlertCircle, Plus, X, Check, Loader2, FileText, Download, LockOpen, Edit, Camera, Image };
+  readonly apiUrl = environment.apiUrl.replace('/api', '');
 
   isPublished = computed(() => this.inspection()?.status === 'published');
   hasFindings = computed(() => (this.inspection()?.findings?.length ?? 0) > 0);
@@ -233,6 +238,37 @@ export class InspectionDetailsComponent implements OnInit {
 
   editFinding(finding: Finding): void {
     this.router.navigate(['/inspections', this.inspection()!.id, 'findings', finding.id]);
+  }
+
+  async onCoverPhotoSelected(event: Event): Promise<void> {
+    const inspectionId = this.inspection()?.id;
+    if (!inspectionId) return;
+
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+
+    this.isUploadingCover.set(true);
+    try {
+      const compressedFile = await this.compressionService.compressImage(file, {
+        maxWidthOrHeight: 1600, // Slightly higher for cover photo
+        initialQuality: 0.8
+      });
+
+      this.inspectionsService.uploadCoverPhoto(inspectionId, compressedFile).subscribe({
+        next: (updated) => {
+          this.inspection.set(updated);
+          this.isUploadingCover.set(false);
+        },
+        error: (err) => {
+          console.error('Failed to upload cover photo', err);
+          this.errorMessage.set('Failed to upload cover photo.');
+          this.isUploadingCover.set(false);
+        }
+      });
+    } catch (err) {
+      console.error('Compression error', err);
+      this.isUploadingCover.set(false);
+    }
   }
 
   routeToWorkbench(): void {

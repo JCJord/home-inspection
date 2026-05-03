@@ -51,6 +51,12 @@ export class InspectionsService {
     return this.http.post<Inspection>(`${this.apiUrl}/${id}/unpublish`, {});
   }
 
+  uploadCoverPhoto(id: string, file: File): Observable<Inspection> {
+    const formData = new FormData();
+    formData.append('cover_photo', file);
+    return this.http.post<Inspection>(`${this.apiUrl}/${id}/cover-photo`, formData);
+  }
+
   // --- Finding Methods ---
 
   /**
