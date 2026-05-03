@@ -5,10 +5,7 @@
   width: 100%;
 }
 
-.details-container {
-  padding: 2rem;
-  max-width: 1200px;
-  margin: 0 auto;
+.inspection-details-container {
   animation: fadeIn 0.3s ease-out forwards;
 }
 
@@ -356,8 +353,7 @@
 // ─── Responsive ───────────────────────────────────────
 
 @media (max-width: 640px) {
-  .details-container {
-    padding: 1rem 0.75rem;
+  .inspection-details-container {
   }
 
   .details-header {
