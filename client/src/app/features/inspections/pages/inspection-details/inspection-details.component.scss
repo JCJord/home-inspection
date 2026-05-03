@@ -1,4 +1,6 @@
 @use 'variables' as *;
+@use '/cards' as *;
+
 
 :host {
   display: block;
@@ -416,3 +418,63 @@
     transform: translateY(0);
   }
 }
+
+// ─── Skeleton Findings Mimic ──────────────────────────
+.skeleton-finding-card {
+  @include card-premium(false);
+  padding: 0;
+  display: flex;
+  position: relative;
+  overflow: hidden;
+  background-color: white;
+
+  .severity-indicator {
+    width: 6px;
+    background-color: rgba($color-border, 0.3);
+    flex-shrink: 0;
+  }
+
+  .content-mimic {
+    flex: 1;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+
+    .top-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.25rem;
+    }
+
+    .metadata {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+    }
+
+    .ai-box-mimic {
+      background-color: rgba($color-primary, 0.03);
+      border: 1px solid rgba($color-primary, 0.05);
+      border-radius: 0.75rem;
+      padding: 0.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .note-mimic {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .photos-mimic {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+  }
+}

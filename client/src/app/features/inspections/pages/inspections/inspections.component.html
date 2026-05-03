@@ -1,51 +1,63 @@
 <div class="inspections-container max-w-7xl mx-auto p-6 pb-24 relative min-h-full h-auto">
   <div class="flex flex-wrap gap-3 justify-between items-center mb-6">
     <div>
-      <h1 class="text-2xl font-bold text-standard mb-2">Inspections</h1>
-      <p class="text-standard-muted text-sm">Conduct and manage property assessments.</p>
+      @if (isLoading()) {
+        <div class="flex flex-col gap-2">
+          <app-skeleton width="160px" height="28px" borderRadius="6px"></app-skeleton>
+          <app-skeleton width="240px" height="16px" borderRadius="4px"></app-skeleton>
+        </div>
+      } @else {
+        <h1 class="text-2xl font-bold text-standard mb-2">Inspections</h1>
+        <p class="text-standard-muted text-sm">Conduct and manage property assessments.</p>
+      }
     </div>
-    <app-button (click)="addInspection()" variant="solid">
-      <lucide-icon [name]="icons.Plus" [size]="18"></lucide-icon>
-      <span>Add Inspection</span>
-    </app-button>
+    @if (isLoading()) {
+      <app-skeleton width="140px" height="42px" borderRadius="10px"></app-skeleton>
+    } @else {
+      <app-button (click)="addInspection()" variant="solid">
+        <lucide-icon [name]="icons.Plus" [size]="18"></lucide-icon>
+        <span>Add Inspection</span>
+      </app-button>
+    }
   </div>
 
   <div class="content">
     @if (isLoading()) {
-    <div class="flex flex-col gap-6 animate-pulse">
+    <div class="skeleton-list">
       @for (i of [1,2,3]; track i) {
-      <div class="bg-surface-standard border border-standard rounded-2xl p-6 flex flex-col gap-5">
-        <!-- Card Header Skeleton -->
-        <div class="flex flex-wrap sm:flex-nowrap justify-between items-start gap-4">
-          <div class="flex flex-col gap-3 w-full sm:w-auto">
-            <div class="flex items-center gap-2">
-              <app-skeleton width="20px" height="20px" borderRadius="4px"></app-skeleton>
-              <app-skeleton width="200px" height="24px" borderRadius="4px"></app-skeleton>
-            </div>
-            <div class="flex flex-wrap gap-3">
-              <app-skeleton width="120px" height="16px" borderRadius="4px"></app-skeleton>
-              <app-skeleton width="100px" height="16px" borderRadius="4px"></app-skeleton>
-            </div>
+      <div class="skeleton-card">
+        <!-- Row 1: Status -->
+        <div class="flex justify-start">
+          <app-skeleton width="90px" height="28px" borderRadius="14px"></app-skeleton>
+        </div>
+
+        <!-- Row 2: Icon + Title -->
+        <div class="flex items-center gap-3">
+          <app-skeleton width="20px" height="20px" borderRadius="6px"></app-skeleton>
+          <app-skeleton width="200px" height="24px" borderRadius="6px"></app-skeleton>
+        </div>
+
+        <!-- Row 3: Metadata (Name + Date) -->
+        <div class="flex flex-wrap gap-5">
+          <div class="flex items-center gap-2">
+            <app-skeleton width="14px" height="14px" borderRadius="3px"></app-skeleton>
+            <app-skeleton width="90px" height="14px" borderRadius="4px"></app-skeleton>
           </div>
-          <div class="flex items-center gap-2 sm:ml-auto">
-            <app-skeleton width="90px" height="28px" borderRadius="14px"></app-skeleton>
-            <app-skeleton width="32px" height="32px" variant="circle"></app-skeleton>
+          <div class="flex items-center gap-2">
+            <app-skeleton width="14px" height="14px" borderRadius="3px"></app-skeleton>
+            <app-skeleton width="110px" height="14px" borderRadius="4px"></app-skeleton>
           </div>
         </div>
 
-        <!-- Card Content Skeleton (Chips) -->
-        <div class="flex flex-wrap gap-2 items-center">
-          @for (j of [1,2,3]; track j) {
-          <app-skeleton width="80px" height="24px" borderRadius="12px"></app-skeleton>
-          }
-          <div class="w-full sm:w-auto sm:ml-auto mt-2 sm:mt-0">
-            <app-skeleton width="80px" height="18px" borderRadius="4px"></app-skeleton>
-          </div>
+        <!-- Row 4: Tags -->
+        <div class="flex gap-2">
+          <app-skeleton width="80px" height="24px" borderRadius="6px"></app-skeleton>
+          <app-skeleton width="80px" height="24px" borderRadius="6px"></app-skeleton>
         </div>
 
-        <!-- Card Footer Skeleton -->
-        <div class="flex justify-end pt-3 border-t border-standard border-opacity-50">
-          <app-skeleton width="120px" height="36px" borderRadius="8px"></app-skeleton>
+        <!-- Row 5: View Details Button -->
+        <div class="card-footer">
+          <app-skeleton width="110px" height="16px" borderRadius="4px"></app-skeleton>
         </div>
       </div>
       }

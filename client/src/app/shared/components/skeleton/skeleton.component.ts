@@ -15,8 +15,8 @@ import { CommonModule } from '@angular/common';
     ></div>
   `,
   host: {
-    '[style.display]': 'width() === "100%" ? "block" : "inline-block"',
-    '[style.width]': 'width() === "100%" ? "100%" : "auto"'
+    '[style.display]': 'width().includes("%") || width().includes("vw") ? "block" : "inline-block"',
+    '[style.width]': 'width()'
   },
   styles: [`
     @use 'variables' as *;
