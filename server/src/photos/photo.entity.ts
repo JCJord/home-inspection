@@ -26,6 +26,9 @@ export class Photo {
   @Column({ default: 0 })
   sort_order: number;
 
+  @Column({ nullable: true })
+  caption: string;
+
   @CreateDateColumn()
   uploaded_at: Date;
 }

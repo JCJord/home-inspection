@@ -145,11 +145,18 @@
 
       .existing-photo-item {
         position: relative;
-        width: 100%;
-        aspect-ratio: 1;
-        border-radius: 0.5rem;
-        overflow: hidden;
-        border: 1px solid $color-border;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+
+        .photo-thumbnail {
+          position: relative;
+          width: 100%;
+          aspect-ratio: 1;
+          border-radius: 0.5rem;
+          overflow: hidden;
+          border: 1px solid $color-border;
+        }
 
         img {
           width: 100%;
@@ -258,6 +265,46 @@
                 color: $color-error;
                 transform: scale(1.05);
               }
+            }
+          }
+        }
+
+        .photo-caption-input {
+          display: flex;
+          align-items: center;
+          padding: 4px 6px;
+          margin-top: 4px;
+          background: rgba($color-primary, 0.03);
+          border-radius: 6px;
+          border: 1px solid rgba($color-border, 0.3);
+          transition: all 0.2s ease;
+          
+          &:focus-within {
+            background: white;
+            border-color: $color-primary;
+            box-shadow: 0 2px 4px rgba($color-primary, 0.1);
+          }
+
+          input {
+            font-family: inherit;
+            color: $color-text;
+            font-size: 0.75rem;
+            font-weight: 500;
+            border: none;
+            width: 100%;
+            background: transparent;
+            padding: 2px 0;
+            
+            &::placeholder {
+              color: rgba($color-text-muted, 0.5);
+              font-size: 0.7rem;
+              font-style: italic;
+              font-weight: 400;
+            }
+
+            &:focus {
+              outline: none;
+              font-style: normal;
             }
           }
         }

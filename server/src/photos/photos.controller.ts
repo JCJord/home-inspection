@@ -16,6 +16,7 @@ import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { PhotosService } from './photos.service';
 import { ReorderPhotosDto } from './dto/reorder-photos.dto';
+import { UpdatePhotoDto } from './dto/update-photo.dto';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { GetUser } from '../auth/decorators/get-user.decorator';
 
@@ -46,8 +47,9 @@ export class PhotosController {
     @Param('inspectionId') inspectionId: string,
     @Param('findingId') findingId: string,
     @UploadedFile() file: Express.Multer.File,
+    @Body('caption') caption?: string,
   ) {
-    return this.photosService.upload(inspectorId, inspectionId, findingId, file);
+    return this.photosService.upload(inspectorId, inspectionId, findingId, file, caption);
   }
 
   @Get()
@@ -77,5 +79,16 @@ export class PhotosController {
     @Param('photoId') photoId: string,
   ) {
     return this.photosService.remove(inspectorId, inspectionId, findingId, photoId);
+  }
+
+  @Patch(':photoId')
+  update(
+    @GetUser('sub') inspectorId: string,
+    @Param('inspectionId') inspectionId: string,
+    @Param('findingId') findingId: string,
+    @Param('photoId') photoId: string,
+    @Body() dto: UpdatePhotoDto,
+  ) {
+    return this.photosService.update(inspectorId, inspectionId, findingId, photoId, dto);
   }
 }

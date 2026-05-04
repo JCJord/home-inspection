@@ -7,6 +7,7 @@ export interface Photo {
   storage_url: string;
   sort_order: number;
   uploaded_at: string;
+  caption?: string;
 }
 
 export interface TemplatePreset {

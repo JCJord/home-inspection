@@ -4,8 +4,6 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { debounceTime, distinctUntilChanged, finalize, filter, tap, switchMap } from 'rxjs';
 import { InspectorsService } from '../../../../core/services/inspectors.service';
-import { Inspector } from '../../../../core/models/inspector.interface';
-import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
 import { SelectInputComponent } from '../../../../shared/components/inputs/select-input/select-input.component';
 import { SkeletonComponent } from '../../../../shared/components/skeleton/skeleton.component';
 import { LucideAngularModule, ShieldCheck, Scale, FileSignature, CheckCircle2, Info } from 'lucide-angular';
@@ -17,7 +15,6 @@ import { environment } from '../../../../../environments/environment';
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    SpinnerComponent,
     SelectInputComponent,
     SkeletonComponent,
     LucideAngularModule
@@ -83,7 +80,7 @@ export class ReportComplianceComponent implements OnInit {
           // Only overwrite if current disclaimer is empty or matches another template
           const currentDisclaimer = this.complianceForm.get('custom_legal_disclaimer')?.value;
           const isTemplate = Object.values(this.legalTemplates).includes(currentDisclaimer);
-          
+
           if (!currentDisclaimer || isTemplate) {
             this.complianceForm.patchValue({ custom_legal_disclaimer: template });
           }

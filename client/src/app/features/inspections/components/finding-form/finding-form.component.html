@@ -18,35 +18,47 @@
 
       <!-- New Selected Files -->
       @if (selectedFiles().length > 0) {
-      <div class="existing-photos-grid">
+      <div class="existing-photos-grid" formArrayName="new_photo_captions">
         @for (item of selectedFiles(); track item.previewUrl; let i = $index) {
         <div class="existing-photo-item">
-          <img [src]="item.previewUrl" alt="Selected photo preview">
-          
-          @if (item.isCompressing) {
-            <div class="compression-loader">
-              <lucide-icon [name]="icons.Loader2" class="animate-spin text-white" [size]="20"></lucide-icon>
-            </div>
-          }
-
-          <div class="photo-action-pill" [class.confirming]="activeDeleteNewIndex() === i">
-            @if (activeDeleteNewIndex() === i) {
-              <button type="button" class="action-btn cancel-delete" (click)="cancelDelete()" aria-label="Cancel">
-                <span class="action-text">Cancel</span>
-              </button>
-              <div class="divider"></div>
-              <button type="button" class="action-btn confirm-delete" (click)="removeFile(i)" aria-label="Confirm Deletion">
-                <span class="action-text font-bold">Delete</span>
-              </button>
-            } @else {
-              <button type="button" class="action-btn edit" (click)="editNewPhoto(i, item.previewUrl)" aria-label="Edit photo">
-                <lucide-icon [name]="icons.Edit" [size]="14"></lucide-icon>
-              </button>
-              <div class="divider"></div>
-              <button type="button" class="action-btn delete" (click)="initDeleteNewPhoto(i)" aria-label="Remove photo">
-                <lucide-icon [name]="icons.Trash2" [size]="14"></lucide-icon>
-              </button>
+          <div class="photo-thumbnail">
+            <img [src]="item.previewUrl" alt="Selected photo preview">
+            
+            @if (item.isCompressing) {
+              <div class="compression-loader">
+                <lucide-icon [name]="icons.Loader2" class="animate-spin text-white" [size]="20"></lucide-icon>
+              </div>
             }
+
+            <div class="photo-action-pill" [class.confirming]="activeDeleteNewIndex() === i">
+              @if (activeDeleteNewIndex() === i) {
+                <button type="button" class="action-btn cancel-delete" (click)="cancelDelete()" aria-label="Cancel">
+                  <span class="action-text">Cancel</span>
+                </button>
+                <div class="divider"></div>
+                <button type="button" class="action-btn confirm-delete" (click)="removeFile(i)" aria-label="Confirm Deletion">
+                  <span class="action-text font-bold">Delete</span>
+                </button>
+              } @else {
+                <button type="button" class="action-btn edit" (click)="editNewPhoto(i, item.previewUrl)" aria-label="Edit photo">
+                  <lucide-icon [name]="icons.Edit" [size]="14"></lucide-icon>
+                </button>
+                <div class="divider"></div>
+                <button type="button" class="action-btn delete" (click)="initDeleteNewPhoto(i)" aria-label="Remove photo">
+                  <lucide-icon [name]="icons.Trash2" [size]="14"></lucide-icon>
+                </button>
+              }
+            </div>
+          </div>
+          
+          <div class="photo-caption-input">
+            <lucide-icon [name]="icons.Edit" [size]="10" class="text-standard-muted opacity-50 mr-1"></lucide-icon>
+            <input 
+              type="text" 
+              [formControlName]="i"
+              placeholder="Add caption..."
+              class="w-full text-[11px] bg-transparent outline-none text-standard italic focus:not-italic transition-all"
+            >
           </div>
         </div>
         }
@@ -55,28 +67,41 @@
 
       <!-- Existing Photos -->
       @if (existingPhotos().length > 0) {
-      <div class="existing-photos-grid">
-        @for (photo of existingPhotos(); track photo.id) {
-        <div class="existing-photo-item">
-          <img [src]="resolveImageUrl(photo.storage_url)" alt="Finding photo">
-          <div class="photo-action-pill" [class.confirming]="activeDeleteExistingId() === photo.id">
-            @if (activeDeleteExistingId() === photo.id) {
-              <button type="button" class="action-btn cancel-delete" (click)="cancelDelete()" aria-label="Cancel">
-                <span class="action-text">Cancel</span>
-              </button>
-              <div class="divider"></div>
-              <button type="button" class="action-btn confirm-delete" (click)="confirmDeleteExistingPhoto(photo.id)" aria-label="Confirm Deletion">
-                <span class="action-text font-bold">Delete</span>
-              </button>
-            } @else {
-              <button type="button" class="action-btn edit" (click)="editExistingPhoto(photo)" aria-label="Edit photo">
-                <lucide-icon [name]="icons.Edit" [size]="14"></lucide-icon>
-              </button>
-              <div class="divider"></div>
-              <button type="button" class="action-btn delete" (click)="initDeleteExistingPhoto(photo.id)" aria-label="Delete photo">
-                <lucide-icon [name]="icons.Trash2" [size]="14"></lucide-icon>
-              </button>
-            }
+      <div class="existing-photos-grid" formArrayName="photo_captions">
+        @for (photo of existingPhotos(); track photo.id; let i = $index) {
+        <div class="existing-photo-item" [formGroupName]="i">
+          <div class="photo-thumbnail">
+            <img [src]="resolveImageUrl(photo.storage_url)" alt="Finding photo">
+            <div class="photo-action-pill" [class.confirming]="activeDeleteExistingId() === photo.id">
+              @if (activeDeleteExistingId() === photo.id) {
+                <button type="button" class="action-btn cancel-delete" (click)="cancelDelete()" aria-label="Cancel">
+                  <span class="action-text">Cancel</span>
+                </button>
+                <div class="divider"></div>
+                <button type="button" class="action-btn confirm-delete" (click)="confirmDeleteExistingPhoto(photo.id)" aria-label="Confirm Deletion">
+                  <span class="action-text font-bold">Delete</span>
+                </button>
+              } @else {
+                <button type="button" class="action-btn edit" (click)="editExistingPhoto(photo)" aria-label="Edit photo">
+                  <lucide-icon [name]="icons.Edit" [size]="14"></lucide-icon>
+                </button>
+                <div class="divider"></div>
+                <button type="button" class="action-btn delete" (click)="initDeleteExistingPhoto(photo.id)" aria-label="Delete photo">
+                  <lucide-icon [name]="icons.Trash2" [size]="14"></lucide-icon>
+                </button>
+              }
+            </div>
+          </div>
+
+          <div class="photo-caption-input">
+            <lucide-icon [name]="icons.Edit" [size]="10" class="text-standard-muted opacity-50 mr-1"></lucide-icon>
+            <input 
+              type="text" 
+              formControlName="caption"
+              placeholder="Add caption..."
+              (blur)="onCaptionBlur(i)"
+              class="w-full text-[11px] bg-transparent outline-none text-standard italic focus:not-italic transition-all"
+            >
           </div>
         </div>
         }
@@ -118,7 +143,7 @@
     </app-text-input>
 
     <!-- Short Note (Observation) -->
-    <app-textarea-input name="short_note" label="Observation Note *" placeholder="Describe the finding briefly (e.g. double tapped breaker)..." [rows]="4">
+    <app-textarea-input name="short_note" label="Observation Note *" placeholder="[Condition]: Describe the issue... [Ramification]: Why it matters... [Recommendation]: Who should fix it..." [rows]="5">
     </app-textarea-input>
 
     <!-- AI Generated Comment -->

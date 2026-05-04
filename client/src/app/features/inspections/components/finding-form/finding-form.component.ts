@@ -1,6 +1,6 @@
 import { Component, inject, output, signal, effect, computed, OnDestroy, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { InspectionsService } from '../../../../core/services/inspections.service';
 import { Section, Severity } from '../../../../core/enums/inspection.enums';
 import { Finding, Photo } from '../../../../core/models/inspection.interface';
@@ -21,6 +21,7 @@ interface SelectedPhoto {
   file: File;
   previewUrl: string;
   isCompressing?: boolean;
+  caption?: string;
 }
 
 type EditTarget = 
@@ -95,7 +96,17 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
     location: [''],
     short_note: ['', [Validators.required, Validators.maxLength(2200)]],
     ai_comment: ['', [Validators.maxLength(800)]],
+    photo_captions: this.fb.array([]),
+    new_photo_captions: this.fb.array([])
   });
+
+  get photoCaptions(): FormArray {
+    return this.findingForm.get('photo_captions') as FormArray;
+  }
+
+  get newPhotoCaptions(): FormArray {
+    return this.findingForm.get('new_photo_captions') as FormArray;
+  }
 
   constructor() {
     effect(() => {
@@ -108,11 +119,22 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
           ai_comment: data.ai_comment || '',
         });
         this.existingPhotos.set(data.photos || []);
+        
+        // Clear and rebuild FormArray
+        this.photoCaptions.clear();
+        (data.photos || []).forEach(p => {
+          this.photoCaptions.push(this.fb.group({
+            id: [p.id],
+            caption: [p.caption || '']
+          }));
+        });
       } else {
         this.findingForm.reset({
           severity: Severity.MINOR,
         });
         this.existingPhotos.set([]);
+        this.photoCaptions.clear();
+        this.newPhotoCaptions.clear();
       }
     });
   }
@@ -146,6 +168,23 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
     this.activeDeleteNewIndex.set(null);
   }
 
+  onCaptionBlur(index: number): void {
+    const photoGroup = this.photoCaptions.at(index);
+    const photoId = photoGroup.get('id')?.value;
+    const caption = photoGroup.get('caption')?.value;
+
+    if (!photoId || !this._inspectionId() || !this._finding()) return;
+    
+    this.inspectionsService.updatePhoto(this._inspectionId(), this._finding()!.id, photoId, {
+      caption: caption || ''
+    }).subscribe({
+      error: (err) => {
+        console.error('Failed to update caption', err);
+        this.errorMessage.set('Failed to save caption.');
+      }
+    });
+  }
+
   confirmDeleteExistingPhoto(photoId: string): void {
     this.cancelDelete();
     this.isLoading.set(true);
@@ -170,6 +209,7 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
       newFiles.splice(index, 1);
       return newFiles;
     });
+    this.newPhotoCaptions.removeAt(index);
   }
 
   editExistingPhoto(photo: Photo): void {
@@ -252,10 +292,12 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
       
       // 1. Add all files with a loading state first
       const initialIndices: number[] = [];
-      this.selectedFiles.update(files => {
+        this.selectedFiles.update(files => {
         const currentCount = files.length;
         const newItems = filesArray.map((file, i) => {
           initialIndices.push(currentCount + i);
+          // Also add a form control for each new file
+          this.newPhotoCaptions.push(this.fb.control(''));
           return {
             file,
             previewUrl: URL.createObjectURL(file),
@@ -368,8 +410,9 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
           let uploadCount = 0;
           let hasErrors = false;
           
-          this.selectedFiles().forEach(item => {
-            this.inspectionsService.uploadPhoto(this._inspectionId(), finding.id, item.file).subscribe({
+          this.selectedFiles().forEach((item, index) => {
+            const caption = this.newPhotoCaptions.at(index).value;
+            this.inspectionsService.uploadPhoto(this._inspectionId(), finding.id, item.file, caption).subscribe({
               next: () => {
                 uploadCount++;
                 if (uploadCount === this.selectedFiles().length) {

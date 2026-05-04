@@ -51,6 +51,10 @@ export class InspectionsService {
     return this.http.post<Inspection>(`${this.apiUrl}/${id}/unpublish`, {});
   }
 
+  updatePhoto(inspectionId: string, findingId: string, photoId: string, dto: { caption: string }): Observable<Photo> {
+    return this.http.patch<Photo>(`${this.apiUrl}/${inspectionId}/findings/${findingId}/photos/${photoId}`, dto);
+  }
+
   uploadCoverPhoto(id: string, file: File): Observable<Inspection> {
     const formData = new FormData();
     formData.append('cover_photo', file);
@@ -102,9 +106,12 @@ export class InspectionsService {
     return this.http.get<Photo[]>(`${this.apiUrl}/${inspectionId}/findings/${findingId}/photos`);
   }
 
-  uploadPhoto(inspectionId: string, findingId: string, file: File): Observable<Photo> {
+  uploadPhoto(inspectionId: string, findingId: string, file: File, caption?: string): Observable<Photo> {
     const formData = new FormData();
     formData.append('photo', file);
+    if (caption) {
+      formData.append('caption', caption);
+    }
     return this.http.post<Photo>(`${this.apiUrl}/${inspectionId}/findings/${findingId}/photos`, formData);
   }
 
