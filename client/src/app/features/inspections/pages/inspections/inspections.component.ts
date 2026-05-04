@@ -20,11 +20,11 @@ export class InspectionsComponent implements OnInit {
   private inspectionsService = inject(InspectionsService);
   private router = inject(Router);
 
-  inspections = signal<Inspection[]>([]);
-  isLoading = signal<boolean>(true);
+  inspections = this.inspectionsService.inspections;
+  isLoading = this.inspectionsService.isLoading;
+  totalItems = this.inspectionsService.totalCount;
 
   currentPage = signal<number>(1);
-  totalItems = signal<number>(0);
   itemsPerPage = signal<number>(10);
 
   readonly icons = { Plus, ClipboardList };
@@ -34,18 +34,7 @@ export class InspectionsComponent implements OnInit {
   }
 
   loadInspections(): void {
-    this.isLoading.set(true);
-    this.inspectionsService.getInspections(this.currentPage(), this.itemsPerPage()).subscribe({
-      next: (res) => {
-        this.inspections.set(res.data);
-        this.totalItems.set(res.meta.total);
-        this.isLoading.set(false);
-      },
-      error: (err) => {
-        console.error('Failed to load inspections', err);
-        this.isLoading.set(false);
-      },
-    });
+    this.inspectionsService.getInspections(this.currentPage(), this.itemsPerPage()).subscribe();
   }
 
   onPageChange(page: number): void {
@@ -63,12 +52,10 @@ export class InspectionsComponent implements OnInit {
 
   deleteInspection(inspection: Inspection): void {
     this.inspectionsService.deleteInspection(inspection.id).subscribe({
-      next: () => {
-        this.inspections.update(list => list.filter(i => i.id !== inspection.id));
-        this.totalItems.update(t => t - 1);
-      },
       error: (err) => {
         console.error('Failed to delete inspection', err);
+        // Refresh to rollback cache if needed
+        this.loadInspections();
       },
     });
   }

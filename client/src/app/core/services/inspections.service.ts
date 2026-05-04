@@ -1,6 +1,6 @@
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, signal, computed } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Inspection, Finding, Photo } from '../models/inspection.interface';
 import { CreateInspectionDto } from '../dtos/create-inspection.dto';
@@ -16,6 +16,37 @@ import { ReorderPhotosDto } from '../dtos/reorder-photos.dto';
 export class InspectionsService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/inspections`;
+  private readonly CACHE_KEY = 'ins_cached_list';
+
+  // --- State Store ---
+  private _inspections = signal<Inspection[]>([]);
+  private _totalCount = signal<number>(0);
+  private _isLoading = signal<boolean>(false);
+
+  inspections = this._inspections.asReadonly();
+  totalCount = this._totalCount.asReadonly();
+  isLoading = this._isLoading.asReadonly();
+
+  constructor() {
+    this.loadFromCache();
+  }
+
+  private loadFromCache(): void {
+    const cached = localStorage.getItem(this.CACHE_KEY);
+    if (cached) {
+      try {
+        const { data, total } = JSON.parse(cached);
+        this._inspections.set(data);
+        this._totalCount.set(total);
+      } catch (e) {
+        console.warn('Failed to parse cached inspections', e);
+      }
+    }
+  }
+
+  private saveToCache(data: Inspection[], total: number): void {
+    localStorage.setItem(this.CACHE_KEY, JSON.stringify({ data, total }));
+  }
 
   // --- Inspection Methods ---
 
@@ -24,7 +55,26 @@ export class InspectionsService {
       .set('page', page.toString())
       .set('limit', limit.toString());
 
-    return this.http.get<{ data: Inspection[], meta: { total: number, page: number, limit: number, totalPages: number } }>(this.apiUrl, { params });
+    // Only show loading spinner if we have no data at all
+    if (this._inspections().length === 0) {
+      this._isLoading.set(true);
+    }
+
+    const request = this.http.get<{ data: Inspection[], meta: { total: number, page: number, limit: number, totalPages: number } }>(this.apiUrl, { params });
+
+    request.subscribe({
+      next: (res) => {
+        this._inspections.set(res.data);
+        this._totalCount.set(res.meta.total);
+        if (page === 1) {
+          this.saveToCache(res.data, res.meta.total);
+        }
+        this._isLoading.set(false);
+      },
+      error: () => this._isLoading.set(false)
+    });
+
+    return request;
   }
 
   getInspectionById(id: string): Observable<Inspection> {
@@ -32,14 +82,32 @@ export class InspectionsService {
   }
 
   createInspection(dto: CreateInspectionDto): Observable<Inspection> {
-    return this.http.post<Inspection>(this.apiUrl, dto);
+    return this.http.post<Inspection>(this.apiUrl, dto).pipe(
+      tap(newIns => {
+        this._inspections.update(list => [newIns, ...list]);
+        this._totalCount.update(c => c + 1);
+        this.saveToCache(this._inspections(), this._totalCount());
+      })
+    );
   }
 
   updateInspection(id: string, dto: UpdateInspectionDto): Observable<Inspection> {
-    return this.http.patch<Inspection>(`${this.apiUrl}/${id}`, dto);
+    return this.http.patch<Inspection>(`${this.apiUrl}/${id}`, dto).pipe(
+      tap(updatedIns => {
+        this._inspections.update(list => list.map(i => i.id === id ? updatedIns : i));
+        this.saveToCache(this._inspections(), this._totalCount());
+      })
+    );
   }
 
   deleteInspection(id: string): Observable<void> {
+    // Optimistic Update
+    const prevList = this._inspections();
+    const prevCount = this._totalCount();
+    this._inspections.update(list => list.filter(i => i.id !== id));
+    this._totalCount.update(c => c - 1);
+    this.saveToCache(this._inspections(), this._totalCount());
+
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 
