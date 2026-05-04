@@ -181,12 +181,21 @@
         <div class="relative group min-h-[260px] flex items-center justify-center bg-light-standard overflow-hidden">
           @if (insp.cover_photo_url) {
           <img [src]="apiUrl + insp.cover_photo_url" alt="Cover Photo" class="w-full h-full object-cover absolute inset-0">
-          <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+          <div class="absolute inset-0 bg-black/40 opacity-0 transition-opacity flex items-center justify-center gap-3">
             <button class="bg-white text-standard px-4 py-2 rounded-xl font-bold flex items-center gap-2 hover:bg-white/90 transition-all transform hover:scale-105" (click)="coverInput.click()">
               <lucide-icon [name]="icons.RefreshCw" [size]="18"></lucide-icon>
               Change Photo
             </button>
           </div>
+          
+          <!-- Persistent Button for Mobile -->
+          <button 
+            (click)="coverInput.click()"
+            class="absolute bottom-4 right-4 bg-black/50 backdrop-blur-md text-white px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-2 border border-white/20 active:scale-95 transition-all z-[5]"
+          >
+            <lucide-icon [name]="icons.Camera" [size]="14"></lucide-icon>
+            Change Photo
+          </button>
           } @else {
           <div class="flex flex-col items-center gap-4 py-12 px-6 text-center" (click)="coverInput.click()" class="cursor-pointer hover:bg-light-standard/50 transition-colors w-full h-full flex flex-col items-center justify-center">
             <div class="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
@@ -209,7 +218,64 @@
           </div>
           }
           
-          <input #coverInput type="file" (change)="onCoverPhotoSelected($event)" accept="image/*" class="hidden">
+          <input #coverInput type="file" (change)="onCoverPhotoSelected($event)" accept="image/*" capture="environment" class="hidden">
+        </div>
+      </div>
+
+      <!-- Property Information Grid -->
+      <div class="property-info-grid grid grid-cols-2 sm:grid-cols-3 gap-4">
+        <!-- Weather -->
+        <div class="info-box bg-surface-standard border border-standard p-4 rounded-2xl flex flex-col gap-1 hover:border-primary/30 transition-colors">
+          <div class="flex items-center gap-2 text-standard-muted">
+            <lucide-icon [name]="icons.Cloud" [size]="16"></lucide-icon>
+            <span class="text-[10px] font-bold uppercase tracking-widest">Weather</span>
+          </div>
+          <span class="text-base font-bold text-standard">{{ insp.weather || 'Not Recorded' }}</span>
+        </div>
+
+        <!-- Temperature -->
+        <div class="info-box bg-surface-standard border border-standard p-4 rounded-2xl flex flex-col gap-1 hover:border-primary/30 transition-colors">
+          <div class="flex items-center gap-2 text-standard-muted">
+            <lucide-icon [name]="icons.Thermometer" [size]="16"></lucide-icon>
+            <span class="text-[10px] font-bold uppercase tracking-widest">Temp</span>
+          </div>
+          <span class="text-base font-bold text-standard">{{ insp.temperature ? insp.temperature + '°F' : 'Not Recorded' }}</span>
+        </div>
+
+        <!-- Year Built -->
+        <div class="info-box bg-surface-standard border border-standard p-4 rounded-2xl flex flex-col gap-1 hover:border-primary/30 transition-colors">
+          <div class="flex items-center gap-2 text-standard-muted">
+            <lucide-icon [name]="icons.Calendar" [size]="16"></lucide-icon>
+            <span class="text-[10px] font-bold uppercase tracking-widest">Year Built</span>
+          </div>
+          <span class="text-base font-bold text-standard">{{ insp.year_built || 'N/A' }}</span>
+        </div>
+
+        <!-- Square Footage -->
+        <div class="info-box bg-surface-standard border border-standard p-4 rounded-2xl flex flex-col gap-1 hover:border-primary/30 transition-colors">
+          <div class="flex items-center gap-2 text-standard-muted">
+            <lucide-icon [name]="icons.Maximize" [size]="16"></lucide-icon>
+            <span class="text-[10px] font-bold uppercase tracking-widest">Sq Footage</span>
+          </div>
+          <span class="text-base font-bold text-standard">{{ insp.square_footage ? (insp.square_footage | number) + ' sqft' : 'N/A' }}</span>
+        </div>
+
+        <!-- Occupancy -->
+        <div class="info-box bg-surface-standard border border-standard p-4 rounded-2xl flex flex-col gap-1 hover:border-primary/30 transition-colors">
+          <div class="flex items-center gap-2 text-standard-muted">
+            <lucide-icon [name]="icons.Home" [size]="16"></lucide-icon>
+            <span class="text-[10px] font-bold uppercase tracking-widest">Occupancy</span>
+          </div>
+          <span class="text-base font-bold text-standard">{{ insp.occupancy || 'Not Recorded' }}</span>
+        </div>
+
+        <!-- Attendees -->
+        <div class="info-box bg-surface-standard border border-standard p-4 rounded-2xl flex flex-col gap-1 hover:border-primary/30 transition-colors">
+          <div class="flex items-center gap-2 text-standard-muted">
+            <lucide-icon [name]="icons.Users" [size]="16"></lucide-icon>
+            <span class="text-[10px] font-bold uppercase tracking-widest">Attendees</span>
+          </div>
+          <span class="text-base font-bold text-standard truncate" [title]="insp.attendees || ''">{{ insp.attendees || 'None' }}</span>
         </div>
       </div>
 

@@ -7,7 +7,7 @@ import { Finding, Inspection } from '../../../../core/models/inspection.interfac
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { FindingCardComponent } from '../../components/finding-card/finding-card.component';
 import { SkeletonComponent } from '../../../../shared/components/skeleton/skeleton.component';
-import { LucideAngularModule, ArrowLeft, Send, RefreshCw, AlertCircle, Plus, X, Check, Loader2, FileText, Download, LockOpen, Edit, Camera, Image } from 'lucide-angular';
+import { LucideAngularModule, ArrowLeft, Send, RefreshCw, AlertCircle, Plus, X, Check, Loader2, FileText, Download, LockOpen, Edit, Camera, Image, Cloud, Thermometer, Calendar, Maximize, Home, Users } from 'lucide-angular';
 import { ReportGeneratorComponent } from '../../../reports/components/report-generator/report-generator.component';
 import { BackButtonComponent } from '../../../../shared/components/back-button/back-button.component';
 import { ImageCompressionService } from '../../../../core/services/image-compression.service';
@@ -49,7 +49,7 @@ export class InspectionDetailsComponent implements OnInit {
   isGeneratingPdf = signal<boolean>(false);
   isReportGeneratorActive = signal<boolean>(false);
 
-  readonly icons = { ArrowLeft, Send, RefreshCw, AlertCircle, Plus, X, Check, Loader2, FileText, Download, LockOpen, Edit, Camera, Image };
+  readonly icons = { ArrowLeft, Send, RefreshCw, AlertCircle, Plus, X, Check, Loader2, FileText, Download, LockOpen, Edit, Camera, Image, Cloud, Thermometer, Calendar, Maximize, Home, Users };
   readonly apiUrl = environment.apiUrl.replace('/api', '');
 
   isPublished = computed(() => this.inspection()?.status === 'published');
