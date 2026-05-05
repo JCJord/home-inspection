@@ -1,6 +1,6 @@
 import { inject, Injectable, signal, computed } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, tap } from 'rxjs';
+import { Observable, tap, of } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Inspection, Finding, Photo } from '../models/inspection.interface';
 import { CreateInspectionDto } from '../dtos/create-inspection.dto';
@@ -22,6 +22,7 @@ export class InspectionsService {
   private _inspections = signal<Inspection[]>([]);
   private _totalCount = signal<number>(0);
   private _isLoading = signal<boolean>(false);
+  private _needsRefresh = signal<boolean>(true); // Start true to ensure initial fetch
 
   inspections = this._inspections.asReadonly();
   totalCount = this._totalCount.asReadonly();
@@ -50,7 +51,20 @@ export class InspectionsService {
 
   // --- Inspection Methods ---
 
-  getInspections(page: number = 1, limit: number = 10): Observable<{ data: Inspection[], meta: { total: number, page: number, limit: number, totalPages: number } }> {
+  getInspections(page: number = 1, limit: number = 10, forceRefresh: boolean = false): Observable<{ data: Inspection[], meta: { total: number, page: number, limit: number, totalPages: number } }> {
+    // Return cached data if not stale and not forced
+    if (!this._needsRefresh() && !forceRefresh && this._inspections().length > 0 && page === 1) {
+      return of({
+        data: this._inspections(),
+        meta: {
+          total: this._totalCount(),
+          page: 1,
+          limit: 10,
+          totalPages: Math.ceil(this._totalCount() / 10)
+        }
+      });
+    }
+
     let params = new HttpParams()
       .set('page', page.toString())
       .set('limit', limit.toString());
@@ -60,21 +74,20 @@ export class InspectionsService {
       this._isLoading.set(true);
     }
 
-    const request = this.http.get<{ data: Inspection[], meta: { total: number, page: number, limit: number, totalPages: number } }>(this.apiUrl, { params });
-
-    request.subscribe({
-      next: (res) => {
-        this._inspections.set(res.data);
-        this._totalCount.set(res.meta.total);
-        if (page === 1) {
-          this.saveToCache(res.data, res.meta.total);
-        }
-        this._isLoading.set(false);
-      },
-      error: () => this._isLoading.set(false)
-    });
-
-    return request;
+    return this.http.get<{ data: Inspection[], meta: { total: number, page: number, limit: number, totalPages: number } }>(this.apiUrl, { params }).pipe(
+      tap({
+        next: (res) => {
+          this._inspections.set(res.data);
+          this._totalCount.set(res.meta.total);
+          if (page === 1) {
+            this.saveToCache(res.data, res.meta.total);
+          }
+          this._isLoading.set(false);
+          this._needsRefresh.set(false); // Reset flag on success
+        },
+        error: () => this._isLoading.set(false)
+      })
+    );
   }
 
   getInspectionById(id: string): Observable<Inspection> {
@@ -87,6 +100,7 @@ export class InspectionsService {
         this._inspections.update(list => [newIns, ...list]);
         this._totalCount.update(c => c + 1);
         this.saveToCache(this._inspections(), this._totalCount());
+        this._needsRefresh.set(true); // Mark as stale
       })
     );
   }
@@ -96,6 +110,7 @@ export class InspectionsService {
       tap(updatedIns => {
         this._inspections.update(list => list.map(i => i.id === id ? updatedIns : i));
         this.saveToCache(this._inspections(), this._totalCount());
+        this._needsRefresh.set(true); // Mark as stale
       })
     );
   }
@@ -107,6 +122,7 @@ export class InspectionsService {
     this._inspections.update(list => list.filter(i => i.id !== id));
     this._totalCount.update(c => c - 1);
     this.saveToCache(this._inspections(), this._totalCount());
+    this._needsRefresh.set(true); // Mark as stale
 
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
