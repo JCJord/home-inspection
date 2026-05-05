@@ -10,17 +10,34 @@
       <span class="input-prefix">{{ prefix() }}</span>
     }
     
-    <input
-      [id]="name()"
-      [name]="name()"
-      [type]="type()"
-      [formControl]="$any(control)"
-      [placeholder]="placeholder()"
-      class="input-field"
-    />
+    @if (control) {
+      <input
+        [id]="name()"
+        [name]="name()"
+        [type]="type()"
+        [formControl]="$any(control)"
+        [placeholder]="placeholder()"
+        class="input-field"
+      />
+    } @else {
+      <input
+        [id]="name()"
+        [name]="name()"
+        [type]="type()"
+        [value]="value()"
+        (input)="onInputChange($event)"
+        [placeholder]="placeholder()"
+        class="input-field"
+      />
+    }
 
-    @if (suffix()) {
-      <span class="input-suffix">{{ suffix() }}</span>
+    @if (suffix() || suffixIcon()) {
+      <span class="input-suffix flex items-center gap-1">
+        @if (suffixIcon()) {
+          <lucide-icon [name]="suffixIcon()!" [size]="14" class="opacity-40"></lucide-icon>
+        }
+        {{ suffix() }}
+      </span>
     }
   </div>
 

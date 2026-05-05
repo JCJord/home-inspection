@@ -19,9 +19,10 @@
         class="md:hidden flex items-center justify-center p-1 rounded-md bg-light-standard group-active:bg-primary/10 transition-colors relative">
         <lucide-icon [name]="icons.ChevronDown" [size]="16" class="flex-shrink-0 text-primary"></lucide-icon>
         @if (sectionFindings().length) {
-          <span class="absolute -top-1 -right-1 flex items-center justify-center min-w-[14px] h-3.5 px-0.5 rounded-full badge-count text-[8px] font-bold border border-white">
-            {{ sectionFindings().length }}
-          </span>
+        <span
+          class="absolute -top-1 -right-1 flex items-center justify-center min-w-[14px] h-3.5 px-0.5 rounded-full badge-count text-[8px] font-bold border border-white">
+          {{ sectionFindings().length }}
+        </span>
         }
       </div>
     </button>
@@ -33,7 +34,8 @@
       class="flex items-center gap-2 px-2 sm:px-3 py-1 bg-primary/10 text-primary rounded-full border border-primary/20">
       <lucide-icon [name]="icons.CheckCircle2" [size]="14" class="hidden xs:block"></lucide-icon>
       <span class="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider whitespace-nowrap">
-        <span class="hidden xs:inline">Workbench •</span> {{ sectionFindings().length }} <span class="hidden sm:inline">Findings</span><span class="sm:hidden">Items</span>
+        <span class="hidden xs:inline">Workbench •</span> {{ sectionFindings().length }} <span
+          class="hidden sm:inline">Findings</span><span class="sm:hidden">Items</span>
       </span>
     </div>
   </div>
@@ -51,14 +53,22 @@
         <div class="flex items-center gap-3 min-w-0">
           <lucide-icon [name]="getIconForSection(sec.icon_key)" class="text-standard-muted flex-shrink-0"
             [size]="20"></lucide-icon>
-          
+
           <div class="flex items-center gap-2 min-w-0">
             <span class="text-sm font-medium text-standard truncate">{{ sec.name }}</span>
-            @if (sectionCounts()[sec.name]) {
+            <div class="flex items-center gap-1.5 ml-auto">
+              @if (inspection()?.section_statuses?.[sec.name]?.status === 'not_inspected') {
+              <lucide-icon [name]="icons.Ban" [size]="14" class="text-amber-500"></lucide-icon>
+              }
+              @if (inspection()?.section_statuses?.[sec.name]?.status === 'not_present') {
+              <lucide-icon [name]="icons.CircleX" [size]="14" class="text-slate-400"></lucide-icon>
+              }
+              @if (sectionCounts()[sec.name]) {
               <span class="flex-shrink-0 badge-count text-[10px] font-bold px-1.5 py-0.5 rounded-md">
                 {{ sectionCounts()[sec.name] }}
               </span>
-            }
+              }
+            </div>
           </div>
         </div>
       </div>
@@ -68,43 +78,64 @@
 
   <!-- Main Content Projection -->
   <div class="p-4 pb-24 md:p-8 md:pb-20 relative min-h-full">
-    <div class="max-w-3xl mx-auto">
-      <div class="flex flex-col bg-surface-standard rounded-2xl border border-standard shadow-sm overflow-hidden mb-6">
+    <div class="max-w-4xl mx-auto">
+      <div class="flex flex-col mb-6">
 
         <!-- COMPACT SWITCHER -->
-        <app-finding-switcher [finding]="finding()" [sectionFindings]="sectionFindings()"
-          (findingSelected)="onFindingSelected($event)">
-        </app-finding-switcher>
+        <div class="mb-4">
+          <app-finding-switcher [finding]="finding()" [sectionFindings]="sectionFindings()"
+            (findingSelected)="onFindingSelected($event)">
+          </app-finding-switcher>
+        </div>
 
-        <div class="relative">
+        <div
+          class="relative bg-surface-standard rounded-3xl border border-standard shadow-sm overflow-hidden min-h-[600px]">
           @if (isLoading()) {
-          <div class="flex justify-center items-center py-12">
+          <div class="flex justify-center items-center py-24">
             <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
           </div>
           } @else {
-          <!-- Quick-Tap Attributes Area -->
           @if (currentSection(); as section) {
-          @if (section.fields && section.fields.length > 0) {
-          <div class="flex flex-wrap gap-2.5 mb-6 p-4 bg-light-standard border border-standard">
-            @for (field of section.fields; track field.key) {
-            <div
-              class="flex items-center gap-2 bg-surface-standard px-3 py-1.5 rounded-xl border border-standard shadow-sm w-full sm:w-auto">
-              <span class="text-[10px] uppercase font-bold text-standard-muted whitespace-nowrap">{{ field.label
-                }}:</span>
-              <input type="text" [value]="inspection()?.metadata_values?.[field.key] || ''"
-                (change)="updateMetadataValue(field.key, $event)"
-                class="bg-transparent border-none text-xs text-standard focus:outline-none focus:ring-0 p-0 w-full sm:w-32 font-medium"
-                placeholder="Tap to set..." />
+          <!-- COMPONENTIZED SECTION STATUS -->
+          <app-section-status-toggle [status]="currentSectionStatus().status"
+            [reason]="currentSectionStatus().reason || ''" (statusChange)="updateSectionStatus($event)"
+            (reasonChange)="updateSectionReasonDirect($event)">
+          </app-section-status-toggle>
+
+          <div class="p-4 md:p-8">
+            @if (currentSectionStatus().status === 'inspected') {
+            @if (section.fields && section.fields.length > 0) {
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-6 pb-12 border-b border-[#E2E8F0]">
+              @for (field of section.fields; track field.key) {
+              <app-text-input [label]="field.label" [value]="inspection()?.metadata_values?.[field.key] || ''"
+                (valueChanged)="updateMetadataValueDirect(field.key, $event)"
+                [placeholder]="'Set ' + field.label + '...'" [suffixIcon]="icons.Edit2">
+              </app-text-input>
+              }
+            </div>
+            }
+
+            <app-finding-form [inspectionId]="inspectionId()!" [section]="selectedSection()!"
+              [presets]="currentSectionPresets()" [finding]="finding()" [year_built]="inspection()?.year_built || 0"
+              (close)="goBack()" (saved)="onSaved($event)">
+            </app-finding-form>
+            } @else {
+            <div class="py-4 text-center">
+              <div class="relative inline-block mb-6">
+                <lucide-icon [name]="currentSectionStatus().status === 'not_inspected' ? icons.Ban : icons.CircleX"
+                  [size]="60" class="text-standard-muted/20"></lucide-icon>
+
+              </div>
+              <h4 class="text-lg font-bold text-standard mb-2">Section Not Included</h4>
+              <p class="text-sm text-standard-muted max-w-sm mx-auto opacity-70 leading-relaxed">
+                This system is marked as <strong>{{ currentSectionStatus().status === 'not_inspected' ? 'Not Inspected'
+                  : 'Not Present' }}</strong>.
+                Edit the limitation narrative above if needed.
+              </p>
             </div>
             }
           </div>
           }
-          }
-
-          <app-finding-form [inspectionId]="inspectionId()!" [section]="selectedSection()!"
-            [presets]="currentSectionPresets()" [finding]="finding()" [year_built]="inspection()?.year_built || 0"
-            (close)="goBack()" (saved)="onSaved($event)">
-          </app-finding-form>
           }
         </div>
       </div>

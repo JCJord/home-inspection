@@ -79,6 +79,9 @@ export class Inspection {
   @Column({ type: 'jsonb', nullable: true })
   metadata_values: Record<string, string>;
 
+  @Column({ type: 'jsonb', nullable: true })
+  section_statuses: Record<string, { status: string; reason?: string }>;
+
   @OneToMany(() => Finding, (finding) => finding.inspection, { cascade: true })
   findings: Finding[];
 

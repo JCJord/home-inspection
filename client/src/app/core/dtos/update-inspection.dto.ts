@@ -5,4 +5,5 @@ export interface UpdateInspectionDto {
   year_built?: number;
   square_footage?: number;
   metadata_values?: Record<string, string>;
+  section_statuses?: Record<string, any>;
 }

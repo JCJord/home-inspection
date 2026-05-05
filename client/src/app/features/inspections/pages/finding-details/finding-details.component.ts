@@ -3,18 +3,20 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { combineLatest } from 'rxjs';
 import { InspectionsService } from '../../../../core/services/inspections.service';
-import { Inspection, Finding } from '../../../../core/models/inspection.interface';
+import { Inspection, Finding, SectionStatus } from '../../../../core/models/inspection.interface';
 import { WorkbenchLayoutComponent } from '../../../../shared/components/workbench-layout/workbench-layout.component';
 import { FindingFormComponent } from '../../components/finding-form/finding-form.component';
 import { FindingSwitcherComponent } from '../../components/finding-switcher/finding-switcher.component';
-import { LucideAngularModule, Home, ChevronUp, ChevronDown, Hammer, Zap, Droplets, Wind, Flame, Box, Grid, Monitor, Car, Shield, Search, Info, AlertTriangle, Copy, Edit2, Trash2, Plus, Save, Lock, Unlock, ArrowLeft, Wrench, Thermometer, Lightbulb, Paintbrush, Sun, Key, Eye, Power, FileCheck, HardHat, Construction, Ruler, ShieldCheck, ShieldAlert, BrickWall, Trees, Fan, Sparkles, Wifi, WifiOff, Trash, Settings, Check, X, Users, FileText, Image, Cloud, CloudRain, CloudLightning, Snowflake, Umbrella, Compass, MapPin, Clock, Calendar, Activity, Scissors, Heart, AlertCircle, HelpCircle, Ban, LockOpen, Send, Download, Loader2, CheckCircle2, Layers, Menu, ChevronLeft, LayoutGrid } from 'lucide-angular';
+import { LucideAngularModule, Home, ChevronUp, ChevronDown, Hammer, Zap, Droplets, Wind, Flame, Box, Grid, Monitor, Car, Shield, Search, Info, AlertTriangle, Copy, Edit2, Trash2, Plus, Save, Lock, Unlock, ArrowLeft, Wrench, Thermometer, Lightbulb, Paintbrush, Sun, Key, Eye, Power, FileCheck, HardHat, Construction, Ruler, ShieldCheck, ShieldAlert, BrickWall, Trees, Fan, Sparkles, Wifi, WifiOff, Trash, Settings, Check, X, Users, FileText, Image, Cloud, CloudRain, CloudLightning, Snowflake, Umbrella, Compass, MapPin, Clock, Calendar, Activity, Scissors, Heart, AlertCircle, HelpCircle, Ban, LockOpen, Send, Download, Loader2, CheckCircle2, Layers, Menu, ChevronLeft, LayoutGrid, CircleX } from 'lucide-angular';
 import { BackButtonComponent } from '../../../../shared/components/back-button/back-button.component';
+import { SectionStatusToggleComponent } from '../../components/section-status-toggle/section-status-toggle';
+import { TextInputComponent } from '../../../../shared/components/inputs/text-input/text-input.component';
 
 @Component({
   selector: 'app-finding-details',
   standalone: true,
-  imports: [CommonModule, WorkbenchLayoutComponent, FindingFormComponent, FindingSwitcherComponent, LucideAngularModule, BackButtonComponent],
-  providers: [{ provide: 'lucideIcons', useValue: { Home, ChevronUp, ChevronDown, Hammer, Zap, Droplets, Wind, Flame, Box, Grid, Monitor, Car, Shield, Search, Info, AlertTriangle, Copy, Edit2, Trash2, Plus, Save, Lock, Unlock, ArrowLeft, Wrench, Thermometer, Lightbulb, Paintbrush, Sun, Key, Eye, Power, FileCheck, HardHat, Construction, Ruler, ShieldCheck, ShieldAlert, BrickWall, Trees, Fan, Sparkles, Wifi, WifiOff, Trash, Settings, Check, X, Users, FileText, Image, Cloud, CloudRain, CloudLightning, Snowflake, Umbrella, Compass, MapPin, Clock, Calendar, Activity, Scissors, Heart, AlertCircle, HelpCircle, Ban, LockOpen, Send, Download, Loader2, CheckCircle2, Layers, Menu, ChevronLeft, LayoutGrid } }],
+  imports: [CommonModule, WorkbenchLayoutComponent, FindingFormComponent, FindingSwitcherComponent, LucideAngularModule, BackButtonComponent, SectionStatusToggleComponent, TextInputComponent],
+  providers: [{ provide: 'lucideIcons', useValue: { Home, ChevronUp, ChevronDown, Hammer, Zap, Droplets, Wind, Flame, Box, Grid, Monitor, Car, Shield, Search, Info, AlertTriangle, Copy, Edit2, Trash2, Plus, Save, Lock, Unlock, ArrowLeft, Wrench, Thermometer, Lightbulb, Paintbrush, Sun, Key, Eye, Power, FileCheck, HardHat, Construction, Ruler, ShieldCheck, ShieldAlert, BrickWall, Trees, Fan, Sparkles, Wifi, WifiOff, Trash, Settings, Check, X, Users, FileText, Image, Cloud, CloudRain, CloudLightning, Snowflake, Umbrella, Compass, MapPin, Clock, Calendar, Activity, Scissors, Heart, AlertCircle, HelpCircle, Ban, LockOpen, Send, Download, Loader2, CheckCircle2, Layers, Menu, ChevronLeft, LayoutGrid, CircleX } }],
   templateUrl: './finding-details.component.html',
   styleUrl: './finding-details.component.scss'
 })
@@ -41,7 +43,7 @@ export class FindingDetailsComponent implements OnInit {
     Download, Loader2, CheckCircle2, Layers, Menu
   };
 
-  readonly icons = { ChevronLeft, LayoutGrid, Plus, Home, ChevronDown, CheckCircle2, FileText };
+  readonly icons = { ChevronLeft, LayoutGrid, Plus, Home, ChevronDown, CheckCircle2, FileText, Ban, CircleX, Info, Edit2 };
 
   sections = computed(() => this.inspection()?.template_snapshot?.sections || []);
 
@@ -69,6 +71,12 @@ export class FindingDetailsComponent implements OnInit {
       counts[f.section] = (counts[f.section] || 0) + 1;
     });
     return counts;
+  });
+
+  currentSectionStatus = computed<SectionStatus>(() => {
+    const section = this.selectedSection();
+    const statuses = this.inspection()?.section_statuses || {};
+    return section ? (statuses[section] || { status: 'inspected' }) : { status: 'inspected' };
   });
 
   totalFindings = computed(() => this.inspection()?.findings?.length || 0);
@@ -198,19 +206,64 @@ export class FindingDetailsComponent implements OnInit {
 
   updateMetadataValue(key: string, event: Event): void {
     const input = event.target as HTMLInputElement;
-    const value = input.value;
+    this.updateMetadataValueDirect(key, input.value);
+  }
+
+  updateMetadataValueDirect(key: string, value: string): void {
     const insp = this.inspection();
     if (!insp) return;
 
-    const updatedMetadata = { ...insp.metadata_values, [key]: value };
+    const currentMetadata = insp.metadata_values || {};
+    const updatedMetadata = { ...currentMetadata, [key]: value };
 
     this.inspectionsService.updateInspection(insp.id, { metadata_values: updatedMetadata }).subscribe({
       next: (updated) => {
         this.inspection.set(updated);
       },
-      error: (err) => {
-        console.error('Failed to update metadata', err);
-      }
+      error: (err) => console.error('Failed to update metadata', err)
+    });
+  }
+
+  updateSectionStatus(status: 'inspected' | 'not_inspected' | 'not_present'): void {
+    const insp = this.inspection();
+    const section = this.selectedSection();
+    if (!insp || !section) return;
+
+    const currentStatuses = insp.section_statuses || {};
+    const updatedStatuses = { 
+      ...currentStatuses, 
+      [section]: { ...currentStatuses[section], status } 
+    };
+
+    this.inspectionsService.updateInspection(insp.id, { section_statuses: updatedStatuses }).subscribe({
+      next: (updated) => {
+        this.inspection.set(updated);
+      },
+      error: (err) => console.error('Failed to update section status', err)
+    });
+  }
+
+  updateSectionReason(event: Event): void {
+    const input = event.target as HTMLTextAreaElement | HTMLInputElement;
+    this.updateSectionReasonDirect(input.value);
+  }
+
+  updateSectionReasonDirect(reason: string): void {
+    const insp = this.inspection();
+    const section = this.selectedSection();
+    if (!insp || !section) return;
+
+    const currentStatuses = insp.section_statuses || {};
+    const updatedStatuses = { 
+      ...currentStatuses, 
+      [section]: { ...currentStatuses[section], reason } 
+    };
+
+    this.inspectionsService.updateInspection(insp.id, { section_statuses: updatedStatuses }).subscribe({
+      next: (updated) => {
+        this.inspection.set(updated);
+      },
+      error: (err) => console.error('Failed to update section reason', err)
     });
   }
 }

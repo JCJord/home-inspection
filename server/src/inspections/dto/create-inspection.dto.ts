@@ -75,4 +75,7 @@ export class CreateInspectionDto {
 
   @IsOptional()
   metadata_values?: Record<string, string>;
+
+  @IsOptional()
+  section_statuses?: Record<string, any>;
 }

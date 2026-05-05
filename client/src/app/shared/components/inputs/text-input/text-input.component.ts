@@ -1,13 +1,15 @@
-import { Component, inject, input } from '@angular/core';
+import { Component, inject, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ControlContainer, FormGroupDirective, ReactiveFormsModule } from '@angular/forms';
+import { LucideAngularModule, Edit2 } from 'lucide-angular';
 
 @Component({
   selector: 'app-text-input',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, LucideAngularModule],
   templateUrl: './text-input.component.html',
   styleUrl: './text-input.component.scss',
+  providers: [{ provide: 'lucideIcons', useValue: { Edit2 } }],
   viewProviders: [
     {
       provide: ControlContainer,
@@ -16,14 +18,13 @@ import { ControlContainer, FormGroupDirective, ReactiveFormsModule } from '@angu
   ],
 })
 export class TextInputComponent {
-  private formGroupDirective = inject(FormGroupDirective);
+  private formGroupDirective = inject(FormGroupDirective, { optional: true });
 
   /**
    * The name of the form control to bind to.
    * Must exist in the parent FormGroup.
-   * @required
    */
-  name = input.required<string>();
+  name = input<string>('');
 
   /**
    * Optional label displayed above the input.
@@ -52,10 +53,30 @@ export class TextInputComponent {
   suffix = input<string>();
 
   /**
+   * Optional suffix icon (LucideIcon object)
+   */
+  suffixIcon = input<any>();
+
+  /**
+   * Manual value binding (used if no form control is provided)
+   */
+  value = input<string | number>('');
+
+  /**
+   * Emits when the input value changes (manual binding)
+   */
+  valueChanged = output<string>();
+
+  onInputChange(event: Event) {
+    const target = event.target as HTMLInputElement;
+    this.valueChanged.emit(target.value);
+  }
+
+  /**
    * Accesses the injected form control.
    */
   get control() {
-    return this.formGroupDirective.form.get(this.name());
+    return this.formGroupDirective?.form.get(this.name());
   }
 
   /**

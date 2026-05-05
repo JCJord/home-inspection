@@ -2,9 +2,6 @@
 @use '../../../../../assets/styles/variables' as *;
 
 .finding-form-container {
-  background: $color-surface;
-  border-radius: 1rem;
-  padding: 1.5rem;
   margin-top: 1rem;
   animation: slideDown 0.3s ease-out;
 

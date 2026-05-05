@@ -47,6 +47,11 @@ export interface Finding {
   updated_at: string;
 }
 
+export interface SectionStatus {
+  status: 'inspected' | 'not_inspected' | 'not_present';
+  reason?: string;
+}
+
 export interface Inspection {
   id: string;
   address: string;
@@ -66,6 +71,7 @@ export interface Inspection {
   template_id?: string;
   template_snapshot?: TemplateStructure;
   metadata_values?: Record<string, string>;
+  section_statuses?: Record<string, SectionStatus>;
   inspector?: Inspector;
   created_at: string;
   updated_at: string;

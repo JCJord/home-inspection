@@ -64,34 +64,41 @@ export class ReportGeneratorComponent implements OnInit {
 
 
   getGroupedFindings() {
-    if (!this.inspection?.findings) return [];
+    if (!this.inspection?.template_snapshot?.sections) return [];
 
-    const groups: { section: string, findings: any[] }[] = [];
+    const findings = this.inspection.findings || [];
+    const sections = this.inspection.template_snapshot.sections;
+    const statuses = this.inspection.section_statuses || {};
 
-    this.inspection.findings.forEach(finding => {
-      let group = groups.find(g => g.section === finding.section);
-      if (!group) {
-        group = { section: finding.section, findings: [] };
-        groups.push(group);
-      }
-      
-      if (finding.photos && finding.photos.length > 12) {
-        const photos = finding.photos;
-        for (let i = 0; i < photos.length; i += 12) {
-          const chunk = photos.slice(i, i + 12);
-          const chunkIndex = Math.floor(i / 12);
-          group.findings.push({
-            ...finding,
-            id: `${finding.id}_chunk_${chunkIndex}`,
-            photos: chunk
-          });
+    return sections.map(section => {
+      const sectionFindings = findings.filter(f => f.section === section.name);
+      const processedFindings: any[] = [];
+      const status = statuses[section.name] || { status: 'inspected' };
+
+      sectionFindings.forEach(finding => {
+        if (finding.photos && finding.photos.length > 12) {
+          const photos = finding.photos;
+          for (let i = 0; i < photos.length; i += 12) {
+            const chunk = photos.slice(i, i + 12);
+            const chunkIndex = Math.floor(i / 12);
+            processedFindings.push({
+              ...finding,
+              id: `${finding.id}_chunk_${chunkIndex}`,
+              photos: chunk
+            });
+          }
+        } else {
+          processedFindings.push(finding);
         }
-      } else {
-        group.findings.push(finding);
-      }
-    });
+      });
 
-    return groups;
+      return {
+        section: section.name,
+        findings: processedFindings,
+        status: status.status,
+        reason: status.reason
+      };
+    });
   }
 
   getSevereFindings() {

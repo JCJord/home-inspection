@@ -47,3 +47,24 @@
   color: $color-primary;
   border: 1px solid rgba($color-primary, 0.1);
 }
+
+.status-pill {
+  color: $color-text-muted;
+  border: 1px solid transparent;
+  
+  &:hover {
+    color: $color-text;
+  }
+  
+  &.active {
+    background-color: white;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    color: $color-text;
+    
+    lucide-icon {
+      &[name="check-circle-2"] { color: #10b981; }
+      &[name="ban"] { color: #f59e0b; }
+      &[name="circle-x"] { color: #64748b; }
+    }
+  }
+}

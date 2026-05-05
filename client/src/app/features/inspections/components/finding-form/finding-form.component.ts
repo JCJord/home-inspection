@@ -111,6 +111,8 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
   constructor() {
     effect(() => {
       const data = this._finding();
+      const section = this._section(); // Watch section changes to reset form if needed
+      
       if (data) {
         this.findingForm.patchValue({
           severity: data.severity,
