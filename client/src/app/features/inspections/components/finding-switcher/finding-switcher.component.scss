@@ -65,3 +65,12 @@ select.input-field-switcher {
   &[data-severity="minor"] { background-color: $color-minor; }
   &[data-severity="maintenance"] { background-color: $color-maintenance; }
 }
+
+// Make the nav arrows visibly enabled with a darker gray than the standard ghost button
+::ng-deep .nav-arrow .app-button {
+  background-color: rgba($color-text, 0.12);
+  
+  &:hover:not(:disabled) {
+    background-color: rgba($color-text, 0.2);
+  }
+}
