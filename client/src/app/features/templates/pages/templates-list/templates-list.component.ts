@@ -27,8 +27,8 @@ export class TemplatesListComponent implements OnInit {
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
 
-  templates = signal<Template[]>([]);
-  isLoading = signal<boolean>(true);
+  templates = this.templatesService.templates;
+  isLoading = this.templatesService.isLoading;
   errorMessage = signal<string | null>(null);
 
   preferredTemplateId = signal<string | null>(null);
@@ -65,24 +65,15 @@ export class TemplatesListComponent implements OnInit {
   }
 
   loadTemplates(): void {
-    this.isLoading.set(true);
     this.errorMessage.set(null);
-    this.cdr.detectChanges();
 
     this.templatesService.getTemplates().subscribe({
-      next: (data) => {
-        this.templates.set(data);
-        this.isLoading.set(false);
-        this.cdr.detectChanges();
-      },
       error: (err) => {
         console.error('Failed to load templates', err);
         const msg = err.status === 401
           ? 'Session expired. Please log in again.'
           : (err.status === 0 ? 'Cannot connect to backend server.' : 'Could not load inspection templates.');
         this.errorMessage.set(msg);
-        this.isLoading.set(false);
-        this.cdr.detectChanges();
       }
     });
   }

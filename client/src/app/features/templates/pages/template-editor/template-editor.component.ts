@@ -38,7 +38,7 @@ export class TemplateEditorComponent implements OnInit, OnDestroy {
   errorMessage = signal<string | null>(null);
 
   selectedSectionIndex = signal<number>(0);
-  availableIcons = signal<string[]>([]);
+  availableIcons = this.templatesService.icons;
   showIconPicker = signal<boolean>(false);
   deletingIndex = signal<number | null>(null);
   deletingFieldIndex = signal<number | null>(null);
@@ -200,12 +200,7 @@ export class TemplateEditorComponent implements OnInit, OnDestroy {
   }
 
   loadIcons(): void {
-    this.templatesService.getIcons().subscribe({
-      next: (icons) => {
-        this.availableIcons.set(icons);
-      },
-      error: (err) => console.error('Failed to load icons', err)
-    });
+    this.templatesService.getIcons().subscribe();
   }
 
   goBack(): void {
