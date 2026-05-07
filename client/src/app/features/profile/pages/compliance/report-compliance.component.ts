@@ -43,6 +43,8 @@ export class ReportComplianceComponent implements OnInit {
     use_standard_definitions: [true],
     custom_safety_hazard_def: [''],
     custom_major_defect_def: [''],
+    custom_minor_defect_def: [''],
+    custom_maintenance_item_def: [''],
   });
 
   isLoading = signal<boolean>(true);
@@ -64,6 +66,8 @@ export class ReportComplianceComponent implements OnInit {
             use_standard_definitions: data.use_standard_definitions ?? true,
             custom_safety_hazard_def: data.custom_safety_hazard_def || '',
             custom_major_defect_def: data.custom_major_defect_def || '',
+            custom_minor_defect_def: data.custom_minor_defect_def || '',
+            custom_maintenance_item_def: data.custom_maintenance_item_def || '',
           }, { emitEvent: false });
           this.setupAutoSave();
         },

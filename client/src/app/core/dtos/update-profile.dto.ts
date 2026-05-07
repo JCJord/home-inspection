@@ -11,4 +11,6 @@ export interface UpdateProfileDto {
   use_standard_definitions?: boolean;
   custom_safety_hazard_def?: string;
   custom_major_defect_def?: string;
+  custom_minor_defect_def?: string;
+  custom_maintenance_item_def?: string;
 }

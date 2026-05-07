@@ -68,4 +68,18 @@ export class UpdateProfileDto {
   @MinLength(10, { message: 'Custom major defect definition is too short.' })
   @MaxLength(1000)
   custom_major_defect_def?: string;
+
+  @ValidateIf(o => o.use_standard_definitions === false)
+  @IsOptional()
+  @IsString()
+  @MinLength(10, { message: 'Custom minor defect definition is too short.' })
+  @MaxLength(1000)
+  custom_minor_defect_def?: string;
+
+  @ValidateIf(o => o.use_standard_definitions === false)
+  @IsOptional()
+  @IsString()
+  @MinLength(10, { message: 'Custom maintenance item definition is too short.' })
+  @MaxLength(1000)
+  custom_maintenance_item_def?: string;
 }

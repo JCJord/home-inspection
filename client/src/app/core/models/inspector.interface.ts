@@ -17,6 +17,8 @@ export interface Inspector {
   use_standard_definitions?: boolean;
   custom_safety_hazard_def?: string;
   custom_major_defect_def?: string;
+  custom_minor_defect_def?: string;
+  custom_maintenance_item_def?: string;
   subscription_status: SubscriptionStatus;
   free_inspections_used: number;
   created_at: Date;

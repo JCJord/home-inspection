@@ -356,6 +356,36 @@
                      </span>
                   </div>
 
+                  <!-- Minor Defect Definition -->
+                  <div
+                     style="padding: 25px; border: 2px solid #eee; border-radius: 8px; display: flex; flex-direction: column; gap: 10px;">
+                     <strong
+                        style="color: #eab308; font-size: 24px; text-transform: uppercase; letter-spacing: 0.05em;">Minor
+                        Defect</strong>
+                     <span style="font-size: 24px; color: #555; line-height: 1.5;">
+                        @if (inspection?.inspector?.use_standard_definitions !== false) {
+                        A cosmetic issue or a flaw that does not affect the safety or function of the property but may require attention.
+                        } @else {
+                        {{ inspection?.inspector?.custom_minor_defect_def }}
+                        }
+                     </span>
+                  </div>
+
+                  <!-- Maintenance Item Definition -->
+                  <div
+                     style="padding: 25px; border: 2px solid #eee; border-radius: 8px; display: flex; flex-direction: column; gap: 10px;">
+                     <strong
+                        style="color: #3b82f6; font-size: 24px; text-transform: uppercase; letter-spacing: 0.05em;">Maintenance
+                        Item</strong>
+                     <span style="font-size: 24px; color: #555; line-height: 1.5;">
+                        @if (inspection?.inspector?.use_standard_definitions !== false) {
+                        A component that is nearing the end of its useful life or requires routine upkeep to prevent future deterioration.
+                        } @else {
+                        {{ inspection?.inspector?.custom_maintenance_item_def }}
+                        }
+                     </span>
+                  </div>
+
                </div>
             </div>
          </div>
