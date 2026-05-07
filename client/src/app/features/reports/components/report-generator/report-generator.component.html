@@ -389,47 +389,31 @@
                style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 40px; margin-bottom: 80px;">
                <!-- Weather & Temp -->
                <div
-                  style="background: #f8f8f8; padding: 40px; border-radius: 12px; display: flex; align-items: center; gap: 30px;">
-                  <div style="font-size: 60px; opacity: 0.2;">☁️</div>
-                  <div>
-                     <label
-                        style="display: block; font-size: 16px; font-weight: 800; text-transform: uppercase; color: #888; margin-bottom: 8px;">Weather
-                        Condition</label>
-                     <span style="font-size: 32px; font-weight: 800; color: #111;">{{ inspection?.weather || 'Partly
-                        Cloudy' }}</span>
-                  </div>
+                  style="background: #f8f8f8; padding: 40px; border-radius: 12px; display: flex; flex-direction: column; justify-content: center;">
+                  <label
+                     style="display: block; font-size: 20px; font-weight: 800; text-transform: uppercase; color: #888; margin-bottom: 8px;">Weather
+                     Condition</label>
+                  <span style="font-size: 36px; font-weight: 800; color: #111;">{{ inspection?.weather || 'Partly Cloudy' }}</span>
                </div>
                <div
-                  style="background: #f8f8f8; padding: 40px; border-radius: 12px; display: flex; align-items: center; gap: 30px;">
-                  <div style="font-size: 60px; opacity: 0.2;">🌡️</div>
-                  <div>
-                     <label
-                        style="display: block; font-size: 16px; font-weight: 800; text-transform: uppercase; color: #888; margin-bottom: 8px;">Temperature</label>
-                     <span style="font-size: 32px; font-weight: 800; color: #111;">{{ inspection?.temperature || '72°F'
-                        }}</span>
-                  </div>
+                  style="background: #f8f8f8; padding: 40px; border-radius: 12px; display: flex; flex-direction: column; justify-content: center;">
+                  <label
+                     style="display: block; font-size: 20px; font-weight: 800; text-transform: uppercase; color: #888; margin-bottom: 8px;">Temperature</label>
+                  <span style="font-size: 36px; font-weight: 800; color: #111;">{{ (inspection?.temperature || '72') + '°F' }}</span>
                </div>
                <!-- Occupancy & Attendees -->
                <div
-                  style="background: #f8f8f8; padding: 40px; border-radius: 12px; display: flex; align-items: center; gap: 30px;">
-                  <div style="font-size: 60px; opacity: 0.2;">🏠</div>
-                  <div>
-                     <label
-                        style="display: block; font-size: 16px; font-weight: 800; text-transform: uppercase; color: #888; margin-bottom: 8px;">Property
-                        Occupancy</label>
-                     <span style="font-size: 32px; font-weight: 800; color: #111;">{{ inspection?.occupancy ||
-                        'Occupied' }}</span>
-                  </div>
+                  style="background: #f8f8f8; padding: 40px; border-radius: 12px; display: flex; flex-direction: column; justify-content: center;">
+                  <label
+                     style="display: block; font-size: 20px; font-weight: 800; text-transform: uppercase; color: #888; margin-bottom: 8px;">Property
+                     Occupancy</label>
+                  <span style="font-size: 36px; font-weight: 800; color: #111;">{{ inspection?.occupancy || 'Occupied' }}</span>
                </div>
                <div
-                  style="background: #f8f8f8; padding: 40px; border-radius: 12px; display: flex; align-items: center; gap: 30px;">
-                  <div style="font-size: 60px; opacity: 0.2;">👥</div>
-                  <div>
-                     <label
-                        style="display: block; font-size: 16px; font-weight: 800; text-transform: uppercase; color: #888; margin-bottom: 8px;">Attendees</label>
-                     <span style="font-size: 32px; font-weight: 800; color: #111;">{{ inspection?.attendees || 'Buyer,
-                        Buyer\'s Agent' }}</span>
-                  </div>
+                  style="background: #f8f8f8; padding: 40px; border-radius: 12px; display: flex; flex-direction: column; justify-content: center;">
+                  <label
+                     style="display: block; font-size: 20px; font-weight: 800; text-transform: uppercase; color: #888; margin-bottom: 8px;">Attendees</label>
+                  <span style="font-size: 36px; font-weight: 800; color: #111;">{{ inspection?.attendees || 'Buyer, Buyer\'s Agent' }}</span>
                </div>
             </div>
 
@@ -553,17 +537,16 @@
                <!-- Case 2: Inspected but No Findings -->
                @else if (group.findings.length === 0) {
                <tr class="content-row">
-                  <td colspan="2" style="padding: 60px 100px; border: 2px solid #111; background: #f0fdf4;">
-                     <div style="display: flex; align-items: center; justify-content: center; gap: 20px;">
-                        <div style="font-size: 40px;">✅</div>
-                        <div>
-                           <div style="font-size: 26px; font-weight: 900; color: #166534; text-transform: uppercase;">
-                              Serviceable Condition</div>
-                           <p style="font-size: 22px; color: #15803d; margin: 5px 0 0 0; font-weight: 500;">
-                              This system or component was inspected and found to be in serviceable condition with no
-                              major concerns observed.
-                           </p>
+                  <td colspan="2" style="padding: 60px 100px; border: 2px solid #111; background: #fafafa;">
+                     <div style="text-align: center;">
+                        <div
+                           style="font-size: 28px; font-weight: 800; color: #666; margin-bottom: 20px; text-transform: uppercase;">
+                           Serviceable Condition
                         </div>
+                        <p
+                           style="font-size: 24px; color: #444; font-weight: 500; max-width: 1000px; margin: 0 auto; line-height: 1.5;">
+                           This system or component was visually inspected and found to be in serviceable condition with no major concerns or material defects observed at the time of inspection.
+                        </p>
                      </div>
                   </td>
                </tr>
