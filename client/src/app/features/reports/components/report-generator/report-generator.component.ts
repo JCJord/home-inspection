@@ -40,8 +40,8 @@ export class ReportGeneratorComponent implements OnInit {
     switch (s) {
       case 'safety': return '#EF4444';
       case 'major': return '#F97316';
-      case 'minor': return '#F3F4F6';
-      case 'maintenance': return '#EFF6FF';
+      case 'minor': return '#FEF9C3';
+      case 'maintenance': return '#DCFCE7';
       default: return '#F3F4F6';
     }
   }
@@ -51,8 +51,8 @@ export class ReportGeneratorComponent implements OnInit {
     switch (s) {
       case 'safety': return '#FFFFFF';
       case 'major': return '#FFFFFF';
-      case 'minor': return '#4B5563';
-      case 'maintenance': return '#1E3A8A';
+      case 'minor': return '#854D0E';
+      case 'maintenance': return '#166534';
       default: return '#4B5563';
     }
   }
