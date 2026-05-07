@@ -122,12 +122,12 @@ export class PdfService implements OnModuleDestroy {
             width: 100%;
             text-align: center;
             font-size: 9px;
-            color: #626971;
+            color: #444;
             margin: 0;
             padding: 0;
             position: relative;
-            left: 322px;
-            top: 33px;
+            left: 335px;
+            top: 1060px;
             line-height: 1;
             white-space: nowrap;
           ">

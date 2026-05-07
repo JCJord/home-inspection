@@ -159,7 +159,7 @@
             <label class="form-label">Report Footer Text (Max 150 chars)</label>
             <textarea formControlName="report_footer_text" class="form-textarea"
               placeholder="Confidential Property Inspection Report" maxlength="150"></textarea>
-            <div class="char-count" [class.warning]="(profileForm.get('report_footer_text')?.value?.length || 0) > 130">
+            <div class="char-count" [class.warning]="(profileForm.get('report_footer_text')?.value?.length || 0) >= 150">
               {{ profileForm.get('report_footer_text')?.value?.length || 0 }} / 150
             </div>
           </div>
