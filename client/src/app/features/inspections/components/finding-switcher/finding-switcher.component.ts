@@ -21,6 +21,7 @@ import { ButtonComponent } from '../../../../shared/components/button/button.com
 export class FindingSwitcherComponent {
   finding = input<Finding | null>(null);
   sectionFindings = input<Finding[]>([]);
+  disabled = input<boolean>(false);
   
   findingSelected = output<Finding | null>();
   

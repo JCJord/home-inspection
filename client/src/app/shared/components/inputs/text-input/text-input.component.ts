@@ -63,6 +63,11 @@ export class TextInputComponent {
   value = input<string | number>('');
 
   /**
+   * Whether the input is disabled
+   */
+  disabled = input<boolean>(false);
+
+  /**
    * Emits when the input value changes (manual binding)
    */
   valueChanged = output<string>();

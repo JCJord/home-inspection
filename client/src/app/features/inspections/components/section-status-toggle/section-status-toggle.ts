@@ -13,6 +13,7 @@ import { ButtonComponent } from '../../../../shared/components/button/button.com
 export class SectionStatusToggleComponent {
   @Input({ required: true }) status: 'inspected' | 'not_inspected' | 'not_present' = 'inspected';
   @Input() reason: string = '';
+  @Input() disabled: boolean = false;
   
   @Output() statusChange = new EventEmitter<'inspected' | 'not_inspected' | 'not_present'>();
   @Output() reasonChange = new EventEmitter<string>();
@@ -20,7 +21,7 @@ export class SectionStatusToggleComponent {
   readonly icons = { CheckCircle2, Ban, CircleX, Info };
 
   onStatusChange(newStatus: 'inspected' | 'not_inspected' | 'not_present') {
-    if (this.status === newStatus) return;
+    if (this.disabled || this.status === newStatus) return;
     this.statusChange.emit(newStatus);
   }
 

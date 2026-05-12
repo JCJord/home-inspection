@@ -7,10 +7,12 @@
       <span>{{ errorMessage() }}</span>
     </div>
     }
+
+
     <div class="form-group photo-upload">
       <label class="control-label">Photos (Optional)</label>
 
-      <div class="upload-area" (click)="fileInput.click()">
+      <div class="upload-area" [class.opacity-50]="isPublishedSignal()" [class.pointer-events-none]="isPublishedSignal()" (click)="isPublishedSignal() ? null : fileInput.click()">
         <lucide-icon [name]="icons.Upload" [size]="24"></lucide-icon>
         <span class="upload-text">Click to browse or drag and drop images</span>
         <input #fileInput type="file" multiple accept="image/*" style="display: none" (change)="onFileSelected($event)">
@@ -31,22 +33,24 @@
             }
 
             <div class="photo-action-pill" [class.confirming]="activeDeleteNewIndex() === i">
-              @if (activeDeleteNewIndex() === i) {
-                <button type="button" class="action-btn cancel-delete" (click)="cancelDelete()" aria-label="Cancel">
-                  <span class="action-text">Cancel</span>
-                </button>
-                <div class="divider"></div>
-                <button type="button" class="action-btn confirm-delete" (click)="removeFile(i)" aria-label="Confirm Deletion">
-                  <span class="action-text font-bold">Delete</span>
-                </button>
-              } @else {
-                <button type="button" class="action-btn edit" (click)="editNewPhoto(i, item.previewUrl)" aria-label="Edit photo">
-                  <lucide-icon [name]="icons.Edit" [size]="14"></lucide-icon>
-                </button>
-                <div class="divider"></div>
-                <button type="button" class="action-btn delete" (click)="initDeleteNewPhoto(i)" aria-label="Remove photo">
-                  <lucide-icon [name]="icons.Trash2" [size]="14"></lucide-icon>
-                </button>
+              @if (!isPublishedSignal()) {
+                @if (activeDeleteNewIndex() === i) {
+                  <button type="button" class="action-btn cancel-delete" (click)="cancelDelete()" aria-label="Cancel">
+                    <span class="action-text">Cancel</span>
+                  </button>
+                  <div class="divider"></div>
+                  <button type="button" class="action-btn confirm-delete" (click)="removeFile(i)" aria-label="Confirm Deletion">
+                    <span class="action-text font-bold">Delete</span>
+                  </button>
+                } @else {
+                  <button type="button" class="action-btn edit" (click)="editNewPhoto(i, item.previewUrl)" aria-label="Edit photo">
+                    <lucide-icon [name]="icons.Edit" [size]="14"></lucide-icon>
+                  </button>
+                  <div class="divider"></div>
+                  <button type="button" class="action-btn delete" (click)="initDeleteNewPhoto(i)" aria-label="Remove photo">
+                    <lucide-icon [name]="icons.Trash2" [size]="14"></lucide-icon>
+                  </button>
+                }
               }
             </div>
           </div>
@@ -73,22 +77,24 @@
           <div class="photo-thumbnail">
             <img [src]="resolveImageUrl(photo.storage_url)" alt="Finding photo">
             <div class="photo-action-pill" [class.confirming]="activeDeleteExistingId() === photo.id">
-              @if (activeDeleteExistingId() === photo.id) {
-                <button type="button" class="action-btn cancel-delete" (click)="cancelDelete()" aria-label="Cancel">
-                  <span class="action-text">Cancel</span>
-                </button>
-                <div class="divider"></div>
-                <button type="button" class="action-btn confirm-delete" (click)="confirmDeleteExistingPhoto(photo.id)" aria-label="Confirm Deletion">
-                  <span class="action-text font-bold">Delete</span>
-                </button>
-              } @else {
-                <button type="button" class="action-btn edit" (click)="editExistingPhoto(photo)" aria-label="Edit photo">
-                  <lucide-icon [name]="icons.Edit" [size]="14"></lucide-icon>
-                </button>
-                <div class="divider"></div>
-                <button type="button" class="action-btn delete" (click)="initDeleteExistingPhoto(photo.id)" aria-label="Delete photo">
-                  <lucide-icon [name]="icons.Trash2" [size]="14"></lucide-icon>
-                </button>
+              @if (!isPublishedSignal()) {
+                @if (activeDeleteExistingId() === photo.id) {
+                  <button type="button" class="action-btn cancel-delete" (click)="cancelDelete()" aria-label="Cancel">
+                    <span class="action-text">Cancel</span>
+                  </button>
+                  <div class="divider"></div>
+                  <button type="button" class="action-btn confirm-delete" (click)="confirmDeleteExistingPhoto(photo.id)" aria-label="Confirm Deletion">
+                    <span class="action-text font-bold">Delete</span>
+                  </button>
+                } @else {
+                  <button type="button" class="action-btn edit" (click)="editExistingPhoto(photo)" aria-label="Edit photo">
+                    <lucide-icon [name]="icons.Edit" [size]="14"></lucide-icon>
+                  </button>
+                  <div class="divider"></div>
+                  <button type="button" class="action-btn delete" (click)="initDeleteExistingPhoto(photo.id)" aria-label="Delete photo">
+                    <lucide-icon [name]="icons.Trash2" [size]="14"></lucide-icon>
+                  </button>
+                }
               }
             </div>
           </div>
@@ -110,7 +116,7 @@
     </div>
 
     <!-- Presets (Quick Actions) -->
-    @if (presets && presets.length > 0) {
+    @if (presets && presets.length > 0 && !isPublishedSignal()) {
     <div class="form-group presets-container mb-4">
       <label class="control-label block text-sm font-medium text-standard-muted mb-2">Quick Presets</label>
       <div class="flex flex-wrap gap-2">
@@ -128,10 +134,10 @@
     <!-- Severity Selector -->
     <div class="form-group severity-selector">
       <label class="control-label">Severity <span>*</span></label>
-      <div class="severity-options">
+      <div class="severity-options" [class.opacity-50]="isPublishedSignal()" [class.pointer-events-none]="isPublishedSignal()">
         @for (severity of severities; track severity) {
         <button type="button" class="severity-btn" [class.active]="currentSeverity === severity"
-          [attr.data-severity]="severity.toLowerCase()" (click)="setSeverity(severity)">
+          [attr.data-severity]="severity.toLowerCase()" (click)="isPublishedSignal() ? null : setSeverity(severity)">
           {{ severity }}
         </button>
         }
@@ -150,7 +156,7 @@
     <div class="form-group ai-comment-group">
       <div class="flex justify-between items-center mb-1">
         <label class="control-label">AI Generated Comment (Optional)</label>
-        <button type="button" class="ai-generate-btn" (click)="generateAiComment()" [disabled]="isGeneratingAi() || !isPremium()"
+        <button type="button" class="ai-generate-btn" (click)="generateAiComment()" [disabled]="isGeneratingAi() || !isPremium() || isPublishedSignal()"
           [class.premium-lock]="!isPremium()" [title]="!isPremium() ? 'Available for users with Active subscription only' : ''">
           @if (isGeneratingAi()) {
             <div class="spinner-small mr-2"></div>
@@ -183,14 +189,16 @@
       </div>
     </div>
 
-    <div class="form-actions flex justify-between">
+    <div class="form-actions flex" [class.justify-between]="!isPublishedSignal()" [class.justify-end]="isPublishedSignal()">
       <app-button type="button" class="cancel-btn" variant="outline" (click)="close.emit()" [disabled]="isLoading()">
-        Cancel
+        {{ isPublishedSignal() ? 'Close' : 'Cancel' }}
       </app-button>
+      @if (!isPublishedSignal()) {
       <app-button type="submit" [disabled]="findingForm.invalid || isLoading()" [isLoading]="isLoading()"
         variant="solid">
         {{ isEditMode() ? 'Save Changes' : 'Add Finding' }}
       </app-button>
+      }
     </div>
   </form>
 </div>

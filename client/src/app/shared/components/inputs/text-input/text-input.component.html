@@ -5,7 +5,7 @@
     </label>
   }
 
-  <div class="input-wrapper" [class.input-wrapper--error]="isInvalid">
+  <div class="input-wrapper" [class.input-wrapper--error]="isInvalid" [class.opacity-60]="disabled()">
     @if (prefix()) {
       <span class="input-prefix">{{ prefix() }}</span>
     }
@@ -17,6 +17,7 @@
         [type]="type()"
         [formControl]="$any(control)"
         [placeholder]="placeholder()"
+        [disabled]="disabled()"
         class="input-field"
       />
     } @else {
@@ -27,6 +28,7 @@
         [value]="value()"
         (input)="onInputChange($event)"
         [placeholder]="placeholder()"
+        [disabled]="disabled()"
         class="input-field"
       />
     }

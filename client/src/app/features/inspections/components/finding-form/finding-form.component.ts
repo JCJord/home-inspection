@@ -51,17 +51,20 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
   @Input({ required: true }) section!: string;
   @Input() presets: TemplatePreset[] = [];
   @Input() finding: Finding | null = null;
+  @Input() isPublished: boolean = false;
 
   private _inspectionId = signal<string>('');
   private _yearBuilt = signal<number>(0);
   private _section = signal<string>('');
   private _finding = signal<Finding | null>(null);
+  private _isPublished = signal<boolean>(false);
 
   // Expose signals for internal use
   inspectionIdSignal = this._inspectionId.asReadonly();
   yearBuiltSignal = this._yearBuilt.asReadonly();
   sectionSignal = this._section.asReadonly();
   findingSignal = this._finding.asReadonly();
+  isPublishedSignal = this._isPublished.asReadonly();
 
   close = output<void>();
   saved = output<Finding>();
@@ -71,6 +74,7 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
     if (changes['year_built']) this._yearBuilt.set(this.year_built);
     if (changes['section']) this._section.set(this.section);
     if (changes['finding']) this._finding.set(this.finding);
+    if (changes['isPublished']) this._isPublished.set(this.isPublished);
   }
 
   isLoading = signal<boolean>(false);
@@ -137,6 +141,13 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
         this.existingPhotos.set([]);
         this.photoCaptions.clear();
         this.newPhotoCaptions.clear();
+      }
+      
+      // Handle publish state
+      if (this._isPublished()) {
+        this.findingForm.disable({ emitEvent: false });
+      } else {
+        this.findingForm.enable({ emitEvent: false });
       }
     });
   }

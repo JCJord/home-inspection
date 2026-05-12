@@ -44,7 +44,7 @@ export class FindingDetailsComponent implements OnInit {
     Download, Loader2, CheckCircle2, Layers, Menu, PieChart
   };
 
-  readonly icons = { ChevronLeft, LayoutGrid, Plus, Home, ChevronDown, CheckCircle2, FileText, Ban, CircleX, Info, Edit2, PieChart };
+  readonly icons = { ChevronLeft, LayoutGrid, Plus, Home, ChevronDown, CheckCircle2, FileText, Ban, CircleX, Info, Edit2, PieChart, AlertCircle };
 
   sections = computed(() => this.inspection()?.template_snapshot?.sections || []);
 
