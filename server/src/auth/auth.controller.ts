@@ -6,6 +6,7 @@ import {
   HttpStatus,
   Get,
   UseGuards,
+  Headers,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthRegisterDto } from './dto/register.dto';
@@ -33,6 +34,22 @@ export class AuthController {
   @UseGuards(AuthGuard)
   async me(@GetUser('sub') userId: string) {
     return await this.authService.me(userId);
+  }
+
+  @Post('refresh')
+  @HttpCode(HttpStatus.OK)
+  async refresh(
+    @Body('refresh_token') refreshToken: string,
+    @Headers('user-agent') userAgent: string,
+  ) {
+    return await this.authService.refreshTokens(refreshToken, userAgent);
+  }
+
+  @Post('logout')
+  @HttpCode(HttpStatus.OK)
+  async logout(@Body('refresh_token') refreshToken: string) {
+    await this.authService.logout(refreshToken);
+    return { message: 'Logged out successfully' };
   }
 }
 
