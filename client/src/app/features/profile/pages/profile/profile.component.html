@@ -131,6 +131,7 @@
         <div class="form-grid">
           <app-text-input name="company_name" label="Company Name" placeholder="Inspectly Services"></app-text-input>
           <app-text-input name="license_number" label="License Number" placeholder="ABC-123456"></app-text-input>
+          <app-text-input name="certifications" label="Professional Certifications" placeholder="e.g. InterNACHI CPI #12345"></app-text-input>
         </div>
       </div>
 
@@ -166,6 +167,56 @@
         </div>
       </div>
     </form>
+
+    <!-- Document Signature Section -->
+    <div class="card signature-card">
+      <div class="card-header">
+        <lucide-icon [img]="icons.FileText" [size]="20"></lucide-icon>
+        <div class="header-info">
+          <h3>Report Signature</h3>
+          <p>Hand-draw your signature to be used in final reports</p>
+        </div>
+      </div>
+
+      <div class="signature-display-area">
+        @if (!signaturePreview() || isSigning()) {
+          <div class="pad-container">
+            <app-signature-pad 
+              [initialSignature]="signaturePreview()"
+              (signatureSaved)="onSignatureSaved($event)"
+              (cleared)="onSignatureCleared()">
+            </app-signature-pad>
+            
+            @if (signaturePreview() && isSigning()) {
+              <div class="pad-footer">
+                <app-button variant="ghost" size="sm" (click)="isSigning.set(false)">
+                  Cancel & Restore
+                </app-button>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="signature-container" (click)="isSigning.set(true)">
+            <img [src]="signaturePreview()" alt="Inspector Signature" class="signature-img">
+            <div class="re-sign-overlay">
+              <lucide-icon [img]="icons.RotateCcw" [size]="20"></lucide-icon>
+              <span>Click to Re-sign</span>
+            </div>
+          </div>
+        }
+
+        <div class="sig-specs">
+          <div class="spec-item">
+            <span class="label">Input</span>
+            <span class="value">Hand-drawn</span>
+          </div>
+          <div class="spec-item">
+            <span class="label">Usage</span>
+            <span class="value">Report Endings</span>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- Subscription & Usage Card (Lower prominence) -->
     <div class="card usage-card" [class.is-pro]="profile()?.subscription_status === 'active'">

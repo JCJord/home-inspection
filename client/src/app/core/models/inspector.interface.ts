@@ -11,7 +11,8 @@ export interface Inspector {
   brand_primary_color?: string;
   brand_font_family?: string;
   report_footer_text?: string;
-  signature_url?: string;
+  signature?: string;
+  certifications?: string;
   sop_name?: string;
   custom_legal_disclaimer?: string;
   use_standard_definitions?: boolean;

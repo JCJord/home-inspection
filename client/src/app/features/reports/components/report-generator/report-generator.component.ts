@@ -32,7 +32,7 @@ export class ReportGeneratorComponent implements OnInit {
   today = new Date();
   apiUrl = environment.apiUrl.replace('/api', '');
 
-  readonly allContentParts = ['cover', 'table-of-contents', 'executive-summary', 'legal-shield', 'general-info', 'inspection-findings'];
+  readonly allContentParts = ['cover', 'table-of-contents', 'executive-summary', 'legal-shield', 'general-info', 'inspection-findings', 'signature'];
   readonly icons = { Loader2, FileText, CheckCircle };
 
   getSeverityColor(severity: string): string {

@@ -10,12 +10,13 @@ import { ButtonComponent } from '../../../../shared/components/button/button.com
 import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
 import { SelectInputComponent } from '../../../../shared/components/inputs/select-input/select-input.component';
 import { SkeletonComponent } from '../../../../shared/components/skeleton/skeleton.component';
+import { SignaturePadComponent } from '../../../../shared/components/signature-pad/signature-pad.component';
 import { AuthService } from '../../../../core/services/auth.service';
 import { Router } from '@angular/router';
-import { LucideAngularModule, Camera, User, BadgeCheck, Phone, Mail, Building, FileText, CheckCircle2, LogOut } from 'lucide-angular';
+import { LucideAngularModule, Camera, User, BadgeCheck, Phone, Mail, Building, FileText, CheckCircle2, LogOut, RotateCcw } from 'lucide-angular';
 import { environment } from '../../../../../environments/environment';
 import { ImageCompressionService } from '../../../../core/services/image-compression.service';
-import { Palette, Type, FileText as FileTextIcon, Zap, Check, TrendingUp } from 'lucide-angular';
+import { Palette, Type, FileText as FileTextIcon, Zap, Check, TrendingUp, Trash2, X } from 'lucide-angular';
 
 @Component({
   selector: 'app-profile',
@@ -28,6 +29,7 @@ import { Palette, Type, FileText as FileTextIcon, Zap, Check, TrendingUp } from 
     ButtonComponent,
     SpinnerComponent,
     SkeletonComponent,
+    SignaturePadComponent,
     LucideAngularModule
   ],
   templateUrl: './profile.component.html',
@@ -41,7 +43,7 @@ export class ProfileComponent implements OnInit {
   private destroyRef = inject(DestroyRef);
   private compressionService = inject(ImageCompressionService);
 
-  readonly icons = { Camera, User, BadgeCheck, Phone, Mail, Building, FileText, CheckCircle2, LogOut, Palette, Type, FileTextIcon, Zap, Check, TrendingUp };
+  readonly icons = { Camera, User, BadgeCheck, Phone, Mail, Building, FileText, CheckCircle2, LogOut, Palette, Type, FileTextIcon, Zap, Check, TrendingUp, Trash2, X, RotateCcw };
 
   readonly brandFontOptions = [
     { value: 'modern', label: 'Modern (Sans-serif)' },
@@ -54,9 +56,11 @@ export class ProfileComponent implements OnInit {
     company_name: [''],
     phone: [''],
     license_number: [''],
+    certifications: [''],
     brand_primary_color: ['#1E40AF'],
     brand_font_family: ['modern'],
     report_footer_text: ['', [Validators.maxLength(150)]],
+    signature: ['']
   });
 
   profile = signal<Inspector | null>(null);
@@ -64,6 +68,8 @@ export class ProfileComponent implements OnInit {
   isUploading = signal<boolean>(false);
   message = signal<{ type: 'success' | 'error', text: string } | null>(null);
   logoPreview = signal<string | null>(null);
+  signaturePreview = signal<string | null>(null);
+  isSigning = signal<boolean>(false);
 
   private messageTimeout: any;
 
@@ -85,6 +91,9 @@ export class ProfileComponent implements OnInit {
               ? data.logo_url
               : `${environment.apiUrl}${data.logo_url}`;
             this.logoPreview.set(logoUrl);
+          }
+          if (data.signature) {
+            this.signaturePreview.set(data.signature);
           }
           this.setupAutoSave();
         },
@@ -143,6 +152,16 @@ export class ProfileComponent implements OnInit {
       // Upload
       this.uploadLogo(file);
     }
+  }
+
+  onSignatureSaved(base64: string): void {
+    this.profileForm.patchValue({ signature: base64 });
+    this.signaturePreview.set(base64);
+  }
+
+  onSignatureCleared(): void {
+    this.profileForm.patchValue({ signature: '' });
+    this.signaturePreview.set(null);
   }
 
   private async uploadLogo(file: File): Promise<void> {

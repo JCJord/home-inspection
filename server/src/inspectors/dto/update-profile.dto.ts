@@ -30,6 +30,14 @@ export class UpdateProfileDto {
   license_number?: string;
 
   @IsOptional()
+  @IsString()
+  signature?: string;
+
+  @IsOptional()
+  @IsString()
+  certifications?: string;
+
+  @IsOptional()
   @IsHexColor()
   brand_primary_color?: string;
 

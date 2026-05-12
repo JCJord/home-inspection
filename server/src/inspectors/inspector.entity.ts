@@ -36,6 +36,12 @@ export class Inspector {
   @Column({ nullable: true })
   logo_url: string;
 
+  @Column({ type: 'text', nullable: true })
+  signature: string;
+
+  @Column({ nullable: true })
+  certifications: string;
+
   @Column({
     type: 'varchar',
     default: SubscriptionStatus.FREE,
