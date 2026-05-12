@@ -42,6 +42,7 @@ export class ReportGeneratorComponent implements OnInit {
       case 'major': return '#F97316';
       case 'minor': return '#FEF9C3';
       case 'maintenance': return '#DCFCE7';
+      case 'informational': return '#EFF6FF'; // Tailwind blue-50
       default: return '#F3F4F6';
     }
   }
@@ -53,6 +54,7 @@ export class ReportGeneratorComponent implements OnInit {
       case 'major': return '#FFFFFF';
       case 'minor': return '#854D0E';
       case 'maintenance': return '#166534';
+      case 'informational': return '#1E40AF'; // Tailwind blue-800
       default: return '#4B5563';
     }
   }
@@ -91,6 +93,17 @@ export class ReportGeneratorComponent implements OnInit {
           processedFindings.push(finding);
         }
       });
+
+      // Sort findings to ensure Informational ones appear at the end
+      processedFindings.sort((a, b) => {
+        const isAInfo = String(a.severity).toLowerCase() === 'informational';
+        const isBInfo = String(b.severity).toLowerCase() === 'informational';
+        if (isAInfo && !isBInfo) return 1;
+        if (!isAInfo && isBInfo) return -1;
+        return 0; // maintain original order otherwise
+      });
+
+
 
       return {
         section: section.name,

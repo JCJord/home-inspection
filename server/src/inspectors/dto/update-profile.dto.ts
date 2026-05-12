@@ -82,4 +82,11 @@ export class UpdateProfileDto {
   @MinLength(10, { message: 'Custom maintenance item definition is too short.' })
   @MaxLength(1000)
   custom_maintenance_item_def?: string;
+
+  @ValidateIf(o => o.use_standard_definitions === false)
+  @IsOptional()
+  @IsString()
+  @MinLength(10, { message: 'Custom informational item definition is too short.' })
+  @MaxLength(1000)
+  custom_informational_item_def?: string;
 }

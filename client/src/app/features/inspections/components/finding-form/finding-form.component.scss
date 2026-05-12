@@ -44,8 +44,12 @@
       gap: 0.5rem;
 
       .severity-btn {
-        flex: 1;
-        min-width: 80px;
+        flex: 1 1 calc(50% - 0.25rem);
+        
+        @media (min-width: 640px) {
+          flex: 1 1 0;
+        }
+        
         padding: 0.5rem 0.75rem;
         border-radius: 0.5rem;
         border: 1px solid $color-border;
@@ -90,6 +94,13 @@
             background: $color-maintenance;
             border-color: $color-maintenance;
             box-shadow: 0 0 0 3px rgba($color-maintenance, 0.2);
+          }
+
+          &[data-severity="informational"] {
+            background: $color-informational;
+            border-color: $color-informational;
+            box-shadow: 0 0 0 3px rgba($color-informational, 0.2);
+            color: white;
           }
         }
       }

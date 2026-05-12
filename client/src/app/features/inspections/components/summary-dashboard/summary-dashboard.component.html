@@ -58,6 +58,18 @@
         <span class="stat-footer">{{ s.severity.minor }} Minor &middot; {{ s.severity.maintenance }} Maint.</span>
       </div>
     </div>
+
+    <!-- Informational Notes -->
+    <div class="stat-card stat-card-informational">
+      <div class="card-icon">
+        <lucide-icon [name]="icons.Info" [size]="20"></lucide-icon>
+      </div>
+      <div class="card-content">
+        <span class="stat-label">Informational</span>
+        <span class="stat-value">{{ s.severity.informational }}</span>
+        <span class="stat-footer">Observations & Notes</span>
+      </div>
+    </div>
   </div>
   } @else {
     <div class="flex items-center justify-center h-full">

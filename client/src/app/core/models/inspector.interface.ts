@@ -19,6 +19,7 @@ export interface Inspector {
   custom_major_defect_def?: string;
   custom_minor_defect_def?: string;
   custom_maintenance_item_def?: string;
+  custom_informational_item_def?: string;
   subscription_status: SubscriptionStatus;
   free_inspections_used: number;
   created_at: Date;

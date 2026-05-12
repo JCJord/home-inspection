@@ -167,6 +167,28 @@
           .stat-footer { color: rgba(darken($color-minor, 15%), 0.8); }
         }
       }
+
+      &.stat-card-informational {
+        
+        &::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background-color: rgba($color-informational, 0.05);
+          z-index: 0;
+        }
+
+        .card-icon {
+          background-color: rgba($color-informational, 0.15);
+          color: darken($color-informational, 10%);
+        }
+        
+        .card-content {
+          .stat-label { color: darken($color-informational, 10%); }
+          .stat-value { color: darken($color-informational, 10%); }
+          .stat-footer { color: rgba(darken($color-informational, 10%), 0.8); }
+        }
+      }
     }
   }
 }

@@ -78,6 +78,7 @@ export class InspectionCardComponent {
       [Severity.MAJOR]: 0,
       [Severity.MINOR]: 0,
       [Severity.MAINTENANCE]: 0,
+      [Severity.INFORMATIONAL]: 0,
     };
 
     findings.forEach((finding) => {

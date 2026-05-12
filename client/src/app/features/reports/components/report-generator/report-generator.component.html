@@ -270,11 +270,9 @@
                }
             </table>
             } @else {
-            <div style="padding: 100px; text-align: center; border: 4px dashed #eee; border-radius: 20px;">
-               <div style="font-size: 32px; font-weight: 800; color: #10B981; margin-bottom: 10px;">No Major Concerns
-                  Found</div>
-               <p style="font-size: 22px; color: #888;">No items were flagged as Safety Hazards or Major Defects
-                  during this assessment.</p>
+            <div class="upperElement" style="padding: 100px; text-align: center; border: 4px dashed #eee; border-radius: 20px;">
+               <div style="font-size: 32px; font-weight: 800; color: #10B981; margin-bottom: 10px;">No Major Concerns Found</div>
+               <p style="font-size: 22px; color: #888;">No items were flagged as Safety Hazards or Major Defects during this assessment.</p>
             </div>
             }
          </div>
@@ -386,6 +384,21 @@
                         A component that is nearing the end of its useful life or requires routine upkeep to prevent future deterioration.
                         } @else {
                         {{ inspection?.inspector?.custom_maintenance_item_def }}
+                        }
+                     </span>
+                  </div>
+
+                  <!-- Informational Item Definition -->
+                  <div
+                     style="padding: 25px; border: 2px solid #eee; border-radius: 8px; display: flex; flex-direction: column; gap: 10px;">
+                     <strong
+                        style="color: #3b82f6; font-size: 24px; text-transform: uppercase; letter-spacing: 0.05em;">Informational
+                        Item</strong>
+                     <span style="font-size: 24px; color: #555; line-height: 1.5;">
+                        @if (inspection?.inspector?.use_standard_definitions !== false) {
+                        A documented note or observation about a condition or component, recorded for informational purposes rather than as a defect.
+                        } @else {
+                        {{ inspection?.inspector?.custom_informational_item_def || 'A documented note or observation about a condition or component, recorded for informational purposes rather than as a defect.' }}
                         }
                      </span>
                   </div>
@@ -588,6 +601,7 @@
                <!-- Case 3: Standard Findings -->
                @else {
                @for (finding of group.findings; track finding.id; let i = $index) {
+
                <!-- Content Row -->
                <tr [attr.data-group]="finding.id" class="content-row">
                   <td class="info-column"

@@ -79,6 +79,9 @@ export class Inspector {
   @Column({ type: 'text', nullable: true })
   custom_maintenance_item_def: string;
 
+  @Column({ type: 'text', nullable: true })
+  custom_informational_item_def: string;
+
   @OneToMany(() => Inspection, (inspection) => inspection.inspector)
   inspections: Inspection[];
 

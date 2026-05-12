@@ -159,7 +159,13 @@ export class FindingDetailsComponent implements OnInit {
   }
 
   onSaved(finding: Finding) {
-    this.goBack();
+    // Reload the inspection data to update the finding switcher list
+    this.loadData();
+    
+    // Navigate to the finding we just saved so the form doesn't clear
+    this.router.navigate(['/inspections', this.inspectionId(), 'findings', finding.id], {
+      queryParams: { section: this.selectedSection() }
+    });
   }
 
   selectSection(sectionName: string) {

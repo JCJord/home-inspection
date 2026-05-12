@@ -45,6 +45,7 @@ export class ReportComplianceComponent implements OnInit {
     custom_major_defect_def: [''],
     custom_minor_defect_def: [''],
     custom_maintenance_item_def: [''],
+    custom_informational_item_def: [''],
   });
 
   isLoading = signal<boolean>(true);
@@ -68,6 +69,7 @@ export class ReportComplianceComponent implements OnInit {
             custom_major_defect_def: data.custom_major_defect_def || '',
             custom_minor_defect_def: data.custom_minor_defect_def || '',
             custom_maintenance_item_def: data.custom_maintenance_item_def || '',
+            custom_informational_item_def: data.custom_informational_item_def || '',
           }, { emitEvent: false });
           this.setupAutoSave();
         },

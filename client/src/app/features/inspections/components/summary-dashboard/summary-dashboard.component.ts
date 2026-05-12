@@ -1,7 +1,7 @@
 import { Component, Input, signal, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Inspection } from '../../../../core/models/inspection.interface';
-import { LucideAngularModule, AlertCircle, CheckCircle2, ShieldAlert, ListChecks, FileText, Loader2 } from 'lucide-angular';
+import { LucideAngularModule, AlertCircle, CheckCircle2, ShieldAlert, ListChecks, FileText, Loader2, Info } from 'lucide-angular';
 
 @Component({
   selector: 'app-summary-dashboard',
@@ -16,7 +16,7 @@ export class SummaryDashboardComponent {
   }
   
   private _inspection = signal<Inspection | null>(null);
-  readonly icons = { AlertCircle, CheckCircle2, ShieldAlert, ListChecks, FileText, Loader2 };
+  readonly icons = { AlertCircle, CheckCircle2, ShieldAlert, ListChecks, FileText, Loader2, Info };
 
   stats = computed(() => {
     const insp = this._inspection();
@@ -26,7 +26,7 @@ export class SummaryDashboardComponent {
     const sections = insp.template_snapshot?.sections || [];
     const sectionStatuses = insp.section_statuses || {};
 
-    let safety = 0, major = 0, minor = 0, maintenance = 0;
+    let safety = 0, major = 0, minor = 0, maintenance = 0, informational = 0;
 
     findings.forEach(f => {
       const s = f.severity.toLowerCase();
@@ -34,6 +34,7 @@ export class SummaryDashboardComponent {
       else if (s === 'major') major++;
       else if (s === 'minor') minor++;
       else if (s === 'maintenance') maintenance++;
+      else if (s === 'informational') informational++;
     });
 
     let inspectedSectionsCount = 0;
@@ -44,7 +45,7 @@ export class SummaryDashboardComponent {
 
     return {
       totalFindings: findings.length,
-      severity: { safety, major, minor, maintenance },
+      severity: { safety, major, minor, maintenance, informational },
       inspectedSections: inspectedSectionsCount,
       totalSections: sections.length
     };
