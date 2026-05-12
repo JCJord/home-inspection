@@ -6,26 +6,26 @@
     </div>
 
     <div class="flex flex-wrap items-center gap-2">
-      <app-button [variant]="status === 'inspected' ? 'solid' : 'ghost'" size="sm" [disabled]="disabled"
+      <app-button [variant]="localStatus === 'inspected' ? 'solid' : 'ghost'" size="sm" [disabled]="disabled"
         (click)="onStatusChange('inspected')">
         <div class="flex items-center gap-2">
           <lucide-icon [name]="icons.CheckCircle2" [size]="16"
-            [class.text-green-500]="status !== 'inspected'"></lucide-icon>
+            [class.text-green-500]="localStatus !== 'inspected'"></lucide-icon>
           <span>Inspected</span>
         </div>
       </app-button>
-      <app-button [variant]="status === 'not_inspected' ? 'solid' : 'ghost'" size="sm" [disabled]="disabled"
+      <app-button [variant]="localStatus === 'not_inspected' ? 'solid' : 'ghost'" size="sm" [disabled]="disabled"
         (click)="onStatusChange('not_inspected')">
         <div class="flex items-center gap-2">
-          <lucide-icon [name]="icons.Ban" [size]="16" [class.text-amber-500]="status !== 'not_inspected'"></lucide-icon>
+          <lucide-icon [name]="icons.Ban" [size]="16" [class.text-amber-500]="localStatus !== 'not_inspected'"></lucide-icon>
           <span>Not Inspected</span>
         </div>
       </app-button>
-      <app-button [variant]="status === 'not_present' ? 'solid' : 'ghost'" size="sm" [disabled]="disabled"
+      <app-button [variant]="localStatus === 'not_present' ? 'solid' : 'ghost'" size="sm" [disabled]="disabled"
         (click)="onStatusChange('not_present')">
         <div class="flex items-center gap-2">
           <lucide-icon [name]="icons.CircleX" [size]="16"
-            [class.text-slate-400]="status !== 'not_present'"></lucide-icon>
+            [class.text-slate-400]="localStatus !== 'not_present'"></lucide-icon>
           <span>Not Present</span>
         </div>
       </app-button>
@@ -33,7 +33,7 @@
   </div>
 </div>
 
-@if (status !== 'inspected') {
+@if (localStatus !== 'inspected') {
 <div class="animate-in fade-in slide-in-from-top-2 duration-300 mt-6 pt-6 mx-6">
   <div class="flex flex-col gap-3">
     <div class="flex items-center gap-2">
