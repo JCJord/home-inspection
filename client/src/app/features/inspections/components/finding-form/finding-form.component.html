@@ -145,19 +145,19 @@
     </div>
 
     <!-- Location -->
-    <app-text-input name="location" label="Location (Optional)" placeholder="e.g., North wall, Master bathroom">
+    <app-text-input name="location" label="Location (Optional)" placeholder="e.g., Master Bathroom, North Attic">
     </app-text-input>
-
-    <!-- Short Note (Observation) -->
-    <app-textarea-input name="short_note" label="Observation Note *" placeholder="[Condition]: Describe the issue... [Ramification]: Why it matters..." [rows]="5">
+ 
+    <!-- Description (Observation) -->
+    <app-textarea-input name="description" label="Observation Note *" placeholder="Type 2-3 keywords (e.g., 'water stain ceiling') and tap ✨ Generate AI Content..." [rows]="5" [maxLength]="2200">
     </app-textarea-input>
-
+ 
     <!-- AI Generation Trigger Bar -->
     <div class="ai-trigger-container mb-4 mt-2">
       <div class="flex justify-between items-center p-3 bg-blue-50 border border-blue-100 rounded-lg" [class.opacity-50]="isPublishedSignal()">
          <div class="text-xs text-blue-800 flex items-center">
            <lucide-icon [name]="icons.Sparkles" [size]="16" class="text-blue-500 mr-2"></lucide-icon>
-           <span><strong>AI Assistant:</strong> Let Gemini write your Recommendation and Expert Insight.</span>
+           <span><strong>AI Assistant:</strong> Tap to rewrite your keywords into a clinical report finding.</span>
          </div>
          <button type="button" class="ai-generate-btn shrink-0 ml-4 px-3 py-1.5 bg-white border border-blue-200 rounded text-xs font-bold text-blue-700 hover:bg-blue-100 transition-colors flex items-center" 
            (click)="generateAiComment()" [disabled]="isGeneratingAi() || !isPremium() || isPublishedSignal()"
@@ -166,7 +166,7 @@
              <div class="spinner-small mr-2"></div>
              Generating...
            } @else {
-             {{ isPremium() ? 'Generate AI Content' : 'Upgrade for AI' }}
+             {{ isPremium() ? '✨ Generate AI Content' : 'Upgrade for AI' }}
            }
          </button>
       </div>
@@ -183,22 +183,15 @@
           </div>
         } @else {
           <div class="flex items-center gap-2 px-3 py-1.5 rounded-md bg-blue-50/50 border border-transparent text-blue-700 text-[11px] italic">
-            <span>Location and Observation Note are required for AI generation.</span>
+            <span>Pro tip: Enter 'Location' and 'Observation' keywords for best results.</span>
           </div>
         }
       </div>
     </div>
 
     <!-- Recommendation -->
-    <app-textarea-input name="recommendation" label="Recommendation (Optional)" placeholder="e.g., Recommend evaluation and repair by a licensed electrician." [rows]="2">
+    <app-textarea-input name="recommendation" label="Recommendation (Optional)" placeholder="e.g., Recommend evaluation and repair by a licensed electrician." [rows]="2" [maxLength]="800">
     </app-textarea-input>
-
-    <!-- AI Generated Comment -->
-    <div class="form-group ai-comment-group">
-      <label class="control-label mb-1 block">Expert Insight (Optional)</label>
-      <app-textarea-input name="ai_comment" placeholder="The AI generated professional comment will appear here..." [rows]="3" [readonly]="!isPremium() && findingForm.get('ai_comment')?.value === ''">
-      </app-textarea-input>
-    </div>
 
     <div class="form-actions flex" [class.justify-between]="!isPublishedSignal()" [class.justify-end]="isPublishedSignal()">
       <app-button type="button" class="cancel-btn" variant="outline" (click)="close.emit()" [disabled]="isLoading()">

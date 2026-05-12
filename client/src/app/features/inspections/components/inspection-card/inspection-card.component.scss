@@ -153,6 +153,12 @@
           color: $color-maintenance;
           border-color: rgba($color-maintenance, 0.1);
         }
+
+        &.informational {
+          background: rgba($color-informational, 0.1);
+          color: $color-informational;
+          border-color: rgba($color-informational, 0.1);
+        }
       }
 
       .total-findings {

@@ -68,6 +68,11 @@ export class TextInputComponent {
   disabled = input<boolean>(false);
 
   /**
+   * Optional maximum length of the text.
+   */
+  maxLength = input<number | null>(null);
+
+  /**
    * Emits when the input value changes (manual binding)
    */
   valueChanged = output<string>();

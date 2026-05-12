@@ -98,9 +98,8 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
   findingForm: FormGroup = this.fb.group({
     severity: [Severity.MINOR, [Validators.required]],
     location: [''],
-    short_note: ['', [Validators.required, Validators.maxLength(2200)]],
+    description: ['', [Validators.required, Validators.maxLength(2200)]],
     recommendation: ['', [Validators.maxLength(800)]],
-    ai_comment: ['', [Validators.maxLength(800)]],
     photo_captions: this.fb.array([]),
     new_photo_captions: this.fb.array([])
   });
@@ -122,9 +121,8 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
         this.findingForm.patchValue({
           severity: data.severity,
           location: data.location || '',
-          short_note: data.short_note,
+          description: data.description,
           recommendation: data.recommendation || '',
-          ai_comment: data.ai_comment || '',
         });
         this.existingPhotos.set(data.photos || []);
         
@@ -354,33 +352,29 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
     return this.findingForm.get('severity')?.value;
   }
 
-  generateAiComment(): void {
-    const { severity, location, short_note } = this.findingForm.value;
-    
-    // Clear previous errors
-    this.aiErrorMessage.set(null);
-    this.errorMessage.set(null);
+  generateAiComment() {
+    const { severity, location, description } = this.findingForm.value;
+    const yearBuilt = this._yearBuilt();
 
-    if (!short_note || !location) {
-      if (!short_note) this.findingForm.get('short_note')?.markAsTouched();
+    if (!description || !location) {
+      if (!description) this.findingForm.get('description')?.markAsTouched();
       if (!location) this.findingForm.get('location')?.markAsTouched();
-      
-      this.aiErrorMessage.set('Location and Observation Note are required for AI generation.');
       return;
     }
 
     this.isGeneratingAi.set(true);
+    this.aiErrorMessage.set(null);
 
     this.aiService.generateComment({
       section: this._section(),
       severity,
-      location: location || '',
-      short_note,
-      year_built: this.year_built
+      location,
+      description,
+      year_built: yearBuilt
     }).subscribe({
       next: (response) => {
         this.findingForm.patchValue({
-          ai_comment: response.comment,
+          description: response.description,
           recommendation: response.recommendation
         });
         this.isGeneratingAi.set(false);
@@ -393,25 +387,24 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
     });
   }
 
-  applyPreset(preset: TemplatePreset): void {
-    // TODO: Split into explicit title/description fields in Phase 2
-    const shortNoteValue = preset.description 
+  applyPreset(preset: any): void {
+    const descriptionValue = preset.description 
       ? `[${preset.title}] ${preset.description}` 
       : preset.title;
 
     this.findingForm.patchValue({
       severity: preset.severity || 'Minor',
-      short_note: shortNoteValue
+      description: descriptionValue
     });
   }
 
-  isPresetActive(preset: TemplatePreset): boolean {
+  isPresetActive(preset: any): boolean {
     const formValue = this.findingForm.value;
-    const expectedShortNote = preset.description 
+    const expectedDescription = preset.description 
       ? `[${preset.title}] ${preset.description}` 
       : preset.title;
 
-    return formValue.severity === preset.severity && formValue.short_note === expectedShortNote;
+    return formValue.severity === preset.severity && formValue.description === expectedDescription;
   }
 
   onSubmit(): void {
@@ -457,9 +450,8 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
         const dto: UpdateFindingDto = {
           section: this._section(),
           severity: formValue.severity,
-          short_note: formValue.short_note,
+          description: formValue.description,
           recommendation: formValue.recommendation || undefined,
-          ai_comment: formValue.ai_comment || undefined,
           location: formValue.location || undefined,
         };
 
@@ -475,9 +467,8 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
         const dto: CreateFindingDto = {
           section: this._section(),
           severity: formValue.severity,
-          short_note: formValue.short_note,
+          description: formValue.description,
           recommendation: formValue.recommendation || undefined,
-          ai_comment: formValue.ai_comment || undefined,
           location: formValue.location || undefined,
         };
 

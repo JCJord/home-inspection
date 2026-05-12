@@ -51,7 +51,7 @@
 
       @if (severityCounts()[Severity.MINOR] > 0) {
       <div class="severity-chip minor">
-        <lucide-icon [name]="icons.Info" [size]="12"></lucide-icon>
+        <lucide-icon [name]="icons.AlertCircle" [size]="12"></lucide-icon>
         <span>{{ severityCounts()[Severity.MINOR] }} Minor</span>
       </div>
       }
@@ -60,6 +60,13 @@
       <div class="severity-chip maintenance">
         <lucide-icon [name]="icons.CheckCircle2" [size]="12"></lucide-icon>
         <span>{{ severityCounts()[Severity.MAINTENANCE] }} Maintenance</span>
+      </div>
+      }
+      
+      @if (severityCounts()[Severity.INFORMATIONAL] > 0) {
+      <div class="severity-chip informational">
+        <lucide-icon [name]="icons.Info" [size]="12"></lucide-icon>
+        <span>{{ severityCounts()[Severity.INFORMATIONAL] }} Info</span>
       </div>
       }
 

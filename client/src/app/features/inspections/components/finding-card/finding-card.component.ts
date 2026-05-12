@@ -1,7 +1,7 @@
 import { Component, input, output, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Finding } from '../../../../core/models/inspection.interface';
-import { LucideAngularModule, MapPin, Trash2, Edit, Sparkles, ChevronDown, ChevronUp, Eye, ChevronRight, Wrench } from 'lucide-angular';
+import { LucideAngularModule, MapPin, Trash2, Edit, ChevronDown, ChevronUp, Eye, ChevronRight, Wrench } from 'lucide-angular';
 import { environment } from '../../../../../environments/environment';
 import { DropdownMenuComponent, DropdownItem } from '../../../../shared/components/dropdown-menu/dropdown-menu.component';
 import { PhotoCarouselComponent } from '../../../../shared/components/photo-carousel/photo-carousel.component';
@@ -22,20 +22,18 @@ export class FindingCardComponent {
   delete = output<void>();
   edit = output<void>();
   isConfirmingDelete = signal(false);
-  isAiExpanded = signal(false);
   isNoteExpanded = signal(false);
   isLightboxOpen = signal(false);
   activePhotoIndex = signal(0);
 
-  readonly icons = { MapPin, Sparkles, ChevronDown, ChevronUp, Eye, ChevronRight, Wrench };
+  readonly icons = { MapPin, ChevronDown, ChevronUp, Eye, ChevronRight, Wrench };
 
   openLightbox(index: number) {
     this.activePhotoIndex.set(index);
     this.isLightboxOpen.set(true);
   }
 
-  shouldShowAiExpand = computed(() => (this.finding().ai_comment?.length || 0) > 140);
-  shouldShowNoteExpand = computed(() => (this.finding().short_note?.length || 0) > 140);
+  shouldShowNoteExpand = computed(() => (this.finding().description?.length || 0) > 140);
 
   resolvedImages = computed<string[]>(() => {
     return (this.finding().photos || []).map(p => this.resolveImageUrl(p.storage_url));
@@ -60,13 +58,6 @@ export class FindingCardComponent {
     if (url.startsWith('http')) return url;
     const path = url.startsWith('/') ? url : `/${url}`;
     return `${environment.apiUrl}${path}`;
-  }
-
-  toggleAiExpansion(event: Event) {
-    event.stopPropagation();
-    if (this.shouldShowAiExpand()) {
-      this.isAiExpanded.set(!this.isAiExpanded());
-    }
   }
 
   toggleNoteExpansion(event: Event) {

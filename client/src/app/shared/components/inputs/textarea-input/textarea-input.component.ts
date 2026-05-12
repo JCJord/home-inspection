@@ -46,6 +46,11 @@ export class TextareaInputComponent {
   readonly = input<boolean>(false);
 
   /**
+   * Optional maximum length of the text.
+   */
+  maxLength = input<number | null>(null);
+
+  /**
    * Accesses the injected form control.
    */
   get control() {

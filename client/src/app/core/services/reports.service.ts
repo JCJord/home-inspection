@@ -28,8 +28,8 @@ export class ReportsService {
       <div class="finding">
         <h3>${f.section} - ${f.severity}</h3>
         <p><strong>Location:</strong> ${f.location || 'N/A'}</p>
-        <p>${f.short_note}</p>
-        ${f.ai_comment ? `<p><em>AI Comment: ${f.ai_comment}</em></p>` : ''}
+        <p>${f.description}</p>
+        ${f.recommendation ? `<p><strong>Recommendation:</strong> ${f.recommendation}</p>` : ''}
         <div class="photos">
           ${f.photos.map((p) => `<img src="${environment.apiUrl.replace('/api', '')}${p.storage_url}" style="width: 200px; margin: 5px;" />`).join('')}
         </div>

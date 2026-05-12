@@ -248,7 +248,7 @@
 
                      <!-- Content: Note Paragraphs with Title/Body Hierarchy -->
                      <div style="margin-bottom: 20px;">
-                        @for (paragraph of splitNoteIntoParagraphs(finding.short_note); track $index) {
+                        @for (paragraph of splitNoteIntoParagraphs(finding.description); track $index) {
                         <p [style.font-size]="$first ? '30px' : '26px'" [style.font-weight]="$first ? '800' : '500'"
                            [style.color]="$first ? '#111' : '#444'"
                            style="padding-bottom: 12px; line-height: 1.4; margin: 0; max-width: 1400px;">
@@ -613,7 +613,7 @@
                               style="font-size: 16px; font-weight: 800; text-transform: uppercase; color: #888; display: block; margin-bottom: 10px;">Observation</label>
                            <div class="note-text"
                               style="font-size: 24px; line-height: 1.4; font-weight: 500; color: #111;">{{
-                              finding.short_note }}</div>
+                              finding.description }}</div>
                         </div>
 
                         <span class="severity-tag" [attr.data-severity]="finding.severity"
@@ -634,27 +634,13 @@
                            }}</div>
                      </div>
                      }
-
-                     @if (finding.recommendation) {
+                     @if (finding.recommendation) {
                      <div class="recommendation-block"
                         style="margin-top: 30px; padding: 25px; background-color: #f8fafc; border-left: 6px solid #3b82f6; border-radius: 6px;">
                         <label
                            style="font-size: 20px; font-weight: 800; text-transform: uppercase; color: #3b82f6; display: block; margin-bottom: 10px; letter-spacing: 0.05em;">Recommendation</label>
                         <p style="margin: 0; font-size: 24px; font-weight: 600; line-height: 1.5; color: #1e293b;">
                            {{ finding.recommendation }}
-                        </p>
-                     </div>
-                     }
-
-                     @if (finding.ai_comment) {
-                     <div class="ai-insight-block"
-                        style="margin-top: 40px; border-left: 4px solid #111; padding-left: 25px;">
-                        <label
-                           style="font-size: 24px; font-weight: 800; text-transform: uppercase; color: #888; display: block; margin-bottom: 10px; letter-spacing: 0.05em;">Expert
-                           Insight</label>
-
-                        <p style="margin: 0; font-size: 24px; font-style: italic; line-height: 1.5; color: #444;">
-                           {{ finding.ai_comment }}
                         </p>
                      </div>
                      }

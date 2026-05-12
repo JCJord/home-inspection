@@ -11,16 +11,11 @@ export class CreateFindingDto {
   @IsString()
   @IsNotEmpty()
   @MaxLength(2200)
-  short_note: string;
+  description: string;
 
   @IsOptional()
   @IsString()
   location?: string;
-
-  @IsOptional()
-  @IsString()
-  @MaxLength(800)
-  ai_comment?: string;
 
   @IsOptional()
   @IsString()

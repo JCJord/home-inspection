@@ -4,8 +4,7 @@ export interface CreateFindingDto {
   section: string;
   severity: Severity;
   location?: string;
-  short_note: string;
-  ai_comment?: string;
+  description: string;
   recommendation?: string;
   sort_order?: number;
 }

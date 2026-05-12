@@ -52,26 +52,6 @@
       }
     </div>
 
-    @if (finding().ai_comment) {
-      <div class="ai-comment-box" 
-           [class.expanded]="isAiExpanded()"
-           [class.cursor-pointer]="shouldShowAiExpand()"
-           (click)="toggleAiExpansion($event)">
-        <div class="flex justify-between items-start mb-1.5">
-          <div class="ai-comment-header m-0">
-            <lucide-icon [name]="icons.Sparkles" [size]="12" class="mr-1"></lucide-icon>
-            <span>Report Comment</span>
-          </div>
-          @if (shouldShowAiExpand()) {
-            <div class="expand-indicator">
-              <lucide-icon [name]="isAiExpanded() ? icons.ChevronUp : icons.ChevronDown" [size]="14"></lucide-icon>
-            </div>
-          }
-        </div>
-        <p class="finding-ai-comment" [class.line-clamp-2]="!isAiExpanded() && shouldShowAiExpand()">{{ finding().ai_comment }}</p>
-      </div>
-    }
-
     <div class="finding-observation" 
          [class.expanded]="isNoteExpanded()"
          [class.cursor-pointer]="shouldShowNoteExpand()"
@@ -84,7 +64,7 @@
           </div>
         }
       </div>
-      <p class="finding-note" [class.line-clamp-2]="!isNoteExpanded() && shouldShowNoteExpand()">{{ finding().short_note }}</p>
+      <p class="finding-note" [class.line-clamp-2]="!isNoteExpanded() && shouldShowNoteExpand()">{{ finding().description }}</p>
     </div>
 
     @if (finding().recommendation) {

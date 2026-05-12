@@ -50,7 +50,7 @@ export class FindingSwitcherComponent {
 
   getFindingLabel(finding: Finding | null): string {
     if (!finding) return 'New Finding';
-    let snippet = finding.short_note || 'Drafting note...';
+    let snippet = finding.description || 'Drafting note...';
     if (snippet.length > 25) {
       snippet = snippet.substring(0, 22) + '...';
     }

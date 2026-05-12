@@ -18,6 +18,7 @@
         [formControl]="$any(control)"
         [placeholder]="placeholder()"
         [disabled]="disabled()"
+        [attr.maxlength]="maxLength()"
         class="input-field"
       />
     } @else {
@@ -29,6 +30,7 @@
         (input)="onInputChange($event)"
         [placeholder]="placeholder()"
         [disabled]="disabled()"
+        [attr.maxlength]="maxLength()"
         class="input-field"
       />
     }

@@ -33,7 +33,7 @@ export class AiController {
       generateCommentDto.section,
       generateCommentDto.severity,
       generateCommentDto.location || '',
-      generateCommentDto.short_note,
+      generateCommentDto.description,
       generateCommentDto.year_built
     );
 

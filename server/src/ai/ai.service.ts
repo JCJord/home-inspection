@@ -13,35 +13,34 @@ export class AiService {
     section: string,
     severity: string,
     location: string,
-    shortNote: string,
+    description: string,
     yearBuilt: number
-  ): Promise<{ comment: string, recommendation: string }> {
+  ): Promise<{ description: string, recommendation: string }> {
     if (!this.apiKey) {
       throw new InternalServerErrorException('Gemini API key is not configured');
     }
 
-    const prompt = `You are a Certified Master Home Inspector writing an objective, professional finding for a formal inspection report.
+    const prompt = `You are a Certified Master Home Inspector writing a formal inspection report. 
+    I will provide you with raw, informal field notes. Your task is to REWRITE those notes into a clinical, professional observation and provide a recommendation.
 
     CONTEXT:
     - Property Year Built: ${yearBuilt}
     - Section: ${section}
     - Severity: ${severity}
     - Location: ${location || 'Not specified'}
-    - Inspector's Field Note: ${shortNote}
+    - Raw Field Note: ${description}
 
-    TASK:
-    Convert the Inspector's Field Note into a highly professional, clinical 2 to 3 sentence analysis. 
-
-    STRICT RULES & CONSTRAINTS:
-    1. NO LOCAL ENTITIES: Never name specific brands, utility companies (e.g., Comgás, PG&E), or contractors. Use generic terms like "licensed contractor," "local utility provider," or "qualified specialist."
-    2. LIABILITY PROTECTION: Do not use alarmist, emotional, or legally dangerous words like "explosion," "death," "catastrophic," or "illegal." Use clinical terms like "safety hazard," "compromised," or "requires immediate evaluation."
-    3. NO FILLER: Do not use phrases like "It was observed," "I noted," or "The inspector found." Start directly with the system or component.
-    4. LENGTH LIMIT: The analysis MUST be strictly under 350 characters. Be punchy and direct.
+    STRICT RULES:
+    1. REWRITE the "Raw Field Note" into a professional, objective "description" of 2-3 sentences. Do not use personal pronouns.
+    2. NO LOCAL ENTITIES: Use generic terms like "licensed specialist" instead of specific company names.
+    3. LIABILITY PROTECTION: Use clinical terms like "safety hazard" or "requires evaluation."
+    4. NO FILLER: Start directly with the component.
+    5. LENGTH: "description" must be under 600 characters. "recommendation" must be under 300 characters.
 
     FORMAT:
-    Return a strictly valid JSON object with the following keys:
-    - "comment": The professional 2 to 3 sentence analysis explaining the defect and implication.
-    - "recommendation": A short, formal, actionable recommendation of who should fix it or what to do next (e.g., "Recommend evaluation and repair by a licensed electrician").`;
+    Return a strictly valid JSON object with:
+    - "description": The polished, professional version of the raw field notes.
+    - "recommendation": A short, formal actionable recommendation (e.g., "Recommend evaluation and repair by a licensed electrician").`;
 
     try {
       const response = await fetch(`${this.apiUrl}?key=${this.apiKey}`, {
@@ -83,7 +82,7 @@ export class AiService {
         throw error;
       }
       console.error('AI Service Error:', error);
-      throw new InternalServerErrorException('An unexpected error occurred while generating the AI comment');
+      throw new InternalServerErrorException('An unexpected error occurred while generating the AI content');
     }
   }
 }
