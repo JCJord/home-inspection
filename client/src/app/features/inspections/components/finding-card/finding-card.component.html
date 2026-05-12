@@ -87,6 +87,16 @@
       <p class="finding-note" [class.line-clamp-2]="!isNoteExpanded() && shouldShowNoteExpand()">{{ finding().short_note }}</p>
     </div>
 
+    @if (finding().recommendation) {
+    <div class="finding-recommendation" style="margin-top: 12px; padding: 10px; background-color: #f8fafc; border-left: 3px solid #3b82f6; border-radius: 4px;">
+      <div class="flex items-center mb-1">
+        <lucide-icon [name]="icons.Wrench" [size]="12" class="text-blue-500 mr-1.5"></lucide-icon>
+        <span class="text-[11px] font-bold uppercase tracking-wider text-blue-700">Recommendation</span>
+      </div>
+      <p class="text-[13px] text-slate-700 m-0 leading-relaxed">{{ finding().recommendation }}</p>
+    </div>
+    }
+
     @if (resolvedImages().length > 0) {
       <div class="finding-photos-grid grid grid-cols-4 gap-2 mt-2">
         @for (img of resolvedImages().slice(0, 4); track $index) {

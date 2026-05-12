@@ -635,6 +635,17 @@
                      </div>
                      }
 
+                     @if (finding.recommendation) {
+                     <div class="recommendation-block"
+                        style="margin-top: 30px; padding: 25px; background-color: #f8fafc; border-left: 6px solid #3b82f6; border-radius: 6px;">
+                        <label
+                           style="font-size: 20px; font-weight: 800; text-transform: uppercase; color: #3b82f6; display: block; margin-bottom: 10px; letter-spacing: 0.05em;">Recommendation</label>
+                        <p style="margin: 0; font-size: 24px; font-weight: 600; line-height: 1.5; color: #1e293b;">
+                           {{ finding.recommendation }}
+                        </p>
+                     </div>
+                     }
+
                      @if (finding.ai_comment) {
                      <div class="ai-insight-block"
                         style="margin-top: 40px; border-left: 4px solid #111; padding-left: 25px;">

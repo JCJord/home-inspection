@@ -38,6 +38,9 @@ export class Finding {
   @Column({ nullable: true })
   ai_comment: string;
 
+  @Column({ nullable: true })
+  recommendation: string;
+
   @Column({ default: 0 })
   sort_order: number;
 

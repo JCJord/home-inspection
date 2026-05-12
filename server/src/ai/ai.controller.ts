@@ -29,7 +29,7 @@ export class AiController {
       );
     }
 
-    const comment = await this.aiService.generateComment(
+    const result = await this.aiService.generateComment(
       generateCommentDto.section,
       generateCommentDto.severity,
       generateCommentDto.location || '',
@@ -37,6 +37,6 @@ export class AiController {
       generateCommentDto.year_built
     );
 
-    return { comment };
+    return result;
   }
 }

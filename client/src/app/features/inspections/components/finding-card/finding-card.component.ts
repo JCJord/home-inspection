@@ -1,7 +1,7 @@
 import { Component, input, output, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Finding } from '../../../../core/models/inspection.interface';
-import { LucideAngularModule, MapPin, Trash2, Edit, Sparkles, ChevronDown, ChevronUp, Eye, ChevronRight } from 'lucide-angular';
+import { LucideAngularModule, MapPin, Trash2, Edit, Sparkles, ChevronDown, ChevronUp, Eye, ChevronRight, Wrench } from 'lucide-angular';
 import { environment } from '../../../../../environments/environment';
 import { DropdownMenuComponent, DropdownItem } from '../../../../shared/components/dropdown-menu/dropdown-menu.component';
 import { PhotoCarouselComponent } from '../../../../shared/components/photo-carousel/photo-carousel.component';
@@ -27,7 +27,7 @@ export class FindingCardComponent {
   isLightboxOpen = signal(false);
   activePhotoIndex = signal(0);
 
-  readonly icons = { MapPin, Sparkles, ChevronDown, ChevronUp, Eye, ChevronRight };
+  readonly icons = { MapPin, Sparkles, ChevronDown, ChevronUp, Eye, ChevronRight, Wrench };
 
   openLightbox(index: number) {
     this.activePhotoIndex.set(index);

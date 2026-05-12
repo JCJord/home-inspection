@@ -15,7 +15,7 @@ export class AiService {
     location: string,
     shortNote: string,
     yearBuilt: number
-  ): Promise<string> {
+  ): Promise<{ comment: string, recommendation: string }> {
     if (!this.apiKey) {
       throw new InternalServerErrorException('Gemini API key is not configured');
     }
@@ -36,10 +36,12 @@ export class AiService {
     1. NO LOCAL ENTITIES: Never name specific brands, utility companies (e.g., Comgás, PG&E), or contractors. Use generic terms like "licensed contractor," "local utility provider," or "qualified specialist."
     2. LIABILITY PROTECTION: Do not use alarmist, emotional, or legally dangerous words like "explosion," "death," "catastrophic," or "illegal." Use clinical terms like "safety hazard," "compromised," or "requires immediate evaluation."
     3. NO FILLER: Do not use phrases like "It was observed," "I noted," or "The inspector found." Start directly with the system or component.
-    4. LENGTH LIMIT: The output MUST be strictly under 350 characters. Be punchy and direct.
+    4. LENGTH LIMIT: The analysis MUST be strictly under 350 characters. Be punchy and direct.
 
     FORMAT:
-    State the defect, explain the implication (why it matters), and state the recommended professional action.`;
+    Return a strictly valid JSON object with the following keys:
+    - "comment": The professional 2 to 3 sentence analysis explaining the defect and implication.
+    - "recommendation": A short, formal, actionable recommendation of who should fix it or what to do next (e.g., "Recommend evaluation and repair by a licensed electrician").`;
 
     try {
       const response = await fetch(`${this.apiUrl}?key=${this.apiKey}`, {
@@ -66,7 +68,16 @@ export class AiService {
         throw new InternalServerErrorException('Received invalid response format from Gemini API');
       }
 
-      return data.candidates[0].content.parts[0].text;
+      let textContent = data.candidates[0].content.parts[0].text;
+      
+      // Strip markdown json formatting if Gemini includes it
+      if (textContent.startsWith('```json')) {
+        textContent = textContent.replace(/^```json\n/, '').replace(/\n```$/, '');
+      } else if (textContent.startsWith('```')) {
+        textContent = textContent.replace(/^```\n/, '').replace(/\n```$/, '');
+      }
+      
+      return JSON.parse(textContent.trim());
     } catch (error) {
       if (error instanceof BadRequestException || error instanceof ServiceUnavailableException || error instanceof InternalServerErrorException) {
         throw error;

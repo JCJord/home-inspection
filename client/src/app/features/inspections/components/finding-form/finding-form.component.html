@@ -149,26 +149,27 @@
     </app-text-input>
 
     <!-- Short Note (Observation) -->
-    <app-textarea-input name="short_note" label="Observation Note *" placeholder="[Condition]: Describe the issue... [Ramification]: Why it matters... [Recommendation]: Who should fix it..." [rows]="5">
+    <app-textarea-input name="short_note" label="Observation Note *" placeholder="[Condition]: Describe the issue... [Ramification]: Why it matters..." [rows]="5">
     </app-textarea-input>
 
-    <!-- AI Generated Comment -->
-    <div class="form-group ai-comment-group">
-      <div class="flex justify-between items-center mb-1">
-        <label class="control-label">AI Generated Comment (Optional)</label>
-        <button type="button" class="ai-generate-btn" (click)="generateAiComment()" [disabled]="isGeneratingAi() || !isPremium() || isPublishedSignal()"
-          [class.premium-lock]="!isPremium()" [title]="!isPremium() ? 'Available for users with Active subscription only' : ''">
-          @if (isGeneratingAi()) {
-            <div class="spinner-small mr-2"></div>
-            Generating...
-          } @else {
-            <lucide-icon [name]="icons.Sparkles" [size]="14" class="mr-1"></lucide-icon>
-            {{ isPremium() ? 'Generate AI Comment' : 'Upgrade for AI' }}
-          }
-        </button>
+    <!-- AI Generation Trigger Bar -->
+    <div class="ai-trigger-container mb-4 mt-2">
+      <div class="flex justify-between items-center p-3 bg-blue-50 border border-blue-100 rounded-lg" [class.opacity-50]="isPublishedSignal()">
+         <div class="text-xs text-blue-800 flex items-center">
+           <lucide-icon [name]="icons.Sparkles" [size]="16" class="text-blue-500 mr-2"></lucide-icon>
+           <span><strong>AI Assistant:</strong> Let Gemini write your Recommendation and Expert Insight.</span>
+         </div>
+         <button type="button" class="ai-generate-btn shrink-0 ml-4 px-3 py-1.5 bg-white border border-blue-200 rounded text-xs font-bold text-blue-700 hover:bg-blue-100 transition-colors flex items-center" 
+           (click)="generateAiComment()" [disabled]="isGeneratingAi() || !isPremium() || isPublishedSignal()"
+           [class.premium-lock]="!isPremium()" [title]="!isPremium() ? 'Available for users with Active subscription only' : ''">
+           @if (isGeneratingAi()) {
+             <div class="spinner-small mr-2"></div>
+             Generating...
+           } @else {
+             {{ isPremium() ? 'Generate AI Content' : 'Upgrade for AI' }}
+           }
+         </button>
       </div>
-      <app-textarea-input name="ai_comment" placeholder="The AI generated professional comment will appear here..." [rows]="4" [readonly]="!isPremium() && findingForm.get('ai_comment')?.value === ''">
-      </app-textarea-input>
       <div class="ai-status-container min-h-[32px] mt-2">
         @if (aiErrorMessage()) {
           <div class="flex items-center gap-2 px-3 py-1.5 rounded-md bg-red-50 border border-red-200 text-red-700 text-xs font-bold animate-pulse">
@@ -181,12 +182,22 @@
             <span>AI Finding generation is available for Active users.</span>
           </div>
         } @else {
-          <div class="flex items-center gap-2 px-3 py-1.5 rounded-md bg-blue-50 border border-blue-100 text-blue-700 text-xs italic">
-            <lucide-icon [name]="icons.Sparkles" [size]="12" class="text-blue-400"></lucide-icon>
+          <div class="flex items-center gap-2 px-3 py-1.5 rounded-md bg-blue-50/50 border border-transparent text-blue-700 text-[11px] italic">
             <span>Location and Observation Note are required for AI generation.</span>
           </div>
         }
       </div>
+    </div>
+
+    <!-- Recommendation -->
+    <app-textarea-input name="recommendation" label="Recommendation (Optional)" placeholder="e.g., Recommend evaluation and repair by a licensed electrician." [rows]="2">
+    </app-textarea-input>
+
+    <!-- AI Generated Comment -->
+    <div class="form-group ai-comment-group">
+      <label class="control-label mb-1 block">Expert Insight (Optional)</label>
+      <app-textarea-input name="ai_comment" placeholder="The AI generated professional comment will appear here..." [rows]="3" [readonly]="!isPremium() && findingForm.get('ai_comment')?.value === ''">
+      </app-textarea-input>
     </div>
 
     <div class="form-actions flex" [class.justify-between]="!isPublishedSignal()" [class.justify-end]="isPublishedSignal()">

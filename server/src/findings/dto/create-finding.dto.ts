@@ -23,6 +23,11 @@ export class CreateFindingDto {
   ai_comment?: string;
 
   @IsOptional()
+  @IsString()
+  @MaxLength(800)
+  recommendation?: string;
+
+  @IsOptional()
   @IsInt()
   @Min(0)
   sort_order?: number;

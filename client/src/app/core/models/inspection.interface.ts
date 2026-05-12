@@ -41,6 +41,7 @@ export interface Finding {
   location?: string;
   short_note: string;
   ai_comment?: string;
+  recommendation?: string;
   sort_order: number;
   photos: Photo[];
   created_at: string;

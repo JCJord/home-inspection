@@ -13,6 +13,7 @@ export interface GenerateCommentRequest {
 
 export interface GenerateCommentResponse {
   comment: string;
+  recommendation: string;
 }
 
 @Injectable({

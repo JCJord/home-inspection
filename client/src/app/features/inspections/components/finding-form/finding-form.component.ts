@@ -99,6 +99,7 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
     severity: [Severity.MINOR, [Validators.required]],
     location: [''],
     short_note: ['', [Validators.required, Validators.maxLength(2200)]],
+    recommendation: ['', [Validators.maxLength(800)]],
     ai_comment: ['', [Validators.maxLength(800)]],
     photo_captions: this.fb.array([]),
     new_photo_captions: this.fb.array([])
@@ -122,6 +123,7 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
           severity: data.severity,
           location: data.location || '',
           short_note: data.short_note,
+          recommendation: data.recommendation || '',
           ai_comment: data.ai_comment || '',
         });
         this.existingPhotos.set(data.photos || []);
@@ -378,7 +380,8 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
     }).subscribe({
       next: (response) => {
         this.findingForm.patchValue({
-          ai_comment: response.comment
+          ai_comment: response.comment,
+          recommendation: response.recommendation
         });
         this.isGeneratingAi.set(false);
       },
@@ -455,6 +458,7 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
           section: this._section(),
           severity: formValue.severity,
           short_note: formValue.short_note,
+          recommendation: formValue.recommendation || undefined,
           ai_comment: formValue.ai_comment || undefined,
           location: formValue.location || undefined,
         };
@@ -472,6 +476,7 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
           section: this._section(),
           severity: formValue.severity,
           short_note: formValue.short_note,
+          recommendation: formValue.recommendation || undefined,
           ai_comment: formValue.ai_comment || undefined,
           location: formValue.location || undefined,
         };
