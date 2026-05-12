@@ -1,0 +1,67 @@
+<div class="summary-dashboard-wrapper">
+  @if (stats(); as s) {
+  <div class="dashboard-header">
+    <div class="header-icon-box">
+      <lucide-icon [name]="icons.FileText" [size]="28" class="text-primary"></lucide-icon>
+    </div>
+    <div class="header-text">
+      <h2>Report Summary</h2>
+      <p>High-level overview of the current inspection</p>
+    </div>
+  </div>
+
+  <div class="stats-grid">
+    <!-- Total Findings -->
+    <div class="stat-card">
+      <div class="card-icon text-standard-muted">
+        <lucide-icon [name]="icons.ListChecks" [size]="20"></lucide-icon>
+      </div>
+      <div class="card-content">
+        <span class="stat-label">Total Findings</span>
+        <span class="stat-value">{{ s.totalFindings }}</span>
+        <span class="stat-footer">Across all sections</span>
+      </div>
+    </div>
+    
+    <!-- Sections Inspected -->
+    <div class="stat-card">
+      <div class="card-icon text-standard-muted">
+        <lucide-icon [name]="icons.CheckCircle2" [size]="20"></lucide-icon>
+      </div>
+      <div class="card-content">
+        <span class="stat-label">Sections Inspected</span>
+        <div class="stat-value">{{ s.inspectedSections }}<span class="stat-sub">/{{ s.totalSections }}</span></div>
+        <span class="stat-footer">Completion progress</span>
+      </div>
+    </div>
+
+    <!-- Critical Issues -->
+    <div class="stat-card stat-card-critical">
+      <div class="card-icon">
+        <lucide-icon [name]="icons.ShieldAlert" [size]="20"></lucide-icon>
+      </div>
+      <div class="card-content">
+        <span class="stat-label">Critical Issues</span>
+        <span class="stat-value">{{ s.severity.safety + s.severity.major }}</span>
+        <span class="stat-footer">{{ s.severity.safety }} Safety &middot; {{ s.severity.major }} Major</span>
+      </div>
+    </div>
+
+    <!-- Minor Issues -->
+    <div class="stat-card stat-card-minor">
+      <div class="card-icon">
+        <lucide-icon [name]="icons.AlertCircle" [size]="20"></lucide-icon>
+      </div>
+      <div class="card-content">
+        <span class="stat-label">Minor Issues</span>
+        <span class="stat-value">{{ s.severity.minor + s.severity.maintenance }}</span>
+        <span class="stat-footer">{{ s.severity.minor }} Minor &middot; {{ s.severity.maintenance }} Maint.</span>
+      </div>
+    </div>
+  </div>
+  } @else {
+    <div class="flex items-center justify-center h-full">
+      <lucide-icon [name]="icons.Loader2" [size]="32" class="animate-spin text-primary"></lucide-icon>
+    </div>
+  }
+</div>

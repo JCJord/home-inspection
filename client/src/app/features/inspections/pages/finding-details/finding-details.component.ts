@@ -7,16 +7,17 @@ import { Inspection, Finding, SectionStatus } from '../../../../core/models/insp
 import { WorkbenchLayoutComponent } from '../../../../shared/components/workbench-layout/workbench-layout.component';
 import { FindingFormComponent } from '../../components/finding-form/finding-form.component';
 import { FindingSwitcherComponent } from '../../components/finding-switcher/finding-switcher.component';
-import { LucideAngularModule, Home, ChevronUp, ChevronDown, Hammer, Zap, Droplets, Wind, Flame, Box, Grid, Monitor, Car, Shield, Search, Info, AlertTriangle, Copy, Edit2, Trash2, Plus, Save, Lock, Unlock, ArrowLeft, Wrench, Thermometer, Lightbulb, Paintbrush, Sun, Key, Eye, Power, FileCheck, HardHat, Construction, Ruler, ShieldCheck, ShieldAlert, BrickWall, Trees, Fan, Sparkles, Wifi, WifiOff, Trash, Settings, Check, X, Users, FileText, Image, Cloud, CloudRain, CloudLightning, Snowflake, Umbrella, Compass, MapPin, Clock, Calendar, Activity, Scissors, Heart, AlertCircle, HelpCircle, Ban, LockOpen, Send, Download, Loader2, CheckCircle2, Layers, Menu, ChevronLeft, LayoutGrid, CircleX } from 'lucide-angular';
+import { LucideAngularModule, Home, ChevronUp, ChevronDown, Hammer, Zap, Droplets, Wind, Flame, Box, Grid, Monitor, Car, Shield, Search, Info, AlertTriangle, Copy, Edit2, Trash2, Plus, Save, Lock, Unlock, ArrowLeft, Wrench, Thermometer, Lightbulb, Paintbrush, Sun, Key, Eye, Power, FileCheck, HardHat, Construction, Ruler, ShieldCheck, ShieldAlert, BrickWall, Trees, Fan, Sparkles, Wifi, WifiOff, Trash, Settings, Check, X, Users, FileText, Image, Cloud, CloudRain, CloudLightning, Snowflake, Umbrella, Compass, MapPin, Clock, Calendar, Activity, Scissors, Heart, AlertCircle, HelpCircle, Ban, LockOpen, Send, Download, Loader2, CheckCircle2, Layers, Menu, ChevronLeft, LayoutGrid, CircleX, PieChart } from 'lucide-angular';
 import { BackButtonComponent } from '../../../../shared/components/back-button/back-button.component';
 import { SectionStatusToggleComponent } from '../../components/section-status-toggle/section-status-toggle';
 import { TextInputComponent } from '../../../../shared/components/inputs/text-input/text-input.component';
+import { SummaryDashboardComponent } from '../../components/summary-dashboard/summary-dashboard.component';
 
 @Component({
   selector: 'app-finding-details',
   standalone: true,
-  imports: [CommonModule, WorkbenchLayoutComponent, FindingFormComponent, FindingSwitcherComponent, LucideAngularModule, BackButtonComponent, SectionStatusToggleComponent, TextInputComponent],
-  providers: [{ provide: 'lucideIcons', useValue: { Home, ChevronUp, ChevronDown, Hammer, Zap, Droplets, Wind, Flame, Box, Grid, Monitor, Car, Shield, Search, Info, AlertTriangle, Copy, Edit2, Trash2, Plus, Save, Lock, Unlock, ArrowLeft, Wrench, Thermometer, Lightbulb, Paintbrush, Sun, Key, Eye, Power, FileCheck, HardHat, Construction, Ruler, ShieldCheck, ShieldAlert, BrickWall, Trees, Fan, Sparkles, Wifi, WifiOff, Trash, Settings, Check, X, Users, FileText, Image, Cloud, CloudRain, CloudLightning, Snowflake, Umbrella, Compass, MapPin, Clock, Calendar, Activity, Scissors, Heart, AlertCircle, HelpCircle, Ban, LockOpen, Send, Download, Loader2, CheckCircle2, Layers, Menu, ChevronLeft, LayoutGrid, CircleX } }],
+  imports: [CommonModule, WorkbenchLayoutComponent, FindingFormComponent, FindingSwitcherComponent, LucideAngularModule, BackButtonComponent, SectionStatusToggleComponent, TextInputComponent, SummaryDashboardComponent],
+  providers: [{ provide: 'lucideIcons', useValue: { Home, ChevronUp, ChevronDown, Hammer, Zap, Droplets, Wind, Flame, Box, Grid, Monitor, Car, Shield, Search, Info, AlertTriangle, Copy, Edit2, Trash2, Plus, Save, Lock, Unlock, ArrowLeft, Wrench, Thermometer, Lightbulb, Paintbrush, Sun, Key, Eye, Power, FileCheck, HardHat, Construction, Ruler, ShieldCheck, ShieldAlert, BrickWall, Trees, Fan, Sparkles, Wifi, WifiOff, Trash, Settings, Check, X, Users, FileText, Image, Cloud, CloudRain, CloudLightning, Snowflake, Umbrella, Compass, MapPin, Clock, Calendar, Activity, Scissors, Heart, AlertCircle, HelpCircle, Ban, LockOpen, Send, Download, Loader2, CheckCircle2, Layers, Menu, ChevronLeft, LayoutGrid, CircleX, PieChart } }],
   templateUrl: './finding-details.component.html',
   styleUrl: './finding-details.component.scss'
 })
@@ -40,10 +41,10 @@ export class FindingDetailsComponent implements OnInit {
     Wrench, Thermometer, Lightbulb, Paintbrush, Sun, Key, Eye, Power, FileCheck, HardHat, Construction, Ruler, ShieldCheck, ShieldAlert,
     BrickWall, Trees, Fan, Sparkles, Wifi, WifiOff, Trash, Settings, Check, X, Users, FileText, Image, Cloud, CloudRain, CloudLightning,
     Snowflake, Umbrella, Compass, MapPin, Clock, Calendar, Activity, Scissors, Heart, AlertCircle, HelpCircle, Ban, LockOpen, Send,
-    Download, Loader2, CheckCircle2, Layers, Menu
+    Download, Loader2, CheckCircle2, Layers, Menu, PieChart
   };
 
-  readonly icons = { ChevronLeft, LayoutGrid, Plus, Home, ChevronDown, CheckCircle2, FileText, Ban, CircleX, Info, Edit2 };
+  readonly icons = { ChevronLeft, LayoutGrid, Plus, Home, ChevronDown, CheckCircle2, FileText, Ban, CircleX, Info, Edit2, PieChart };
 
   sections = computed(() => this.inspection()?.template_snapshot?.sections || []);
 
@@ -119,7 +120,7 @@ export class FindingDetailsComponent implements OnInit {
         this.inspection.set(insp);
 
         const fId = this.findingId();
-        if (fId && fId !== 'new') {
+        if (fId && fId !== 'new' && fId !== 'summary') {
           // Optimization: try to find in the already loaded inspection
           const found = insp.findings?.find(f => f.id === fId);
           if (found) {
@@ -132,7 +133,7 @@ export class FindingDetailsComponent implements OnInit {
           }
         } else {
           this.isLoading.set(false);
-          // If no section selected, use the first one from template
+          // If no section selected, use the first one from template or 'summary'
           if (!this.selectedSection() && insp.template_snapshot?.sections?.length) {
             this.selectedSection.set(insp.template_snapshot.sections[0].name);
           }
@@ -162,10 +163,17 @@ export class FindingDetailsComponent implements OnInit {
   }
 
   selectSection(sectionName: string) {
+    this.workbench.closeSidebar();
+
+    if (sectionName === 'summary') {
+      this.router.navigate(['/inspections', this.inspectionId(), 'findings', 'summary'], {
+        queryParams: { section: 'summary' }
+      });
+      return;
+    }
+
     const findings = this.inspection()?.findings || [];
     const sectionFindings = findings.filter(f => f.section === sectionName);
-
-    this.workbench.closeSidebar();
 
     if (sectionFindings.length > 0) {
       // If there's already data in this section, load the first finding instead of a blank 'new'

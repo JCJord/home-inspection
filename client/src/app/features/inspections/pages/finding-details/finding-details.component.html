@@ -47,6 +47,16 @@
     </div>
 
     <div class="flex-1 overflow-y-auto p-2 pb-20 md:pb-4 space-y-1">
+      <div (click)="selectSection('summary')" [class.active]="selectedSection() === 'summary'"
+        class="section-tab flex items-center justify-between px-4 py-3 rounded-xl cursor-pointer hover:bg-light-standard transition mb-2 bg-primary/5">
+        <div class="flex items-center gap-3 min-w-0">
+          <lucide-icon [name]="icons.PieChart" class="text-primary flex-shrink-0" [size]="20"></lucide-icon>
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="text-sm font-bold text-primary truncate">Report Summary</span>
+          </div>
+        </div>
+      </div>
+
       @for (sec of sections(); track sec.name) {
       <div (click)="selectSection(sec.name)" [class.active]="selectedSection() === sec.name"
         class="section-tab flex items-center justify-between px-4 py-3 rounded-xl cursor-pointer hover:bg-light-standard transition">
@@ -80,64 +90,67 @@
   <div class="p-4 pb-24 md:p-8 md:pb-20 relative min-h-full">
     <div class="max-w-4xl mx-auto">
       <div class="flex flex-col mb-6">
-
-        <!-- COMPACT SWITCHER -->
-        <div class="mb-4">
-          <app-finding-switcher [finding]="finding()" [sectionFindings]="sectionFindings()"
-            (findingSelected)="onFindingSelected($event)">
-          </app-finding-switcher>
-        </div>
-
-        <div
-          class="relative bg-surface-standard rounded-3xl border border-standard shadow-sm overflow-hidden min-h-[600px]">
-          @if (isLoading()) {
-          <div class="flex justify-center items-center py-24">
-            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        @if (selectedSection() === 'summary') {
+          <app-summary-dashboard [inspection]="inspection()"></app-summary-dashboard>
+        } @else {
+          <!-- COMPACT SWITCHER -->
+          <div class="mb-4">
+            <app-finding-switcher [finding]="finding()" [sectionFindings]="sectionFindings()"
+              (findingSelected)="onFindingSelected($event)">
+            </app-finding-switcher>
           </div>
-          } @else {
-          @if (currentSection(); as section) {
-          <!-- COMPONENTIZED SECTION STATUS -->
-          <app-section-status-toggle [status]="currentSectionStatus().status"
-            [reason]="currentSectionStatus().reason || ''" (statusChange)="updateSectionStatus($event)"
-            (reasonChange)="updateSectionReasonDirect($event)">
-          </app-section-status-toggle>
 
-          <div class="p-4 md:p-8">
-            @if (currentSectionStatus().status === 'inspected') {
-            @if (section.fields && section.fields.length > 0) {
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-6 pb-12 border-b border-[#E2E8F0]">
-              @for (field of section.fields; track field.key) {
-              <app-text-input [label]="field.label" [value]="inspection()?.metadata_values?.[field.key] || ''"
-                (valueChanged)="updateMetadataValueDirect(field.key, $event)"
-                [placeholder]="'Set ' + field.label + '...'" [suffixIcon]="icons.Edit2">
-              </app-text-input>
+          <div
+            class="relative bg-surface-standard rounded-3xl border border-standard shadow-sm overflow-hidden min-h-[600px]">
+            @if (isLoading()) {
+            <div class="flex justify-center items-center py-24">
+              <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+            </div>
+            } @else {
+            @if (currentSection(); as section) {
+            <!-- COMPONENTIZED SECTION STATUS -->
+            <app-section-status-toggle [status]="currentSectionStatus().status"
+              [reason]="currentSectionStatus().reason || ''" (statusChange)="updateSectionStatus($event)"
+              (reasonChange)="updateSectionReasonDirect($event)">
+            </app-section-status-toggle>
+
+            <div class="p-4 md:p-8">
+              @if (currentSectionStatus().status === 'inspected') {
+              @if (section.fields && section.fields.length > 0) {
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-6 pb-12 border-b border-[#E2E8F0]">
+                @for (field of section.fields; track field.key) {
+                <app-text-input [label]="field.label" [value]="inspection()?.metadata_values?.[field.key] || ''"
+                  (valueChanged)="updateMetadataValueDirect(field.key, $event)"
+                  [placeholder]="'Set ' + field.label + '...'" [suffixIcon]="icons.Edit2">
+                </app-text-input>
+                }
+              </div>
+              }
+
+              <app-finding-form [inspectionId]="inspectionId()!" [section]="selectedSection()!"
+                [presets]="currentSectionPresets()" [finding]="finding()" [year_built]="inspection()?.year_built || 0"
+                (close)="goBack()" (saved)="onSaved($event)">
+              </app-finding-form>
+              } @else {
+              <div class="py-4 text-center">
+                <div class="relative inline-block mb-6">
+                  <lucide-icon [name]="currentSectionStatus().status === 'not_inspected' ? icons.Ban : icons.CircleX"
+                    [size]="60" class="text-standard-muted/20"></lucide-icon>
+
+                </div>
+                <h4 class="text-lg font-bold text-standard mb-2">Section Not Included</h4>
+                <p class="text-sm text-standard-muted max-w-sm mx-auto opacity-70 leading-relaxed">
+                  This system is marked as <strong>{{ currentSectionStatus().status === 'not_inspected' ? 'Not Inspected'
+                    : 'Not Present' }}</strong>.
+                  Edit the limitation narrative above if needed.
+                </p>
+              </div>
               }
             </div>
             }
-
-            <app-finding-form [inspectionId]="inspectionId()!" [section]="selectedSection()!"
-              [presets]="currentSectionPresets()" [finding]="finding()" [year_built]="inspection()?.year_built || 0"
-              (close)="goBack()" (saved)="onSaved($event)">
-            </app-finding-form>
-            } @else {
-            <div class="py-4 text-center">
-              <div class="relative inline-block mb-6">
-                <lucide-icon [name]="currentSectionStatus().status === 'not_inspected' ? icons.Ban : icons.CircleX"
-                  [size]="60" class="text-standard-muted/20"></lucide-icon>
-
-              </div>
-              <h4 class="text-lg font-bold text-standard mb-2">Section Not Included</h4>
-              <p class="text-sm text-standard-muted max-w-sm mx-auto opacity-70 leading-relaxed">
-                This system is marked as <strong>{{ currentSectionStatus().status === 'not_inspected' ? 'Not Inspected'
-                  : 'Not Present' }}</strong>.
-                Edit the limitation narrative above if needed.
-              </p>
-            </div>
             }
           </div>
-          }
-          }
-        </div>
+        }
       </div>
     </div>
   </div>
