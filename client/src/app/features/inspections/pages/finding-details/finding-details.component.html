@@ -13,7 +13,7 @@
 
     <button type="button" (click)="workbench.toggleSidebar()"
       class="flex items-center justify-center gap-1.5 text-base md:text-lg font-bold text-standard md:pointer-events-none active:scale-95 transition-all text-center group w-full min-w-0 relative">
-      <span class="truncate">{{ selectedSection() || 'Select Section' }}</span>
+      <span class="truncate">{{ activeSection() || 'Select Section' }}</span>
 
       <div
         class="md:hidden flex items-center justify-center p-1 rounded-md bg-light-standard group-active:bg-primary/10 transition-colors relative">
@@ -47,7 +47,7 @@
     </div>
 
     <div class="flex-1 overflow-y-auto p-2 pb-20 md:pb-4 space-y-1">
-      <div (click)="selectSection('summary')" [class.active]="selectedSection() === 'summary'"
+      <div (click)="selectSection('summary')" [class.active]="activeSection() === 'summary'"
         class="section-tab flex items-center justify-between px-4 py-3 rounded-xl cursor-pointer hover:bg-light-standard transition mb-2 bg-primary/5">
         <div class="flex items-center gap-3 min-w-0">
           <lucide-icon [name]="icons.PieChart" class="text-primary flex-shrink-0" [size]="20"></lucide-icon>
@@ -58,7 +58,7 @@
       </div>
 
       @for (sec of sections(); track sec.name) {
-      <div (click)="selectSection(sec.name)" [class.active]="selectedSection() === sec.name"
+      <div (click)="selectSection(sec.name)" [class.active]="activeSection() === sec.name"
         class="section-tab flex items-center justify-between px-4 py-3 rounded-xl cursor-pointer hover:bg-light-standard transition">
         <div class="flex items-center gap-3 min-w-0">
           <lucide-icon [name]="getIconForSection(sec.icon_key)" class="text-standard-muted flex-shrink-0"
@@ -90,7 +90,7 @@
   <div class="p-4 pb-24 md:p-8 md:pb-20 relative min-h-full">
     <div class="max-w-4xl mx-auto">
       <div class="flex flex-col mb-6">
-        @if (selectedSection() === 'summary') {
+        @if (activeSection() === 'summary') {
           <app-summary-dashboard [inspection]="inspection()"></app-summary-dashboard>
         } @else {
           <!-- COMPACT SWITCHER -->
@@ -141,7 +141,7 @@
               </div>
               }
 
-              <app-finding-form [inspectionId]="inspectionId()!" [section]="selectedSection()!"
+              <app-finding-form [inspectionId]="inspectionId()!" [section]="activeSection()!"
                 [presets]="currentSectionPresets()" [finding]="finding()" [year_built]="inspection()?.year_built || 0"
                 [isPublished]="inspection()?.status === 'published'"
                 (close)="goBack()" (saved)="onSaved($event)">

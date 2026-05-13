@@ -180,7 +180,7 @@
       <div class="cover-photo-section bg-surface-standard border border-standard rounded-[2rem] overflow-hidden">
         <div class="relative group min-h-[260px] flex items-center justify-center bg-light-standard overflow-hidden">
           @if (insp.cover_photo_url) {
-          <img [src]="apiUrl + insp.cover_photo_url" alt="Cover Photo"
+          <img [src]="insp.cover_photo_url | resolveImage | async" alt="Cover Photo"
             class="w-full h-full object-cover absolute inset-0">
           <div class="absolute inset-0 bg-black/40 opacity-0 transition-opacity flex items-center justify-center gap-3">
             <button

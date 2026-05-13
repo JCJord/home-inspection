@@ -12,6 +12,7 @@ import { ReportGeneratorComponent } from '../../../reports/components/report-gen
 import { BackButtonComponent } from '../../../../shared/components/back-button/back-button.component';
 import { ImageCompressionService } from '../../../../core/services/image-compression.service';
 import { environment } from '../../../../../environments/environment';
+import { ResolveImagePipe } from '../../../../shared/pipes/resolve-image.pipe';
 
 @Component({
   selector: 'app-inspection-details',
@@ -23,7 +24,8 @@ import { environment } from '../../../../../environments/environment';
     LucideAngularModule,
     SkeletonComponent,
     ReportGeneratorComponent,
-    BackButtonComponent
+    BackButtonComponent,
+    ResolveImagePipe
   ],
   templateUrl: './inspection-details.component.html',
   styleUrl: './inspection-details.component.scss',
@@ -237,7 +239,9 @@ export class InspectionDetailsComponent implements OnInit {
   }
 
   editFinding(finding: Finding): void {
-    this.router.navigate(['/inspections', this.inspection()!.id, 'findings', finding.id]);
+    this.router.navigate(['/inspections', this.inspection()!.id, 'findings', finding.id], {
+      queryParams: { section: finding.section }
+    });
   }
 
   async onCoverPhotoSelected(event: Event): Promise<void> {
@@ -274,6 +278,14 @@ export class InspectionDetailsComponent implements OnInit {
   routeToWorkbench(): void {
     const insp = this.inspection();
     if (!insp) return;
+
+    // JOB BOOT: If online, trigger a fresh fetch to ensure cache is fully hydrated (Fat Payload)
+    if (navigator.onLine) {
+      this.inspectionsService.getInspectionById(insp.id).subscribe({
+        next: (fresh) => this.inspection.set(fresh),
+        error: (err) => console.warn('Job Boot fetch failed, proceeding with existing cache', err)
+      });
+    }
 
     // Determine target section: current selection OR first section with findings OR first section
     const findings = insp.findings || [];

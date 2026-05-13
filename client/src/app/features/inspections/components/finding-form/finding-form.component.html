@@ -75,12 +75,17 @@
         @for (photo of existingPhotos(); track photo.id; let i = $index) {
         <div class="existing-photo-item" [formGroupName]="i">
           <div class="photo-thumbnail">
-            <img [src]="resolveImageUrl(photo.storage_url)" alt="Finding photo">
+            <img [src]="photo.storage_url | resolveImage | async" alt="Finding photo">
             
             @if (photo.isSyncing) {
               <div class="absolute inset-0 bg-black/40 flex flex-col items-center justify-center text-white backdrop-blur-[1px]">
                 <lucide-icon [name]="icons.Loader2" class="animate-spin mb-1" [size]="16"></lucide-icon>
                 <span class="text-[8px] font-bold uppercase tracking-widest">Syncing</span>
+              </div>
+            } @else if ($any(photo).hasError) {
+              <div class="absolute inset-0 bg-red-500/60 flex flex-col items-center justify-center text-white backdrop-blur-[1px]">
+                <lucide-icon [name]="icons.AlertCircle" class="mb-1" [size]="16"></lucide-icon>
+                <span class="text-[8px] font-bold uppercase tracking-widest">Failed</span>
               </div>
             }
 
@@ -225,7 +230,7 @@
 
 @if (photoToEdit()) {
   <app-image-editor-modal
-    [imageUrl]="photoToEdit()!.type === 'existing' ? resolveImageUrl($any(photoToEdit()!).photo.storage_url) : $any(photoToEdit()!).previewUrl"
+    [imageUrl]="((photoToEdit()!.type === 'existing' ? $any(photoToEdit()!).photo.storage_url : $any(photoToEdit()!).previewUrl) | resolveImage | async) || ''"
     (close)="photoToEdit.set(null)"
     (save)="onSavePhotoEdit($event)">
   </app-image-editor-modal>

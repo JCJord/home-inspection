@@ -18,6 +18,7 @@ import { ImageEditorModalComponent } from '../../../../shared/components/image-e
 import { PresetButtonComponent } from '../../../../shared/components/preset-button/preset-button.component';
 import { DraftService } from '../../../../core/services/draft.service';
 import { MutationQueueService, MutationType } from '../../../../core/services/mutation-queue.service';
+import { ResolveImagePipe } from '../../../../shared/pipes/resolve-image.pipe';
 import { debounceTime } from 'rxjs';
 
 interface SelectedPhoto {
@@ -36,7 +37,7 @@ import { TemplatePreset } from '../../../../core/models/inspection.interface';
 @Component({
   selector: 'app-finding-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ButtonComponent, TextInputComponent, TextareaInputComponent, LucideAngularModule, ImageEditorModalComponent, PresetButtonComponent],
+  imports: [CommonModule, ReactiveFormsModule, ButtonComponent, TextInputComponent, TextareaInputComponent, LucideAngularModule, ImageEditorModalComponent, PresetButtonComponent, ResolveImagePipe],
   templateUrl: './finding-form.component.html',
   styleUrl: './finding-form.component.scss',
 })
@@ -187,13 +188,6 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
     });
   }
 
-  resolveImageUrl(url: string | undefined): string {
-    if (!url) return '';
-    if (url.startsWith('blob:') || url.startsWith('http')) return url;
-    const path = url.startsWith('/') ? url : `/${url}`;
-    return `${environment.apiUrl}${path}`; 
-  }
-
   // Two-step Delete Flow
   initDeleteExistingPhoto(photoId: string): void {
     this.activeDeleteExistingId.set(photoId);
@@ -217,13 +211,12 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
 
     if (!photoId || !this._inspectionId() || !this._finding()) return;
     
-    this.inspectionsService.updatePhoto(this._inspectionId(), this._finding()!.id, photoId, {
-      caption: caption || ''
-    }).subscribe({
-      error: (err) => {
-        console.error('Failed to update caption', err);
-        this.errorMessage.set('Failed to save caption.');
-      }
+    // OFFLINE-RESILIENT: Push to background queue instead of direct call
+    this.mutationQueueService.enqueue({
+      type: MutationType.UPDATE_PHOTO,
+      inspectionId: this._inspectionId(),
+      findingId: this._finding()!.id,
+      payload: { photoId, caption: caption || '' }
     });
   }
 
@@ -232,10 +225,23 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
     const findingId = this._finding()?.id;
     const inspectionId = this._inspectionId();
     
-    if (!findingId || !inspectionId) return;
+    if (!inspectionId) return;
+
+    // LOCAL CANCEL: If this is a temporary photo, just cancel the upload task
+    if (photoId.startsWith('temp-')) {
+      const taskId = photoId.replace('temp-', '');
+      this.mutationQueueService.cancelTask(taskId);
+      return;
+    }
+
+    if (!findingId) return;
 
     // Optimistic UI Update: Remove from local list immediately
-    this.existingPhotos.update(photos => photos.filter(p => p.id !== photoId));
+    const index = this.existingPhotos().findIndex(p => p.id === photoId);
+    if (index > -1) {
+      this.existingPhotos.update(photos => photos.filter(p => p.id !== photoId));
+      this.photoCaptions.removeAt(index);
+    }
 
     // Push to Background Queue
     this.mutationQueueService.enqueue({
@@ -270,59 +276,59 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
     if (!target) return;
     
     this.photoToEdit.set(null);
-
     this.isLoading.set(true);
+
     const rawFile = new File([blob], `edited_${Date.now()}.jpg`, { type: 'image/jpeg' });
+    const inspectionId = this._inspectionId();
+    const findingId = this.isEditMode() ? this._finding()!.id : undefined;
     
-    // Compress edited image too
-    this.compressionService.compressImage(rawFile).then(file => {
+    // 1. Compress
+    this.compressionService.compressImage(rawFile).then(async file => {
       if (target.type === 'existing') {
-          const photo = target.photo;
-          // Upload new photo
-          this.inspectionsService.uploadPhoto(this._inspectionId(), this._finding()!.id, file).subscribe({
-            next: (newPhoto) => {
-              // Delete the old photo
-              this.inspectionsService.deletePhoto(this._inspectionId(), this._finding()!.id, photo.id).subscribe({
-                next: () => {
-                  this.existingPhotos.update(photos => {
-                    const newPhotos = [...photos];
-                    const idx = newPhotos.findIndex(p => p.id === photo.id);
-                    if (idx > -1) {
-                      newPhotos[idx] = newPhoto; 
-                    } else {
-                      newPhotos.push(newPhoto);
-                    }
-                    return newPhotos;
-                  });
-                  this.isLoading.set(false);
-                },
-                error: (err) => {
-                  console.error('Failed to delete old photo', err);
-                  this.errorMessage.set('Photo updated but old version failed to delete from server.');
-                  this.isLoading.set(false);
-                }
-              });
-            },
-            error: (err) => {
-              console.error('Failed to upload edited photo', err);
-              this.errorMessage.set('Failed to save edited photo.');
-              this.isLoading.set(false);
-            }
-          });
+        const oldPhoto = target.photo;
+        const caption = this.photoCaptions.at(this.existingPhotos().findIndex(p => p.id === oldPhoto.id)).get('caption')?.value || '';
+
+        // OFFLINE-RESILIENT workflow: 
+        // 1. Enqueue Delete for the old one
+        this.mutationQueueService.enqueue({
+          type: MutationType.DELETE_PHOTO,
+          inspectionId,
+          findingId,
+          payload: { photoId: oldPhoto.id }
+        });
+
+        // 2. Enqueue Upload for the new one (preserving caption)
+        const taskId = crypto.randomUUID();
+        const previewUrl = URL.createObjectURL(file);
+
+        this.mutationQueueService.enqueue({
+          id: taskId,
+          type: MutationType.UPLOAD_PHOTO,
+          inspectionId,
+          findingId,
+          file,
+          payload: { caption, previewData: previewUrl }
+        });
+
+        // 3. Update the task with base64 for persistence
+        this.mutationQueueService.fileToBase64(file).then(base64 => {
+          this.mutationQueueService.updateTaskPayload(taskId, { previewData: base64 });
+        });
+
       } else {
-          // New file: just update the local array natively!
-          this.selectedFiles.update(files => {
-              const newArray = [...files];
-              URL.revokeObjectURL(newArray[target.index].previewUrl); 
-              newArray[target.index] = {
-                 file,
-                 previewUrl: URL.createObjectURL(file),
-                 isCompressing: false
-              };
-              return newArray;
-          });
-          this.isLoading.set(false);
+        // New file: just update the local array natively!
+        this.selectedFiles.update(files => {
+          const newArray = [...files];
+          URL.revokeObjectURL(newArray[target.index!].previewUrl); 
+          newArray[target.index!] = {
+            file,
+            previewUrl: URL.createObjectURL(file),
+            isCompressing: false
+          };
+          return newArray;
+        });
       }
+      this.isLoading.set(false);
     });
   }
 
@@ -450,7 +456,6 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
 
       if (this.isEditMode()) {
         const findingId = this._finding()!.id;
-        // 1. Update Finding Task
         this.mutationQueueService.enqueue({
           type: MutationType.UPDATE_FINDING,
           inspectionId,
@@ -463,24 +468,11 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
             location: formValue.location || undefined,
           }
         });
-
-        // 2. Upload New Photos
-        this.selectedFiles().forEach((item, index) => {
-          const caption = this.newPhotoCaptions.at(index).value;
-          this.mutationQueueService.enqueue({
-            type: MutationType.UPLOAD_PHOTO,
-            inspectionId,
-            findingId,
-            file: item.file,
-            payload: { caption }
-          });
-        });
       } else {
-        // 1. Create Finding Task
         this.mutationQueueService.enqueue({
           type: MutationType.CREATE_FINDING,
           inspectionId,
-          clientFindingId, // Link photos to this finding
+          clientFindingId,
           payload: {
             section: this._section(),
             severity: formValue.severity,
@@ -489,19 +481,33 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
             location: formValue.location || undefined,
           }
         });
-
-        // 2. Upload Photos (linked via clientFindingId)
-        this.selectedFiles().forEach((item, index) => {
-          const caption = this.newPhotoCaptions.at(index).value;
-          this.mutationQueueService.enqueue({
-            type: MutationType.UPLOAD_PHOTO,
-            inspectionId,
-            clientFindingId, // Wait for CREATE_FINDING to resolve this
-            file: item.file,
-            payload: { caption }
-          });
-        });
       }
+
+      // 2. Upload Photos (Instant enqueuing to prevent UI flicker)
+      this.selectedFiles().forEach((item, index) => {
+        const caption = this.newPhotoCaptions.at(index).value;
+        const taskId = crypto.randomUUID();
+        
+        // Enqueue IMMEDIATELY with the synchronous blob URL for instant UI response
+        this.mutationQueueService.enqueue({
+          id: taskId,
+          type: MutationType.UPLOAD_PHOTO,
+          inspectionId,
+          findingId: this.isEditMode() ? this._finding()!.id : undefined,
+          clientFindingId: this.isEditMode() ? undefined : clientFindingId,
+          file: item.file,
+          payload: { caption, previewData: (item as any).previewUrl } 
+        });
+
+        // "Upgrade" the task with persistent Base64 in the background
+        this.mutationQueueService.fileToBase64(item.file).then(base64 => {
+          this.mutationQueueService.updateTaskPayload(taskId, { previewData: base64 });
+        });
+      });
+
+      // 3. Clear local selection (Handoff complete)
+      this.selectedFiles.set([]);
+      this.newPhotoCaptions.clear();
 
       // Optimistic Success: Emit saved immediately
       // Create a "Temporary Finding" for the UI to display
@@ -515,12 +521,8 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
         location: formValue.location,
         photos: [
           ...(this._finding()?.photos || []), // Existing
-          ...this.selectedFiles().map((f, i) => ({
-            id: `temp-${Date.now()}-${i}`,
-            storage_url: f.previewUrl, // Local blob URL
-            caption: this.newPhotoCaptions.at(i).value,
-            isSyncing: true
-          }))
+          // We don't add the new ones here because mergePendingMutations 
+          // will pick them up from the MutationQueueService immediately
         ] as any,
         isSyncing: true // Visual indicator
       } as any;

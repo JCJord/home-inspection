@@ -12,7 +12,8 @@ import { BackButtonComponent } from '../../../../shared/components/back-button/b
 import { SectionStatusToggleComponent } from '../../components/section-status-toggle/section-status-toggle';
 import { TextInputComponent } from '../../../../shared/components/inputs/text-input/text-input.component';
 import { SummaryDashboardComponent } from '../../components/summary-dashboard/summary-dashboard.component';
-import { MutationQueueService, TaskCompletion } from '../../../../core/services/mutation-queue.service';
+import { MutationQueueService, MutationType, TaskCompletion } from '../../../../core/services/mutation-queue.service';
+import { debounceTime, Subject } from 'rxjs';
 
 @Component({
   selector: 'app-finding-details',
@@ -28,13 +29,29 @@ export class FindingDetailsComponent implements OnInit {
   private inspectionsService = inject(InspectionsService);
   private mutationQueueService = inject(MutationQueueService);
 
-  inspection = signal<Inspection | null>(null);
-  finding = signal<Finding | null>(null);
+  rawInspection = signal<Inspection | null>(null);
+  inspection = computed(() => {
+    const raw = this.rawInspection();
+    if (!raw) return null;
+    return this.inspectionsService.mergePendingMutations(raw);
+  });
+  
+  finding = computed(() => {
+    const insp = this.inspection();
+    const fId = this.findingId();
+    if (!insp || !fId || fId === 'new' || fId === 'summary') return null;
+    return insp.findings?.find(f => f.id === fId) || null;
+  });
+
   isLoading = signal(true);
 
   inspectionId = signal<string | null>(null);
   findingId = signal<string | null>(null);
-  selectedSection = signal<string | null>(null);
+  activeSection = signal<string | null>(null);
+  
+  private metadataUpdate$ = new Subject<{key: string, value: string}>();
+  
+  debugSync = signal<boolean>(true); // DEBUG FLAG
 
   @ViewChild('workbench') workbench!: WorkbenchLayoutComponent;
 
@@ -52,7 +69,7 @@ export class FindingDetailsComponent implements OnInit {
 
   currentSection = computed(() => {
     const sections = this.inspection()?.template_snapshot?.sections || [];
-    return sections.find(s => s.name === this.selectedSection()) || null;
+    return sections.find(s => s.name === this.activeSection()) || null;
   });
 
   currentSectionPresets = computed(() => {
@@ -61,7 +78,7 @@ export class FindingDetailsComponent implements OnInit {
   });
 
   sectionFindings = computed(() => {
-    const section = this.selectedSection();
+    const section = this.activeSection();
     const findings = this.inspection()?.findings || [];
     if (!section) return [];
     return findings.filter(f => f.section === section);
@@ -77,7 +94,7 @@ export class FindingDetailsComponent implements OnInit {
   });
 
   currentSectionStatus = computed<SectionStatus>(() => {
-    const section = this.selectedSection();
+    const section = this.activeSection();
     const statuses = this.inspection()?.section_statuses || {};
     return section ? (statuses[section] || { status: 'inspected' }) : { status: 'inspected' };
   });
@@ -85,26 +102,49 @@ export class FindingDetailsComponent implements OnInit {
   totalFindings = computed(() => this.inspection()?.findings?.length || 0);
 
   ngOnInit() {
-    combineLatest([
-      this.route.paramMap,
-      this.route.queryParamMap
-    ]).subscribe(([params, queryParams]) => {
+    // 1. Watch for Inspection/Finding changes
+    this.route.paramMap.subscribe(params => {
+      const inspId = params.get('id');
+      const findingId = params.get('findingId');
       const prevInspId = this.inspectionId();
       const prevFindingId = this.findingId();
 
-      const inspId = params.get('id');
-      const findingId = params.get('findingId');
-      const section = queryParams.get('section');
-
-      this.inspectionId.set(inspId);
-      this.findingId.set(findingId);
-
-      // Update section from query params (always update to keep in sync with URL)
-      this.selectedSection.set(section);
-
-      // Only reload data if IDs changed or if inspection hasn't been loaded yet
-      if (inspId !== prevInspId || findingId !== prevFindingId || !this.inspection()) {
+      // Only reload full data if the Inspection ID changed
+      if (inspId && inspId !== prevInspId) {
+        this.inspectionId.set(inspId);
+        this.findingId.set(findingId);
         this.loadData();
+      } else {
+        this.findingId.set(findingId);
+      }
+    });
+
+    // 2. Watch for Section changes
+    this.route.queryParamMap.subscribe(queryParams => {
+      const section = queryParams.get('section');
+      
+      // AUTO-REDIRECT: If we land in the workbench without a section or finding, 
+      // default to the Report Summary instead of showing a blank div.
+      const fId = this.findingId();
+      if (!section && (!fId || fId === 'new')) {
+        this.router.navigate(['/inspections', this.inspectionId(), 'findings', 'summary'], {
+          queryParams: { section: 'summary' },
+          replaceUrl: true
+        });
+        return;
+      }
+
+      // If we have a section, set it
+      if (section) {
+        if (section !== this.activeSection()) {
+          this.activeSection.set(section);
+        }
+      } else if (fId && fId !== 'new' && fId !== 'summary') {
+        // If we have a finding ID but NO section, try to resolve it from the finding
+        const found = this.finding();
+        if (found) {
+          this.activeSection.set(found.section);
+        }
       }
     });
 
@@ -113,10 +153,15 @@ export class FindingDetailsComponent implements OnInit {
       if (completion.clientFindingId && completion.clientFindingId === this.findingId()) {
         // Swap ID in URL without reloading data
         this.router.navigate(['/inspections', this.inspectionId(), 'findings', completion.result.id], { 
-          queryParams: { section: this.selectedSection() },
+          queryParams: { section: this.activeSection() },
           replaceUrl: true 
         });
       }
+    });
+
+    // Debounced Metadata Updates (Shortened to 500ms for responsiveness)
+    this.metadataUpdate$.pipe(debounceTime(500)).subscribe(({key, value}) => {
+      this.enqueueInspectionUpdate({ metadata_values: { [key]: value } });
     });
   }
 
@@ -126,83 +171,32 @@ export class FindingDetailsComponent implements OnInit {
 
     this.isLoading.set(true);
     
-    // Only reset if it's a different finding than what we have
-    // (Preserve optimistic findings that are currently syncing)
-    if (this.finding()?.id !== this.findingId()) {
-      this.finding.set(null);
-    }
+    // Preserve optimistic findings that are currently syncing
+    // (We no longer manually reset 'finding' as it is computed)
 
     this.inspectionsService.getInspectionById(inspId).subscribe({
       next: (insp) => {
-        this.inspection.set(insp);
-
-        const fId = this.findingId();
-        if (fId && fId !== 'new' && fId !== 'summary') {
-          // Check if it's an optimistic finding in local state
-          const found = insp.findings?.find(f => f.id === fId);
-          if (found) {
-            this.finding.set(found);
-            this.selectedSection.set(found.section);
-            this.isLoading.set(false);
-          } else {
-            // Check if ID is a client-side UUID (avoid 404s for syncing items)
-            const isClientSideId = fId.length === 36 && fId.includes('-');
-            if (isClientSideId) {
-                // It's likely a syncing item that's not yet in the server's response
-                // If it's already in our signal, keep it, otherwise show loading
-                if (!this.finding()) {
-                   this.isLoading.set(true); 
-                } else {
-                   this.isLoading.set(false);
-                }
-            } else {
-                this.loadFinding(inspId, fId);
-            }
-          }
-        } else {
-          this.isLoading.set(false);
-          if (!this.selectedSection() && insp.template_snapshot?.sections?.length) {
-            this.selectedSection.set(insp.template_snapshot.sections[0].name);
-          }
-        }
-      },
-      error: () => this.isLoading.set(false)
-    });
-  }
-
-  loadFinding(inspId: string, findingId: string) {
-    this.inspectionsService.getFinding(inspId, findingId).subscribe({
-      next: (finding) => {
-        this.finding.set(finding);
-        this.selectedSection.set(finding.section);
+        this.rawInspection.set(insp);
         this.isLoading.set(false);
       },
       error: () => this.isLoading.set(false)
     });
   }
 
+  // Removed manual sync methods as 'finding' is now computed
+
   goBack() {
     this.router.navigate(['/inspections', this.inspectionId()]);
   }
 
   onSaved(finding: Finding) {
-    // Optimistic Update: Add to local inspection signal
-    this.inspection.update(insp => {
-      if (!insp) return null;
-      // Remove if it exists (for updates) and add the new version
-      const otherFindings = (insp.findings || []).filter(f => f.id !== finding.id);
-      return {
-        ...insp,
-        findings: [...otherFindings, finding]
-      };
-    });
+    // We NO LONGER manually update the inspection signal.
+    // The computed 'inspection' signal will automatically pick up the new 
+    // mutation task from the queue and merge it into the UI.
 
-    // Set the finding signal so the form stays open in "edit" mode for this finding
-    this.finding.set(finding);
-    
-    // Navigate to the finding ID (could be client UUID)
+    // Navigation will trigger syncFindingFromState which uses the computed inspection
     this.router.navigate(['/inspections', this.inspectionId(), 'findings', finding.id], {
-      queryParams: { section: this.selectedSection() }
+      queryParams: { section: this.activeSection() }
     });
   }
 
@@ -240,7 +234,7 @@ export class FindingDetailsComponent implements OnInit {
 
   startNewFinding() {
     this.router.navigate(['/inspections', this.inspectionId(), 'findings', 'new'], {
-      queryParams: { section: this.selectedSection() }
+      queryParams: { section: this.activeSection() }
     });
   }
 
@@ -265,57 +259,53 @@ export class FindingDetailsComponent implements OnInit {
     const insp = this.inspection();
     if (!insp) return;
 
-    const currentMetadata = insp.metadata_values || {};
-    const updatedMetadata = { ...currentMetadata, [key]: value };
+    // We only update the raw state if we want it to persist across navigation
+    // but the computed 'inspection' signal handles the visual update via the queue
 
-    this.inspectionsService.updateInspection(insp.id, { metadata_values: updatedMetadata }).subscribe({
-      next: (updated) => {
-        this.inspection.set(updated);
-      },
-      error: (err) => console.error('Failed to update metadata', err)
+    // Queue the change
+    this.metadataUpdate$.next({ key, value });
+  }
+
+  private enqueueInspectionUpdate(payload: any): void {
+    const insp = this.inspection();
+    if (!insp) return;
+
+    if (this.debugSync()) console.log('[DEBUG SYNC] Enqueuing Update:', payload);
+
+    this.mutationQueueService.enqueue({
+      type: MutationType.UPDATE_INSPECTION,
+      inspectionId: insp.id,
+      payload
     });
   }
 
   updateSectionStatus(status: 'inspected' | 'not_inspected' | 'not_present'): void {
     const insp = this.inspection();
-    const section = this.selectedSection();
+    const section = this.activeSection();
     if (!insp || !section) return;
 
-    const currentStatuses = insp.section_statuses || {};
-    const updatedStatuses = { 
-      ...currentStatuses, 
-      [section]: { ...currentStatuses[section], status } 
-    };
+    if (this.debugSync()) console.log(`[DEBUG SYNC] Optimistic Status [${section}]:`, status);
 
-    this.inspectionsService.updateInspection(insp.id, { section_statuses: updatedStatuses }).subscribe({
-      next: (updated) => {
-        this.inspection.set(updated);
-      },
-      error: (err) => console.error('Failed to update section status', err)
+    const current = insp.section_statuses?.[section] || {};
+    
+    // Queue the change IMMEDIATELY
+    this.enqueueInspectionUpdate({ 
+      section_statuses: { [section]: { ...current, status } } 
     });
-  }
-
-  updateSectionReason(event: Event): void {
-    const input = event.target as HTMLTextAreaElement | HTMLInputElement;
-    this.updateSectionReasonDirect(input.value);
   }
 
   updateSectionReasonDirect(reason: string): void {
     const insp = this.inspection();
-    const section = this.selectedSection();
+    const section = this.activeSection();
     if (!insp || !section) return;
 
-    const currentStatuses = insp.section_statuses || {};
-    const updatedStatuses = { 
-      ...currentStatuses, 
-      [section]: { ...currentStatuses[section], reason } 
-    };
+    if (this.debugSync()) console.log(`[DEBUG SYNC] Optimistic Reason [${section}]:`, reason);
 
-    this.inspectionsService.updateInspection(insp.id, { section_statuses: updatedStatuses }).subscribe({
-      next: (updated) => {
-        this.inspection.set(updated);
-      },
-      error: (err) => console.error('Failed to update section reason', err)
+    const current = insp.section_statuses?.[section] || {};
+    
+    // Queue the change IMMEDIATELY
+    this.enqueueInspectionUpdate({ 
+      section_statuses: { [section]: { ...current, reason } } 
     });
   }
 }

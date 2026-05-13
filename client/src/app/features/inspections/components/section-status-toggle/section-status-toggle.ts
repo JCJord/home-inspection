@@ -22,34 +22,18 @@ export class SectionStatusToggleComponent implements OnInit, OnDestroy, OnChange
 
   readonly icons = { CheckCircle2, Ban, CircleX, Info };
 
-  localStatus: 'inspected' | 'not_inspected' | 'not_present' = 'inspected';
-  private statusSubject = new Subject<'inspected' | 'not_inspected' | 'not_present'>();
-  private sub?: Subscription;
-
   ngOnInit() {
-    this.localStatus = this.status;
-    this.sub = this.statusSubject.pipe(
-      debounceTime(400),
-      distinctUntilChanged()
-    ).subscribe(newStatus => {
-      this.statusChange.emit(newStatus);
-    });
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    if (changes['status'] && !changes['status'].firstChange) {
-      this.localStatus = this.status;
-    }
   }
 
   ngOnDestroy() {
-    this.sub?.unsubscribe();
   }
 
   onStatusChange(newStatus: 'inspected' | 'not_inspected' | 'not_present') {
-    if (this.disabled || this.localStatus === newStatus) return;
-    this.localStatus = newStatus; // Optimistic UI update
-    this.statusSubject.next(newStatus);
+    if (this.disabled || this.status === newStatus) return;
+    this.statusChange.emit(newStatus);
   }
 
   onReasonBlur(event: any) {
