@@ -1,12 +1,8 @@
+@use "sass:color";
 @use '../../../../../assets/styles/variables' as *;
 
 .finding-form-container {
-  background: $color-surface;
-  border-radius: 1rem;
-  border: 1px solid $color-border;
-  padding: 1.5rem;
   margin-top: 1rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
   animation: slideDown 0.3s ease-out;
 
   .form-body {
@@ -48,8 +44,12 @@
       gap: 0.5rem;
 
       .severity-btn {
-        flex: 1;
-        min-width: 80px;
+        flex: 1 1 calc(50% - 0.25rem);
+        
+        @media (min-width: 640px) {
+          flex: 1 1 0;
+        }
+        
         padding: 0.5rem 0.75rem;
         border-radius: 0.5rem;
         border: 1px solid $color-border;
@@ -94,6 +94,13 @@
             background: $color-maintenance;
             border-color: $color-maintenance;
             box-shadow: 0 0 0 3px rgba($color-maintenance, 0.2);
+          }
+
+          &[data-severity="informational"] {
+            background: $color-informational;
+            border-color: $color-informational;
+            box-shadow: 0 0 0 3px rgba($color-informational, 0.2);
+            color: white;
           }
         }
       }
@@ -146,16 +153,39 @@
 
       .existing-photo-item {
         position: relative;
-        width: 100%;
-        aspect-ratio: 1;
-        border-radius: 0.5rem;
-        overflow: hidden;
-        border: 1px solid $color-border;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+
+        .photo-thumbnail {
+          position: relative;
+          width: 100%;
+          aspect-ratio: 1;
+          border-radius: 0.5rem;
+          overflow: hidden;
+          border: 1px solid $color-border;
+        }
 
         img {
           width: 100%;
           height: 100%;
           object-fit: cover;
+        }
+
+        .compression-loader {
+          position: absolute;
+          inset: 0;
+          background: rgba(0, 0, 0, 0.4);
+          backdrop-filter: blur(2px);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 5;
+          color: white;
+
+          lucide-icon {
+            animation: spin 1s linear infinite;
+          }
         }
 
         .photo-action-pill {
@@ -196,11 +226,12 @@
             transition: all 0.2s;
 
             .action-text {
-              font-size: 0.75rem; /* 12px */
+              font-size: 0.75rem;
+              /* 12px */
               font-weight: 500;
               letter-spacing: 0.02em;
               white-space: nowrap;
-              
+
               &.font-bold {
                 font-weight: 700;
               }
@@ -208,24 +239,80 @@
 
             &.edit {
               color: white;
-              &:hover { color: $color-primary; transform: scale(1.1); }
+
+              &:hover {
+                color: $color-primary;
+                transform: scale(1.1);
+              }
             }
 
             &.delete {
               color: $color-error;
-              &:hover { opacity: 0.8; transform: scale(1.1); }
+
+              &:hover {
+                opacity: 0.8;
+                transform: scale(1.1);
+              }
             }
 
             &.cancel-delete {
               color: white;
               padding: 0 4px;
-              &:hover { color: $color-primary; transform: scale(1.05); }
+
+              &:hover {
+                color: $color-primary;
+                transform: scale(1.05);
+              }
             }
-            
+
             &.confirm-delete {
               color: white;
               padding: 0 4px;
-              &:hover { color: $color-error; transform: scale(1.05); }
+
+              &:hover {
+                color: $color-error;
+                transform: scale(1.05);
+              }
+            }
+          }
+        }
+
+        .photo-caption-input {
+          display: flex;
+          align-items: center;
+          padding: 4px 6px;
+          margin-top: 4px;
+          background: rgba($color-primary, 0.03);
+          border-radius: 6px;
+          border: 1px solid rgba($color-border, 0.3);
+          transition: all 0.2s ease;
+          
+          &:focus-within {
+            background: white;
+            border-color: $color-primary;
+            box-shadow: 0 2px 4px rgba($color-primary, 0.1);
+          }
+
+          input {
+            font-family: inherit;
+            color: $color-text;
+            font-size: 0.75rem;
+            font-weight: 500;
+            border: none;
+            width: 100%;
+            background: transparent;
+            padding: 2px 0;
+            
+            &::placeholder {
+              color: rgba($color-text-muted, 0.5);
+              font-size: 0.7rem;
+              font-style: italic;
+              font-weight: 400;
+            }
+
+            &:focus {
+              outline: none;
+              font-style: normal;
             }
           }
         }
@@ -324,7 +411,7 @@
         background: rgba($color-text-muted, 0.05);
         color: $color-text-muted;
         border-color: $color-border;
-        
+
         &:hover {
           transform: none;
         }
@@ -352,6 +439,7 @@
     margin-top: 0.5rem;
     border-top: 1px solid $color-border;
     padding-top: 1.25rem;
+
     .ai-status-container {
       display: flex;
       align-items: center;
@@ -362,7 +450,7 @@
         gap: 0.375rem;
         background: rgba($color-warning, 0.12);
         border: 1px solid rgba($color-warning, 0.5);
-        color: darken($color-warning, 10%);
+        color: color.adjust($color-warning, $lightness: -10%);
         padding: 0.375rem 0.875rem;
         border-radius: 0.5rem;
         font-size: 0.75rem;
@@ -379,13 +467,25 @@
 }
 
 @keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-4px); }
-  75% { transform: translateX(4px); }
+
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  25% {
+    transform: translateX(-4px);
+  }
+
+  75% {
+    transform: translateX(4px);
+  }
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes slideDown {

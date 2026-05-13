@@ -4,4 +4,5 @@ export interface CreateInspectionDto {
   client_email: string;
   year_built: number;
   square_footage?: number;
+  section_statuses?: Record<string, any>;
 }

@@ -5,10 +5,10 @@
 
   <div class="tabs-scroll-area" #scrollArea [class.dragging]="isDragging" (mousedown)="onMouseDown($event)"
     (mouseleave)="onMouseLeave()" (mouseup)="onMouseUp()" (mousemove)="onMouseMove($event)" (scroll)="checkScroll()">
-    @for (section of sections; track section) {
-    <button class="tab-btn" [class.active]="selectedSection === section" (click)="selectSection(section)">
-      <lucide-icon [name]="icons[section]" [size]="18"></lucide-icon>
-      <span>{{ section }}</span>
+    @for (section of sections; track section.name) {
+    <button class="tab-btn" [class.active]="selectedSection === section.name" (click)="selectSection(section.name)">
+      <lucide-icon [name]="icons[section.icon_key] || icons['Box']" [size]="18"></lucide-icon>
+      <span>{{ section.name }}</span>
     </button>
     }
   </div>

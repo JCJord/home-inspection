@@ -13,13 +13,15 @@ import { InspectionsModule } from './inspections/inspections.module';
 import { FindingsModule } from './findings/findings.module';
 import { PhotosModule } from './photos/photos.module';
 import { AiModule } from './ai/ai.module';
+import { ReportsModule } from './reports/reports.module';
+import { TemplatesModule } from './templates/templates.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     ThrottlerModule.forRoot([{
       ttl: 60000,
-      limit: 10,
+      limit: 300,
     }]),
     ServeStaticModule.forRoot({
       rootPath: join(process.cwd(), 'uploads'),
@@ -32,6 +34,8 @@ import { AiModule } from './ai/ai.module';
     FindingsModule,
     PhotosModule,
     AiModule,
+    ReportsModule,
+    TemplatesModule,
   ],
   controllers: [AppController],
   providers: [
@@ -42,4 +46,4 @@ import { AiModule } from './ai/ai.module';
     },
   ],
 })
-export class AppModule {}
+export class AppModule { }

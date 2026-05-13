@@ -4,14 +4,14 @@ import { Router } from '@angular/router';
 import { Inspection } from '../../../../core/models/inspection.interface';
 import { Severity } from '../../../../core/enums/inspection.enums';
 import { LucideAngularModule, MapPin, User, Calendar, AlertTriangle, AlertCircle, Info, CheckCircle2, ChevronRight, Edit2, Trash2 } from 'lucide-angular';
-import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { DropdownMenuComponent, DropdownItem } from '../../../../shared/components/dropdown-menu/dropdown-menu.component';
 import { ConfirmModalComponent } from '../../../../shared/components/confirm-modal/confirm-modal.component';
+import { ConfirmPillComponent } from '../../../../shared/components/confirm-pill/confirm-pill.component';
 
 @Component({
   selector: 'app-inspection-card',
   standalone: true,
-  imports: [CommonModule, LucideAngularModule, ButtonComponent, DropdownMenuComponent, ConfirmModalComponent],
+  imports: [CommonModule, LucideAngularModule, DropdownMenuComponent, ConfirmModalComponent, ConfirmPillComponent],
   templateUrl: './inspection-card.component.html',
   styleUrl: './inspection-card.component.scss',
 })
@@ -78,6 +78,7 @@ export class InspectionCardComponent {
       [Severity.MAJOR]: 0,
       [Severity.MINOR]: 0,
       [Severity.MAINTENANCE]: 0,
+      [Severity.INFORMATIONAL]: 0,
     };
 
     findings.forEach((finding) => {

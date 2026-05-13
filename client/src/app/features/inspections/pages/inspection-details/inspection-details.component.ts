@@ -1,49 +1,103 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, signal, computed, inject, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { InspectionsService } from '../../../../core/services/inspections.service';
+import { ReportsService } from '../../../../core/services/reports.service';
 import { Finding, Inspection } from '../../../../core/models/inspection.interface';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
-import { ConfirmModalComponent } from '../../../../shared/components/confirm-modal/confirm-modal.component';
-import { SectionTabsComponent } from '../../components/section-tabs/section-tabs.component';
-import { FindingFormComponent } from '../../components/finding-form/finding-form.component';
 import { FindingCardComponent } from '../../components/finding-card/finding-card.component';
-import { Section } from '../../../../core/enums/inspection.enums';
 import { SkeletonComponent } from '../../../../shared/components/skeleton/skeleton.component';
-import { LucideAngularModule, ArrowLeft, Send, RefreshCw, AlertCircle, Plus } from 'lucide-angular';
-
+import { LucideAngularModule, ArrowLeft, Send, RefreshCw, AlertCircle, Plus, X, Check, Loader2, FileText, Download, LockOpen, Edit, Camera, Image, Cloud, Thermometer, Calendar, Maximize, Home, Users } from 'lucide-angular';
+import { ReportGeneratorComponent } from '../../../reports/components/report-generator/report-generator.component';
+import { BackButtonComponent } from '../../../../shared/components/back-button/back-button.component';
+import { ImageCompressionService } from '../../../../core/services/image-compression.service';
+import { environment } from '../../../../../environments/environment';
 
 @Component({
   selector: 'app-inspection-details',
   standalone: true,
-  imports: [CommonModule, ButtonComponent, ConfirmModalComponent, SectionTabsComponent, FindingFormComponent, FindingCardComponent, LucideAngularModule, SkeletonComponent],
+  imports: [
+    CommonModule,
+    ButtonComponent,
+    FindingCardComponent,
+    LucideAngularModule,
+    SkeletonComponent,
+    ReportGeneratorComponent,
+    BackButtonComponent
+  ],
   templateUrl: './inspection-details.component.html',
   styleUrl: './inspection-details.component.scss',
 })
 export class InspectionDetailsComponent implements OnInit {
+  @ViewChild(ReportGeneratorComponent) reportGenerator!: ReportGeneratorComponent;
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private inspectionsService = inject(InspectionsService);
+  private reportsService = inject(ReportsService);
+  private compressionService = inject(ImageCompressionService);
 
   inspection = signal<Inspection | null>(null);
   isLoading = signal<boolean>(true);
   isPublishing = signal<boolean>(false);
+  isUploadingCover = signal<boolean>(false);
   errorMessage = signal<string | null>(null);
   showPublishModal = signal(false);
-  findingToEdit = signal<Finding | null>(null);
-  selectedSection = signal<Section>(Section.EXTERIOR);
-  isAddingFinding = signal<boolean>(false);
+  selectedSection = signal<string>('');
   isDeletingFinding = signal<boolean>(false);
   deletingId = signal<string | null>(null);
+  publishState = signal<'idle' | 'confirm' | 'loading' | 'success'>('idle');
+  isGeneratingPdf = signal<boolean>(false);
+  isReportGeneratorActive = signal<boolean>(false);
 
-  readonly icons = { ArrowLeft, Send, RefreshCw, AlertCircle, Plus };
+  readonly icons = { ArrowLeft, Send, RefreshCw, AlertCircle, Plus, X, Check, Loader2, FileText, Download, LockOpen, Edit, Camera, Image, Cloud, Thermometer, Calendar, Maximize, Home, Users };
+  readonly apiUrl = environment.apiUrl.replace('/api', '');
 
   isPublished = computed(() => this.inspection()?.status === 'published');
   hasFindings = computed(() => (this.inspection()?.findings?.length ?? 0) > 0);
 
-  sectionFindings = computed(() => {
+  groupedFindings = computed(() => {
     const findings = this.inspection()?.findings || [];
-    return findings.filter(f => f.section === this.selectedSection());
+
+    const groups = [
+      {
+        label: 'Critical & Safety Hazards',
+        severity: 'critical',
+        colorClass: 'group-critical',
+        items: [] as Finding[]
+      },
+      {
+        label: 'Major Defects',
+        severity: 'major',
+        colorClass: 'group-major',
+        items: [] as Finding[]
+      },
+      {
+        label: 'Maintenance & Minor Items',
+        severity: 'minor',
+        colorClass: 'group-minor',
+        items: [] as Finding[]
+      }
+    ];
+
+    findings.forEach(f => {
+      const severity = f.severity.toLowerCase();
+      // Map 'safety' to 'critical', and 'maintenance' to 'minor'
+      let targetSeverity = severity;
+      if (severity === 'safety') targetSeverity = 'critical';
+      if (severity === 'maintenance') targetSeverity = 'minor';
+
+      const group = groups.find(g => g.severity === targetSeverity);
+      if (group) {
+        group.items.push(f);
+      }
+    });
+
+    return groups.filter(g => g.items.length > 0);
+  });
+
+  currentSection = computed(() => {
+    const sections = this.inspection()?.template_snapshot?.sections || [];
+    return sections.find(s => s.name === this.selectedSection()) || null;
   });
 
   ngOnInit(): void {
@@ -62,6 +116,9 @@ export class InspectionDetailsComponent implements OnInit {
       next: (data) => {
         this.inspection.set(data);
         this.isLoading.set(false);
+        if (data.template_snapshot?.sections?.length && !this.selectedSection()) {
+          this.selectedSection.set(data.template_snapshot.sections[0].name);
+        }
       },
       error: (err) => {
         console.error('Failed to load inspection', err);
@@ -75,26 +132,80 @@ export class InspectionDetailsComponent implements OnInit {
     this.router.navigate(['/inspections']);
   }
 
-  confirmPublish(): void {
+  startPublishWorkflow(): void {
+    this.publishState.set('confirm');
+  }
+
+  cancelPublish(): void {
+    this.publishState.set('idle');
+  }
+
+  confirmPublishPDF(): void {
     const inspection = this.inspection();
     if (!inspection) return;
 
-    this.isPublishing.set(true);
-    this.showPublishModal.set(false);
+    this.publishState.set('loading');
     this.inspectionsService.publishInspection(inspection.id).subscribe({
       next: (updated) => {
         this.inspection.set(updated);
-        this.isPublishing.set(false);
+        this.publishState.set('success');
+        // Reset to idle after a delay if needed, or stay success
+        setTimeout(() => {
+          this.publishState.set('idle');
+        }, 3000);
       },
       error: (err) => {
         console.error('Failed to publish inspection', err);
         this.errorMessage.set(err.error?.message || 'Failed to publish inspection.');
-        this.isPublishing.set(false);
+        this.publishState.set('idle');
       },
     });
   }
 
-  handleDeleteFinding(finding: any): void {
+  unpublishInspection(): void {
+    const inspection = this.inspection();
+    if (!inspection) return;
+
+    this.isLoading.set(true);
+    this.inspectionsService.unpublishInspection(inspection.id).subscribe({
+      next: (updated) => {
+        this.inspection.set(updated);
+        this.isLoading.set(false);
+      },
+      error: (err) => {
+        console.error('Failed to unpublish inspection', err);
+        this.errorMessage.set(err.error?.message || 'Failed to unlock inspection.');
+        this.isLoading.set(false);
+      },
+    });
+  }
+
+  generateReport(): void {
+    this.isGeneratingPdf.set(true);
+    this.isReportGeneratorActive.set(true);
+  }
+
+  onReportCompleted(blob: Blob): void {
+    this.isGeneratingPdf.set(false);
+    this.isReportGeneratorActive.set(false);
+    const inspection = this.inspection();
+    if (!inspection) return;
+
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Report-${inspection.address.replace(/ /g, '_')}.pdf`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  }
+
+  onReportError(error: string): void {
+    this.isGeneratingPdf.set(false);
+    this.isReportGeneratorActive.set(false);
+    this.errorMessage.set(error);
+  }
+
+  handleDeleteFinding(finding: Finding): void {
     const inspectionId = this.inspection()?.id;
     if (!inspectionId || !finding.id) return;
 
@@ -119,19 +230,85 @@ export class InspectionDetailsComponent implements OnInit {
     }, 400);
   }
 
-  editFinding(finding: any): void {
-    this.findingToEdit.set(finding);
+  addFinding(): void {
+    this.router.navigate(['/inspections', this.inspection()!.id, 'findings', 'new'], {
+      queryParams: { section: this.selectedSection() }
+    });
   }
 
-  cancelFindingForm(): void {
-    this.isAddingFinding.set(false);
-    this.findingToEdit.set(null);
+  editFinding(finding: Finding): void {
+    this.router.navigate(['/inspections', this.inspection()!.id, 'findings', finding.id]);
   }
 
-  onFindingSaved(finding: any): void {
-    this.cancelFindingForm();
-    // Reload inspection to get updated findings
-    this.loadInspection(this.inspection()!.id);
+  async onCoverPhotoSelected(event: Event): Promise<void> {
+    const inspectionId = this.inspection()?.id;
+    if (!inspectionId) return;
+
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+
+    this.isUploadingCover.set(true);
+    try {
+      const compressedFile = await this.compressionService.compressImage(file, {
+        maxWidthOrHeight: 1600, // Slightly higher for cover photo
+        initialQuality: 0.8
+      });
+
+      this.inspectionsService.uploadCoverPhoto(inspectionId, compressedFile).subscribe({
+        next: (updated) => {
+          this.inspection.set(updated);
+          this.isUploadingCover.set(false);
+        },
+        error: (err) => {
+          console.error('Failed to upload cover photo', err);
+          this.errorMessage.set('Failed to upload cover photo.');
+          this.isUploadingCover.set(false);
+        }
+      });
+    } catch (err) {
+      console.error('Compression error', err);
+      this.isUploadingCover.set(false);
+    }
   }
+
+  routeToWorkbench(): void {
+    const insp = this.inspection();
+    if (!insp) return;
+
+    // Determine target section: current selection OR first section with findings OR first section
+    const findings = insp.findings || [];
+    let targetSection = this.selectedSection();
+
+    // If no findings in current section, try to find a section that HAS findings
+    if (!findings.some(f => f.section === targetSection)) {
+      const sectionWithFindings = insp.template_snapshot?.sections?.find(s =>
+        findings.some(f => f.section === s.name)
+      );
+      if (sectionWithFindings) {
+        targetSection = sectionWithFindings.name;
+      }
+    }
+
+    // Default to first section if still empty
+    if (!targetSection && insp.template_snapshot?.sections?.length) {
+      targetSection = insp.template_snapshot.sections[0].name;
+    }
+
+    const sectionFindings = findings.filter(f => f.section === targetSection);
+
+    if (sectionFindings.length > 0) {
+      // Land on first existing finding
+      this.router.navigate(['/inspections', insp.id, 'findings', sectionFindings[0].id], {
+        queryParams: { section: targetSection }
+      });
+    } else {
+      // Land on 'new' state
+      this.router.navigate(['/inspections', insp.id, 'findings', 'new'], {
+        queryParams: { section: targetSection }
+      });
+    }
+  }
+
+
 
 }

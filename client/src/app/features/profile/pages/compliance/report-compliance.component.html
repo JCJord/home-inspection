@@ -1,0 +1,147 @@
+<div class="compliance-container">
+  @if (isLoading()) {
+  <div class="skeleton-stack">
+    <!-- SOP Skeleton -->
+    <div class="skeleton-card">
+      <div class="flex items-center gap-3 mb-6">
+        <app-skeleton width="20px" height="20px" borderRadius="4px"></app-skeleton>
+        <app-skeleton width="180px" height="20px" borderRadius="4px"></app-skeleton>
+      </div>
+      <div class="flex flex-col gap-4">
+        <app-skeleton width="300px" height="16px" borderRadius="4px"></app-skeleton>
+        <div class="flex flex-col gap-2">
+          <app-skeleton width="100px" height="14px" borderRadius="4px"></app-skeleton>
+          <app-skeleton width="100%" height="42px" borderRadius="8px"></app-skeleton>
+        </div>
+      </div>
+    </div>
+
+    <!-- Disclaimer Skeleton -->
+    <div class="skeleton-card">
+      <div class="flex items-center gap-3 mb-6">
+        <app-skeleton width="20px" height="20px" borderRadius="4px"></app-skeleton>
+        <app-skeleton width="160px" height="20px" borderRadius="4px"></app-skeleton>
+      </div>
+      <div class="flex flex-col gap-4">
+        <app-skeleton width="400px" height="16px" borderRadius="4px"></app-skeleton>
+        <div class="flex flex-col gap-2">
+          <app-skeleton width="150px" height="14px" borderRadius="4px"></app-skeleton>
+          <app-skeleton width="100%" height="180px" borderRadius="8px"></app-skeleton>
+        </div>
+      </div>
+    </div>
+
+    <!-- Severity Skeleton -->
+    <div class="skeleton-card">
+      <div class="flex items-center gap-3 mb-6">
+        <app-skeleton width="20px" height="20px" borderRadius="4px"></app-skeleton>
+        <app-skeleton width="170px" height="20px" borderRadius="4px"></app-skeleton>
+      </div>
+      <div class="flex justify-between items-center py-2">
+        <div class="flex flex-col gap-2">
+          <app-skeleton width="180px" height="18px" borderRadius="4px"></app-skeleton>
+          <app-skeleton width="320px" height="14px" borderRadius="4px"></app-skeleton>
+        </div>
+        <app-skeleton width="40px" height="24px" borderRadius="12px"></app-skeleton>
+      </div>
+    </div>
+  </div>
+  } @else {
+  <div class="settings-stack">
+    <form [formGroup]="complianceForm" class="compliance-form">
+      <!-- Section 1: Standard of Practice -->
+      <div class="card">
+        <div class="card-header">
+          <lucide-icon [img]="icons.ShieldCheck" [size]="20"></lucide-icon>
+          <h3>Standard of Practice</h3>
+        </div>
+        <div class="card-body">
+          <p class="section-desc">Select the regulatory standard you follow for your inspections.</p>
+          <app-select-input
+            name="sop_name"
+            label="SOP Name"
+            [options]="sopOptions">
+          </app-select-input>
+        </div>
+      </div>
+
+      <!-- Section 2: Report Disclaimer -->
+      <div class="card">
+        <div class="card-header">
+          <lucide-icon [img]="icons.FileSignature" [size]="20"></lucide-icon>
+          <h3>Report Disclaimer</h3>
+        </div>
+        <div class="card-body">
+          <p class="section-desc">Manage your "Scope & Limitations" boilerplate. This will be injected into every report.</p>
+          <div class="form-group">
+            <label class="form-label">Custom Legal Disclaimer</label>
+            <textarea formControlName="custom_legal_disclaimer" class="form-textarea" 
+              placeholder="Enter your legal disclaimer here..." 
+              rows="8"></textarea>
+            <p class="helper-text">Line breaks are supported and will be preserved in the generated PDF.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 3: Severity Definitions -->
+      <div class="card">
+        <div class="card-header">
+          <lucide-icon [img]="icons.Scale" [size]="20"></lucide-icon>
+          <h3>Severity Definitions</h3>
+        </div>
+        <div class="card-body">
+          <div class="toggle-container">
+            <div class="toggle-label">
+              <span class="title">Use Standard Definitions</span>
+              <span class="desc">Use Inspectly's safe, hardcoded definitions for "Safety Hazard" and "Major Defect".</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" formControlName="use_standard_definitions">
+              <span class="slider round"></span>
+            </label>
+          </div>
+
+          @if (!complianceForm.get('use_standard_definitions')?.value) {
+          <div class="custom-definitions-grid">
+            <div class="info-alert">
+              <lucide-icon [img]="icons.Info" [size]="18"></lucide-icon>
+              <p>You are using custom definitions. Ensure these align with your local regulations.</p>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">Custom Safety Hazard Definition</label>
+              <textarea formControlName="custom_safety_hazard_def" class="form-textarea" 
+                placeholder="A condition that poses a direct threat to life or limb..."></textarea>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Custom Major Defect Definition</label>
+              <textarea formControlName="custom_major_defect_def" class="form-textarea" 
+                placeholder="A condition that significantly affects the value or safety of the property..."></textarea>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Custom Minor Defect Definition</label>
+              <textarea formControlName="custom_minor_defect_def" class="form-textarea" 
+                placeholder="A cosmetic issue or a flaw that does not affect the safety or function of the property..."></textarea>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Custom Maintenance Item Definition</label>
+              <textarea formControlName="custom_maintenance_item_def" class="form-textarea" 
+                placeholder="A component that is nearing the end of its useful life or requires regular upkeep..."></textarea>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Custom Informational Item Definition</label>
+              <textarea formControlName="custom_informational_item_def" class="form-textarea" 
+                placeholder="A documented note or observation about a condition or component, recorded for informational purposes rather than as a defect."></textarea>
+            </div>
+          </div>
+          }
+        </div>
+      </div>
+    </form>
+  </div>
+  }
+</div>

@@ -9,6 +9,8 @@ import {
   UseGuards,
   UseInterceptors,
   UploadedFile,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common';
 import { InspectorsService } from './inspectors.service';
 import { CreateInspectorDto } from './dto/create-inspector.dto';
@@ -30,6 +32,7 @@ export class InspectorsController {
 
   @Patch('profile')
   @UseGuards(AuthGuard)
+  @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true }))
   updateProfile(
     @GetUser('sub') userId: string,
     @Body() updateProfileDto: UpdateProfileDto,

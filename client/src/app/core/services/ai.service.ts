@@ -7,12 +7,13 @@ export interface GenerateCommentRequest {
   section: string;
   severity: string;
   location?: string;
-  short_note: string;
+  description: string;
   year_built: number;
 }
 
 export interface GenerateCommentResponse {
-  comment: string;
+  description: string;
+  recommendation: string;
 }
 
 @Injectable({

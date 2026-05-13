@@ -1,0 +1,70 @@
+<div class="template-card h-full"
+  [class.pt-12]="!template().inspector_id"
+  (click)="onCardClick()">
+
+  <!-- Official Framed Ribbon Badge -->
+  @if (!template().inspector_id) {
+  <div class="official-ribbon-badge absolute top-0 left-0 flex items-center gap-1 px-3 py-1 rounded-br-xl font-bold text-[10px] uppercase tracking-wider shadow-sm z-10">
+    <lucide-icon [name]="icons.Award" [size]="14" class="text-white fill-white fill-opacity-20"></lucide-icon>
+    <span>Official Blueprint</span>
+  </div>
+  }
+
+  <div>
+    <div class="flex justify-between items-start gap-4 mb-2">
+      <div class="flex items-center gap-3 min-w-0">
+        <lucide-icon [name]="icons.FileText" [size]="20" class="text-primary flex-shrink-0"></lucide-icon>
+        <h3 class="text-lg font-bold text-standard truncate" [title]="template().name">
+          {{ template().name }}
+        </h3>
+      </div>
+
+      <div class="flex items-center gap-2 flex-shrink-0" (click)="$event.stopPropagation()">
+        @if (isConfirmingDelete()) {
+          <app-confirm-pill (confirm)="delete.emit(template()); isConfirmingDelete.set(false)" (cancel)="isConfirmingDelete.set(false)"></app-confirm-pill>
+        } @else {
+
+          <!-- Preferred Indicator -->
+          @if (template().id === preferredTemplateId()) {
+          <span
+            class="badge-default text-xs font-semibold px-2.5 py-0.5 rounded-full flex items-center gap-1 bg-amber-50 text-amber-700 border border-amber-200">
+            <lucide-icon [name]="icons.Star" [size]="12" class="fill-amber-500 stroke-amber-500"></lucide-icon>
+            Default
+          </span>
+          }
+
+          <app-dropdown-menu [items]="menuItems()"></app-dropdown-menu>
+        }
+      </div>
+    </div>
+    <p class="text-xs text-standard-muted mb-4">
+      Last Updated: {{ template().updated_at | date:'mediumDate' }}
+    </p>
+
+    <!-- Blueprint Stats Section -->
+    <div class="grid grid-cols-3 gap-2 py-4 border-t border-b border-standard border-opacity-50 my-4 bg-light-standard bg-opacity-50 rounded-xl px-2">
+      <div class="flex flex-col items-center text-center p-2">
+        <lucide-icon [name]="icons.LayoutGrid" [size]="18" class="text-primary mb-1"></lucide-icon>
+        <span class="text-base font-bold text-standard">{{ sectionCount() }}</span>
+        <span class="text-[10px] uppercase tracking-wider text-standard-muted font-semibold">Sections</span>
+      </div>
+      <div class="flex flex-col items-center text-center p-2 border-x border-standard border-opacity-30">
+        <lucide-icon [name]="icons.Database" [size]="18" class="text-success mb-1"></lucide-icon>
+        <span class="text-base font-bold text-standard">{{ fieldCount() }}</span>
+        <span class="text-[10px] uppercase tracking-wider text-standard-muted font-semibold">Fields</span>
+      </div>
+      <div class="flex flex-col items-center text-center p-2">
+        <lucide-icon [name]="icons.CheckCircle" [size]="18" class="text-amber-500 mb-1"></lucide-icon>
+        <span class="text-base font-bold text-standard">{{ presetCount() }}</span>
+        <span class="text-[10px] uppercase tracking-wider text-standard-muted font-semibold">Presets</span>
+      </div>
+    </div>
+
+    <!-- Footer/Action Hint -->
+    <div class="flex items-center justify-between mt-2">
+      <span class="text-xs font-medium text-primary flex items-center gap-1 group-hover:underline">
+        View Details & Edit
+      </span>
+    </div>
+  </div>
+</div>

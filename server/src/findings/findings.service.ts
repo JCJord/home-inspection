@@ -96,25 +96,7 @@ export class FindingsService {
     });
   }
 
-  async generateAiComment(
-    inspectorId: string,
-    inspectionId: string,
-    findingId: string,
-  ): Promise<{ comment: string }> {
-    await this.checkInspectionOwnership(inspectorId, inspectionId);
 
-    const finding = await this.findingRepository.findOne({
-      where: { id: findingId, inspection_id: inspectionId },
-    });
-    if (!finding) {
-      throw new NotFoundException('Finding not found');
-    }
-
-    // Mock AI service logic
-    const generatedComment = `Mock comment for ${finding.section} - ${finding.severity}`;
-    
-    return { comment: generatedComment };
-  }
 
   async remove(inspectorId: string, inspectionId: string, findingId: string): Promise<void> {
     const inspection = await this.checkInspectionOwnership(inspectorId, inspectionId);

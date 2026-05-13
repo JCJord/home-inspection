@@ -7,6 +7,7 @@ import { UpdateInspectionDto } from './dto/update-inspection.dto';
 import { Inspector } from '../inspectors/inspector.entity';
 import { Report } from '../reports/report.entity';
 import { SubscriptionStatus } from '../common/enums/subscription-status.enum';
+import { Template } from '../templates/template.entity';
 
 @Injectable()
 export class InspectionsService {
@@ -17,6 +18,8 @@ export class InspectionsService {
     private readonly inspectorRepository: Repository<Inspector>,
     @InjectRepository(Report)
     private readonly reportRepository: Repository<Report>,
+    @InjectRepository(Template)
+    private readonly templateRepository: Repository<Template>,
   ) { }
 
   async create(inspectorId: string, createInspectionDto: CreateInspectionDto): Promise<Inspection> {
@@ -27,14 +30,26 @@ export class InspectionsService {
 
     if (
       inspector.subscription_status !== SubscriptionStatus.ACTIVE &&
-      inspector.free_inspections_used >= 10
+      inspector.free_inspections_used >= 3
     ) {
       throw new ForbiddenException('Free inspection limit reached. Please upgrade.');
+    }
+
+    // Load template
+    let template: Template | null = null;
+    if (createInspectionDto.template_id) {
+      template = await this.templateRepository.findOne({ where: { id: createInspectionDto.template_id } });
+    }
+    if (!template) {
+      template = await this.templateRepository.findOne({ where: { name: 'System Default' } });
     }
 
     const inspection = this.inspectionRepository.create({
       ...createInspectionDto,
       inspector_id: inspector.id,
+      template_id: template?.id || undefined,
+      template_snapshot: template?.structure || undefined,
+      metadata_values: {}
     });
 
     const savedInspection = await this.inspectionRepository.save(inspection);
@@ -51,6 +66,7 @@ export class InspectionsService {
     const [data, total] = await this.inspectionRepository.findAndCount({
       where: { inspector_id: inspectorId },
       order: { updated_at: 'DESC' },
+      relations: ['findings'],
       skip,
       take: limit,
     });
@@ -69,7 +85,7 @@ export class InspectionsService {
   async findOne(inspectorId: string, id: string): Promise<Inspection> {
     const inspection = await this.inspectionRepository.findOne({
       where: { id, inspector_id: inspectorId },
-      relations: ['findings', 'findings.photos'],
+      relations: ['findings', 'findings.photos', 'inspector'],
     });
 
     if (!inspection) {
@@ -117,8 +133,32 @@ export class InspectionsService {
     return inspection;
   }
 
+  async unpublish(inspectorId: string, id: string): Promise<Inspection> {
+    const inspection = await this.findOne(inspectorId, id);
+
+    if (inspection.status !== 'published') {
+      throw new BadRequestException('Inspection is not published');
+    }
+
+    await this.inspectionRepository.manager.transaction(async (manager) => {
+      inspection.status = 'in_progress';
+      await manager.save(inspection);
+
+      // Remove associated report record
+      await manager.delete(Report, { inspection_id: inspection.id });
+    });
+
+    return inspection;
+  }
+
   async remove(inspectorId: string, id: string): Promise<void> {
     const inspection = await this.findOne(inspectorId, id);
     await this.inspectionRepository.remove(inspection);
+  }
+
+  async uploadCoverPhoto(inspectorId: string, id: string, coverPhotoUrl: string): Promise<Inspection> {
+    const inspection = await this.findOne(inspectorId, id);
+    inspection.cover_photo_url = coverPhotoUrl;
+    return await this.inspectionRepository.save(inspection);
   }
 }

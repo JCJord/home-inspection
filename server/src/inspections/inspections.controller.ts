@@ -8,12 +8,15 @@ import {
   Delete,
   UseGuards,
   Query,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
 import { InspectionsService } from './inspections.service';
 import { CreateInspectionDto } from './dto/create-inspection.dto';
 import { UpdateInspectionDto } from './dto/update-inspection.dto';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { GetUser } from '../auth/decorators/get-user.decorator';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @UseGuards(AuthGuard)
 @Controller('inspections')
@@ -26,6 +29,17 @@ export class InspectionsController {
     @Body() createInspectionDto: CreateInspectionDto,
   ) {
     return this.inspectionsService.create(inspectorId, createInspectionDto);
+  }
+
+  @Post(':id/cover-photo')
+  @UseInterceptors(FileInterceptor('cover_photo'))
+  uploadCoverPhoto(
+    @GetUser('sub') inspectorId: string,
+    @Param('id') id: string,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    const coverPhotoUrl = `/uploads/${file.filename}`;
+    return this.inspectionsService.uploadCoverPhoto(inspectorId, id, coverPhotoUrl);
   }
 
   @Get()
@@ -56,6 +70,11 @@ export class InspectionsController {
   @Post(':id/publish')
   publish(@GetUser('sub') inspectorId: string, @Param('id') id: string) {
     return this.inspectionsService.publish(inspectorId, id);
+  }
+
+  @Post(':id/unpublish')
+  unpublish(@GetUser('sub') inspectorId: string, @Param('id') id: string) {
+    return this.inspectionsService.unpublish(inspectorId, id);
   }
 
   @Delete(':id')

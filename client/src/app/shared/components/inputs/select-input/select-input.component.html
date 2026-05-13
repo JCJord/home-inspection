@@ -1,0 +1,25 @@
+<div class="input-container">
+  @if (label()) {
+    <label [for]="name()" class="input-label">
+      {{ label() }}
+    </label>
+  }
+
+  <select
+    [id]="name()"
+    [name]="name()"
+    [formControl]="$any(control)"
+    class="input-field"
+    [class.input-field--error]="isInvalid"
+  >
+    @for (opt of mappedOptions(); track opt.value) {
+      <option [value]="opt.value">{{ opt.label }}</option>
+    }
+  </select>
+
+  @if (isInvalid) {
+    <span class="input-error">
+      {{ getFirstError() }}
+    </span>
+  }
+</div>

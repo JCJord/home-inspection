@@ -1,48 +1,80 @@
-<div class="details-container">
+<div class="inspection-details-container max-w-7xl mx-auto p-6 pb-24 relative min-h-full h-auto">
   @if (isLoading()) {
   <div class="flex flex-col animate-pulse">
     <!-- Header Skeleton -->
     <div class="flex justify-between flex-wrap gap-3 items-center mb-8 pb-6 border-b border-standard">
-      <div class="flex items-center gap-4 flex-wrap">
-        <app-skeleton width="40px" height="40px" borderRadius="12px"></app-skeleton>
-        <div class="flex flex-col gap-2">
-          <app-skeleton width="80%" height="28px" borderRadius="8px"></app-skeleton>
+      <div class="flex items-center gap-4 flex-wrap flex-1">
+        <!-- Back Button Skeleton -->
+        <app-skeleton width="42px" height="42px" borderRadius="12px"></app-skeleton>
+        <div class="flex flex-col gap-2 flex-1">
+          <app-skeleton width="60%" height="28px" borderRadius="8px"></app-skeleton>
           <app-skeleton width="150px" height="18px" borderRadius="6px"></app-skeleton>
         </div>
       </div>
       <div class="flex-shrink-0">
-        <app-skeleton width="100px" height="38px" borderRadius="8px"></app-skeleton>
+        <app-skeleton width="140px" height="42px" borderRadius="12px"></app-skeleton>
       </div>
     </div>
 
-    <!-- Tabs Skeleton -->
-    <div class="mb-8">
-      <div class="flex gap-3 overflow-hidden py-1">
-        @for (i of [1,2,3,4,5,6]; track i) {
-        <app-skeleton width="110px" height="38px" borderRadius="8px"></app-skeleton>
-        }
+    <div class="details-content flex flex-col gap-8">
+      <!-- Cover Photo Skeleton -->
+      <div class="bg-surface-standard border border-standard rounded-[2rem] overflow-hidden">
+        <app-skeleton width="100%" height="260px" borderRadius="0"></app-skeleton>
       </div>
-    </div>
 
-    <!-- Findings Skeleton -->
-    <div class="bg-surface-standard rounded-[1.5rem] p-6 flex flex-col gap-6 border border-standard">
-      <div class="flex flex-wrap gap-3 justify-between items-center">
-        <app-skeleton width="130px" height="32px" borderRadius="6px"></app-skeleton>
-        <app-skeleton width="130px" height="32px" borderRadius="8px"></app-skeleton>
-      </div>
-      <div class="flex flex-col gap-4">
-        @for (i of [1,2,3]; track i) {
-        <div class="bg-light-standard border border-standard rounded-xl p-5 flex flex-col gap-5">
-          <div class="flex justify-between items-center">
-            <app-skeleton width="100px" height="18px" borderRadius="2px"></app-skeleton>
-            <app-skeleton width="70px" height="18px" borderRadius="2px"></app-skeleton>
-          </div>
-          <div class="flex gap-5 items-center w-full">
-            <app-skeleton class="w-full" width="100%" height="132px" borderRadius="4px"></app-skeleton>
-          </div>
+      <!-- Executive Summary Header Skeleton -->
+      <div class="flex justify-between items-center pb-4 border-b border-standard">
+        <div class="flex flex-col gap-2">
+          <app-skeleton width="200px" height="28px" borderRadius="6px"></app-skeleton>
+          <app-skeleton width="300px" height="16px" borderRadius="4px"></app-skeleton>
         </div>
-        }
+        <app-skeleton width="140px" height="38px" borderRadius="8px"></app-skeleton>
       </div>
+
+      <!-- Severity Group Mimic Skeleton -->
+      @for (i of [1,2]; track i) {
+      <div class="flex flex-col gap-6">
+        <div class="flex items-center justify-between px-5 py-3 border border-standard rounded-lg">
+          <app-skeleton width="120px" height="18px" borderRadius="4px"></app-skeleton>
+          <app-skeleton width="60px" height="20px" borderRadius="10px"></app-skeleton>
+        </div>
+        <div class="flex flex-col gap-4">
+          @for (j of [1,2]; track j) {
+          <div class="skeleton-finding-card">
+            <div class="severity-indicator"></div>
+            <div class="content-mimic">
+              <div class="top-row">
+                <div class="flex flex-col gap-2 flex-1">
+                  <app-skeleton width="80px" height="18px" borderRadius="4px"></app-skeleton>
+                  <div class="metadata">
+                    <app-skeleton width="14px" height="14px" borderRadius="3px"></app-skeleton>
+                    <app-skeleton width="100px" height="14px" borderRadius="4px"></app-skeleton>
+                  </div>
+                </div>
+                <app-skeleton width="40px" height="14px" borderRadius="4px"></app-skeleton>
+              </div>
+
+              <div class="ai-box-mimic">
+                <app-skeleton width="100px" height="14px" borderRadius="4px"></app-skeleton>
+                <app-skeleton width="100%" height="32px" borderRadius="6px"></app-skeleton>
+              </div>
+
+              <div class="note-mimic">
+                <app-skeleton width="80px" height="14px" borderRadius="4px"></app-skeleton>
+                <app-skeleton width="100%" height="14px" borderRadius="4px"></app-skeleton>
+              </div>
+
+              <div class="photos-mimic">
+                @for (k of [1,2,3,4]; track k) {
+                <app-skeleton width="100%" height="0" [style.padding-bottom.%]="100" borderRadius="8px"></app-skeleton>
+                }
+              </div>
+            </div>
+          </div>
+          }
+        </div>
+      </div>
+      }
     </div>
   </div>
   } @else if (errorMessage()) {
@@ -56,11 +88,9 @@
   </div>
   } @else if (inspection(); as insp) {
   <!-- Header -->
-  <div class="details-header">
+  <div class="details-header flex flex-wrap justify-between items-center gap-4">
     <div class="header-left">
-      <button class="back-btn" (click)="goBack()">
-        <lucide-icon [name]="icons.ArrowLeft" [size]="20"></lucide-icon>
-      </button>
+      <app-back-button (clicked)="goBack()"></app-back-button>
       <div class="header-info">
         <h1 class="address">{{ insp.address }}</h1>
         <span class="client-name">{{ insp.client_name }}</span>
@@ -68,67 +98,257 @@
     </div>
 
     <div class="header-right">
-      @if (isPublished()) {
-      <span class="status-badge published">
-        <span class="dot"></span>
-        Published
-      </span>
-      } @else {
-      <app-button variant="solid" size="sm" [disabled]="isPublishing()" [isLoading]="isPublishing()"
-        (click)="showPublishModal.set(true)">
-        <lucide-icon [name]="icons.Send" [size]="16"></lucide-icon>
-        Publish
-      </app-button>
-      }
+      <div class="publish-workflow-container" [class]="publishState()">
+
+        <!-- IDLE STATE -->
+        @if (publishState() === 'idle') {
+        @if (isPublished()) {
+        <div class="flex items-center gap-3">
+          <span class="status-badge published">
+            <span class="dot"></span>
+            Published
+          </span>
+          <button
+            class="text-xs text-standard-muted hover:text-primary transition-colors flex items-center gap-1 font-medium bg-transparent border-none p-0 cursor-pointer"
+            (click)="unpublishInspection()" title="Unlock to edit again">
+            <lucide-icon [name]="icons.LockOpen" [size]="14"></lucide-icon>
+            Unlock to Edit
+          </button>
+        </div>
+        } @else {
+        <app-button variant="solid" size="sm" (click)="startPublishWorkflow()">
+          <lucide-icon [name]="icons.Send" [size]="16"></lucide-icon>
+          Publish Report
+        </app-button>
+        }
+        }
+
+        <!-- CONFIRM STATE -->
+        @if (publishState() === 'confirm') {
+        <div class="confirm-actions flex items-center overflow-hidden">
+          <button class="action-btn cancel" (click)="cancelPublish()">
+            <lucide-icon [name]="icons.X" [size]="16"></lucide-icon>
+            <span>Cancel</span>
+          </button>
+          <button class="action-btn confirm" (click)="confirmPublishPDF()">
+            <lucide-icon [name]="icons.Check" [size]="16"></lucide-icon>
+            <span>Confirm PDF</span>
+          </button>
+        </div>
+        }
+
+        <!-- LOADING STATE -->
+        @if (publishState() === 'loading') {
+        <div class="loading-workflow flex items-center justify-center">
+          <lucide-icon [name]="icons.Loader2" [size]="20" class="animate-spin text-white"></lucide-icon>
+        </div>
+        }
+
+        <!-- SUCCESS STATE -->
+        @if (publishState() === 'success') {
+        <div class="success-workflow flex items-center gap-2 px-4 py-2 bg-success text-white rounded-lg">
+          <lucide-icon [name]="icons.Check" [size]="18"></lucide-icon>
+          <span class="font-bold">Published</span>
+        </div>
+        }
+      </div>
     </div>
   </div>
 
   <!-- Content area -->
   <div class="details-content" style="overflow-x: hidden; width: 100%;">
-    <app-section-tabs [selectedSection]="selectedSection()" (sectionChange)="selectedSection.set($event)">
-    </app-section-tabs>
-    @if (isAddingFinding() || findingToEdit()) {
-    <app-finding-form [inspectionId]="insp.id" [section]="selectedSection()" [finding]="findingToEdit()" [year_built]="insp.year_built"
-      (close)="cancelFindingForm()" (saved)="onFindingSaved($event)">
-    </app-finding-form>
-    } @else {
-    @if (sectionFindings().length === 0) {
-    <div class="empty-section-state">
-      <p>No findings for {{ selectedSection() }} yet.</p>
-      <app-button (click)="isAddingFinding.set(true)">
-        <lucide-icon [name]="icons.Plus" [size]="16"></lucide-icon>
-        Add Finding
+    @if (isPublished()) {
+    <div
+      class="report-action-bar flex justify-between items-center bg-light-standard border-b border-standard px-6 py-4 rounded-t-[1.5rem]">
+      <div class="flex items-center gap-2">
+        <lucide-icon [name]="icons.FileText" [size]="18" class="text-primary"></lucide-icon>
+        <span class="text-sm font-semibold text-standard">Inspection Report Generated</span>
+      </div>
+      <app-button variant="outline" size="sm" (click)="generateReport()" [disabled]="isGeneratingPdf()">
+        @if (isGeneratingPdf()) {
+        <lucide-icon [name]="icons.Loader2" [size]="16" class="animate-spin"></lucide-icon>
+        Generating...
+        } @else {
+        <lucide-icon [name]="icons.Download" [size]="16"></lucide-icon>
+        Download Report
+        }
       </app-button>
     </div>
-    } @else {
-    <div class="findings-list">
-      <!-- Findings Header & Add Action -->
-      <div class="findings-header">
-        <h3>Findings for {{ selectedSection() }}</h3>
-        <app-button size="sm" (click)="isAddingFinding.set(true)">
-          <lucide-icon [name]="icons.Plus" [size]="14"></lucide-icon>
-          Add Finding
+    }
+    <div class="summary-container flex flex-col gap-8">
+      <!-- Cover Photo Section -->
+      <div class="cover-photo-section bg-surface-standard border border-standard rounded-[2rem] overflow-hidden">
+        <div class="relative group min-h-[260px] flex items-center justify-center bg-light-standard overflow-hidden">
+          @if (insp.cover_photo_url) {
+          <img [src]="apiUrl + insp.cover_photo_url" alt="Cover Photo"
+            class="w-full h-full object-cover absolute inset-0">
+          <div class="absolute inset-0 bg-black/40 opacity-0 transition-opacity flex items-center justify-center gap-3">
+            <button
+              class="bg-white text-standard px-4 py-2 rounded-xl font-bold flex items-center gap-2 hover:bg-white/90 transition-all transform hover:scale-105"
+              (click)="coverInput.click()">
+              <lucide-icon [name]="icons.RefreshCw" [size]="18"></lucide-icon>
+              Change Photo
+            </button>
+          </div>
+
+          <!-- Persistent Button for Mobile -->
+          <button (click)="coverInput.click()"
+            class="absolute bottom-4 right-4 bg-black/50 backdrop-blur-md text-white px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-2 border border-white/20 active:scale-95 transition-all z-[5]">
+            <lucide-icon [name]="icons.Camera" [size]="14"></lucide-icon>
+            Change Photo
+          </button>
+          } @else {
+          <div class="flex flex-col items-center gap-4 py-12 px-6 text-center" (click)="coverInput.click()"
+            class="cursor-pointer hover:bg-light-standard/50 transition-colors w-full h-full flex flex-col items-center justify-center">
+            <div class="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
+              <lucide-icon [name]="icons.Camera" [size]="32"></lucide-icon>
+            </div>
+            <div class="px-3 text-center">
+              <h3 class="font-bold text-lg text-standard">Property Hero Photo</h3>
+              <p class="text-sm text-standard-muted">This high-quality shot will be the primary cover image for your
+                inspection report.</p>
+            </div>
+            <app-button variant="outline" size="sm" class="mt-2">
+              Select Image
+            </app-button>
+          </div>
+          }
+
+          @if (isUploadingCover()) {
+          <div class="absolute inset-0 bg-white/60 backdrop-blur-sm flex flex-col items-center justify-center z-10">
+            <lucide-icon [name]="icons.Loader2" [size]="40" class="animate-spin text-primary mb-2"></lucide-icon>
+            <span class="font-bold text-primary">Uploading...</span>
+          </div>
+          }
+
+          <input #coverInput type="file" (change)="onCoverPhotoSelected($event)" accept="image/*" capture="environment"
+            class="hidden">
+        </div>
+      </div>
+
+      <!-- Property Information Grid -->
+      <div class="property-info-grid grid grid-cols-2 sm:grid-cols-3 gap-4">
+        <!-- Weather -->
+        <div
+          class="info-box bg-surface-standard border border-standard p-4 rounded-2xl flex flex-col gap-1 hover:border-primary/30 transition-colors">
+          <div class="flex items-center gap-2 text-standard-muted">
+            <lucide-icon [name]="icons.Cloud" [size]="16"></lucide-icon>
+            <span class="text-[10px] font-bold uppercase tracking-widest">Weather</span>
+          </div>
+          <span class="text-base font-bold text-standard">{{ insp.weather || 'Not Recorded' }}</span>
+        </div>
+
+        <!-- Temperature -->
+        <div
+          class="info-box bg-surface-standard border border-standard p-4 rounded-2xl flex flex-col gap-1 hover:border-primary/30 transition-colors">
+          <div class="flex items-center gap-2 text-standard-muted">
+            <lucide-icon [name]="icons.Thermometer" [size]="16"></lucide-icon>
+            <span class="text-[10px] font-bold uppercase tracking-widest">Temp</span>
+          </div>
+          <span class="text-base font-bold text-standard">{{ insp.temperature ? insp.temperature + '°F' : 'Not Recorded'
+            }}</span>
+        </div>
+
+        <!-- Year Built -->
+        <div
+          class="info-box bg-surface-standard border border-standard p-4 rounded-2xl flex flex-col gap-1 hover:border-primary/30 transition-colors">
+          <div class="flex items-center gap-2 text-standard-muted">
+            <lucide-icon [name]="icons.Calendar" [size]="16"></lucide-icon>
+            <span class="text-[10px] font-bold uppercase tracking-widest">Year Built</span>
+          </div>
+          <span class="text-base font-bold text-standard">{{ insp.year_built || 'N/A' }}</span>
+        </div>
+
+        <!-- Square Footage -->
+        <div
+          class="info-box bg-surface-standard border border-standard p-4 rounded-2xl flex flex-col gap-1 hover:border-primary/30 transition-colors">
+          <div class="flex items-center gap-2 text-standard-muted">
+            <lucide-icon [name]="icons.Maximize" [size]="16"></lucide-icon>
+            <span class="text-[10px] font-bold uppercase tracking-widest">Sq Footage</span>
+          </div>
+          <span class="text-base font-bold text-standard">{{ insp.square_footage ? (insp.square_footage | number) + '
+            sqft' : 'N/A' }}</span>
+        </div>
+
+        <!-- Occupancy -->
+        <div
+          class="info-box bg-surface-standard border border-standard p-4 rounded-2xl flex flex-col gap-1 hover:border-primary/30 transition-colors">
+          <div class="flex items-center gap-2 text-standard-muted">
+            <lucide-icon [name]="icons.Home" [size]="16"></lucide-icon>
+            <span class="text-[10px] font-bold uppercase tracking-widest">Occupancy</span>
+          </div>
+          <span class="text-base font-bold text-standard">{{ insp.occupancy || 'Not Recorded' }}</span>
+        </div>
+
+        <!-- Attendees -->
+        <div
+          class="info-box bg-surface-standard border border-standard p-4 rounded-2xl flex flex-col gap-1 hover:border-primary/30 transition-colors">
+          <div class="flex items-center gap-2 text-standard-muted">
+            <lucide-icon [name]="icons.Users" [size]="16"></lucide-icon>
+            <span class="text-[10px] font-bold uppercase tracking-widest">Attendees</span>
+          </div>
+          <span class="text-base font-bold text-standard truncate" [title]="insp.attendees || ''">{{ insp.attendees ||
+            'None' }}</span>
+        </div>
+      </div>
+
+      <div
+        class="summary-header flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-standard">
+        <div class="flex flex-col gap-1">
+          <h2 class="text-2xl font-bold text-standard">Executive Summary</h2>
+          <p class="text-sm text-standard-muted">Overview of all recorded findings grouped by severity</p>
+        </div>
+        <app-button variant="outline" size="sm" (click)="routeToWorkbench()">
+          <lucide-icon [name]="icons.Edit" [size]="16"></lucide-icon>
+          Manage Findings
         </app-button>
       </div>
 
-      <!-- List of findings -->
-      <div class="findings-cards">
-        @for (finding of sectionFindings(); track finding.id) {
-        <app-finding-card [finding]="finding" [isDeleting]="deletingId() === finding.id"
-          (delete)="handleDeleteFinding(finding)" (edit)="editFinding(finding)">
-        </app-finding-card>
-        }
+      @for (group of groupedFindings(); track group.severity) {
+      <div class="severity-group flex flex-col gap-6">
+        <div class="group-header flex items-center justify-between px-5 py-3 border" [class]="group.colorClass">
+          <div class="flex items-center gap-3">
+            <span class="group-label text-sm font-bold uppercase tracking-wider">{{ group.label }}</span>
+          </div>
+          <span class="item-count-badge text-[10px] font-bold px-2 py-0.5 rounded-full">
+            {{ group.items.length }} <span class="hidden sm:inline">{{ group.items.length === 1 ? 'item' : 'items'
+              }}</span>
+          </span>
+        </div>
+
+        <div class="findings-grid flex flex-col gap-4">
+          @for (finding of group.items; track finding.id) {
+          <app-finding-card [finding]="finding" [readOnly]="true" (edit)="editFinding(finding)"></app-finding-card>
+          }
+        </div>
       </div>
+      }
+
+      @if (groupedFindings().length === 0) {
+      <div
+        class="empty-state-summary flex flex-col items-center justify-center py-20 px-6 bg-surface-standard rounded-[2rem] border border-dashed border-standard">
+        <div class="w-16 h-16 rounded-full bg-light-standard flex items-center justify-center mb-4">
+          <lucide-icon [name]="icons.FileText" [size]="32" class="text-standard-muted"></lucide-icon>
+        </div>
+        <h3 class="text-lg font-bold text-standard mb-2">No findings recorded yet</h3>
+        <p class="text-standard-muted text-center max-w-sm mb-8">
+          This inspection doesn't have any findings yet. Start recording observations to generate the summary.
+        </p>
+        <app-button (click)="routeToWorkbench()">
+          <lucide-icon [name]="icons.Plus" [size]="18"></lucide-icon>
+          Start Inspection
+        </app-button>
+      </div>
+      }
     </div>
-    }
-    }
   </div>
   }
 </div>
 
-@if (showPublishModal()) {
-<app-confirm-modal title="Publish Inspection"
-  message="Are you sure you want to publish this inspection? Once published, findings can no longer be edited."
-  confirmText="Publish" (confirm)="confirmPublish()" (cancel)="showPublishModal.set(false)">
-</app-confirm-modal>
+@if (isReportGeneratorActive()) {
+<div style="height: 0; width: 0; overflow: hidden; position: absolute; visibility: hidden;">
+  <app-report-generator [inspection]="inspection()" (completed)="onReportCompleted($event)"
+    (error)="onReportError($event)">
+  </app-report-generator>
+</div>
 }

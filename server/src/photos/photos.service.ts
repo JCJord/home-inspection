@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Photo } from './photo.entity';
 import { ReorderPhotosDto } from './dto/reorder-photos.dto';
+import { UpdatePhotoDto } from './dto/update-photo.dto';
 import { Finding } from '../findings/finding.entity';
 
 @Injectable()
@@ -31,7 +32,7 @@ export class PhotosService {
     return finding;
   }
 
-  async upload(inspectorId: string, inspectionId: string, findingId: string, file: Express.Multer.File): Promise<Photo> {
+  async upload(inspectorId: string, inspectionId: string, findingId: string, file: Express.Multer.File, caption?: string): Promise<Photo> {
     if (!file) {
       throw new BadRequestException('Photo file is required');
     }
@@ -49,6 +50,7 @@ export class PhotosService {
     const photo = this.photoRepository.create({
       finding_id: findingId,
       storage_url: storageUrl,
+      caption,
     });
 
     return await this.photoRepository.save(photo);
@@ -97,5 +99,27 @@ export class PhotosService {
     // Mock R2 deletion here if storage service was injected
 
     await this.photoRepository.remove(photo);
+  }
+
+  async update(inspectorId: string, inspectionId: string, findingId: string, photoId: string, dto: UpdatePhotoDto): Promise<Photo> {
+    const finding = await this.checkFindingOwnership(inspectorId, inspectionId, findingId);
+
+    if (finding.inspection.status === 'published') {
+      throw new BadRequestException('Cannot update photos of a published inspection');
+    }
+
+    const photo = await this.photoRepository.findOne({
+      where: { id: photoId, finding_id: findingId },
+    });
+
+    if (!photo) {
+      throw new NotFoundException('Photo not found');
+    }
+
+    if (dto.caption !== undefined) {
+      photo.caption = dto.caption;
+    }
+
+    return await this.photoRepository.save(photo);
   }
 }

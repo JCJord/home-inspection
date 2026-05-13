@@ -1,0 +1,10 @@
+<nav class="tabs-nav">
+  @for (item of items(); track item.link) {
+    <a [routerLink]="item.link" routerLinkActive="active" class="tab-item">
+      @if (item.icon) {
+        <lucide-icon [img]="item.icon" [size]="iconSize()"></lucide-icon>
+      }
+      <span>{{ item.label }}</span>
+    </a>
+  }
+</nav>

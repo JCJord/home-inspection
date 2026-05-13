@@ -9,6 +9,17 @@
     background: transparent;
     border: none;
     cursor: pointer;
+    position: relative;
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: -12px;
+      bottom: -12px;
+      left: -12px;
+      right: -12px;
+      border-radius: 50%;
+    }
 
     &:hover, &.active {
       color: $color-text;

@@ -29,14 +29,14 @@ export class AiController {
       );
     }
 
-    const comment = await this.aiService.generateComment(
+    const result = await this.aiService.generateComment(
       generateCommentDto.section,
       generateCommentDto.severity,
       generateCommentDto.location || '',
-      generateCommentDto.short_note,
+      generateCommentDto.description,
       generateCommentDto.year_built
     );
 
-    return { comment };
+    return result;
   }
 }

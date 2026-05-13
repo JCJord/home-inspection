@@ -1,33 +1,39 @@
 import { Component, inject, output, signal, effect, computed, OnDestroy, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { InspectionsService } from '../../../../core/services/inspections.service';
 import { Section, Severity } from '../../../../core/enums/inspection.enums';
 import { Finding, Photo } from '../../../../core/models/inspection.interface';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { TextInputComponent } from '../../../../shared/components/inputs/text-input/text-input.component';
 import { TextareaInputComponent } from '../../../../shared/components/inputs/textarea-input/textarea-input.component';
-import { LucideAngularModule, AlertCircle, FileImage, Upload, Trash2, Edit, X, Check, Sparkles } from 'lucide-angular';
+import { LucideAngularModule, AlertCircle, FileImage, Upload, Trash2, Edit, X, Check, Sparkles, Loader2 } from 'lucide-angular';
 import { CreateFindingDto } from '../../../../core/dtos/create-finding.dto';
 import { UpdateFindingDto } from '../../../../core/dtos/update-finding.dto';
 import { AiService } from '../../../../core/services/ai.service';
 import { AuthService } from '../../../../core/services/auth.service';
+import { ImageCompressionService } from '../../../../core/services/image-compression.service';
 import { environment } from '../../../../../environments/environment';
 import { ImageEditorModalComponent } from '../../../../shared/components/image-editor-modal/image-editor-modal.component';
+import { PresetButtonComponent } from '../../../../shared/components/preset-button/preset-button.component';
 
 interface SelectedPhoto {
   file: File;
   previewUrl: string;
+  isCompressing?: boolean;
+  caption?: string;
 }
 
 type EditTarget = 
   | { type: 'existing', photo: Photo }
   | { type: 'new', index: number, previewUrl: string };
 
+import { TemplatePreset } from '../../../../core/models/inspection.interface';
+
 @Component({
   selector: 'app-finding-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ButtonComponent, TextInputComponent, TextareaInputComponent, LucideAngularModule, ImageEditorModalComponent],
+  imports: [CommonModule, ReactiveFormsModule, ButtonComponent, TextInputComponent, TextareaInputComponent, LucideAngularModule, ImageEditorModalComponent, PresetButtonComponent],
   templateUrl: './finding-form.component.html',
   styleUrl: './finding-form.component.scss',
 })
@@ -36,24 +42,29 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
   private inspectionsService = inject(InspectionsService);
   private aiService = inject(AiService);
   private authService = inject(AuthService);
+  private compressionService = inject(ImageCompressionService);
 
   isPremium = this.authService.isPremium;
 
   @Input({ required: true }) inspectionId!: string;
   @Input({ required: true }) year_built!: number;
-  @Input({ required: true }) section!: Section;
+  @Input({ required: true }) section!: string;
+  @Input() presets: TemplatePreset[] = [];
   @Input() finding: Finding | null = null;
+  @Input() isPublished: boolean = false;
 
   private _inspectionId = signal<string>('');
   private _yearBuilt = signal<number>(0);
-  private _section = signal<Section>(Section.EXTERIOR);
+  private _section = signal<string>('');
   private _finding = signal<Finding | null>(null);
+  private _isPublished = signal<boolean>(false);
 
   // Expose signals for internal use
   inspectionIdSignal = this._inspectionId.asReadonly();
   yearBuiltSignal = this._yearBuilt.asReadonly();
   sectionSignal = this._section.asReadonly();
   findingSignal = this._finding.asReadonly();
+  isPublishedSignal = this._isPublished.asReadonly();
 
   close = output<void>();
   saved = output<Finding>();
@@ -63,6 +74,7 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
     if (changes['year_built']) this._yearBuilt.set(this.year_built);
     if (changes['section']) this._section.set(this.section);
     if (changes['finding']) this._finding.set(this.finding);
+    if (changes['isPublished']) this._isPublished.set(this.isPublished);
   }
 
   isLoading = signal<boolean>(false);
@@ -81,31 +93,61 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
   activeDeleteNewIndex = signal<number | null>(null);
 
   severities = Object.values(Severity);
-  readonly icons = { AlertCircle, FileImage, Upload, Trash2, Edit, X, Check, Sparkles };
+  readonly icons = { AlertCircle, FileImage, Upload, Trash2, Edit, X, Check, Sparkles, Loader2 };
 
   findingForm: FormGroup = this.fb.group({
     severity: [Severity.MINOR, [Validators.required]],
     location: [''],
-    short_note: ['', [Validators.required]],
-    ai_comment: [''],
+    description: ['', [Validators.required, Validators.maxLength(2200)]],
+    recommendation: ['', [Validators.maxLength(800)]],
+    photo_captions: this.fb.array([]),
+    new_photo_captions: this.fb.array([])
   });
+
+  get photoCaptions(): FormArray {
+    return this.findingForm.get('photo_captions') as FormArray;
+  }
+
+  get newPhotoCaptions(): FormArray {
+    return this.findingForm.get('new_photo_captions') as FormArray;
+  }
 
   constructor() {
     effect(() => {
       const data = this._finding();
+      const section = this._section(); // Watch section changes to reset form if needed
+      
       if (data) {
         this.findingForm.patchValue({
           severity: data.severity,
           location: data.location || '',
-          short_note: data.short_note,
-          ai_comment: data.ai_comment || '',
+          description: data.description,
+          recommendation: data.recommendation || '',
         });
         this.existingPhotos.set(data.photos || []);
+        
+        // Clear and rebuild FormArray
+        this.photoCaptions.clear();
+        (data.photos || []).forEach(p => {
+          this.photoCaptions.push(this.fb.group({
+            id: [p.id],
+            caption: [p.caption || '']
+          }));
+        });
       } else {
         this.findingForm.reset({
           severity: Severity.MINOR,
         });
         this.existingPhotos.set([]);
+        this.photoCaptions.clear();
+        this.newPhotoCaptions.clear();
+      }
+      
+      // Handle publish state
+      if (this._isPublished()) {
+        this.findingForm.disable({ emitEvent: false });
+      } else {
+        this.findingForm.enable({ emitEvent: false });
       }
     });
   }
@@ -120,7 +162,7 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
     if (!url) return '';
     if (url.startsWith('http')) return url;
     const path = url.startsWith('/') ? url : `/${url}`;
-    return `http://localhost:3000${path}`; 
+    return `${environment.apiUrl}${path}`; 
   }
 
   // Two-step Delete Flow
@@ -137,6 +179,23 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
   cancelDelete(): void {
     this.activeDeleteExistingId.set(null);
     this.activeDeleteNewIndex.set(null);
+  }
+
+  onCaptionBlur(index: number): void {
+    const photoGroup = this.photoCaptions.at(index);
+    const photoId = photoGroup.get('id')?.value;
+    const caption = photoGroup.get('caption')?.value;
+
+    if (!photoId || !this._inspectionId() || !this._finding()) return;
+    
+    this.inspectionsService.updatePhoto(this._inspectionId(), this._finding()!.id, photoId, {
+      caption: caption || ''
+    }).subscribe({
+      error: (err) => {
+        console.error('Failed to update caption', err);
+        this.errorMessage.set('Failed to save caption.');
+      }
+    });
   }
 
   confirmDeleteExistingPhoto(photoId: string): void {
@@ -163,6 +222,7 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
       newFiles.splice(index, 1);
       return newFiles;
     });
+    this.newPhotoCaptions.removeAt(index);
   }
 
   editExistingPhoto(photo: Photo): void {
@@ -179,70 +239,112 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
     
     this.photoToEdit.set(null);
 
-    const file = new File([blob], `edited_${Date.now()}.jpg`, { type: 'image/jpeg' });
-
-    if (target.type === 'existing') {
-        const photo = target.photo;
-        this.isLoading.set(true);
-
-        // Upload new photo
-        this.inspectionsService.uploadPhoto(this._inspectionId(), this._finding()!.id, file).subscribe({
-          next: (newPhoto) => {
-            // Delete the old photo
-            this.inspectionsService.deletePhoto(this._inspectionId(), this._finding()!.id, photo.id).subscribe({
-              next: () => {
-                this.existingPhotos.update(photos => {
-                  const newPhotos = [...photos];
-                  const idx = newPhotos.findIndex(p => p.id === photo.id);
-                  if (idx > -1) {
-                    newPhotos[idx] = newPhoto; 
-                  } else {
-                    newPhotos.push(newPhoto);
-                  }
-                  return newPhotos;
-                });
-                this.isLoading.set(false);
-              },
-              error: (err) => {
-                console.error('Failed to delete old photo', err);
-                this.errorMessage.set('Photo updated but old version failed to delete from server.');
-                this.isLoading.set(false);
-              }
-            });
-          },
-          error: (err) => {
-            console.error('Failed to upload edited photo', err);
-            this.errorMessage.set('Failed to save edited photo.');
-            this.isLoading.set(false);
-          }
-        });
-    } else {
-        // New file: just update the local array natively!
-        this.selectedFiles.update(files => {
-            const newArray = [...files];
-            URL.revokeObjectURL(newArray[target.index].previewUrl); 
-            newArray[target.index] = {
-               file,
-               previewUrl: URL.createObjectURL(file)
-            };
-            return newArray;
-        });
-    }
+    this.isLoading.set(true);
+    const rawFile = new File([blob], `edited_${Date.now()}.jpg`, { type: 'image/jpeg' });
+    
+    // Compress edited image too
+    this.compressionService.compressImage(rawFile).then(file => {
+      if (target.type === 'existing') {
+          const photo = target.photo;
+          // Upload new photo
+          this.inspectionsService.uploadPhoto(this._inspectionId(), this._finding()!.id, file).subscribe({
+            next: (newPhoto) => {
+              // Delete the old photo
+              this.inspectionsService.deletePhoto(this._inspectionId(), this._finding()!.id, photo.id).subscribe({
+                next: () => {
+                  this.existingPhotos.update(photos => {
+                    const newPhotos = [...photos];
+                    const idx = newPhotos.findIndex(p => p.id === photo.id);
+                    if (idx > -1) {
+                      newPhotos[idx] = newPhoto; 
+                    } else {
+                      newPhotos.push(newPhoto);
+                    }
+                    return newPhotos;
+                  });
+                  this.isLoading.set(false);
+                },
+                error: (err) => {
+                  console.error('Failed to delete old photo', err);
+                  this.errorMessage.set('Photo updated but old version failed to delete from server.');
+                  this.isLoading.set(false);
+                }
+              });
+            },
+            error: (err) => {
+              console.error('Failed to upload edited photo', err);
+              this.errorMessage.set('Failed to save edited photo.');
+              this.isLoading.set(false);
+            }
+          });
+      } else {
+          // New file: just update the local array natively!
+          this.selectedFiles.update(files => {
+              const newArray = [...files];
+              URL.revokeObjectURL(newArray[target.index].previewUrl); 
+              newArray[target.index] = {
+                 file,
+                 previewUrl: URL.createObjectURL(file),
+                 isCompressing: false
+              };
+              return newArray;
+          });
+          this.isLoading.set(false);
+      }
+    });
   }
 
   setSeverity(severity: Severity): void {
     this.findingForm.patchValue({ severity });
   }
 
-  onFileSelected(event: Event): void {
+  async onFileSelected(event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
     if (input.files) {
       const filesArray = Array.from(input.files);
-      const newItems = filesArray.map(file => ({
-        file,
-        previewUrl: URL.createObjectURL(file)
-      }));
-      this.selectedFiles.update(files => [...files, ...newItems]);
+      
+      // 1. Add all files with a loading state first
+      const initialIndices: number[] = [];
+        this.selectedFiles.update(files => {
+        const currentCount = files.length;
+        const newItems = filesArray.map((file, i) => {
+          initialIndices.push(currentCount + i);
+          // Also add a form control for each new file
+          this.newPhotoCaptions.push(this.fb.control(''));
+          return {
+            file,
+            previewUrl: URL.createObjectURL(file),
+            isCompressing: true
+          };
+        });
+        return [...newItems, ...files];
+      });
+
+      // 2. Compress each file and update individually
+      // We process them in parallel but update the signal for each
+      filesArray.forEach(async (file, index) => {
+        const compressedFile = await this.compressionService.compressImage(file);
+        
+        this.selectedFiles.update(files => {
+          const newFiles = [...files];
+          // Note: Since we prepend, we need to find the correct index if it shifted.
+          // But since we are doing this immediately, the index should be stable for this batch
+          // relative to the start of the array.
+          if (newFiles[index]) {
+            // Revoke old preview and create new one for compressed file
+            URL.revokeObjectURL(newFiles[index].previewUrl);
+            newFiles[index] = {
+              file: compressedFile,
+              previewUrl: URL.createObjectURL(compressedFile),
+              isCompressing: false
+            };
+          }
+          return newFiles;
+        });
+      });
+
+      // Reset input
+      input.value = '';
     }
   }
 
@@ -250,33 +352,30 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
     return this.findingForm.get('severity')?.value;
   }
 
-  generateAiComment(): void {
-    const { severity, location, short_note } = this.findingForm.value;
-    
-    // Clear previous errors
-    this.aiErrorMessage.set(null);
-    this.errorMessage.set(null);
+  generateAiComment() {
+    const { severity, location, description } = this.findingForm.value;
+    const yearBuilt = this._yearBuilt();
 
-    if (!short_note || !location) {
-      if (!short_note) this.findingForm.get('short_note')?.markAsTouched();
+    if (!description || !location) {
+      if (!description) this.findingForm.get('description')?.markAsTouched();
       if (!location) this.findingForm.get('location')?.markAsTouched();
-      
-      this.aiErrorMessage.set('Location and Observation Note are required for AI generation.');
       return;
     }
 
     this.isGeneratingAi.set(true);
+    this.aiErrorMessage.set(null);
 
     this.aiService.generateComment({
       section: this._section(),
       severity,
-      location: location || '',
-      short_note,
-      year_built: this.year_built
+      location,
+      description,
+      year_built: yearBuilt
     }).subscribe({
       next: (response) => {
         this.findingForm.patchValue({
-          ai_comment: response.comment
+          description: response.description,
+          recommendation: response.recommendation
         });
         this.isGeneratingAi.set(false);
       },
@@ -286,6 +385,26 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
         this.isGeneratingAi.set(false);
       }
     });
+  }
+
+  applyPreset(preset: any): void {
+    const descriptionValue = preset.description 
+      ? `[${preset.title}] ${preset.description}` 
+      : preset.title;
+
+    this.findingForm.patchValue({
+      severity: preset.severity || 'Minor',
+      description: descriptionValue
+    });
+  }
+
+  isPresetActive(preset: any): boolean {
+    const formValue = this.findingForm.value;
+    const expectedDescription = preset.description 
+      ? `[${preset.title}] ${preset.description}` 
+      : preset.title;
+
+    return formValue.severity === preset.severity && formValue.description === expectedDescription;
   }
 
   onSubmit(): void {
@@ -300,8 +419,9 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
           let uploadCount = 0;
           let hasErrors = false;
           
-          this.selectedFiles().forEach(item => {
-            this.inspectionsService.uploadPhoto(this._inspectionId(), finding.id, item.file).subscribe({
+          this.selectedFiles().forEach((item, index) => {
+            const caption = this.newPhotoCaptions.at(index).value;
+            this.inspectionsService.uploadPhoto(this._inspectionId(), finding.id, item.file, caption).subscribe({
               next: () => {
                 uploadCount++;
                 if (uploadCount === this.selectedFiles().length) {
@@ -330,8 +450,8 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
         const dto: UpdateFindingDto = {
           section: this._section(),
           severity: formValue.severity,
-          short_note: formValue.short_note,
-          ai_comment: formValue.ai_comment || undefined,
+          description: formValue.description,
+          recommendation: formValue.recommendation || undefined,
           location: formValue.location || undefined,
         };
 
@@ -347,8 +467,8 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
         const dto: CreateFindingDto = {
           section: this._section(),
           severity: formValue.severity,
-          short_note: formValue.short_note,
-          ai_comment: formValue.ai_comment || undefined,
+          description: formValue.description,
+          recommendation: formValue.recommendation || undefined,
           location: formValue.location || undefined,
         };
 

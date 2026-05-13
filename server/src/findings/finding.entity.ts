@@ -32,11 +32,11 @@ export class Finding {
   @Column({ nullable: true })
   location: string;
 
-  @Column()
-  short_note: string;
+  @Column({ default: '' })
+  description: string;
 
   @Column({ nullable: true })
-  ai_comment: string;
+  recommendation: string;
 
   @Column({ default: 0 })
   sort_order: number;

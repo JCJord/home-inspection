@@ -1,14 +1,13 @@
 @use 'variables' as *;
+@use '/cards' as *;
+
 
 :host {
   display: block;
   width: 100%;
 }
 
-.details-container {
-  padding: 2rem;
-  max-width: 1200px;
-  margin: 0 auto;
+.inspection-details-container {
   animation: fadeIn 0.3s ease-out forwards;
 }
 
@@ -102,12 +101,71 @@
       }
     }
 
-    // Button inner layout
-    app-button {
-      ::ng-deep .app-button {
+    // Publish Workflow Morphing Button
+    .publish-workflow-container {
+      display: inline-flex;
+      align-items: center;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      overflow: hidden;
+      height: 2.375rem; 
+      border-radius: 0.75rem;
+      position: relative;
+
+      &.confirm {
+        background: $color-surface-light;
+        border: 1px solid $color-border;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      }
+
+      &.loading {
+        width: 2.375rem;
+        background: $color-primary;
+        border-radius: 50%;
+        padding: 0;
+        justify-content: center;
+      }
+
+      &.success {
+        background: $color-success;
+        border-color: $color-success;
+        color: white;
+      }
+
+      .action-btn {
         display: flex;
         align-items: center;
         gap: 0.5rem;
+        padding: 0 1rem;
+        height: 100%;
+        font-size: 0.875rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: none;
+        background: transparent;
+        white-space: nowrap;
+
+        &.cancel {
+          color: $color-text-muted;
+          border-right: 1px solid $color-border;
+          &:hover {
+            background: rgba($color-text-muted, 0.05);
+            color: $color-text;
+          }
+        }
+
+        &.confirm {
+          color: $color-primary;
+          &:hover {
+            background: rgba($color-primary, 0.05);
+          }
+        }
+      }
+
+      .loading-workflow, .success-workflow {
+        height: 100%;
+        display: flex;
+        align-items: center;
       }
     }
   }
@@ -118,6 +176,16 @@
 .details-content {
   background: $color-surface;
   border-radius: 1.5rem;
+  border: 1px solid $color-border;
+  overflow: hidden;
+
+  .report-action-bar {
+    background: rgba($color-primary, 0.03);
+    
+    .text-standard {
+      color: $color-text-muted;
+    }
+  }
   .empty-section-state {
     display: flex;
     flex-direction: column;
@@ -155,128 +223,91 @@
     }
   }
 
-  .findings-list {
-    display: flex;
-    flex-direction: column;
-    padding: 1.5rem;
-    gap: 1.5rem;
-
-    .findings-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-
-      h3 {
-        margin: 0;
-        font-size: 1.125rem;
-        color: $color-text;
+    .cover-photo-section {
+      margin-bottom: 1rem;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+      
+      .relative {
+        &:hover img {
+          transform: scale(1.02);
+        }
+        
+        img {
+          transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
       }
 
-      .add-finding-btn.small {
-        padding: 0.5rem 0.75rem;
-        font-size: 0.75rem;
+      .text-standard { color: $color-text; }
+      .text-standard-muted { color: $color-text-muted; }
+    }
+
+    .summary-container {
+    padding: 1.5rem 2rem 3rem;
+    
+    .summary-header {
+      .text-standard { color: $color-text; }
+      .text-standard-muted { color: $color-text-muted; }
+    }
+
+    .severity-group {
+      .group-header {
+        padding: 1.125rem 1.5rem;
+        border-left: 4px solid currentColor;
+        background-color: white;
+        border-radius: 0.375rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        
+        &:hover {
+          transform: translateX(4px);
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+        }
+
+        .group-label {
+          font-size: 0.875rem;
+          font-weight: 900;
+          letter-spacing: 0.06em;
+          text-transform: uppercase;
+        }
+
+        &.group-critical {
+          color: $color-safety;
+          border-color: $color-safety;
+          background-color: rgba($color-safety, 0.04);
+          .item-count-badge { background-color: $color-safety; color: white; }
+        }
+
+        &.group-major {
+          color: $color-major;
+          border-color: $color-major;
+          background-color: rgba($color-major, 0.04);
+          .item-count-badge { background-color: $color-major; color: white; }
+        }
+
+        &.group-minor {
+          color: $color-success;
+          border-color: $color-success;
+          background-color: rgba($color-success, 0.04);
+          .item-count-badge { background-color: $color-success; color: white; }
+        }
       }
     }
 
-    .findings-cards {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-
-      .finding-card {
-        display: flex;
-        background: $color-surface-light;
-        border: 1px solid $color-border;
-        border-radius: 0.75rem;
-        overflow: hidden;
-        transition: transform 0.2s, box-shadow 0.2s;
-
-        &:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-        }
-
-        .finding-severity-indicator {
-          width: 6px;
-          flex-shrink: 0;
-          
-          &[data-severity="safety"] { background: $color-safety; }
-          &[data-severity="major"] { background: $color-major; }
-          &[data-severity="minor"] { background: $color-minor; }
-          &[data-severity="maintenance"] { background: $color-maintenance; }
-        }
-
-        .finding-card-content {
-          padding: 1.25rem;
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-          gap: 0.75rem;
-
-          .finding-top-row {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            
-            .finding-severity {
-              font-size: 0.75rem;
-              font-weight: 700;
-              text-transform: uppercase;
-              padding: 0.25rem 0.625rem;
-              border-radius: 2rem;
-              
-              &[data-severity="safety"] { background: rgba($color-safety, 0.1); color: $color-safety; }
-              &[data-severity="major"] { background: rgba($color-major, 0.1); color: $color-major; }
-              &[data-severity="minor"] { background: rgba($color-minor, 0.1); color: $color-minor; }
-              &[data-severity="maintenance"] { background: rgba($color-maintenance, 0.1); color: $color-maintenance; }
-            }
-
-            .finding-location {
-              display: flex;
-              align-items: center;
-              gap: 0.25rem;
-              font-size: 0.8125rem;
-              font-weight: 500;
-              color: $color-text-muted;
-              
-              lucide-icon {
-                opacity: 0.7;
-              }
-            }
-          }
-
-          .finding-note {
-            margin: 0;
-            font-size: 0.9375rem;
-            line-height: 1.5;
-            color: $color-text;
-          }
-
-          .finding-photos {
-            display: flex;
-            gap: 0.5rem;
-            margin-top: 0.5rem;
-            overflow-x: auto;
-            padding-bottom: 0.25rem; // for scrollbar if any
-
-            .finding-thumbnail {
-              width: 60px;
-              height: 60px;
-              border-radius: 0.5rem;
-              object-fit: cover;
-              border: 1px solid $color-border;
-              cursor: pointer;
-              transition: opacity 0.2s;
-
-              &:hover {
-                opacity: 0.8;
-              }
-            }
-          }
-        }
-      }
+    .empty-state-summary {
+      animation: slideUp 0.4s ease-out;
+      
+      h3 { color: $color-text; }
+      p { color: $color-text-muted; }
     }
   }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 // ─── States ───────────────────────────────────────────
@@ -324,16 +355,37 @@
 // ─── Responsive ───────────────────────────────────────
 
 @media (max-width: 640px) {
-  .details-container {
-    padding: 1.25rem;
+  .inspection-details-container {
   }
 
   .details-header {
-    .header-left {
-      .header-info {
-        .address {
-          font-size: 1.125rem;
-        }
+    gap: 1rem;
+    padding-bottom: 1.25rem;
+    
+    .header-right {
+      width: 100%;
+      display: flex;
+      justify-content: flex-end;
+    }
+  }
+
+  .details-content {
+    border-radius: 1rem;
+
+    .summary-container {
+      padding: 1.25rem 0.875rem 2rem;
+    }
+
+    .report-action-bar {
+      padding: 0.75rem 1rem !important;
+    }
+
+    .summary-header {
+      h2 {
+        font-size: 1.25rem;
+      }
+      p {
+        font-size: 0.8125rem;
       }
     }
   }
@@ -366,3 +418,63 @@
     transform: translateY(0);
   }
 }
+
+// ─── Skeleton Findings Mimic ──────────────────────────
+.skeleton-finding-card {
+  @include card-premium(false);
+  padding: 0;
+  display: flex;
+  position: relative;
+  overflow: hidden;
+  background-color: white;
+
+  .severity-indicator {
+    width: 6px;
+    background-color: rgba($color-border, 0.3);
+    flex-shrink: 0;
+  }
+
+  .content-mimic {
+    flex: 1;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+
+    .top-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.25rem;
+    }
+
+    .metadata {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+    }
+
+    .ai-box-mimic {
+      background-color: rgba($color-primary, 0.03);
+      border: 1px solid rgba($color-primary, 0.05);
+      border-radius: 0.75rem;
+      padding: 0.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .note-mimic {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .photos-mimic {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+  }
+}

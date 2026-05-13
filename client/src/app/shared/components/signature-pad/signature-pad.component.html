@@ -1,0 +1,23 @@
+<div class="signature-pad-wrapper">
+  <canvas #canvas
+    (mousedown)="startDrawing($event)"
+    (mousemove)="draw($event)"
+    (mouseup)="stopDrawing()"
+    (mouseleave)="stopDrawing()"
+    (touchstart)="startDrawing($event)"
+    (touchmove)="draw($event)"
+    (touchend)="stopDrawing()"
+    class="signature-canvas">
+  </canvas>
+
+  <div class="pad-actions">
+    <button type="button" class="action-btn clear-btn" (click)="clear()" title="Clear Signature">
+      <lucide-icon [img]="icons.RotateCcw" [size]="16"></lucide-icon>
+      <span>Clear</span>
+    </button>
+  </div>
+
+  <div class="pad-hint" [class.hidden]="hasDrawn()">
+    <span>Sign here</span>
+  </div>
+</div>

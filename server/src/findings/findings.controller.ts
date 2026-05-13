@@ -58,14 +58,7 @@ export class FindingsController {
     return this.findingsService.update(inspectorId, inspectionId, findingId, updateFindingDto);
   }
 
-  @Post(':findingId/ai-comment')
-  generateAiComment(
-    @GetUser('sub') inspectorId: string,
-    @Param('inspectionId') inspectionId: string,
-    @Param('findingId') findingId: string,
-  ) {
-    return this.findingsService.generateAiComment(inspectorId, inspectionId, findingId);
-  }
+
 
   @Delete(':findingId')
   remove(
