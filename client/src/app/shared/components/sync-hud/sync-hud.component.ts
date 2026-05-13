@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MutationQueueService } from '../../../core/services/mutation-queue.service';
-import { LucideAngularModule, Cloud, CloudOff, AlertCircle, CheckCircle2, RefreshCw } from 'lucide-angular';
+import { LucideAngularModule, Cloud, CloudOff, AlertCircle, CheckCircle2, RefreshCw, X } from 'lucide-angular';
 
 @Component({
   selector: 'app-sync-hud',
@@ -15,10 +15,14 @@ import { LucideAngularModule, Cloud, CloudOff, AlertCircle, CheckCircle2, Refres
          [class.visible]="isVisible()">
       <div class="hud-content">
         @if (failedCount() > 0) {
-          <div class="status-group failed" (click)="retry()">
-            <lucide-icon [name]="icons.AlertCircle" [size]="16"></lucide-icon>
-            <span>{{ failedCount() }} failed</span>
-            <lucide-icon [name]="icons.RefreshCw" [size]="14" class="retry-icon"></lucide-icon>
+          <div class="status-group failed">
+            <div class="flex items-center gap-1.5" (click)="retry()" title="Retry all">
+              <lucide-icon [name]="icons.AlertCircle" [size]="16"></lucide-icon>
+              <span>{{ failedCount() }} failed</span>
+              <lucide-icon [name]="icons.RefreshCw" [size]="14" class="retry-icon"></lucide-icon>
+            </div>
+            <div class="w-px h-3 bg-white/20 mx-1"></div>
+            <lucide-icon [name]="icons.X" [size]="16" class="hover:text-white cursor-pointer" (click)="clear()" title="Clear all errors"></lucide-icon>
           </div>
         } @else if (activeCount() > 0) {
           <div class="status-group active">
@@ -116,7 +120,7 @@ export class SyncHudComponent {
   failedCount = this.queueService.failedTasksCount;
   isOnline = this.queueService.isOnline;
 
-  readonly icons = { Cloud, CloudOff, AlertCircle, CheckCircle2, RefreshCw };
+  readonly icons = { Cloud, CloudOff, AlertCircle, CheckCircle2, RefreshCw, X };
 
   isVisible(): boolean {
     // Show if there is activity, failure, or if we just went offline
@@ -125,5 +129,9 @@ export class SyncHudComponent {
 
   retry() {
     this.queueService.retryFailedTasks();
+  }
+
+  clear() {
+    this.queueService.clearAllTasks();
   }
 }

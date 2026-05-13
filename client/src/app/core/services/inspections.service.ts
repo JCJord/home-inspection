@@ -1,6 +1,6 @@
-import { inject, Injectable, signal, computed } from '@angular/core';
+import { inject, Injectable, signal, computed, Injector } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, tap, of } from 'rxjs';
+import { Observable, tap, of, from, mergeMap, catchError, concat, map } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Inspection, Finding, Photo } from '../models/inspection.interface';
 import { CreateInspectionDto } from '../dtos/create-inspection.dto';
@@ -9,13 +9,23 @@ import { CreateFindingDto } from '../dtos/create-finding.dto';
 import { UpdateFindingDto } from '../dtos/update-finding.dto';
 import { ReorderFindingsDto } from '../dtos/reorder-findings.dto';
 import { ReorderPhotosDto } from '../dtos/reorder-photos.dto';
+import { PersistenceService } from './persistence.service';
+import { MutationQueueService, MutationType } from './mutation-queue.service';
+import { ImageCacheService } from './image-cache.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class InspectionsService {
   private http = inject(HttpClient);
+  private persistenceService = inject(PersistenceService);
+  private imageCacheService = inject(ImageCacheService);
+  private injector = inject(Injector);
   private apiUrl = `${environment.apiUrl}/inspections`;
+
+  private get mutationQueueService() {
+    return this.injector.get(MutationQueueService);
+  }
   private readonly CACHE_KEY = 'ins_cached_list';
 
   // --- State Store ---
@@ -91,7 +101,147 @@ export class InspectionsService {
   }
 
   getInspectionById(id: string): Observable<Inspection> {
-    return this.http.get<Inspection>(`${this.apiUrl}/${id}`);
+    // Try to get from cache first, then fetch from network and update cache (SWR)
+    return from(this.persistenceService.getInspection(id)).pipe(
+      mergeMap(cached => {
+        const network$ = this.http.get<Inspection>(`${this.apiUrl}/${id}`).pipe(
+          map(fresh => this.mergePendingMutations(fresh)), // <--- IMPORTANT: Inject pending items
+          tap(fresh => {
+            this.persistenceService.saveInspection(fresh);
+            this.imageCacheService.prefetchInspection(fresh); // <--- BACKGROUND PREFETCH
+          }),
+          catchError(err => {
+             // If network fails, and we already have cached, return it.
+             if (cached) return of(this.mergePendingMutations(cached)); 
+             throw err;
+          })
+        );
+
+        if (cached) {
+          // Prefetch cached one too just in case some photos are missing
+          this.imageCacheService.prefetchInspection(cached);
+          // Emit cached immediately, then the network response
+          return concat(of(this.mergePendingMutations(cached)), network$);
+        }
+        
+        return network$;
+      })
+    );
+  }
+
+  public mergePendingMutations(inspection: Inspection): Inspection {
+    const pendingTasks = this.mutationQueueService.allTasks()
+      .filter(t => t.inspectionId === inspection.id);
+    
+    if (pendingTasks.length === 0) return inspection;
+
+    // Create a deep-ish clone to avoid reference pollution
+    const merged: Inspection = {
+      ...inspection,
+      metadata_values: { ...(inspection.metadata_values || {}) },
+      section_statuses: { ...(inspection.section_statuses || {}) },
+      findings: (inspection.findings || []).map(f => ({ ...f, photos: [...(f.photos || [])] }))
+    };
+    
+    pendingTasks.forEach(task => {
+      // 1. Handle Inspection Updates
+      if (task.type === MutationType.UPDATE_INSPECTION) {
+        const payload = task.payload;
+        if (payload.metadata_values) {
+          merged.metadata_values = { ...merged.metadata_values, ...payload.metadata_values };
+        }
+        if (payload.section_statuses) {
+          merged.section_statuses = { ...merged.section_statuses, ...payload.section_statuses };
+        }
+      }
+
+      // 2. Handle Finding Creation
+      if (task.type === MutationType.CREATE_FINDING) {
+        const payload = task.payload;
+        const exists = merged.findings?.some(f => f.id === (task.clientFindingId || task.id));
+        if (!exists) {
+          merged.findings?.push({
+            id: task.clientFindingId || task.id,
+            inspection_id: merged.id,
+            section: payload.section,
+            severity: payload.severity,
+            description: payload.description,
+            location: payload.location,
+            recommendation: payload.recommendation,
+            photos: [],
+            isSyncing: task.status !== 'COMPLETED'
+          } as any);
+        }
+      }
+
+      // 3. Handle Finding Updates
+      if (task.type === MutationType.UPDATE_FINDING) {
+        const idx = merged.findings?.findIndex(f => f.id === task.findingId);
+        if (idx !== undefined && idx > -1) {
+          const f = merged.findings![idx];
+          merged.findings![idx] = { 
+            ...f, 
+            ...task.payload,
+            isSyncing: task.status !== 'COMPLETED' 
+          };
+        }
+      }
+
+      // 4. Handle Photo Uploads
+      if (task.type === MutationType.UPLOAD_PHOTO) {
+        const targetId = task.findingId || task.clientFindingId;
+        const finding = merged.findings?.find(f => f.id === targetId);
+        
+        if (finding) {
+          const tempId = `temp-${task.id}`;
+          const serverPhotoId = (task as any).result?.id;
+          const isConfirmedByServer = serverPhotoId && (finding.photos || []).some(p => p.id === serverPhotoId);
+          const isRedundant = task.status === 'COMPLETED' && isConfirmedByServer;
+
+          if (!isRedundant) {
+            const photos = finding.photos || [];
+            const existingIndex = photos.findIndex(p => p.id === tempId);
+            const tempPhoto = {
+              id: tempId,
+              storage_url: (task as any).tempPreviewUrl || '',
+              caption: task.payload.caption,
+              isSyncing: task.status === 'PENDING' || task.status === 'SYNCING',
+              hasError: task.status === 'FAILED'
+            };
+
+            if (existingIndex > -1) {
+              photos[existingIndex] = { ...photos[existingIndex], ...tempPhoto };
+            } else {
+              photos.push(tempPhoto as any);
+            }
+            finding.photos = photos;
+          }
+        }
+      }
+
+      // 5. Handle Photo Caption Updates
+      if (task.type === MutationType.UPDATE_PHOTO) {
+        const finding = merged.findings?.find(f => f.id === task.findingId);
+        if (finding) {
+          const photo = finding.photos.find(p => p.id === task.payload.photoId);
+          if (photo) {
+            photo.caption = task.payload.caption;
+            photo.isSyncing = task.status === 'PENDING' || task.status === 'SYNCING';
+            (photo as any).hasError = task.status === 'FAILED';
+          }
+        }
+      }
+
+      // 6. Handle Photo Deletion
+      if (task.type === MutationType.DELETE_PHOTO) {
+        const finding = merged.findings?.find(f => f.id === task.findingId);
+        if (finding) {
+          finding.photos = finding.photos.filter(p => p.id !== task.payload.photoId);
+        }
+      }
+    });
+
+    return merged;
   }
 
   createInspection(dto: CreateInspectionDto): Observable<Inspection> {
@@ -128,7 +278,14 @@ export class InspectionsService {
   }
 
   publishInspection(id: string): Observable<Inspection> {
-    return this.http.post<Inspection>(`${this.apiUrl}/${id}/publish`, {});
+    return this.http.post<Inspection>(`${this.apiUrl}/${id}/publish`, {}).pipe(
+      tap(() => {
+        // Garbage Collection: Remove from cache after successful publish
+        this.persistenceService.deleteInspection(id).catch(err => 
+          console.warn('Failed to clean up cache after publish', err)
+        );
+      })
+    );
   }
 
   unpublishInspection(id: string): Observable<Inspection> {
@@ -205,5 +362,14 @@ export class InspectionsService {
 
   reorderPhotos(inspectionId: string, findingId: string, dto: ReorderPhotosDto): Observable<void> {
     return this.http.patch<void>(`${this.apiUrl}/${inspectionId}/findings/${findingId}/photos/reorder`, dto);
+  }
+
+  // --- Persistence Bridge ---
+  async updateLocalCache(inspection: Inspection): Promise<void> {
+    await this.persistenceService.saveInspection(inspection);
+  }
+
+  async updateLocalFinding(inspectionId: string, finding: Finding): Promise<void> {
+    await this.persistenceService.updateCachedFinding(inspectionId, finding);
   }
 }
