@@ -27,7 +27,7 @@ export class ImageEditorModalComponent implements OnInit, OnDestroy {
   private isDrawing = false;
   imageElement = new Image();
   
-  activeTool = signal<'brush' | 'circle' | 'arrow' | 'pan'>('brush');
+  activeTool = signal<'brush' | 'circle' | 'oval' | 'arrow' | 'pan'>('brush');
   strokeColor = signal<string>('#ef4444'); // Default Red
   strokeWidth = signal<number>(1); // Default thin (will be scaled)
   zoomLevel = signal<number>(1);
@@ -214,6 +214,8 @@ export class ImageEditorModalComponent implements OnInit, OnDestroy {
       
       if (this.activeTool() === 'circle') {
         this.drawCircle(this.startCoords, coords);
+      } else if (this.activeTool() === 'oval') {
+        this.drawOval(this.startCoords, coords);
       } else if (this.activeTool() === 'arrow') {
         this.drawArrow(this.startCoords, coords);
       }
@@ -224,6 +226,17 @@ export class ImageEditorModalComponent implements OnInit, OnDestroy {
     const radius = Math.sqrt(Math.pow(end.x - start.x, 2) + Math.pow(end.y - start.y, 2));
     this.ctx.beginPath();
     this.ctx.arc(start.x, start.y, radius, 0, 2 * Math.PI);
+    this.ctx.stroke();
+  }
+
+  private drawOval(start: {x: number, y: number}, end: {x: number, y: number}) {
+    const centerX = (start.x + end.x) / 2;
+    const centerY = (start.y + end.y) / 2;
+    const radiusX = Math.abs(end.x - start.x) / 2;
+    const radiusY = Math.abs(end.y - start.y) / 2;
+    
+    this.ctx.beginPath();
+    this.ctx.ellipse(centerX, centerY, radiusX, radiusY, 0, 0, 2 * Math.PI);
     this.ctx.stroke();
   }
 

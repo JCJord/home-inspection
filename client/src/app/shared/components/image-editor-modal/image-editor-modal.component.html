@@ -28,6 +28,9 @@
         <button class="tool-btn" [class.active]="activeTool() === 'circle'" (click)="activeTool.set('circle')" title="Circle">
           <lucide-icon [name]="icons['Circle']" [size]="20"></lucide-icon>
         </button>
+        <button class="tool-btn" [class.active]="activeTool() === 'oval'" (click)="activeTool.set('oval')" title="Oval">
+          <lucide-icon [name]="icons['Circle']" [size]="20" style="transform: scaleX(1.3)"></lucide-icon>
+        </button>
         <button class="tool-btn" [class.active]="activeTool() === 'arrow'" (click)="activeTool.set('arrow')" title="Arrow">
           <lucide-icon [name]="icons['ArrowUpRight']" [size]="20"></lucide-icon>
         </button>
@@ -110,6 +113,10 @@
       <button class="nav-item" [class.active]="activeTool() === 'circle'" (click)="activeTool.set('circle')">
         <lucide-icon [name]="icons['Circle']" [size]="22"></lucide-icon>
         <span>Circle</span>
+      </button>
+      <button class="nav-item" [class.active]="activeTool() === 'oval'" (click)="activeTool.set('oval')">
+        <lucide-icon [name]="icons['Circle']" [size]="22" style="transform: scaleX(1.3)"></lucide-icon>
+        <span>Oval</span>
       </button>
       <button class="nav-item" [class.active]="activeTool() === 'arrow'" (click)="activeTool.set('arrow')">
         <lucide-icon [name]="icons['ArrowUpRight']" [size]="22"></lucide-icon>
