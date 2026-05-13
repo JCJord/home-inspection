@@ -507,7 +507,7 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
       // Create a "Temporary Finding" for the UI to display
       const tempFinding: Finding = {
         id: this.isEditMode() ? this._finding()!.id : clientFindingId,
-        inspection_id: Number(inspectionId),
+        inspection_id: inspectionId,
         section: this._section(),
         severity: formValue.severity,
         description: formValue.description,
