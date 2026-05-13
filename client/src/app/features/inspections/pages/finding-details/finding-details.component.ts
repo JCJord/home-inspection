@@ -12,6 +12,7 @@ import { BackButtonComponent } from '../../../../shared/components/back-button/b
 import { SectionStatusToggleComponent } from '../../components/section-status-toggle/section-status-toggle';
 import { TextInputComponent } from '../../../../shared/components/inputs/text-input/text-input.component';
 import { SummaryDashboardComponent } from '../../components/summary-dashboard/summary-dashboard.component';
+import { MutationQueueService, TaskCompletion } from '../../../../core/services/mutation-queue.service';
 
 @Component({
   selector: 'app-finding-details',
@@ -25,6 +26,7 @@ export class FindingDetailsComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private inspectionsService = inject(InspectionsService);
+  private mutationQueueService = inject(MutationQueueService);
 
   inspection = signal<Inspection | null>(null);
   finding = signal<Finding | null>(null);
@@ -105,6 +107,17 @@ export class FindingDetailsComponent implements OnInit {
         this.loadData();
       }
     });
+
+    // Listen for background task completions to swap temporary IDs
+    this.mutationQueueService.taskCompleted$.subscribe((completion: TaskCompletion) => {
+      if (completion.clientFindingId && completion.clientFindingId === this.findingId()) {
+        // Swap ID in URL without reloading data
+        this.router.navigate(['/inspections', this.inspectionId(), 'findings', completion.result.id], { 
+          queryParams: { section: this.selectedSection() },
+          replaceUrl: true 
+        });
+      }
+    });
   }
 
   loadData() {
@@ -112,8 +125,12 @@ export class FindingDetailsComponent implements OnInit {
     if (!inspId) return;
 
     this.isLoading.set(true);
-    // Reset finding state to avoid showing old data if component is reused
-    this.finding.set(null);
+    
+    // Only reset if it's a different finding than what we have
+    // (Preserve optimistic findings that are currently syncing)
+    if (this.finding()?.id !== this.findingId()) {
+      this.finding.set(null);
+    }
 
     this.inspectionsService.getInspectionById(inspId).subscribe({
       next: (insp) => {
@@ -121,19 +138,29 @@ export class FindingDetailsComponent implements OnInit {
 
         const fId = this.findingId();
         if (fId && fId !== 'new' && fId !== 'summary') {
-          // Optimization: try to find in the already loaded inspection
+          // Check if it's an optimistic finding in local state
           const found = insp.findings?.find(f => f.id === fId);
           if (found) {
             this.finding.set(found);
             this.selectedSection.set(found.section);
             this.isLoading.set(false);
           } else {
-            // Fallback to direct fetch if not in the list for some reason
-            this.loadFinding(inspId, fId);
+            // Check if ID is a client-side UUID (avoid 404s for syncing items)
+            const isClientSideId = fId.length === 36 && fId.includes('-');
+            if (isClientSideId) {
+                // It's likely a syncing item that's not yet in the server's response
+                // If it's already in our signal, keep it, otherwise show loading
+                if (!this.finding()) {
+                   this.isLoading.set(true); 
+                } else {
+                   this.isLoading.set(false);
+                }
+            } else {
+                this.loadFinding(inspId, fId);
+            }
           }
         } else {
           this.isLoading.set(false);
-          // If no section selected, use the first one from template or 'summary'
           if (!this.selectedSection() && insp.template_snapshot?.sections?.length) {
             this.selectedSection.set(insp.template_snapshot.sections[0].name);
           }
@@ -159,10 +186,21 @@ export class FindingDetailsComponent implements OnInit {
   }
 
   onSaved(finding: Finding) {
-    // Reload the inspection data to update the finding switcher list
-    this.loadData();
+    // Optimistic Update: Add to local inspection signal
+    this.inspection.update(insp => {
+      if (!insp) return null;
+      // Remove if it exists (for updates) and add the new version
+      const otherFindings = (insp.findings || []).filter(f => f.id !== finding.id);
+      return {
+        ...insp,
+        findings: [...otherFindings, finding]
+      };
+    });
+
+    // Set the finding signal so the form stays open in "edit" mode for this finding
+    this.finding.set(finding);
     
-    // Navigate to the finding we just saved so the form doesn't clear
+    // Navigate to the finding ID (could be client UUID)
     this.router.navigate(['/inspections', this.inspectionId(), 'findings', finding.id], {
       queryParams: { section: this.selectedSection() }
     });

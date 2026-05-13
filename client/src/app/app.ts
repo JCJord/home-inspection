@@ -6,11 +6,12 @@ import { NavbarDesktop } from './features/dashboard/components/navbar-desktop/na
 import { NavbarMobile } from './features/dashboard/components/navbar-mobile/navbar-mobile';
 
 import { TopBarComponent } from './shared/components/top-bar/top-bar.component';
+import { SyncHudComponent } from './shared/components/sync-hud/sync-hud.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, NavbarDesktop, NavbarMobile, TopBarComponent],
+  imports: [CommonModule, RouterOutlet, NavbarDesktop, NavbarMobile, TopBarComponent, SyncHudComponent],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })

@@ -8,6 +8,7 @@ export interface Photo {
   sort_order: number;
   uploaded_at: string;
   caption?: string;
+  isSyncing?: boolean; // For optimistic UI
 }
 
 export interface TemplatePreset {

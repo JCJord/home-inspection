@@ -76,6 +76,14 @@
         <div class="existing-photo-item" [formGroupName]="i">
           <div class="photo-thumbnail">
             <img [src]="resolveImageUrl(photo.storage_url)" alt="Finding photo">
+            
+            @if (photo.isSyncing) {
+              <div class="absolute inset-0 bg-black/40 flex flex-col items-center justify-center text-white backdrop-blur-[1px]">
+                <lucide-icon [name]="icons.Loader2" class="animate-spin mb-1" [size]="16"></lucide-icon>
+                <span class="text-[8px] font-bold uppercase tracking-widest">Syncing</span>
+              </div>
+            }
+
             <div class="photo-action-pill" [class.confirming]="activeDeleteExistingId() === photo.id">
               @if (!isPublishedSignal()) {
                 @if (activeDeleteExistingId() === photo.id) {
@@ -198,9 +206,17 @@
         {{ isPublishedSignal() ? 'Close' : 'Cancel' }}
       </app-button>
       @if (!isPublishedSignal()) {
-      <app-button type="submit" [disabled]="findingForm.invalid || isLoading()" [isLoading]="isLoading()"
-        variant="solid">
-        {{ isEditMode() ? 'Save Changes' : 'Add Finding' }}
+      <app-button type="submit" [disabled]="findingForm.invalid || showSuccess()" [isLoading]="isLoading()"
+        [variant]="showSuccess() ? 'subtle' : 'solid'"
+        class="transition-all duration-300">
+        @if (showSuccess()) {
+          <div class="flex items-center gap-2 text-green-600 animate-in zoom-in-95 duration-200">
+            <lucide-icon [name]="icons.Check" [size]="18"></lucide-icon>
+            <span class="font-bold">Finding Queued!</span>
+          </div>
+        } @else {
+          {{ isEditMode() ? 'Save Changes' : 'Add Finding' }}
+        }
       </app-button>
       }
     </div>

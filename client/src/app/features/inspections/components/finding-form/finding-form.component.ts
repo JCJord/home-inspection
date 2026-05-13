@@ -1,4 +1,4 @@
-import { Component, inject, output, signal, effect, computed, OnDestroy, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, inject, output, signal, effect, computed, OnDestroy, Input, OnChanges, SimpleChanges, afterNextRender } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { InspectionsService } from '../../../../core/services/inspections.service';
@@ -16,6 +16,9 @@ import { ImageCompressionService } from '../../../../core/services/image-compres
 import { environment } from '../../../../../environments/environment';
 import { ImageEditorModalComponent } from '../../../../shared/components/image-editor-modal/image-editor-modal.component';
 import { PresetButtonComponent } from '../../../../shared/components/preset-button/preset-button.component';
+import { DraftService } from '../../../../core/services/draft.service';
+import { MutationQueueService, MutationType } from '../../../../core/services/mutation-queue.service';
+import { debounceTime } from 'rxjs';
 
 interface SelectedPhoto {
   file: File;
@@ -43,6 +46,8 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
   private aiService = inject(AiService);
   private authService = inject(AuthService);
   private compressionService = inject(ImageCompressionService);
+  private draftService = inject(DraftService);
+  private mutationQueueService = inject(MutationQueueService);
 
   isPremium = this.authService.isPremium;
 
@@ -78,8 +83,9 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
   }
 
   isLoading = signal<boolean>(false);
-  isGeneratingAi = signal(false);
+  isGeneratingAi = signal<boolean>(false);
   aiErrorMessage = signal<string | null>(null);
+  showSuccess = signal<boolean>(false);
   errorMessage = signal<string | null>(null);
 
   isEditMode = computed(() => !!this._finding());
@@ -103,6 +109,10 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
     photo_captions: this.fb.array([]),
     new_photo_captions: this.fb.array([])
   });
+
+  private get draftKey(): string {
+    return `finding:${this.inspectionId}:${this.section}:${this.finding?.id || 'new'}`;
+  }
 
   get photoCaptions(): FormArray {
     return this.findingForm.get('photo_captions') as FormArray;
@@ -150,6 +160,25 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
         this.findingForm.enable({ emitEvent: false });
       }
     });
+
+    // Auto-save to DraftService on value changes
+    this.findingForm.valueChanges.pipe(
+      debounceTime(500)
+    ).subscribe(value => {
+      if (!this._isPublished()) {
+        this.draftService.save(this.draftKey, value);
+      }
+    });
+
+    // Check for and restore drafts
+    // Moving this to an effect or keeping it here but ensuring it doesn't break validation
+    afterNextRender(() => {
+      const draft = this.draftService.load<any>(this.draftKey);
+      if (draft && !this.isEditMode()) {
+        this.findingForm.patchValue(draft, { emitEvent: false });
+        this.findingForm.markAsDirty();
+      }
+    });
   }
 
   ngOnDestroy() {
@@ -160,7 +189,7 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
 
   resolveImageUrl(url: string | undefined): string {
     if (!url) return '';
-    if (url.startsWith('http')) return url;
+    if (url.startsWith('blob:') || url.startsWith('http')) return url;
     const path = url.startsWith('/') ? url : `/${url}`;
     return `${environment.apiUrl}${path}`; 
   }
@@ -200,17 +229,20 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
 
   confirmDeleteExistingPhoto(photoId: string): void {
     this.cancelDelete();
-    this.isLoading.set(true);
-    this.inspectionsService.deletePhoto(this._inspectionId(), this._finding()!.id, photoId).subscribe({
-      next: () => {
-        this.existingPhotos.update(photos => photos.filter(p => p.id !== photoId));
-        this.isLoading.set(false);
-      },
-      error: (err) => {
-        console.error('Failed to delete photo', err);
-        this.errorMessage.set('Failed to delete photo.');
-        this.isLoading.set(false);
-      }
+    const findingId = this._finding()?.id;
+    const inspectionId = this._inspectionId();
+    
+    if (!findingId || !inspectionId) return;
+
+    // Optimistic UI Update: Remove from local list immediately
+    this.existingPhotos.update(photos => photos.filter(p => p.id !== photoId));
+
+    // Push to Background Queue
+    this.mutationQueueService.enqueue({
+      type: MutationType.DELETE_PHOTO,
+      inspectionId,
+      findingId,
+      payload: { photoId }
     });
   }
 
@@ -408,79 +440,100 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
   }
 
   onSubmit(): void {
-    if (this.findingForm.valid && !this.isLoading()) {
-      this.isLoading.set(true);
-      this.errorMessage.set(null);
-
+    if (this.findingForm.valid) {
       const formValue = this.findingForm.value;
-
-      const handleSuccess = (finding: Finding) => {
-        if (this.selectedFiles().length > 0) {
-          let uploadCount = 0;
-          let hasErrors = false;
-          
-          this.selectedFiles().forEach((item, index) => {
-            const caption = this.newPhotoCaptions.at(index).value;
-            this.inspectionsService.uploadPhoto(this._inspectionId(), finding.id, item.file, caption).subscribe({
-              next: () => {
-                uploadCount++;
-                if (uploadCount === this.selectedFiles().length) {
-                  this.isLoading.set(false);
-                  this.saved.emit(finding);
-                }
-              },
-              error: (err) => {
-                console.error('Failed to upload a photo', err);
-                hasErrors = true;
-                uploadCount++;
-                if (uploadCount === this.selectedFiles().length) {
-                  this.isLoading.set(false);
-                  this.saved.emit(finding);
-                }
-              }
-            });
-          });
-        } else {
-          this.isLoading.set(false);
-          this.saved.emit(finding);
-        }
-      };
+      const inspectionId = this._inspectionId();
+      const clientFindingId = crypto.randomUUID();
+      
+      // Clear draft immediately
+      this.draftService.clear(this.draftKey);
 
       if (this.isEditMode()) {
-        const dto: UpdateFindingDto = {
-          section: this._section(),
-          severity: formValue.severity,
-          description: formValue.description,
-          recommendation: formValue.recommendation || undefined,
-          location: formValue.location || undefined,
-        };
-
-        this.inspectionsService.updateFinding(this._inspectionId(), this._finding()!.id, dto).subscribe({
-          next: handleSuccess,
-          error: (err) => {
-            console.error('Failed to update finding', err);
-            this.errorMessage.set(err.error?.message || 'Failed to update finding.');
-            this.isLoading.set(false);
+        const findingId = this._finding()!.id;
+        // 1. Update Finding Task
+        this.mutationQueueService.enqueue({
+          type: MutationType.UPDATE_FINDING,
+          inspectionId,
+          findingId,
+          payload: {
+            section: this._section(),
+            severity: formValue.severity,
+            description: formValue.description,
+            recommendation: formValue.recommendation || undefined,
+            location: formValue.location || undefined,
           }
+        });
+
+        // 2. Upload New Photos
+        this.selectedFiles().forEach((item, index) => {
+          const caption = this.newPhotoCaptions.at(index).value;
+          this.mutationQueueService.enqueue({
+            type: MutationType.UPLOAD_PHOTO,
+            inspectionId,
+            findingId,
+            file: item.file,
+            payload: { caption }
+          });
         });
       } else {
-        const dto: CreateFindingDto = {
-          section: this._section(),
-          severity: formValue.severity,
-          description: formValue.description,
-          recommendation: formValue.recommendation || undefined,
-          location: formValue.location || undefined,
-        };
-
-        this.inspectionsService.createFinding(this._inspectionId(), dto).subscribe({
-          next: handleSuccess,
-          error: (err) => {
-            console.error('Failed to create finding', err);
-            this.errorMessage.set(err.error?.message || 'Failed to create finding.');
-            this.isLoading.set(false);
+        // 1. Create Finding Task
+        this.mutationQueueService.enqueue({
+          type: MutationType.CREATE_FINDING,
+          inspectionId,
+          clientFindingId, // Link photos to this finding
+          payload: {
+            section: this._section(),
+            severity: formValue.severity,
+            description: formValue.description,
+            recommendation: formValue.recommendation || undefined,
+            location: formValue.location || undefined,
           }
         });
+
+        // 2. Upload Photos (linked via clientFindingId)
+        this.selectedFiles().forEach((item, index) => {
+          const caption = this.newPhotoCaptions.at(index).value;
+          this.mutationQueueService.enqueue({
+            type: MutationType.UPLOAD_PHOTO,
+            inspectionId,
+            clientFindingId, // Wait for CREATE_FINDING to resolve this
+            file: item.file,
+            payload: { caption }
+          });
+        });
       }
+
+      // Optimistic Success: Emit saved immediately
+      // Create a "Temporary Finding" for the UI to display
+      const tempFinding: Finding = {
+        id: this.isEditMode() ? this._finding()!.id : clientFindingId,
+        inspection_id: Number(inspectionId),
+        section: this._section(),
+        severity: formValue.severity,
+        description: formValue.description,
+        recommendation: formValue.recommendation,
+        location: formValue.location,
+        photos: [
+          ...(this._finding()?.photos || []), // Existing
+          ...this.selectedFiles().map((f, i) => ({
+            id: `temp-${Date.now()}-${i}`,
+            storage_url: f.previewUrl, // Local blob URL
+            caption: this.newPhotoCaptions.at(i).value,
+            isSyncing: true
+          }))
+        ] as any,
+        isSyncing: true // Visual indicator
+      } as any;
+
+      this.saved.emit(tempFinding);
+      
+      // Show Success Micro-interaction
+      this.showSuccess.set(true);
+      setTimeout(() => this.showSuccess.set(false), 2500);
+      
+      // Clear selection state
+      this.selectedFiles.set([]);
+      this.newPhotoCaptions.clear();
     } else {
       this.findingForm.markAllAsTouched();
     }
