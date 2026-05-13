@@ -1,11 +1,12 @@
 import { Component, Input, Output, EventEmitter, HostListener, signal, ElementRef, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule, X, ChevronLeft, ChevronRight } from 'lucide-angular';
+import { ResolveImagePipe } from '../../pipes/resolve-image.pipe';
 
 @Component({
   selector: 'app-lightbox',
   standalone: true,
-  imports: [CommonModule, LucideAngularModule],
+  imports: [CommonModule, LucideAngularModule, ResolveImagePipe],
   template: `
     <div class="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-md transition-opacity"
          (click)="close.emit()">
@@ -22,7 +23,7 @@ import { LucideAngularModule, X, ChevronLeft, ChevronRight } from 'lucide-angula
       </div>
 
       <div class="relative w-full h-full flex items-center justify-center pointer-events-none p-4 md:p-12">
-        <img [src]="images[currentIndex()]"
+        <img [src]="images[currentIndex()] | resolveImage | async"
              class="max-h-full max-w-full object-contain drop-shadow-2xl rounded-md pointer-events-auto"
              (click)="$event.stopPropagation()"
              alt="Inspection evidence" />

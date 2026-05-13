@@ -7,11 +7,12 @@ import { DropdownMenuComponent, DropdownItem } from '../../../../shared/componen
 import { PhotoCarouselComponent } from '../../../../shared/components/photo-carousel/photo-carousel.component';
 import { ConfirmPillComponent } from '../../../../shared/components/confirm-pill/confirm-pill.component';
 import { LightboxComponent } from '../../../../shared/components/lightbox/lightbox.component';
+import { ResolveImagePipe } from '../../../../shared/pipes/resolve-image.pipe';
 
 @Component({
   selector: 'app-finding-card',
   standalone: true,
-  imports: [CommonModule, LucideAngularModule, DropdownMenuComponent, ConfirmPillComponent, LightboxComponent],
+  imports: [CommonModule, LucideAngularModule, DropdownMenuComponent, ConfirmPillComponent, LightboxComponent, ResolveImagePipe],
   templateUrl: './finding-card.component.html',
   styleUrl: './finding-card.component.scss',
 })
@@ -36,7 +37,7 @@ export class FindingCardComponent {
   shouldShowNoteExpand = computed(() => (this.finding().description?.length || 0) > 140);
 
   resolvedImages = computed<string[]>(() => {
-    return (this.finding().photos || []).map(p => this.resolveImageUrl(p.storage_url));
+    return (this.finding().photos || []).map(p => p.storage_url);
   });
 
   menuItems = computed<DropdownItem[]>(() => [
@@ -52,13 +53,6 @@ export class FindingCardComponent {
       danger: true,
     },
   ]);
-
-  resolveImageUrl(url: string | undefined): string {
-    if (!url) return '';
-    if (url.startsWith('http')) return url;
-    const path = url.startsWith('/') ? url : `/${url}`;
-    return `${environment.apiUrl}${path}`;
-  }
 
   toggleNoteExpansion(event: Event) {
     event.stopPropagation();
