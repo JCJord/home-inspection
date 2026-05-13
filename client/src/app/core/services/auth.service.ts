@@ -21,7 +21,15 @@ export class AuthService {
   token = signal<string | null>(localStorage.getItem('access_token'));
   refreshTokenSignal = signal<string | null>(localStorage.getItem('refresh_token'));
   currentUser = signal<Pick<Inspector, 'id' | 'email' | 'name' | 'subscription_status'> | null>(
-    JSON.parse(localStorage.getItem('current_user') || 'null')
+    (() => {
+      try {
+        const saved = localStorage.getItem('current_user');
+        if (!saved || saved === 'undefined' || saved === 'null') return null;
+        return JSON.parse(saved);
+      } catch (e) {
+        return null;
+      }
+    })()
   );
 
   private router = inject(Router);
