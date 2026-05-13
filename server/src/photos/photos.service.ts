@@ -89,11 +89,20 @@ export class PhotosService {
       throw new BadRequestException('Cannot delete photos from a published inspection');
     }
 
+    // Safety check: If ID is not a valid UUID format (e.g. starts with 'temp-'), return 404 early
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(photoId)) {
+      throw new NotFoundException('Photo not found (Invalid ID format)');
+    }
+
     const photo = await this.photoRepository.findOne({
       where: { id: photoId, finding_id: findingId },
     });
+    
+    // IDEMPOTENCY: If the photo is already gone, we treat this as a success.
+    // This prevents sync retries from showing as "Failed" in the UI.
     if (!photo) {
-      throw new NotFoundException('Photo not found');
+      return;
     }
 
     // Mock R2 deletion here if storage service was injected

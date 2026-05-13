@@ -102,6 +102,23 @@ export class InspectionsService {
       throw new BadRequestException('Cannot edit a published inspection');
     }
 
+    // Merge JSON objects to prevent overwriting other fields
+    if (updateInspectionDto.metadata_values) {
+      inspection.metadata_values = { 
+        ...(inspection.metadata_values || {}), 
+        ...updateInspectionDto.metadata_values 
+      };
+      delete updateInspectionDto.metadata_values;
+    }
+
+    if (updateInspectionDto.section_statuses) {
+      inspection.section_statuses = { 
+        ...(inspection.section_statuses || {}), 
+        ...updateInspectionDto.section_statuses 
+      };
+      delete updateInspectionDto.section_statuses;
+    }
+
     Object.assign(inspection, updateInspectionDto);
     return await this.inspectionRepository.save(inspection);
   }
