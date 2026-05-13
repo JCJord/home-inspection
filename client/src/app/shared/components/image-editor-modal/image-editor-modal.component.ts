@@ -18,7 +18,6 @@ export class ImageEditorModalComponent implements OnInit, OnDestroy {
   @ViewChild('editorDialog') dialogRef!: ElementRef<HTMLDialogElement>;
   @ViewChild('canvasElement') canvasRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('containerElement') containerRef!: ElementRef<HTMLDivElement>;
-  @ViewChild('paletteScrollArea') paletteScrollRef!: ElementRef<HTMLDivElement>;
 
   readonly icons: Record<string, any> = { 
     X, Check, Undo, RotateCcw, Pencil, Circle, ArrowUpRight, ZoomIn, ZoomOut, Maximize, ChevronUp, ChevronDown, Hand, RotateCw 
@@ -32,10 +31,6 @@ export class ImageEditorModalComponent implements OnInit, OnDestroy {
   strokeColor = signal<string>('#ef4444'); // Default Red
   strokeWidth = signal<number>(1); // Default thin (will be scaled)
   zoomLevel = signal<number>(1);
-  isPaletteOpen = signal<boolean>(false);
-  
-  isPaletteTop = signal<boolean>(true);
-  isPaletteBottom = signal<boolean>(true);
   
   // Track the "fitted" size of the image at 1x zoom
   baseDisplaySize = signal<{width: number, height: number}>({width: 0, height: 0});
@@ -52,22 +47,7 @@ export class ImageEditorModalComponent implements OnInit, OnDestroy {
       if (this.dialogRef) {
         this.dialogRef.nativeElement.showModal();
       }
-      this.checkPaletteScroll();
     });
-  }
-
-  togglePalette() {
-    this.isPaletteOpen.update(v => !v);
-    if (this.isPaletteOpen()) {
-      setTimeout(() => this.checkPaletteScroll(), 100);
-    }
-  }
-
-  checkPaletteScroll() {
-    if (!this.paletteScrollRef) return;
-    const el = this.paletteScrollRef.nativeElement;
-    this.isPaletteTop.set(el.scrollTop <= 5);
-    this.isPaletteBottom.set(el.scrollHeight - el.scrollTop - el.clientHeight <= 5);
   }
 
   cycleColor() {
