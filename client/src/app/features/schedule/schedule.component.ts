@@ -9,7 +9,6 @@ import { TextInputComponent } from '../../shared/components/inputs/text-input/te
 import { SkeletonComponent } from '../../shared/components/skeleton/skeleton.component';
 import { BackButtonComponent } from '../../shared/components/back-button/back-button.component';
 import { DropdownMenuComponent, DropdownItem } from '../../shared/components/dropdown-menu/dropdown-menu.component';
-import { ConfirmModalComponent } from '../../shared/components/confirm-modal/confirm-modal.component';
 import {
   LucideAngularModule,
   Calendar,
@@ -39,7 +38,6 @@ import {
     SkeletonComponent,
     BackButtonComponent,
     DropdownMenuComponent,
-    ConfirmModalComponent,
   ],
   templateUrl: './schedule.component.html',
   styleUrl: './schedule.component.scss',
