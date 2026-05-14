@@ -29,6 +29,10 @@ export const routes: Routes = [
         ]
       },
       {
+        path: 'schedule',
+        loadComponent: () => import('./features/schedule/schedule.component').then(m => m.ScheduleComponent),
+      },
+      {
         path: 'inspections',
         loadChildren: () => import('./features/inspections/inspections.routes').then(m => m.INSPECTIONS_ROUTES),
       },

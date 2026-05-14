@@ -1,0 +1,155 @@
+<div class="schedule-container max-w-7xl mx-auto p-6 pb-24 relative min-h-full h-auto">
+  <!-- Header -->
+  <div class="form-page-header mb-6">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        @if (showBookingForm()) {
+          <app-back-button (clicked)="toggleBookingForm()"></app-back-button>
+        }
+        <div>
+          @if (isLoading()) {
+            <div class="flex flex-col gap-2">
+              <app-skeleton width="180px" height="28px" borderRadius="6px"></app-skeleton>
+              <app-skeleton width="260px" height="16px" borderRadius="4px"></app-skeleton>
+            </div>
+          } @else {
+            <h1 class="text-2xl font-bold text-standard mb-1">
+              {{ showBookingForm() ? (isEditMode() ? 'Edit Scheduled Job' : 'Book New Job') : 'Schedule' }}
+            </h1>
+            <p class="text-standard-muted text-sm">
+              {{ showBookingForm() ? 'Fill in the details to ' + (isEditMode() ? 'update the' : 'book a new') + ' inspection.' : 'Manage upcoming inspections and book new jobs.' }}
+            </p>
+          }
+        </div>
+      </div>
+
+      @if (!showBookingForm() && !isLoading()) {
+        <app-button (click)="toggleBookingForm()" variant="solid">
+          <lucide-icon [name]="icons.Plus" [size]="18"></lucide-icon>
+          <span>Book New Job</span>
+        </app-button>
+      }
+    </div>
+  </div>
+
+  <!-- Booking Form Panel (Following InspectionForm pattern) -->
+  @if (showBookingForm()) {
+    <div class="form-container" [class.edit-mode]="isEditMode()">
+      <form [formGroup]="bookingForm" (ngSubmit)="onSubmitBooking()" class="form-body">
+        @if (errorMessage()) {
+          <div class="form-error-banner">
+            <lucide-icon [name]="icons.AlertCircle" [size]="18" class="mr-2"></lucide-icon>
+            <span>{{ errorMessage() }}</span>
+          </div>
+        }
+
+        <div class="form-grid">
+          <app-text-input name="client_name" label="Client Name *" placeholder="e.g. John Doe"></app-text-input>
+          
+          <div class="form-row">
+            <app-text-input name="client_email" label="Email (Optional)" type="email" placeholder="john@example.com"></app-text-input>
+            <app-text-input name="client_phone" label="Phone (Optional)" type="tel" placeholder="e.g. 555-0123"></app-text-input>
+          </div>
+
+          <app-text-input name="address" label="Property Address (Optional)" placeholder="123 Main St, City, State"></app-text-input>
+
+          <div class="form-row">
+            <div class="input-wrapper">
+              <label class="input-label" for="scheduled_date">Scheduled Date & Time *</label>
+              <input
+                type="datetime-local"
+                id="scheduled_date"
+                formControlName="scheduled_date"
+                class="input-field"
+                [class.input-field--error]="bookingForm.get('scheduled_date')?.invalid && bookingForm.get('scheduled_date')?.touched"
+              />
+              @if (bookingForm.get('scheduled_date')?.invalid && bookingForm.get('scheduled_date')?.touched) {
+                <span class="input-error">Scheduled date is required</span>
+              }
+            </div>
+
+            <app-text-input name="agreed_price" label="Agreed Price (Optional)" type="number" placeholder="e.g. 450.00"></app-text-input>
+          </div>
+        </div>
+
+        <div class="form-actions mt-8">
+          @if (bookingForm.invalid && bookingForm.touched) {
+            <div class="footer-error-hint flex items-center gap-2 text-safety text-sm font-bold mr-auto animate-pulse">
+              <lucide-icon [name]="icons.AlertCircle" [size]="16"></lucide-icon>
+              <span>Please check required fields above</span>
+            </div>
+          }
+          <app-button type="submit" [disabled]="isSubmitting()" [isLoading]="isSubmitting()" variant="solid">
+            {{ isEditMode() ? 'Save Changes' : 'Book Job' }}
+          </app-button>
+        </div>
+      </form>
+    </div>
+  } @else {
+    <!-- Job List -->
+    <div class="content">
+      @if (isLoading()) {
+        <div class="job-list">
+          @for (i of [1,2,3,4]; track i) {
+            <div class="skeleton-job-card">
+              <div class="flex items-center gap-3">
+                <app-skeleton width="44px" height="44px" borderRadius="12px"></app-skeleton>
+                <div class="flex flex-col gap-2 flex-1">
+                  <app-skeleton width="180px" height="18px" borderRadius="4px"></app-skeleton>
+                  <app-skeleton width="240px" height="14px" borderRadius="4px"></app-skeleton>
+                </div>
+                <app-skeleton width="80px" height="28px" borderRadius="8px"></app-skeleton>
+              </div>
+            </div>
+          }
+        </div>
+      } @else if (scheduledJobs().length > 0) {
+        <div class="job-list">
+          @for (job of scheduledJobs(); track job.id) {
+            <div class="job-card" [class.job-card--today]="isToday(job.scheduled_date)" [class.job-card--past]="isPast(job.scheduled_date) && !isToday(job.scheduled_date)">
+              <div class="job-card-left">
+                <div class="job-date-badge" [class.job-date-badge--today]="isToday(job.scheduled_date)">
+                  <lucide-icon [name]="icons.Calendar" [size]="20"></lucide-icon>
+                </div>
+                <div class="job-info">
+                  <h3 class="job-client">{{ job.client_name }}</h3>
+                  <div class="job-meta">
+                    <span class="job-meta-item">
+                      <lucide-icon [name]="icons.Clock" [size]="14"></lucide-icon>
+                      {{ formatDate(job.scheduled_date) }}
+                    </span>
+                    @if (job.address) {
+                      <span class="job-meta-item">
+                        <lucide-icon [name]="icons.MapPin" [size]="14"></lucide-icon>
+                        {{ job.address }}
+                      </span>
+                    }
+                  </div>
+                </div>
+              </div>
+              <div class="job-card-right">
+                @if (job.agreed_price) {
+                  <span class="job-price">{{ formatPrice(job.agreed_price) }}</span>
+                }
+                
+                <div class="flex items-center gap-2">
+                  @if (isToday(job.scheduled_date)) {
+                    <app-button variant="solid" size="sm" (click)="openInspection(job)">Start</app-button>
+                  } @else {
+                    <app-button variant="outline" size="sm" (click)="openInspection(job)">View</app-button>
+                  }
+                  <app-dropdown-menu [items]="getMenuItems(job)"></app-dropdown-menu>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="empty-state">
+          <lucide-icon [name]="icons.Calendar" class="mb-4 text-muted"></lucide-icon>
+          <p>No scheduled jobs yet. Book your first inspection!</p>
+        </div>
+      }
+    </div>
+  }
+</div>

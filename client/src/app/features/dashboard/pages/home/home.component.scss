@@ -1,4 +1,5 @@
 @use 'variables' as *;
+@use '/cards' as *;
 
 .dashboard-content {
   padding: 2rem;
@@ -10,11 +11,8 @@
 }
 
 .welcome-card {
-  background: white;
-  border-radius: 12px;
+  @include card-premium(false);
   padding: 2.5rem;
-  border: 1px solid $color-border;
-  box-shadow: 0 4px 6px rgba($color-text, 0.05);
   max-width: 600px;
   margin: 0 auto;
 
@@ -38,5 +36,162 @@
       color: $color-text-muted;
       margin-top: 1.5rem;
     }
+  }
+}
+
+// ─── Today's Agenda ──────────────────────────────────
+.agenda-section {
+  margin-top: 2rem;
+  max-width: 700px;
+
+  @media (min-width: 768px) {
+    margin-top: 2.5rem;
+  }
+}
+
+.agenda-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+
+  h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: $color-text;
+    margin: 0;
+  }
+}
+
+.view-all-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: $color-primary;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.35rem 0.5rem;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: rgba($color-primary, 0.08);
+  }
+}
+
+.agenda-card {
+  @include card-premium(false);
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 0.75rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  border-left: 4px solid $color-primary;
+
+  @media (max-width: 640px) {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+}
+
+.agenda-card-body {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.agenda-time-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 8px;
+  background: rgba($color-primary, 0.1);
+  color: $color-primary;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.agenda-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.agenda-client {
+  font-size: 1rem;
+  font-weight: 600;
+  color: $color-text;
+  margin: 0 0 0.25rem 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.agenda-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.agenda-meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.8125rem;
+  color: $color-text-muted;
+  white-space: nowrap;
+
+  lucide-icon {
+    flex-shrink: 0;
+  }
+}
+
+.agenda-price {
+  color: $color-success;
+  font-weight: 500;
+}
+
+.agenda-empty {
+  @include card-premium(false);
+  padding: 2.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  color: $color-text-muted;
+
+  lucide-icon {
+    opacity: 0.4;
+    margin-bottom: 0.75rem;
+  }
+
+  p {
+    font-size: 0.9375rem;
+    margin-bottom: 0.75rem;
+  }
+}
+
+.book-link {
+  color: $color-primary;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+
+  &:hover {
+    opacity: 0.8;
   }
 }

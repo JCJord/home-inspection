@@ -1,7 +1,66 @@
 <main class="dashboard-content">
-  <div class="welcome-card">
-    <h2>Welcome, {{ authService.currentUser()?.name || 'Inspector' }}!</h2>
-    <p>You have successfully authenticated and reached the dashboard.</p>
-    <p class="email-text">{{ authService.currentUser()?.email }}</p>
+  <!-- Today's Agenda -->
+  <div class="agenda-section">
+    <div class="agenda-header">
+      <h2 class="flex items-center gap-2">
+        <lucide-icon [name]="icons.Calendar" [size]="22"></lucide-icon>
+        Today's Agenda
+      </h2>
+      <button class="view-all-link" (click)="goToSchedule()">
+        View Schedule
+        <lucide-icon [name]="icons.ArrowRight" [size]="16"></lucide-icon>
+      </button>
+    </div>
+
+    @if (isLoadingAgenda()) {
+    <div class="agenda-card">
+      <div class="flex items-center gap-3">
+        <app-skeleton width="44px" height="44px" borderRadius="12px"></app-skeleton>
+        <div class="flex flex-col gap-2 flex-1">
+          <app-skeleton width="160px" height="18px" borderRadius="4px"></app-skeleton>
+          <app-skeleton width="220px" height="14px" borderRadius="4px"></app-skeleton>
+        </div>
+      </div>
+    </div>
+    } @else if (todaysJobs().length > 0) {
+    @for (job of todaysJobs(); track job.id) {
+    <div class="agenda-card">
+      <div class="agenda-card-body">
+        <div class="agenda-time-badge">
+          <lucide-icon [name]="icons.Clock" [size]="16"></lucide-icon>
+          <span>{{ formatTime(job.scheduled_date) }}</span>
+        </div>
+        <div class="agenda-info">
+          <h3 class="agenda-client">{{ job.client_name }}</h3>
+          <div class="agenda-meta">
+            @if (job.address) {
+            <span class="agenda-meta-item">
+              <lucide-icon [name]="icons.MapPin" [size]="14"></lucide-icon>
+              {{ job.address }}
+            </span>
+            }
+            @if (job.agreed_price) {
+            <span class="agenda-meta-item agenda-price">
+              <lucide-icon [name]="icons.DollarSign" [size]="14"></lucide-icon>
+              {{ formatPrice(job.agreed_price) }}
+            </span>
+            }
+          </div>
+        </div>
+      </div>
+      <app-button variant="solid" size="sm" [isLoading]="startingJobId() === job.id"
+        [disabled]="startingJobId() !== null" (click)="startInspection(job)">
+        <lucide-icon [name]="icons.Play" [size]="14"></lucide-icon>
+        <span>Start Inspection</span>
+      </app-button>
+    </div>
+    }
+    } @else {
+    <div class="agenda-empty">
+      <lucide-icon [name]="icons.Calendar" [size]="24"></lucide-icon>
+      <p>No inspections scheduled for today.</p>
+      <button class="book-link" (click)="goToSchedule()">Book a job →</button>
+    </div>
+    }
   </div>
 </main>

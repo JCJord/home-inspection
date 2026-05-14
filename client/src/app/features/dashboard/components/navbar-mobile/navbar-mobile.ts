@@ -1,15 +1,15 @@
 import { Component } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
-import { LucideAngularModule, Home, ClipboardList, Settings, Layers } from 'lucide-angular';
+import { LucideAngularModule, Home, ClipboardList, Settings, Layers, Calendar } from 'lucide-angular';
 
 @Component({
   selector: 'app-navbar-mobile',
   standalone: true,
   imports: [RouterLink, RouterLinkActive, LucideAngularModule],
-  providers: [{ provide: 'lucideIcons', useValue: { Home, ClipboardList, Settings, Layers } }],
+  providers: [{ provide: 'lucideIcons', useValue: { Home, ClipboardList, Settings, Layers, Calendar } }],
   templateUrl: './navbar-mobile.html',
   styleUrl: './navbar-mobile.scss',
 })
 export class NavbarMobile {
-  readonly icons = { Home, ClipboardList, Settings, Layers };
+  readonly icons = { Home, ClipboardList, Settings, Layers, Calendar };
 }

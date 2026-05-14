@@ -1,10 +1,10 @@
 import { HttpInterceptorFn, HttpRequest, HttpHandlerFn, HttpEvent, HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { AuthService } from '../services/auth.service';
-import { BehaviorSubject, catchError, filter, Observable, switchMap, take, throwError } from 'rxjs';
+import { BehaviorSubject, catchError, filter, Observable, switchMap, take, throwError, finalize } from 'rxjs';
 
 let isRefreshing = false;
-const refreshTokenSubject: BehaviorSubject<string | null> = new BehaviorSubject<string | null>(null);
+let refreshTokenSubject: BehaviorSubject<string | null> = new BehaviorSubject<string | null>(null);
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
@@ -51,6 +51,9 @@ function handle401Error(request: HttpRequest<any>, next: HttpHandlerFn, authServ
       }),
       catchError((err) => {
         isRefreshing = false;
+        refreshTokenSubject.error(err);
+        // Recreate the subject for the next time, as an errored subject is closed
+        refreshTokenSubject = new BehaviorSubject<string | null>(null);
         authService.logout();
         return throwError(() => err);
       })
@@ -59,7 +62,8 @@ function handle401Error(request: HttpRequest<any>, next: HttpHandlerFn, authServ
     return refreshTokenSubject.pipe(
       filter(token => token !== null),
       take(1),
-      switchMap(token => next(addTokenHeader(request, token)))
+      switchMap(token => next(addTokenHeader(request, token))),
+      catchError(err => throwError(() => err))
     );
   }
 }

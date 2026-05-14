@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, ConflictException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, FindOptionsWhere } from 'typeorm';
 import { Inspection } from './inspection.entity';
 import { CreateInspectionDto } from './dto/create-inspection.dto';
 import { UpdateInspectionDto } from './dto/update-inspection.dto';
@@ -60,11 +60,16 @@ export class InspectionsService {
     return savedInspection;
   }
 
-  async findAll(inspectorId: string, page: number = 1, limit: number = 10): Promise<{ data: Inspection[], meta: { total: number, page: number, limit: number, totalPages: number } }> {
+  async findAll(inspectorId: string, page: number = 1, limit: number = 10, status?: string): Promise<{ data: Inspection[], meta: { total: number, page: number, limit: number, totalPages: number } }> {
     const skip = (page - 1) * limit;
 
+    const where: FindOptionsWhere<Inspection> = { inspector_id: inspectorId };
+    if (status) {
+      where.status = status;
+    }
+
     const [data, total] = await this.inspectionRepository.findAndCount({
-      where: { inspector_id: inspectorId },
+      where,
       order: { updated_at: 'DESC' },
       relations: ['findings'],
       skip,
@@ -176,6 +181,25 @@ export class InspectionsService {
   async uploadCoverPhoto(inspectorId: string, id: string, coverPhotoUrl: string): Promise<Inspection> {
     const inspection = await this.findOne(inspectorId, id);
     inspection.cover_photo_url = coverPhotoUrl;
+    return await this.inspectionRepository.save(inspection);
+  }
+
+  async startInspection(inspectorId: string, id: string): Promise<Inspection> {
+    const inspection = await this.findOne(inspectorId, id);
+
+    if (inspection.status !== 'scheduled') {
+      throw new BadRequestException('Only scheduled inspections can be started');
+    }
+
+    // Lock in the template snapshot at start time (the "Job Boot")
+    if (!inspection.template_snapshot && inspection.template_id) {
+      const template = await this.templateRepository.findOne({ where: { id: inspection.template_id } });
+      if (template) {
+        inspection.template_snapshot = template.structure;
+      }
+    }
+
+    inspection.status = 'in_progress';
     return await this.inspectionRepository.save(inspection);
   }
 }

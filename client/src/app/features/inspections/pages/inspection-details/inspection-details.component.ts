@@ -196,7 +196,8 @@ export class InspectionDetailsComponent implements OnInit {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `Report-${inspection.address.replace(/ /g, '_')}.pdf`;
+    const safeAddress = inspection.address || 'Inspection';
+    a.download = `Report-${safeAddress.replace(/ /g, '_')}.pdf`;
     a.click();
     window.URL.revokeObjectURL(url);
   }

@@ -61,9 +61,9 @@ export class InspectionsService {
 
   // --- Inspection Methods ---
 
-  getInspections(page: number = 1, limit: number = 10, forceRefresh: boolean = false): Observable<{ data: Inspection[], meta: { total: number, page: number, limit: number, totalPages: number } }> {
-    // Return cached data if not stale and not forced
-    if (!this._needsRefresh() && !forceRefresh && this._inspections().length > 0 && page === 1) {
+  getInspections(page: number = 1, limit: number = 10, forceRefresh: boolean = false, status?: string): Observable<{ data: Inspection[], meta: { total: number, page: number, limit: number, totalPages: number } }> {
+    // Return cached data if not stale and not forced (only for unfiltered queries)
+    if (!status && !this._needsRefresh() && !forceRefresh && this._inspections().length > 0 && page === 1) {
       return of({
         data: this._inspections(),
         meta: {
@@ -79,6 +79,10 @@ export class InspectionsService {
       .set('page', page.toString())
       .set('limit', limit.toString());
 
+    if (status) {
+      params = params.set('status', status);
+    }
+
     // Only show loading spinner if we have no data at all
     if (this._inspections().length === 0) {
       this._isLoading.set(true);
@@ -87,13 +91,16 @@ export class InspectionsService {
     return this.http.get<{ data: Inspection[], meta: { total: number, page: number, limit: number, totalPages: number } }>(this.apiUrl, { params }).pipe(
       tap({
         next: (res) => {
-          this._inspections.set(res.data);
-          this._totalCount.set(res.meta.total);
-          if (page === 1) {
-            this.saveToCache(res.data, res.meta.total);
+          // Only update main cache for unfiltered queries
+          if (!status) {
+            this._inspections.set(res.data);
+            this._totalCount.set(res.meta.total);
+            if (page === 1) {
+              this.saveToCache(res.data, res.meta.total);
+            }
+            this._needsRefresh.set(false);
           }
           this._isLoading.set(false);
-          this._needsRefresh.set(false); // Reset flag on success
         },
         error: () => this._isLoading.set(false)
       })
@@ -279,8 +286,13 @@ export class InspectionsService {
 
   publishInspection(id: string): Observable<Inspection> {
     return this.http.post<Inspection>(`${this.apiUrl}/${id}/publish`, {}).pipe(
-      tap(() => {
-        // Garbage Collection: Remove from cache after successful publish
+      tap((updatedIns) => {
+        // Update state store and list cache
+        this._inspections.update(list => list.map(i => i.id === id ? updatedIns : i));
+        this.saveToCache(this._inspections(), this._totalCount());
+        this._needsRefresh.set(true);
+
+        // Garbage Collection: Remove from individual inspection cache after successful publish
         this.persistenceService.deleteInspection(id).catch(err => 
           console.warn('Failed to clean up cache after publish', err)
         );
@@ -289,7 +301,23 @@ export class InspectionsService {
   }
 
   unpublishInspection(id: string): Observable<Inspection> {
-    return this.http.post<Inspection>(`${this.apiUrl}/${id}/unpublish`, {});
+    return this.http.post<Inspection>(`${this.apiUrl}/${id}/unpublish`, {}).pipe(
+      tap((updatedIns) => {
+        this._inspections.update(list => list.map(i => i.id === id ? updatedIns : i));
+        this.saveToCache(this._inspections(), this._totalCount());
+        this._needsRefresh.set(true);
+      })
+    );
+  }
+
+  startInspection(id: string): Observable<Inspection> {
+    return this.http.patch<Inspection>(`${this.apiUrl}/${id}/start`, {}).pipe(
+      tap((updatedIns) => {
+        this._inspections.update(list => list.map(i => i.id === id ? updatedIns : i));
+        this.saveToCache(this._inspections(), this._totalCount());
+        this._needsRefresh.set(true);
+      })
+    );
   }
 
   updatePhoto(inspectionId: string, findingId: string, photoId: string, dto: { caption: string }): Observable<Photo> {
@@ -299,7 +327,13 @@ export class InspectionsService {
   uploadCoverPhoto(id: string, file: File): Observable<Inspection> {
     const formData = new FormData();
     formData.append('cover_photo', file);
-    return this.http.post<Inspection>(`${this.apiUrl}/${id}/cover-photo`, formData);
+    return this.http.post<Inspection>(`${this.apiUrl}/${id}/cover-photo`, formData).pipe(
+      tap((updatedIns) => {
+        this._inspections.update(list => list.map(i => i.id === id ? updatedIns : i));
+        this.saveToCache(this._inspections(), this._totalCount());
+        this._needsRefresh.set(true);
+      })
+    );
   }
 
   // --- Finding Methods ---

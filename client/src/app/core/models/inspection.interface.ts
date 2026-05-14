@@ -55,13 +55,15 @@ export interface SectionStatus {
 
 export interface Inspection {
   id: string;
-  address: string;
+  address?: string;
   client_name: string;
   client_email?: string;
   client_phone?: string;
-  year_built: number;
+  year_built?: number;
   square_footage?: number;
-  status: 'in_progress' | 'published';
+  status: 'scheduled' | 'in_progress' | 'published';
+  scheduled_date?: string;
+  agreed_price?: number;
   findings?: Finding[];
   weather?: string;
   temperature?: number;

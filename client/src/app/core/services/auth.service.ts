@@ -1,20 +1,23 @@
-import { inject, Injectable, signal, computed } from '@angular/core';
+import { inject, Injectable, signal, computed, PLATFORM_ID } from '@angular/core';
 import { Router } from '@angular/router';
 import { decodeJwt } from '../helpers/jwt.helper';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap } from 'rxjs';
+import { Observable, tap, shareReplay, catchError, throwError, of, finalize } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { RegisterRequestDto } from '../dtos/register-request.dto';
 import { LoginRequestDto } from '../dtos/login-request.dto';
 import { AuthResponse } from '../models/auth-response.interface';
 import { Inspector } from '../models/inspector.interface';
 import { SubscriptionStatus } from '../enums/subscription-status.enum';
+import { isPlatformBrowser } from '@angular/common';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
   private http = inject(HttpClient);
+  private router = inject(Router);
+  private platformId = inject(PLATFORM_ID);
   private apiUrl = `${environment.apiUrl}/auth`;
 
   // --- State ---
@@ -32,21 +35,45 @@ export class AuthService {
     })()
   );
 
-  private router = inject(Router);
   private refreshTimer?: any;
+  private refreshTokenInProgress$?: Observable<AuthResponse>;
 
   constructor() {
     this.scheduleRefresh();
+    this.listenToStorageEvents();
+    
+    // Recovery: If we have a token but no user data (e.g. after a corrupted refresh), fetch it.
+    if (this.token() && !this.currentUser()) {
+      this.loadCurrentUser().subscribe();
+    }
   }
 
   // --- Computed ---
   isAuthenticated = computed(() => !!this.token());
-  isPremium = computed(() => this.currentUser()?.subscription_status === SubscriptionStatus.ACTIVE);
+  isPremium = computed(() => {
+    const status = this.currentUser()?.subscription_status;
+    if (!status) return false;
+    // Flexible check for 'active' status
+    return (
+      status === SubscriptionStatus.ACTIVE ||
+      status.toString().toLowerCase() === 'active'
+    );
+  });
+
+  /**
+   * Fetches the current user's profile data.
+   */
+  loadCurrentUser(): Observable<Pick<Inspector, 'id' | 'email' | 'name' | 'subscription_status'>> {
+    return this.http.get<Pick<Inspector, 'id' | 'email' | 'name' | 'subscription_status'>>(`${this.apiUrl}/me`).pipe(
+      tap((user) => {
+        localStorage.setItem('current_user', JSON.stringify(user));
+        this.currentUser.set(user);
+      })
+    );
+  }
 
   /**
    * Registers a new inspector.
-   * @param dto Registration data
-   * @returns Observable with user info and access token
    */
   register(dto: RegisterRequestDto): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.apiUrl}/register`, dto).pipe(
@@ -56,8 +83,6 @@ export class AuthService {
 
   /**
    * Logs in an existing inspector.
-   * @param dto Login credentials
-   * @returns Observable with user info and access token
    */
   login(dto: LoginRequestDto): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.apiUrl}/login`, dto).pipe(
@@ -81,15 +106,22 @@ export class AuthService {
   }
 
   /**
-   * Clears the session from local storage and signals.
+   * Clears the session and navigates to login.
    */
   logout() {
     const refreshToken = this.refreshTokenSignal();
     if (refreshToken) {
-      // Background logout on server
       this.http.post(`${this.apiUrl}/logout`, { refresh_token: refreshToken }).subscribe();
     }
 
+    this.clearSession();
+    this.router.navigate(['/auth/login']);
+  }
+
+  /**
+   * Clears session data without navigation (used for multi-tab sync).
+   */
+  private clearSession() {
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
     localStorage.removeItem('current_user');
@@ -101,22 +133,51 @@ export class AuthService {
     if (this.refreshTimer) {
       clearTimeout(this.refreshTimer);
     }
-
-    this.router.navigate(['/login']);
   }
 
   /**
-   * Attempts to refresh the access token using the refresh token.
+   * Attempts to refresh the access token. 
+   * Synchronized to prevent multiple simultaneous refresh calls.
    */
   refreshToken(): Observable<AuthResponse> {
+    if (this.refreshTokenInProgress$) {
+      return this.refreshTokenInProgress$;
+    }
+
     const refreshToken = this.refreshTokenSignal();
-    return this.http.post<AuthResponse>(`${this.apiUrl}/refresh`, { refresh_token: refreshToken }).pipe(
-      tap((response) => this.setSession(response))
+    if (!refreshToken) {
+      return throwError(() => new Error('No refresh token available'));
+    }
+
+    this.refreshTokenInProgress$ = this.http.post<AuthResponse>(`${this.apiUrl}/refresh`, { 
+      refresh_token: refreshToken 
+    }).pipe(
+      tap((response) => this.setSession(response)),
+      shareReplay(1),
+      finalize(() => {
+        this.refreshTokenInProgress$ = undefined;
+      })
     );
+
+    return this.refreshTokenInProgress$;
   }
 
   /**
-   * Schedules a proactive token refresh before the current one expires.
+   * Checks if the current token is expired.
+   */
+  isTokenExpired(): boolean {
+    const token = this.token();
+    if (!token) return true;
+
+    const payload = decodeJwt(token);
+    if (!payload || !payload.exp) return true;
+
+    const expirationTime = payload.exp * 1000;
+    return Date.now() >= expirationTime;
+  }
+
+  /**
+   * Schedules a proactive token refresh.
    */
   private scheduleRefresh() {
     if (this.refreshTimer) {
@@ -132,7 +193,7 @@ export class AuthService {
     const expirationTime = payload.exp * 1000;
     const now = Date.now();
     
-    // Refresh 1 minute before expiration
+    // Refresh 1 minute before expiration, or immediately if already close/expired
     const timeout = expirationTime - now - (60 * 1000);
 
     if (timeout > 0) {
@@ -142,10 +203,32 @@ export class AuthService {
         });
       }, timeout);
     } else {
-      // Already expired or very close
       this.refreshToken().subscribe({
         error: () => this.logout()
       });
     }
   }
+
+  /**
+   * Listens for changes in localStorage from other tabs.
+   */
+  private listenToStorageEvents() {
+    if (isPlatformBrowser(this.platformId)) {
+      window.addEventListener('storage', (event) => {
+        if (event.key === 'access_token' && !event.newValue) {
+          // Token cleared in another tab (logout)
+          this.clearSession();
+          this.router.navigate(['/auth/login']);
+        }
+        if (event.key === 'access_token' && event.newValue) {
+          // Token updated in another tab (login or refresh)
+          this.token.set(event.newValue);
+          const userJson = localStorage.getItem('current_user');
+          if (userJson) this.currentUser.set(JSON.parse(userJson));
+          this.scheduleRefresh();
+        }
+      });
+    }
+  }
 }
+

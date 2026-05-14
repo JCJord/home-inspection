@@ -27,7 +27,7 @@ export class Inspection {
   @JoinColumn({ name: 'inspector_id' })
   inspector: Inspector;
 
-  @Column()
+  @Column({ nullable: true })
   address: string;
 
   @Column()
@@ -39,14 +39,20 @@ export class Inspection {
   @Column({ nullable: true })
   client_phone: string;
 
-  @Column()
+  @Column({ nullable: true })
   year_built: number;
 
   @Column({ nullable: true })
   square_footage: number;
 
-  @Column({ default: 'in_progress' })
+  @Column({ default: 'scheduled' })
   status: string;
+
+  @Column({ type: 'timestamp', nullable: true })
+  scheduled_date: Date;
+
+  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+  agreed_price: number;
 
   @Column({ nullable: true })
   weather: string;
