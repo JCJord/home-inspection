@@ -47,7 +47,7 @@
     </div>
 
     <div class="flex-1 overflow-y-auto p-2 pb-20 md:pb-4 space-y-1">
-      <div (click)="selectSection('summary')" [class.active]="activeSection() === 'summary'"
+      <div (click)="selectSection('summary', -1)" [class.active]="activeSectionIndex() === -1"
         class="section-tab flex items-center justify-between px-4 py-3 rounded-xl cursor-pointer hover:bg-light-standard transition mb-2 bg-primary/5">
         <div class="flex items-center gap-3 min-w-0">
           <lucide-icon [name]="icons.PieChart" class="text-primary flex-shrink-0" [size]="20"></lucide-icon>
@@ -57,8 +57,8 @@
         </div>
       </div>
 
-      @for (sec of sections(); track sec.name) {
-      <div (click)="selectSection(sec.name)" [class.active]="activeSection() === sec.name"
+      @for (sec of sections(); track $index; let i = $index) {
+      <div (click)="selectSection(sec.name, i)" [class.active]="activeSectionIndex() === i"
         class="section-tab flex items-center justify-between px-4 py-3 rounded-xl cursor-pointer hover:bg-light-standard transition">
         <div class="flex items-center gap-3 min-w-0">
           <lucide-icon [name]="getIconForSection(sec.icon_key)" class="text-standard-muted flex-shrink-0"

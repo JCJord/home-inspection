@@ -48,6 +48,7 @@ export class FindingDetailsComponent implements OnInit {
   inspectionId = signal<string | null>(null);
   findingId = signal<string | null>(null);
   activeSection = signal<string | null>(null);
+  activeSectionIndex = signal<number>(-1);
   
   private metadataUpdate$ = new Subject<{key: string, value: string}>();
   
@@ -68,7 +69,11 @@ export class FindingDetailsComponent implements OnInit {
   sections = computed(() => this.inspection()?.template_snapshot?.sections || []);
 
   currentSection = computed(() => {
-    const sections = this.inspection()?.template_snapshot?.sections || [];
+    const sections = this.sections();
+    const index = this.activeSectionIndex();
+    if (index >= 0 && index < sections.length) {
+      return sections[index];
+    }
     return sections.find(s => s.name === this.activeSection()) || null;
   });
 
@@ -136,8 +141,14 @@ export class FindingDetailsComponent implements OnInit {
 
       // If we have a section, set it
       if (section) {
-        if (section !== this.activeSection()) {
-          this.activeSection.set(section);
+        this.activeSection.set(section);
+        const idx = queryParams.get('idx');
+        if (idx !== null) {
+          this.activeSectionIndex.set(Number(idx));
+        } else {
+          const sections = this.sections();
+          const firstIdx = sections.findIndex(s => s.name === section);
+          this.activeSectionIndex.set(firstIdx);
         }
       } else if (fId && fId !== 'new' && fId !== 'summary') {
         // If we have a finding ID but NO section, try to resolve it from the finding
@@ -200,12 +211,13 @@ export class FindingDetailsComponent implements OnInit {
     });
   }
 
-  selectSection(sectionName: string) {
+  selectSection(sectionName: string, index: number = 0) {
     this.workbench.closeSidebar();
+    this.activeSectionIndex.set(index);
 
     if (sectionName === 'summary') {
       this.router.navigate(['/inspections', this.inspectionId(), 'findings', 'summary'], {
-        queryParams: { section: 'summary' }
+        queryParams: { section: 'summary', idx: -1 }
       });
       return;
     }
@@ -216,12 +228,12 @@ export class FindingDetailsComponent implements OnInit {
     if (sectionFindings.length > 0) {
       // If there's already data in this section, load the first finding instead of a blank 'new'
       this.router.navigate(['/inspections', this.inspectionId(), 'findings', sectionFindings[0].id], {
-        queryParams: { section: sectionName }
+        queryParams: { section: sectionName, idx: index }
       });
     } else {
       // Only go to 'new' if there truly is no data for this category
       this.router.navigate(['/inspections', this.inspectionId(), 'findings', 'new'], {
-        queryParams: { section: sectionName }
+        queryParams: { section: sectionName, idx: index }
       });
     }
   }
