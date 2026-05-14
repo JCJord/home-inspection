@@ -12,6 +12,7 @@ import { Inspector } from '../inspectors/inspector.entity';
 export interface TemplatePreset {
   title: string;
   description: string;
+  recommendation?: string;
   severity: string;
 }
 

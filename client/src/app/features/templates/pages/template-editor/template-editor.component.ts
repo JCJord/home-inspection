@@ -143,7 +143,8 @@ export class TemplateEditorComponent implements OnInit, OnDestroy {
               (sec.presets || []).map(p => this.fb.group({
                 title: [p.title, [Validators.required, Validators.maxLength(200)]],
                 severity: [p.severity || 'Minor', Validators.required],
-                description: [p.description || '', [Validators.maxLength(2200)]]
+                description: [p.description || '', [Validators.maxLength(2200)]],
+                recommendation: [p.recommendation || '', [Validators.maxLength(2200)]]
               }))
             )
           }))
@@ -345,6 +346,7 @@ export class TemplateEditorComponent implements OnInit, OnDestroy {
     presets.push(this.fb.group({
       title: ['New Finding Preset', [Validators.required, Validators.maxLength(200)]],
       description: ['Provide standard defect description.', [Validators.required, Validators.maxLength(2200)]],
+      recommendation: ['Recommended repair by a qualified professional.', [Validators.maxLength(2200)]],
       severity: ['Minor', Validators.required]
     }));
 

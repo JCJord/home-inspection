@@ -14,6 +14,7 @@ export interface Photo {
 export interface TemplatePreset {
   title: string;
   description: string;
+  recommendation?: string;
   severity: string;
 }
 

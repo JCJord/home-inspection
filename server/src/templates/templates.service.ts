@@ -171,12 +171,14 @@ export class TemplatesService implements OnApplicationBootstrap {
     return [
       { 
         title: `Common ${section} Issue`, 
-        description: `Observed a typical wear and tear issue in the ${section} component. Recommendations include professional evaluation.`, 
+        description: `Observed a typical wear and tear issue in the ${section} component.`, 
+        recommendation: `Professional evaluation by a qualified ${section.toLowerCase()} contractor is recommended for further assessment and repair.`,
         severity: 'Minor' 
       },
       { 
         title: `Major ${section} Defect`, 
-        description: `Identified a significant defect in the ${section} system that may affect safety or structural integrity. Immediate repair advised.`, 
+        description: `Identified a significant defect in the ${section} system that may affect safety or structural integrity.`, 
+        recommendation: `Immediate repair or replacement by a licensed ${section.toLowerCase()} professional is required to ensure safety and functionality.`,
         severity: 'Major' 
       }
     ];

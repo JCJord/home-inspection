@@ -245,6 +245,13 @@
                         label="Default Description" [rows]="3" placeholder="Add standard defect findings description...">
                       </app-textarea-input>
                     </div>
+
+                    <div>
+                      <app-textarea-input
+                        [name]="'structure.sections.' + selectedSectionIndex() + '.presets.' + pi + '.recommendation'"
+                        label="Default Recommendation" [rows]="2" placeholder="e.g., Recommend evaluation by a licensed electrician...">
+                      </app-textarea-input>
+                    </div>
                   </div>
                 </div>
                 }
