@@ -50,7 +50,7 @@ export class HomeComponent implements OnInit {
       next: (res) => {
         const today = new Date();
         const todaysJobs = res.data.filter((job) => {
-          if (!job.scheduled_date) return false;
+          if (!job.scheduled_date || job.status === 'cancelled') return false;
           const jobDate = new Date(job.scheduled_date);
           return (
             jobDate.getDate() === today.getDate() &&

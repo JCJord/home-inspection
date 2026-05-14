@@ -9,6 +9,7 @@ import { TextInputComponent } from '../../shared/components/inputs/text-input/te
 import { SkeletonComponent } from '../../shared/components/skeleton/skeleton.component';
 import { BackButtonComponent } from '../../shared/components/back-button/back-button.component';
 import { DropdownMenuComponent, DropdownItem } from '../../shared/components/dropdown-menu/dropdown-menu.component';
+import { ConfirmPillComponent } from '../../shared/components/confirm-pill/confirm-pill.component';
 import {
   LucideAngularModule,
   Calendar,
@@ -38,6 +39,7 @@ import {
     SkeletonComponent,
     BackButtonComponent,
     DropdownMenuComponent,
+    ConfirmPillComponent,
   ],
   templateUrl: './schedule.component.html',
   styleUrl: './schedule.component.scss',
@@ -74,6 +76,9 @@ export class ScheduleComponent implements OnInit {
   isEditMode = signal<boolean>(false);
   editingJob = signal<Inspection | null>(null);
   errorMessage = signal<string | null>(null);
+  
+  confirmingJobId = signal<string | null>(null);
+  confirmationType = signal<'delete' | 'cancel' | null>(null);
 
   readonly icons = {
     Calendar,
@@ -138,7 +143,19 @@ export class ScheduleComponent implements OnInit {
         label: 'Delete',
         icon: this.icons.Trash2,
         danger: true,
-        action: () => this.deleteJob(job),
+        action: () => {
+          this.confirmingJobId.set(job.id);
+          this.confirmationType.set('delete');
+        },
+      },
+      {
+        label: 'Cancel Inspection',
+        icon: this.icons.X,
+        danger: true,
+        action: () => {
+          this.confirmingJobId.set(job.id);
+          this.confirmationType.set('cancel');
+        },
       },
     ];
   }
@@ -247,17 +264,50 @@ export class ScheduleComponent implements OnInit {
   }
 
   deleteJob(job: Inspection): void {
-    if (confirm('Are you sure you want to delete this scheduled job?')) {
-      this.inspectionsService.deleteInspection(job.id).subscribe({
-        next: () => {
-          this.scheduledJobs.update((jobs) => jobs.filter((j) => j.id !== job.id));
-        },
-        error: (err) => {
-          console.error('Failed to delete job', err);
-          alert('Failed to delete job. Please try again.');
-        },
-      });
+    this.inspectionsService.deleteInspection(job.id).subscribe({
+      next: () => {
+        this.scheduledJobs.update((jobs) => jobs.filter((j) => j.id !== job.id));
+        this.confirmingJobId.set(null);
+        this.confirmationType.set(null);
+      },
+      error: (err) => {
+        console.error('Failed to delete job', err);
+        alert('Failed to delete job. Please try again.');
+        this.confirmingJobId.set(null);
+        this.confirmationType.set(null);
+      },
+    });
+  }
+
+  cancelJob(job: Inspection): void {
+    this.inspectionsService.cancelInspection(job.id).subscribe({
+      next: (updated) => {
+        this.scheduledJobs.update((jobs) =>
+          jobs.map((j) => (j.id === updated.id ? updated : j))
+        );
+        this.confirmingJobId.set(null);
+        this.confirmationType.set(null);
+      },
+      error: (err) => {
+        console.error('Failed to cancel job', err);
+        alert('Failed to cancel job. Please try again.');
+        this.confirmingJobId.set(null);
+        this.confirmationType.set(null);
+      },
+    });
+  }
+
+  onConfirm(job: Inspection): void {
+    if (this.confirmationType() === 'delete') {
+      this.deleteJob(job);
+    } else {
+      this.cancelJob(job);
     }
+  }
+
+  onCancelConfirmation(): void {
+    this.confirmingJobId.set(null);
+    this.confirmationType.set(null);
   }
 
   formatDate(dateStr?: string): string {

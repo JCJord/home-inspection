@@ -61,7 +61,7 @@ export interface Inspection {
   client_phone?: string;
   year_built?: number;
   square_footage?: number;
-  status: 'scheduled' | 'in_progress' | 'published';
+  status: 'scheduled' | 'in_progress' | 'published' | 'cancelled';
   scheduled_date?: string;
   agreed_price?: number;
   findings?: Finding[];

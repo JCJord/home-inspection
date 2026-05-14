@@ -107,6 +107,10 @@ export class InspectionsService {
       throw new BadRequestException('Cannot edit a published inspection');
     }
 
+    if (inspection.status === 'cancelled') {
+      throw new ForbiddenException('Cannot update a cancelled inspection');
+    }
+
     if (updateInspectionDto.template_id && inspection.status !== 'scheduled') {
       throw new BadRequestException('Cannot change template once inspection has started');
     }
@@ -209,5 +213,16 @@ export class InspectionsService {
       inspection.status = 'in_progress';
       return await manager.save(inspection);
     });
+  }
+
+  async cancel(inspectorId: string, id: string): Promise<Inspection> {
+    const inspection = await this.findOne(inspectorId, id);
+
+    if (inspection.status === 'published') {
+      throw new BadRequestException('Cannot cancel a published inspection');
+    }
+
+    inspection.status = 'cancelled';
+    return await this.inspectionRepository.save(inspection);
   }
 }

@@ -56,6 +56,7 @@ export class InspectionDetailsComponent implements OnInit {
 
   isPublished = computed(() => this.inspection()?.status === 'published');
   isScheduled = computed(() => this.inspection()?.status === 'scheduled');
+  isCancelled = computed(() => this.inspection()?.status === 'cancelled');
   hasFindings = computed(() => (this.inspection()?.findings?.length ?? 0) > 0);
 
   groupedFindings = computed(() => {
@@ -199,6 +200,26 @@ export class InspectionDetailsComponent implements OnInit {
         this.isLoading.set(false);
       }
     });
+  }
+
+  onCancel(): void {
+    const id = this.inspection()?.id;
+    if (!id) return;
+
+    if (confirm('Are you sure you want to cancel this inspection? This will lock the record permanently.')) {
+      this.isLoading.set(true);
+      this.inspectionsService.cancelInspection(id).subscribe({
+        next: () => {
+          this.isLoading.set(false);
+          this.loadInspection(id);
+        },
+        error: (err) => {
+          console.error('Failed to cancel inspection', err);
+          this.isLoading.set(false);
+          this.errorMessage.set(err.error?.message || 'Failed to cancel inspection.');
+        }
+      });
+    }
   }
 
   generateReport(): void {

@@ -310,6 +310,16 @@ export class InspectionsService {
     );
   }
 
+  cancelInspection(id: string): Observable<Inspection> {
+    return this.http.post<Inspection>(`${this.apiUrl}/${id}/cancel`, {}).pipe(
+      tap((updatedIns) => {
+        this._inspections.update(list => list.map(i => i.id === id ? updatedIns : i));
+        this.saveToCache(this._inspections(), this._totalCount());
+        this._needsRefresh.set(true);
+      })
+    );
+  }
+
   startInspection(id: string): Observable<Inspection> {
     return this.http.patch<Inspection>(`${this.apiUrl}/${id}/start`, {}).pipe(
       tap((updatedIns) => {

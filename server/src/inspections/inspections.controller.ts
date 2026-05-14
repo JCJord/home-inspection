@@ -78,6 +78,11 @@ export class InspectionsController {
     return this.inspectionsService.unpublish(inspectorId, id);
   }
 
+  @Post(':id/cancel')
+  cancel(@GetUser('sub') inspectorId: string, @Param('id') id: string) {
+    return this.inspectionsService.cancel(inspectorId, id);
+  }
+
   @Patch(':id/start')
   startInspection(@GetUser('sub') inspectorId: string, @Param('id') id: string) {
     return this.inspectionsService.startInspection(inspectorId, id);

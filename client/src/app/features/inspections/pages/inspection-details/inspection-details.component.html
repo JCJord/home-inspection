@@ -101,7 +101,11 @@
       <div class="publish-workflow-container" [class]="publishState()">
 
         <!-- IDLE STATE -->
-        @if (publishState() === 'idle') {
+        @if (isCancelled()) {
+          <span class="status-badge bg-safety/10 text-safety px-4 py-2 rounded-full font-bold uppercase text-xs tracking-wider border border-safety/20">
+            Cancelled
+          </span>
+        } @else if (publishState() === 'idle') {
           @if (isPublished()) {
             <div class="flex items-center gap-3">
               <span class="status-badge published">
@@ -297,7 +301,23 @@
         </div>
       </div>
 
-      @if (isScheduled()) {
+      @if (isCancelled()) {
+        <div class="cancelled-info-card bg-safety/5 border border-safety/10 rounded-[2rem] p-10 flex flex-col items-center text-center gap-6">
+          <div class="w-20 h-20 rounded-full bg-safety/10 flex items-center justify-center text-safety">
+            <lucide-icon [name]="icons.AlertCircle" [size]="40"></lucide-icon>
+          </div>
+          <div class="flex flex-col gap-3">
+            <h2 class="text-2xl font-bold text-standard">Inspection Cancelled</h2>
+            <p class="text-standard-muted max-w-md mx-auto">
+              This record has been marked as <strong>cancelled</strong>. No further findings can be added and the report cannot be published.
+            </p>
+          </div>
+          <app-button variant="outline" size="md" (click)="goBack()">
+            <lucide-icon [name]="icons.ArrowLeft" [size]="16"></lucide-icon>
+            Back to Inspections
+          </app-button>
+        </div>
+      } @else if (isScheduled()) {
         <div class="ready-to-begin-card">
           <div class="card-icon">
             <lucide-icon [name]="icons.LockOpen" [size]="40"></lucide-icon>

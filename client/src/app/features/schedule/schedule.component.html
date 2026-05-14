@@ -106,13 +106,21 @@
       } @else if (scheduledJobs().length > 0) {
         <div class="job-list">
           @for (job of scheduledJobs(); track job.id) {
-            <div class="job-card" [class.job-card--today]="isToday(job.scheduled_date)" [class.job-card--past]="isPast(job.scheduled_date) && !isToday(job.scheduled_date)">
+            <div class="job-card" 
+              [class.job-card--today]="isToday(job.scheduled_date)" 
+              [class.job-card--past]="isPast(job.scheduled_date) && !isToday(job.scheduled_date)"
+              [style.opacity]="job.status === 'cancelled' ? 0.5 : 1">
               <div class="job-card-left">
                 <div class="job-date-badge" [class.job-date-badge--today]="isToday(job.scheduled_date)">
                   <lucide-icon [name]="icons.Calendar" [size]="20"></lucide-icon>
                 </div>
                 <div class="job-info">
-                  <h3 class="job-client">{{ job.client_name }}</h3>
+                  <div class="flex items-center gap-2">
+                    <h3 class="job-client">{{ job.client_name }}</h3>
+                    @if (job.status === 'cancelled') {
+                      <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-safety/10 text-safety border border-safety/20">Cancelled</span>
+                    }
+                  </div>
                   <div class="job-meta">
                     <span class="job-meta-item">
                       <lucide-icon [name]="icons.Clock" [size]="14"></lucide-icon>
@@ -133,12 +141,22 @@
                 }
                 
                 <div class="flex items-center gap-2">
-                  @if (isToday(job.scheduled_date)) {
-                    <app-button variant="solid" size="sm" (click)="openInspection(job)">Start</app-button>
+                  @if (confirmingJobId() === job.id) {
+                    <app-confirm-pill 
+                      [confirmText]="confirmationType() === 'delete' ? 'Delete' : 'Cancel'"
+                      (confirm)="onConfirm(job)"
+                      (cancel)="onCancelConfirmation()">
+                    </app-confirm-pill>
                   } @else {
-                    <app-button variant="outline" size="sm" (click)="openInspection(job)">View</app-button>
+                    @if (job.status !== 'cancelled') {
+                      @if (isToday(job.scheduled_date)) {
+                        <app-button variant="solid" size="sm" (click)="openInspection(job)">Start</app-button>
+                      } @else {
+                        <app-button variant="outline" size="sm" (click)="openInspection(job)">View</app-button>
+                      }
+                    }
+                    <app-dropdown-menu [items]="getMenuItems(job)"></app-dropdown-menu>
                   }
-                  <app-dropdown-menu [items]="getMenuItems(job)"></app-dropdown-menu>
                 </div>
               </div>
             </div>
