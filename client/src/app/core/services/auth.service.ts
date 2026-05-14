@@ -42,17 +42,30 @@ export class AuthService {
     this.scheduleRefresh();
     this.listenToStorageEvents();
     
-    // Recovery: If we have a token but no user data (e.g. after a corrupted refresh), fetch it.
-    if (this.token() && !this.currentUser()) {
-      this.loadCurrentUser().subscribe();
+    // Proactive Recovery/Refresh: Always try to refresh user data if we have a token
+    // to ensure subscription status is accurate (avoiding stale localStorage).
+    if (this.token()) {
+      this.loadCurrentUser().subscribe({
+        error: () => {
+          // If profile fetch fails, we might have an invalid token
+          if (this.isTokenExpired()) this.logout();
+        }
+      });
     }
   }
 
   // --- Computed ---
   isAuthenticated = computed(() => !!this.token());
   isPremium = computed(() => {
-    const status = this.currentUser()?.subscription_status;
+    // In development, always allow premium features for testing
+    if (!environment.production) return true;
+
+    const user = this.currentUser();
+    if (!user) return false;
+
+    const status = user.subscription_status;
     if (!status) return false;
+
     // Flexible check for 'active' status
     return (
       status === SubscriptionStatus.ACTIVE ||

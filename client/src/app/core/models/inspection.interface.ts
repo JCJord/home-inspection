@@ -72,6 +72,7 @@ export interface Inspection {
   foundation_type?: string;
   cover_photo_url?: string;
   template_id?: string;
+  template?: { id: string; name: string; structure: TemplateStructure };
   template_snapshot?: TemplateStructure;
   metadata_values?: Record<string, string>;
   section_statuses?: Record<string, SectionStatus>;

@@ -49,11 +49,15 @@ export class InspectionFormComponent implements OnInit {
   private inspection = signal<Inspection | null>(null);
 
   isEditMode = computed(() => !!this.inspectionId());
+  inspectionStatus = computed(() => this.inspection()?.status);
   selectedTemplateName = computed(() => {
     const tid = this.inspectionForm.get('template_id')?.value;
     if (!tid) return 'Default Template';
     const opt = this.availableTemplates().find(o => o.value === tid);
-    return opt ? opt.label : 'Custom Blueprint';
+    if (opt) return opt.label;
+    
+    // Fallback to relation name if not found in dropdown list
+    return this.inspection()?.template?.name || 'Custom Blueprint';
   });
 
   availableTemplates = signal<SelectOption[]>([]);

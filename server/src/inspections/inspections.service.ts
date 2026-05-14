@@ -90,7 +90,7 @@ export class InspectionsService {
   async findOne(inspectorId: string, id: string): Promise<Inspection> {
     const inspection = await this.inspectionRepository.findOne({
       where: { id, inspector_id: inspectorId },
-      relations: ['findings', 'findings.photos', 'inspector'],
+      relations: ['findings', 'findings.photos', 'inspector', 'template'],
     });
 
     if (!inspection) {
@@ -105,6 +105,10 @@ export class InspectionsService {
 
     if (inspection.status === 'published') {
       throw new BadRequestException('Cannot edit a published inspection');
+    }
+
+    if (updateInspectionDto.template_id && inspection.status !== 'scheduled') {
+      throw new BadRequestException('Cannot change template once inspection has started');
     }
 
     // Merge JSON objects to prevent overwriting other fields
@@ -191,15 +195,19 @@ export class InspectionsService {
       throw new BadRequestException('Only scheduled inspections can be started');
     }
 
-    // Lock in the template snapshot at start time (the "Job Boot")
-    if (!inspection.template_snapshot && inspection.template_id) {
-      const template = await this.templateRepository.findOne({ where: { id: inspection.template_id } });
-      if (template) {
-        inspection.template_snapshot = template.structure;
-      }
+    if (!inspection.template_id) {
+      throw new BadRequestException('Cannot start inspection without a template selected');
     }
 
-    inspection.status = 'in_progress';
-    return await this.inspectionRepository.save(inspection);
+    const template = await this.templateRepository.findOne({ where: { id: inspection.template_id } });
+    if (!template) {
+      throw new NotFoundException('Template not found');
+    }
+
+    return await this.inspectionRepository.manager.transaction(async (manager) => {
+      inspection.template_snapshot = template.structure;
+      inspection.status = 'in_progress';
+      return await manager.save(inspection);
+    });
   }
 }

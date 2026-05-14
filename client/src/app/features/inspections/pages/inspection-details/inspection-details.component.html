@@ -102,25 +102,30 @@
 
         <!-- IDLE STATE -->
         @if (publishState() === 'idle') {
-        @if (isPublished()) {
-        <div class="flex items-center gap-3">
-          <span class="status-badge published">
-            <span class="dot"></span>
-            Published
-          </span>
-          <button
-            class="text-xs text-standard-muted hover:text-primary transition-colors flex items-center gap-1 font-medium bg-transparent border-none p-0 cursor-pointer"
-            (click)="unpublishInspection()" title="Unlock to edit again">
-            <lucide-icon [name]="icons.LockOpen" [size]="14"></lucide-icon>
-            Unlock to Edit
-          </button>
-        </div>
-        } @else {
-        <app-button variant="solid" size="sm" (click)="startPublishWorkflow()">
-          <lucide-icon [name]="icons.Send" [size]="16"></lucide-icon>
-          Publish Report
-        </app-button>
-        }
+          @if (isPublished()) {
+            <div class="flex items-center gap-3">
+              <span class="status-badge published">
+                <span class="dot"></span>
+                Published
+              </span>
+              <button
+                class="text-xs text-standard-muted hover:text-primary transition-colors flex items-center gap-1 font-medium bg-transparent border-none p-0 cursor-pointer"
+                (click)="unpublishInspection()" title="Unlock to edit again">
+                <lucide-icon [name]="icons.LockOpen" [size]="14"></lucide-icon>
+                Unlock to Edit
+              </button>
+            </div>
+          } @else if (isScheduled()) {
+            <app-button variant="solid" size="sm" (click)="onStartInspection()" [isLoading]="isLoading()">
+              <lucide-icon [name]="icons.Plus" [size]="16"></lucide-icon>
+              Start Inspection
+            </app-button>
+          } @else {
+            <app-button variant="solid" size="sm" (click)="startPublishWorkflow()">
+              <lucide-icon [name]="icons.Send" [size]="16"></lucide-icon>
+              Publish Report
+            </app-button>
+          }
         }
 
         <!-- CONFIRM STATE -->
@@ -292,53 +297,78 @@
         </div>
       </div>
 
-      <div
-        class="summary-header flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-standard">
-        <div class="flex flex-col gap-1">
-          <h2 class="text-2xl font-bold text-standard">Executive Summary</h2>
-          <p class="text-sm text-standard-muted">Overview of all recorded findings grouped by severity</p>
-        </div>
-        <app-button variant="outline" size="sm" (click)="routeToWorkbench()">
-          <lucide-icon [name]="icons.Edit" [size]="16"></lucide-icon>
-          Manage Findings
-        </app-button>
-      </div>
-
-      @for (group of groupedFindings(); track group.severity) {
-      <div class="severity-group flex flex-col gap-6">
-        <div class="group-header flex items-center justify-between px-5 py-3 border" [class]="group.colorClass">
-          <div class="flex items-center gap-3">
-            <span class="group-label text-sm font-bold uppercase tracking-wider">{{ group.label }}</span>
+      @if (isScheduled()) {
+        <div class="ready-to-begin-card">
+          <div class="card-icon">
+            <lucide-icon [name]="icons.LockOpen" [size]="40"></lucide-icon>
           </div>
-          <span class="item-count-badge text-[10px] font-bold px-2 py-0.5 rounded-full">
-            {{ group.items.length }} <span class="hidden sm:inline">{{ group.items.length === 1 ? 'item' : 'items'
-              }}</span>
-          </span>
+          <div class="card-content">
+            <h2 class="title">Ready to begin?</h2>
+            <p class="description">
+              You are about to start the inspection for <strong>{{ insp.address }}</strong>.
+              This will lock in the <strong>{{ insp.template?.name || 'Default Template' }}</strong> blueprint.
+            </p>
+          </div>
+          <div class="card-actions">
+            <app-button variant="outline" size="lg" (click)="editInspection()">
+              <lucide-icon [name]="icons.Edit" [size]="18"></lucide-icon>
+              Edit Details
+            </app-button>
+            <app-button variant="solid" size="lg" (click)="onStartInspection()" [isLoading]="isLoading()">
+              <lucide-icon [name]="icons.Plus" [size]="18"></lucide-icon>
+              Start Inspection
+            </app-button>
+          </div>
+        </div>
+      } @else {
+        <div
+          class="summary-header flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-standard">
+          <div class="flex flex-col gap-1">
+            <h2 class="text-2xl font-bold text-standard">Executive Summary</h2>
+            <p class="text-sm text-standard-muted">Overview of all recorded findings grouped by severity</p>
+          </div>
+          <app-button variant="outline" size="sm" (click)="routeToWorkbench()">
+            <lucide-icon [name]="icons.Edit" [size]="16"></lucide-icon>
+            Manage Findings
+          </app-button>
         </div>
 
-        <div class="findings-grid flex flex-col gap-4">
-          @for (finding of group.items; track finding.id) {
-          <app-finding-card [finding]="finding" [readOnly]="true" (edit)="editFinding(finding)"></app-finding-card>
-          }
-        </div>
-      </div>
-      }
+        @for (group of groupedFindings(); track group.severity) {
+        <div class="severity-group flex flex-col gap-6">
+          <div class="group-header flex items-center justify-between px-5 py-3 border" [class]="group.colorClass">
+            <div class="flex items-center gap-3">
+              <span class="group-label text-sm font-bold uppercase tracking-wider">{{ group.label }}</span>
+            </div>
+            <span class="item-count-badge text-[10px] font-bold px-2 py-0.5 rounded-full">
+              {{ group.items.length }} <span class="hidden sm:inline">{{ group.items.length === 1 ? 'item' : 'items'
+                }}</span>
+            </span>
+          </div>
 
-      @if (groupedFindings().length === 0) {
-      <div
-        class="empty-state-summary flex flex-col items-center justify-center py-20 px-6 bg-surface-standard rounded-[2rem] border border-dashed border-standard">
-        <div class="w-16 h-16 rounded-full bg-light-standard flex items-center justify-center mb-4">
-          <lucide-icon [name]="icons.FileText" [size]="32" class="text-standard-muted"></lucide-icon>
+          <div class="findings-grid flex flex-col gap-4">
+            @for (finding of group.items; track finding.id) {
+            <app-finding-card [finding]="finding" [readOnly]="true" (edit)="editFinding(finding)"></app-finding-card>
+            }
+          </div>
         </div>
-        <h3 class="text-lg font-bold text-standard mb-2">No findings recorded yet</h3>
-        <p class="text-standard-muted text-center max-w-sm mb-8">
-          This inspection doesn't have any findings yet. Start recording observations to generate the summary.
-        </p>
-        <app-button (click)="routeToWorkbench()">
-          <lucide-icon [name]="icons.Plus" [size]="18"></lucide-icon>
-          Start Inspection
-        </app-button>
-      </div>
+        }
+
+        @if (groupedFindings().length === 0) {
+        <div
+          class="empty-state-summary flex flex-col items-center justify-center py-20 px-6 bg-surface-standard rounded-[2rem] border border-dashed border-standard">
+          <div class="w-16 h-16 rounded-full bg-light-standard flex items-center justify-center mb-4">
+            <lucide-icon [name]="icons.FileText" [size]="32" class="text-standard-muted"></lucide-icon>
+          </div>
+          <h3 class="text-lg font-bold text-standard mb-2">No findings recorded yet</h3>
+          <p class="text-standard-muted text-center max-w-sm mb-8">
+            This inspection doesn't have any findings yet. Start recording observations to generate the summary.
+          </p>
+          <app-button (click)="routeToWorkbench()">
+            <lucide-icon [name]="icons.Plus" [size]="18"></lucide-icon>
+            Start Inspection
+          </app-button>
+        </div>
+        }
       }
     </div>
   </div>

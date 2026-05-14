@@ -302,7 +302,70 @@
       h3 { color: $color-text; }
       p { color: $color-text-muted; }
     }
+
+    .ready-to-begin-card {
+      @include card-premium(true);
+      padding: 3rem 2rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 2rem;
+      background: linear-gradient(145deg, $color-surface, $color-surface-light);
+      border: 1px solid rgba($color-primary, 0.1);
+      
+      .card-icon {
+        width: 5rem;
+        height: 5rem;
+        border-radius: 50%;
+        background: rgba($color-primary, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: $color-primary;
+        animation: pulse-soft 2s infinite;
+      }
+
+      .card-content {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        max-width: 28rem;
+
+        .title {
+          font-size: 1.75rem;
+          font-weight: 800;
+          color: $color-text;
+          margin: 0;
+        }
+
+        .description {
+          font-size: 1rem;
+          color: $color-text-muted;
+          line-height: 1.6;
+          margin: 0;
+
+          strong {
+            color: $color-text;
+            font-weight: 600;
+          }
+        }
+      }
+
+      .card-actions {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+    }
   }
+}
+
+@keyframes pulse-soft {
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba($color-primary, 0.2); }
+  70% { transform: scale(1.05); box-shadow: 0 0 0 15px rgba($color-primary, 0); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba($color-primary, 0); }
 }
 
 @keyframes slideUp {
