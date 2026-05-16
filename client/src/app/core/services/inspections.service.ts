@@ -97,8 +97,10 @@ export class InspectionsService {
             this._totalCount.set(res.meta.total);
             if (page === 1) {
               this.saveToCache(res.data, res.meta.total);
+              this._needsRefresh.set(false);
+            } else {
+              this._needsRefresh.set(true);
             }
-            this._needsRefresh.set(false);
           }
           this._isLoading.set(false);
         },
@@ -118,9 +120,9 @@ export class InspectionsService {
             this.imageCacheService.prefetchInspection(fresh); // <--- BACKGROUND PREFETCH
           }),
           catchError(err => {
-             // If network fails, and we already have cached, return it.
-             if (cached) return of(this.mergePendingMutations(cached)); 
-             throw err;
+            // If network fails, and we already have cached, return it.
+            if (cached) return of(this.mergePendingMutations(cached));
+            throw err;
           })
         );
 
@@ -130,7 +132,7 @@ export class InspectionsService {
           // Emit cached immediately, then the network response
           return concat(of(this.mergePendingMutations(cached)), network$);
         }
-        
+
         return network$;
       })
     );
@@ -139,7 +141,7 @@ export class InspectionsService {
   public mergePendingMutations(inspection: Inspection): Inspection {
     const pendingTasks = this.mutationQueueService.allTasks()
       .filter(t => t.inspectionId === inspection.id);
-    
+
     if (pendingTasks.length === 0) return inspection;
 
     // Create a deep-ish clone to avoid reference pollution
@@ -149,7 +151,7 @@ export class InspectionsService {
       section_statuses: { ...(inspection.section_statuses || {}) },
       findings: (inspection.findings || []).map(f => ({ ...f, photos: [...(f.photos || [])] }))
     };
-    
+
     pendingTasks.forEach(task => {
       // 1. Handle Inspection Updates
       if (task.type === MutationType.UPDATE_INSPECTION) {
@@ -186,10 +188,10 @@ export class InspectionsService {
         const idx = merged.findings?.findIndex(f => f.id === task.findingId);
         if (idx !== undefined && idx > -1) {
           const f = merged.findings![idx];
-          merged.findings![idx] = { 
-            ...f, 
+          merged.findings![idx] = {
+            ...f,
             ...task.payload,
-            isSyncing: task.status !== 'COMPLETED' 
+            isSyncing: task.status !== 'COMPLETED'
           };
         }
       }
@@ -198,7 +200,7 @@ export class InspectionsService {
       if (task.type === MutationType.UPLOAD_PHOTO) {
         const targetId = task.findingId || task.clientFindingId;
         const finding = merged.findings?.find(f => f.id === targetId);
-        
+
         if (finding) {
           const tempId = `temp-${task.id}`;
           const serverPhotoId = (task as any).result?.id;
@@ -293,7 +295,7 @@ export class InspectionsService {
         this._needsRefresh.set(true);
 
         // Garbage Collection: Remove from individual inspection cache after successful publish
-        this.persistenceService.deleteInspection(id).catch(err => 
+        this.persistenceService.deleteInspection(id).catch(err =>
           console.warn('Failed to clean up cache after publish', err)
         );
       })
