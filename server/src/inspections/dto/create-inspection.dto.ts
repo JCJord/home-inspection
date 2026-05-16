@@ -9,6 +9,7 @@ import {
   Max,
   IsNumber,
   IsDateString,
+  IsBoolean,
 } from 'class-validator';
 
 export class CreateInspectionDto {
@@ -89,4 +90,8 @@ export class CreateInspectionDto {
   @IsNumber({}, { message: 'Agreed price must be a valid number' })
   @Min(0, { message: 'Agreed price cannot be negative' })
   agreed_price?: number;
+
+  @IsOptional()
+  @IsBoolean({ message: 'Send email must be a boolean' })
+  send_email?: boolean;
 }

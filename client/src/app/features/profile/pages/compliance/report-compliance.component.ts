@@ -7,6 +7,7 @@ import { InspectorsService } from '../../../../core/services/inspectors.service'
 import { SelectInputComponent } from '../../../../shared/components/inputs/select-input/select-input.component';
 import { SkeletonComponent } from '../../../../shared/components/skeleton/skeleton.component';
 import { LucideAngularModule, ShieldCheck, Scale, FileSignature, CheckCircle2, Info } from 'lucide-angular';
+import { ToggleSwitchComponent } from '../../../../shared/components/inputs/toggle-switch/toggle-switch.component';
 import { environment } from '../../../../../environments/environment';
 
 @Component({
@@ -17,7 +18,8 @@ import { environment } from '../../../../../environments/environment';
     ReactiveFormsModule,
     SelectInputComponent,
     SkeletonComponent,
-    LucideAngularModule
+    LucideAngularModule,
+    ToggleSwitchComponent
   ],
   templateUrl: './report-compliance.component.html',
   styleUrl: './report-compliance.component.scss'

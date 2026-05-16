@@ -60,6 +60,14 @@
 
           <app-text-input name="address" label="Property Address (Optional)" placeholder="123 Main St, City, State"></app-text-input>
 
+          @if (!isEditMode()) {
+            <app-toggle-switch
+              formControlName="send_email"
+              label="Send Confirmation Email"
+              description="Send a professional confirmation email to the client upon booking.">
+            </app-toggle-switch>
+          }
+
           <div class="form-row">
             <div class="input-wrapper">
               <label class="input-label" for="scheduled_date">Scheduled Date & Time *</label>
@@ -111,60 +119,178 @@
           }
         </div>
       } @else if (scheduledJobs().length > 0) {
-        <div class="job-list">
-          @for (job of scheduledJobs(); track job.id) {
-            <div class="job-card" 
-              [class.job-card--today]="isToday(job.scheduled_date)" 
-              [class.job-card--past]="isPast(job.scheduled_date) && !isToday(job.scheduled_date)"
-              [style.opacity]="job.status === 'cancelled' ? 0.5 : 1">
-              <div class="job-card-left">
-                <div class="job-date-badge" [class.job-date-badge--today]="isToday(job.scheduled_date)">
-                  <lucide-icon [name]="icons.Calendar" [size]="20"></lucide-icon>
-                </div>
-                <div class="job-info">
-                  <div class="flex items-center gap-2">
-                    <h3 class="job-client">{{ job.client_name }}</h3>
-                    @if (job.status === 'cancelled') {
-                      <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-safety/10 text-safety border border-safety/20">Cancelled</span>
-                    }
-                  </div>
-                  <div class="job-meta">
-                    <span class="job-meta-item">
-                      <lucide-icon [name]="icons.Clock" [size]="14"></lucide-icon>
-                      {{ formatDate(job.scheduled_date) }}
-                    </span>
-                    @if (job.address) {
-                      <span class="job-meta-item">
-                        <lucide-icon [name]="icons.MapPin" [size]="14"></lucide-icon>
-                        {{ job.address }}
-                      </span>
-                    }
-                  </div>
-                </div>
+        <div class="schedule-groups">
+          <!-- Today Section -->
+          @if (todayJobs().length > 0) {
+            <div class="job-group">
+              <div class="group-header">
+                <span class="group-dot group-dot--today"></span>
+                <h2 class="group-title">Today's Agenda</h2>
+                <span class="group-count">{{ todayJobs().length }}</span>
               </div>
-              <div class="job-card-right">
-                @if (job.agreed_price) {
-                  <span class="job-price">{{ formatPrice(job.agreed_price) }}</span>
-                }
-                
-                <div class="flex items-center gap-2">
-                  @if (confirmingJobId() === job.id) {
-                    <app-confirm-pill 
-                      [confirmText]="confirmationType() === 'delete' ? 'Delete' : 'Cancel'"
-                      (confirm)="onConfirm(job)"
-                      (cancel)="onCancelConfirmation()">
-                    </app-confirm-pill>
-                  } @else {
-                    @if (job.status !== 'cancelled') {
-                      @if (isToday(job.scheduled_date)) {
-                        <app-button variant="solid" size="sm" (click)="openInspection(job)">Start</app-button>
-                      } @else {
-                        <app-button variant="outline" size="sm" (click)="openInspection(job)">View</app-button>
+              <div class="job-list">
+                @for (job of todayJobs(); track job.id) {
+                  <div class="job-card job-card--today" [style.opacity]="job.status === 'cancelled' ? 0.5 : 1">
+                    <div class="job-card-left">
+                      <div class="job-date-badge job-date-badge--today">
+                        <lucide-icon [name]="icons.Calendar" [size]="20"></lucide-icon>
+                      </div>
+                      <div class="job-info">
+                        <div class="flex items-center gap-2">
+                          <h3 class="job-client">{{ job.client_name }}</h3>
+                          <span class="today-badge">Today</span>
+                          @if (job.status === 'cancelled') {
+                            <span class="status-badge status-badge--cancelled">Cancelled</span>
+                          }
+                        </div>
+                        <div class="job-meta">
+                          <span class="job-meta-item">
+                            <lucide-icon [name]="icons.Clock" [size]="14"></lucide-icon>
+                            {{ formatDate(job.scheduled_date) }}
+                          </span>
+                          @if (job.address) {
+                            <span class="job-meta-item">
+                              <lucide-icon [name]="icons.MapPin" [size]="14"></lucide-icon>
+                              {{ job.address }}
+                            </span>
+                          }
+                        </div>
+                      </div>
+                    </div>
+                    <div class="job-card-right">
+                      @if (job.agreed_price) {
+                        <span class="job-price">{{ formatPrice(job.agreed_price) }}</span>
                       }
-                    }
-                    <app-dropdown-menu [items]="getMenuItems(job)"></app-dropdown-menu>
-                  }
-                </div>
+                      
+                      <div class="flex items-center gap-2">
+                        @if (confirmingJobId() === job.id) {
+                          <app-confirm-pill 
+                            [confirmText]="confirmationType() === 'delete' ? 'Delete' : 'Cancel'"
+                            (confirm)="onConfirm(job)"
+                            (cancel)="onCancelConfirmation()">
+                          </app-confirm-pill>
+                        } @else {
+                          @if (job.status !== 'cancelled') {
+                            <app-button variant="solid" size="sm" (click)="openInspection(job)">Start</app-button>
+                          }
+                          <app-dropdown-menu [items]="getMenuItems(job)"></app-dropdown-menu>
+                        }
+                      </div>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+
+          <!-- Upcoming Section -->
+          @if (upcomingJobs().length > 0) {
+            <div class="job-group">
+              <div class="group-header">
+                <span class="group-dot group-dot--upcoming"></span>
+                <h2 class="group-title">Upcoming Inspections</h2>
+                <span class="group-count">{{ upcomingJobs().length }}</span>
+              </div>
+              <div class="job-list">
+                @for (job of upcomingJobs(); track job.id) {
+                  <div class="job-card" [style.opacity]="job.status === 'cancelled' ? 0.5 : 1">
+                    <div class="job-card-left">
+                      <div class="job-date-badge">
+                        <lucide-icon [name]="icons.Calendar" [size]="20"></lucide-icon>
+                      </div>
+                      <div class="job-info">
+                        <div class="flex items-center gap-2">
+                          <h3 class="job-client">{{ job.client_name }}</h3>
+                          @if (job.status === 'cancelled') {
+                            <span class="status-badge status-badge--cancelled">Cancelled</span>
+                          }
+                        </div>
+                        <div class="job-meta">
+                          <span class="job-meta-item">
+                            <lucide-icon [name]="icons.Clock" [size]="14"></lucide-icon>
+                            {{ formatDate(job.scheduled_date) }}
+                          </span>
+                          @if (job.address) {
+                            <span class="job-meta-item">
+                              <lucide-icon [name]="icons.MapPin" [size]="14"></lucide-icon>
+                              {{ job.address }}
+                            </span>
+                          }
+                        </div>
+                      </div>
+                    </div>
+                    <div class="job-card-right">
+                      @if (job.agreed_price) {
+                        <span class="job-price">{{ formatPrice(job.agreed_price) }}</span>
+                      }
+                      
+                      <div class="flex items-center gap-2">
+                        @if (confirmingJobId() === job.id) {
+                          <app-confirm-pill 
+                            [confirmText]="confirmationType() === 'delete' ? 'Delete' : 'Cancel'"
+                            (confirm)="onConfirm(job)"
+                            (cancel)="onCancelConfirmation()">
+                          </app-confirm-pill>
+                        } @else {
+                          @if (job.status !== 'cancelled') {
+                            <app-button variant="outline" size="sm" (click)="openInspection(job)">View</app-button>
+                          }
+                          <app-dropdown-menu [items]="getMenuItems(job)"></app-dropdown-menu>
+                        }
+                      </div>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+
+          <!-- Past Section -->
+          @if (pastJobs().length > 0) {
+            <div class="job-group">
+              <div class="group-header">
+                <span class="group-dot group-dot--past"></span>
+                <h2 class="group-title">History</h2>
+                <span class="group-count">{{ pastJobs().length }}</span>
+              </div>
+              <div class="job-list">
+                @for (job of pastJobs(); track job.id) {
+                  <div class="job-card job-card--past" [style.opacity]="job.status === 'cancelled' ? 0.3 : 0.6">
+                    <div class="job-card-left">
+                      <div class="job-date-badge">
+                        <lucide-icon [name]="icons.Calendar" [size]="20"></lucide-icon>
+                      </div>
+                      <div class="job-info">
+                        <div class="flex items-center gap-2">
+                          <h3 class="job-client">{{ job.client_name }}</h3>
+                          @if (job.status === 'cancelled') {
+                            <span class="status-badge status-badge--cancelled">Cancelled</span>
+                          }
+                        </div>
+                        <div class="job-meta">
+                          <span class="job-meta-item">
+                            <lucide-icon [name]="icons.Clock" [size]="14"></lucide-icon>
+                            {{ formatDate(job.scheduled_date) }}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="job-card-right">
+                      <div class="flex items-center gap-2">
+                        @if (confirmingJobId() === job.id) {
+                          <app-confirm-pill 
+                            [confirmText]="confirmationType() === 'delete' ? 'Delete' : 'Cancel'"
+                            (confirm)="onConfirm(job)"
+                            (cancel)="onCancelConfirmation()">
+                          </app-confirm-pill>
+                        } @else {
+                          <app-button variant="outline" size="sm" (click)="openInspection(job)">View</app-button>
+                          <app-dropdown-menu [items]="getMenuItems(job)"></app-dropdown-menu>
+                        }
+                      </div>
+                    </div>
+                  </div>
+                }
               </div>
             </div>
           }

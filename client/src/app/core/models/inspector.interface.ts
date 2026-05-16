@@ -21,6 +21,7 @@ export interface Inspector {
   custom_minor_defect_def?: string;
   custom_maintenance_item_def?: string;
   custom_informational_item_def?: string;
+  default_send_email_confirmation?: boolean;
   subscription_status: SubscriptionStatus;
   free_inspections_used: number;
   created_at: Date;

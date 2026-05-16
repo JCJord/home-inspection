@@ -88,6 +88,9 @@ export class Inspector {
   @Column({ type: 'text', nullable: true })
   custom_informational_item_def: string;
 
+  @Column({ type: 'boolean', default: true })
+  default_send_email_confirmation: boolean;
+
   @OneToMany(() => Inspection, (inspection) => inspection.inspector)
   inspections: Inspection[];
 

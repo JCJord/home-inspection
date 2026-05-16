@@ -60,7 +60,7 @@ export class InspectionsService {
     await this.inspectorRepository.save(inspector);
 
     // Emit event for background tasks (e.g. Email Notification)
-    if (savedInspection.status === 'scheduled') {
+    if (savedInspection.status === 'scheduled' && createInspectionDto.send_email !== false) {
       savedInspection.inspector = inspector;
       this.eventEmitter.emit('inspection.scheduled', savedInspection);
     }

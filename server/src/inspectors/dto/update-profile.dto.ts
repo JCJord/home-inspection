@@ -97,4 +97,8 @@ export class UpdateProfileDto {
   @MinLength(10, { message: 'Custom informational item definition is too short.' })
   @MaxLength(1000)
   custom_informational_item_def?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  default_send_email_confirmation?: boolean;
 }

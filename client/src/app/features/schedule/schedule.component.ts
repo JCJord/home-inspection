@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { InspectionsService } from '../../core/services/inspections.service';
+import { InspectorsService } from '../../core/services/inspectors.service';
 import { Inspection } from '../../core/models/inspection.interface';
 import { ButtonComponent } from '../../shared/components/button/button.component';
 import { TextInputComponent } from '../../shared/components/inputs/text-input/text-input.component';
@@ -27,6 +28,7 @@ import {
   MoreVertical,
   Check,
 } from 'lucide-angular';
+import { ToggleSwitchComponent } from '../../shared/components/inputs/toggle-switch/toggle-switch.component';
 
 @Component({
   selector: 'app-schedule',
@@ -41,6 +43,7 @@ import {
     BackButtonComponent,
     DropdownMenuComponent,
     ConfirmPillComponent,
+    ToggleSwitchComponent,
   ],
   templateUrl: './schedule.component.html',
   styleUrl: './schedule.component.scss',
@@ -69,6 +72,7 @@ export class ScheduleComponent implements OnInit {
   private router = inject(Router);
   private fb = inject(FormBuilder);
   private inspectionsService = inject(InspectionsService);
+  private inspectorsService = inject(InspectorsService);
 
   scheduledJobs = signal<Inspection[]>([]);
   isLoading = signal<boolean>(true);
@@ -78,7 +82,7 @@ export class ScheduleComponent implements OnInit {
   editingJob = signal<Inspection | null>(null);
   errorMessage = signal<string | null>(null);
   successMessage = signal<string | null>(null);
-  
+
   confirmingJobId = signal<string | null>(null);
   confirmationType = signal<'delete' | 'cancel' | null>(null);
 
@@ -99,6 +103,18 @@ export class ScheduleComponent implements OnInit {
     Check,
   };
 
+  todayJobs = computed(() => 
+    this.scheduledJobs().filter(job => this.isToday(job.scheduled_date))
+  );
+
+  upcomingJobs = computed(() => 
+    this.scheduledJobs().filter(job => !this.isToday(job.scheduled_date) && !this.isPast(job.scheduled_date))
+  );
+
+  pastJobs = computed(() => 
+    this.scheduledJobs().filter(job => this.isPast(job.scheduled_date) && !this.isToday(job.scheduled_date))
+  );
+
   bookingForm: FormGroup = this.fb.group({
     client_name: ['', [Validators.required, Validators.maxLength(100)]],
     client_email: ['', [Validators.email]],
@@ -106,10 +122,24 @@ export class ScheduleComponent implements OnInit {
     address: ['', [Validators.maxLength(300)]],
     agreed_price: [null],
     scheduled_date: ['', [Validators.required]],
+    send_email: [true],
   });
 
   ngOnInit(): void {
     this.loadScheduledJobs();
+    this.loadInspectorDefaults();
+  }
+
+  loadInspectorDefaults(): void {
+    this.inspectorsService.getProfile().subscribe({
+      next: (profile) => {
+        if (!this.isEditMode()) {
+          this.bookingForm.patchValue({
+            send_email: profile.default_send_email_confirmation ?? true
+          });
+        }
+      }
+    });
   }
 
   loadScheduledJobs(): void {
@@ -199,6 +229,7 @@ export class ScheduleComponent implements OnInit {
       this.showBookingForm.update((v) => !v);
       if (!this.showBookingForm()) {
         this.bookingForm.reset();
+        this.loadInspectorDefaults(); // Reset to defaults when closing/opening fresh
         this.errorMessage.set(null);
       }
     }
@@ -253,7 +284,7 @@ export class ScheduleComponent implements OnInit {
           }
           this.successMessage.set(this.isEditMode() ? 'Inspection Updated Successfully' : 'Inspection Scheduled Successfully');
           setTimeout(() => this.successMessage.set(null), 5000);
-          
+
           this.isSubmitting.set(false);
           this.showBookingForm.set(false);
           this.bookingForm.reset();
