@@ -25,6 +25,7 @@ import {
   Edit2,
   Trash2,
   MoreVertical,
+  Check,
 } from 'lucide-angular';
 
 @Component({
@@ -76,6 +77,7 @@ export class ScheduleComponent implements OnInit {
   isEditMode = signal<boolean>(false);
   editingJob = signal<Inspection | null>(null);
   errorMessage = signal<string | null>(null);
+  successMessage = signal<string | null>(null);
   
   confirmingJobId = signal<string | null>(null);
   confirmationType = signal<'delete' | 'cancel' | null>(null);
@@ -94,6 +96,7 @@ export class ScheduleComponent implements OnInit {
     Edit2,
     Trash2,
     MoreVertical,
+    Check,
   };
 
   bookingForm: FormGroup = this.fb.group({
@@ -248,6 +251,9 @@ export class ScheduleComponent implements OnInit {
               })
             );
           }
+          this.successMessage.set(this.isEditMode() ? 'Inspection Updated Successfully' : 'Inspection Scheduled Successfully');
+          setTimeout(() => this.successMessage.set(null), 5000);
+          
           this.isSubmitting.set(false);
           this.showBookingForm.set(false);
           this.bookingForm.reset();

@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Inspection Scheduled</title>
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: #1E293B;
+            margin: 0;
+            padding: 0;
+            background-color: #F8FAFC;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background: #FFFFFF;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #E2E8F0;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background-color: #00A3FF;
+            padding: 40px 20px;
+            text-align: center;
+            color: white;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: -0.025em;
+            text-transform: uppercase;
+        }
+        .content {
+            padding: 40px;
+        }
+        .address-box {
+            background-color: #F1F5F9;
+            padding: 24px;
+            border-radius: 8px;
+            margin-bottom: 32px;
+            border-left: 4px solid #00A3FF;
+        }
+        .address-box h2 {
+            margin: 0 0 8px 0;
+            font-size: 14px;
+            color: #64748B;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .address-box p {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 700;
+            color: #0F172A;
+        }
+        .details-grid {
+            margin-bottom: 32px;
+        }
+        .detail-item {
+            display: flex;
+            padding: 12px 0;
+            border-bottom: 1px solid #F1F5F9;
+        }
+        .detail-label {
+            font-weight: 600;
+            width: 120px;
+            color: #64748B;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
+        }
+        .detail-value {
+            flex: 1;
+            font-size: 14px;
+            color: #1E293B;
+            font-weight: 500;
+        }
+        .footer {
+            padding: 20px 40px;
+            background-color: #F8FAFC;
+            border-top: 1px solid #E2E8F0;
+            text-align: center;
+            font-size: 11px;
+            color: #94A3B8;
+        }
+        .btn {
+            display: inline-block;
+            background-color: #00A3FF;
+            color: #FFFFFF !important;
+            padding: 14px 28px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 14px;
+            margin-top: 20px;
+        }
+        .divider {
+            height: 1px;
+            background-color: #E2E8F0;
+            margin: 32px 0;
+        }
+        .hint {
+            font-size: 13px; 
+            color: #64748B;
+            background: #F8FAFC;
+            padding: 16px;
+            border-radius: 6px;
+            margin-top: 24px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Appointment Confirmed</h1>
+        </div>
+        <div class="content">
+            <p>Hello <strong>{{client_name}}</strong>,</p>
+            <p>This email is to confirm that your home inspection has been officially scheduled. Our team is ready to provide a thorough evaluation of the property.</p>
+            
+            <div class="address-box">
+                <h2>Property Address</h2>
+                <p>{{address}}</p>
+            </div>
+
+            <div class="details-grid">
+                <div class="detail-item">
+                    <span class="detail-label">Date & Time</span>
+                    <span class="detail-value">{{date}}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Inspection Fee</span>
+                    <span class="detail-value">{{price}}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Inspector</span>
+                    <span class="detail-value">{{inspector_name}}</span>
+                </div>
+            </div>
+
+            <div class="hint">
+                <strong>Important:</strong> Please ensure all utilities are active and that the inspector has full access to the attic, crawlspace, and electrical panels.
+            </div>
+
+            <div style="text-align: center;">
+                <a href="#" class="btn">Add to Calendar</a>
+            </div>
+
+            <div class="divider"></div>
+            
+            <p style="font-size: 13px; color: #64748B;">If you need to reschedule or have any questions, please contact us directly. We look forward to serving you.</p>
+        </div>
+        <div class="footer">
+            &copy; 2026 Home Inspection Management App. All rights reserved.
+        </div>
+    </div>
+</body>
+</html>

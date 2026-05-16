@@ -8,6 +8,7 @@ import { Inspector } from '../inspectors/inspector.entity';
 import { Report } from '../reports/report.entity';
 import { SubscriptionStatus } from '../common/enums/subscription-status.enum';
 import { Template } from '../templates/template.entity';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Injectable()
 export class InspectionsService {
@@ -20,6 +21,7 @@ export class InspectionsService {
     private readonly reportRepository: Repository<Report>,
     @InjectRepository(Template)
     private readonly templateRepository: Repository<Template>,
+    private readonly eventEmitter: EventEmitter2,
   ) { }
 
   async create(inspectorId: string, createInspectionDto: CreateInspectionDto): Promise<Inspection> {
@@ -56,6 +58,12 @@ export class InspectionsService {
 
     inspector.free_inspections_used += 1;
     await this.inspectorRepository.save(inspector);
+
+    // Emit event for background tasks (e.g. Email Notification)
+    if (savedInspection.status === 'scheduled') {
+      savedInspection.inspector = inspector;
+      this.eventEmitter.emit('inspection.scheduled', savedInspection);
+    }
 
     return savedInspection;
   }

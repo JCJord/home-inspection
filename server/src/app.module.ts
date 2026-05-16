@@ -15,6 +15,8 @@ import { PhotosModule } from './photos/photos.module';
 import { AiModule } from './ai/ai.module';
 import { ReportsModule } from './reports/reports.module';
 import { TemplatesModule } from './templates/templates.module';
+import { EventEmitterModule } from '@nestjs/event-emitter';
+import { MailModule } from './mail/mail.module';
 
 @Module({
   imports: [
@@ -36,6 +38,8 @@ import { TemplatesModule } from './templates/templates.module';
     AiModule,
     ReportsModule,
     TemplatesModule,
+    EventEmitterModule.forRoot(),
+    MailModule,
   ],
   controllers: [AppController],
   providers: [
