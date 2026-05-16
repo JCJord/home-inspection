@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, ConflictException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, FindOptionsWhere } from 'typeorm';
+import { Repository, FindOptionsWhere, ILike } from 'typeorm';
 import { Inspection } from './inspection.entity';
 import { CreateInspectionDto } from './dto/create-inspection.dto';
 import { UpdateInspectionDto } from './dto/update-inspection.dto';
@@ -68,17 +68,26 @@ export class InspectionsService {
     return savedInspection;
   }
 
-  async findAll(inspectorId: string, page: number = 1, limit: number = 10, status?: string): Promise<{ data: Inspection[], meta: { total: number, page: number, limit: number, totalPages: number } }> {
+  async findAll(inspectorId: string, page: number = 1, limit: number = 10, status?: string, search?: string): Promise<{ data: Inspection[], meta: { total: number, page: number, limit: number, totalPages: number } }> {
     const skip = (page - 1) * limit;
 
-    const where: FindOptionsWhere<Inspection> = { inspector_id: inspectorId };
-    if (status) {
-      where.status = status;
+    let where: FindOptionsWhere<Inspection> | FindOptionsWhere<Inspection>[] = { inspector_id: inspectorId };
+    
+    if (status || search) {
+      if (search) {
+        const searchPattern = `%${search}%`;
+        where = [
+          { inspector_id: inspectorId, client_name: ILike(searchPattern), ...(status ? { status } : {}) },
+          { inspector_id: inspectorId, address: ILike(searchPattern), ...(status ? { status } : {}) },
+        ];
+      } else if (status) {
+        where.status = status;
+      }
     }
 
     const [data, total] = await this.inspectionRepository.findAndCount({
       where,
-      order: { updated_at: 'DESC' },
+      order: { scheduled_date: 'DESC' },
       relations: ['findings'],
       skip,
       take: limit,

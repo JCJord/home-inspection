@@ -387,3 +387,37 @@
   }
 }
 
+.load-more-container {
+  display: flex;
+  justify-content: center;
+  border-top: 1px solid rgba($color-border, 0.3);
+  padding-top: 1.5rem;
+}
+
+.empty-search-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  color: $color-text-muted;
+  text-align: center;
+
+  lucide-icon {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 1rem;
+    opacity: 0.3;
+  }
+
+  p {
+    font-size: 1.125rem;
+    font-weight: 500;
+  }
+}
+
+.group-dot--search {
+  background-color: $color-primary;
+  box-shadow: 0 0 10px rgba($color-primary, 0.3);
+}
+

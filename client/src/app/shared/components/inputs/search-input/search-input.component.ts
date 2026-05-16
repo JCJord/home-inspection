@@ -30,8 +30,12 @@ export class SearchInputComponent implements ControlValueAccessor {
     this.onChange(val);
   }
 
+  onBlur(): void {
+    this.onTouch();
+  }
+
   writeValue(val: any): void {
-    this.value.set(val || '');
+    this.value.set(val === null || val === undefined ? '' : String(val));
   }
 
   registerOnChange(fn: any): void {

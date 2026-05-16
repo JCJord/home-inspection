@@ -6,6 +6,7 @@
     type="text"
     [value]="value()"
     (input)="onInputChange($any($event.target).value)"
+    (blur)="onBlur()"
     [placeholder]="placeholder()"
     class="search-field"
   />

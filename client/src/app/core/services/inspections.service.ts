@@ -61,9 +61,9 @@ export class InspectionsService {
 
   // --- Inspection Methods ---
 
-  getInspections(page: number = 1, limit: number = 10, forceRefresh: boolean = false, status?: string): Observable<{ data: Inspection[], meta: { total: number, page: number, limit: number, totalPages: number } }> {
+  getInspections(page: number = 1, limit: number = 10, forceRefresh: boolean = false, status?: string, search?: string): Observable<{ data: Inspection[], meta: { total: number, page: number, limit: number, totalPages: number } }> {
     // Return cached data if not stale and not forced (only for unfiltered queries)
-    if (!status && !this._needsRefresh() && !forceRefresh && this._inspections().length > 0 && page === 1) {
+    if (!status && !search && !this._needsRefresh() && !forceRefresh && this._inspections().length > 0 && page === 1) {
       return of({
         data: this._inspections(),
         meta: {
@@ -81,6 +81,10 @@ export class InspectionsService {
 
     if (status) {
       params = params.set('status', status);
+    }
+    
+    if (search) {
+      params = params.set('search', search);
     }
 
     // Only show loading spinner if we have no data at all

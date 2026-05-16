@@ -1,12 +1,14 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
+import { debounceTime, distinctUntilChanged } from 'rxjs';
 import { InspectionsService } from '../../core/services/inspections.service';
 import { InspectorsService } from '../../core/services/inspectors.service';
 import { Inspection } from '../../core/models/inspection.interface';
 import { ButtonComponent } from '../../shared/components/button/button.component';
 import { TextInputComponent } from '../../shared/components/inputs/text-input/text-input.component';
+import { SearchInputComponent } from '../../shared/components/inputs/search-input/search-input.component';
 import { SkeletonComponent } from '../../shared/components/skeleton/skeleton.component';
 import { BackButtonComponent } from '../../shared/components/back-button/back-button.component';
 import { DropdownMenuComponent, DropdownItem } from '../../shared/components/dropdown-menu/dropdown-menu.component';
@@ -27,6 +29,8 @@ import {
   Trash2,
   MoreVertical,
   Check,
+  ChevronDown,
+  Search,
 } from 'lucide-angular';
 import { ToggleSwitchComponent } from '../../shared/components/inputs/toggle-switch/toggle-switch.component';
 
@@ -44,6 +48,8 @@ import { ToggleSwitchComponent } from '../../shared/components/inputs/toggle-swi
     DropdownMenuComponent,
     ConfirmPillComponent,
     ToggleSwitchComponent,
+    SearchInputComponent,
+    FormsModule,
   ],
   templateUrl: './schedule.component.html',
   styleUrl: './schedule.component.scss',
@@ -64,6 +70,8 @@ import { ToggleSwitchComponent } from '../../shared/components/inputs/toggle-swi
         Edit2,
         Trash2,
         MoreVertical,
+        ChevronDown,
+        Search,
       },
     },
   ],
@@ -101,7 +109,18 @@ export class ScheduleComponent implements OnInit {
     Trash2,
     MoreVertical,
     Check,
+    ChevronDown,
+    Search,
   };
+
+  searchControl = new FormControl<string>('', { nonNullable: true });
+  private searchSignal = signal<string>('');
+  currentPage = signal<number>(1);
+  pageSize = signal<number>(15);
+  totalCount = signal<number>(0);
+  
+  hasMore = computed(() => this.scheduledJobs().length < this.totalCount());
+  isSearching = computed(() => this.searchSignal().length > 0);
 
   todayJobs = computed(() => 
     this.scheduledJobs().filter(job => this.isToday(job.scheduled_date))
@@ -111,9 +130,11 @@ export class ScheduleComponent implements OnInit {
     this.scheduledJobs().filter(job => !this.isToday(job.scheduled_date) && !this.isPast(job.scheduled_date))
   );
 
-  pastJobs = computed(() => 
-    this.scheduledJobs().filter(job => this.isPast(job.scheduled_date) && !this.isToday(job.scheduled_date))
-  );
+  pastJobs = computed(() => {
+    const jobs = this.scheduledJobs().filter(job => this.isPast(job.scheduled_date) && !this.isToday(job.scheduled_date));
+    // When searching, we don't separate them, but the template will handle the view
+    return jobs;
+  });
 
   bookingForm: FormGroup = this.fb.group({
     client_name: ['', [Validators.required, Validators.maxLength(100)]],
@@ -128,6 +149,18 @@ export class ScheduleComponent implements OnInit {
   ngOnInit(): void {
     this.loadScheduledJobs();
     this.loadInspectorDefaults();
+    this.setupSearch();
+  }
+
+  setupSearch(): void {
+    this.searchControl.valueChanges.pipe(
+      debounceTime(400),
+      distinctUntilChanged()
+    ).subscribe((val) => {
+      this.searchSignal.set(val || '');
+      this.currentPage.set(1);
+      this.loadScheduledJobs(false);
+    });
   }
 
   loadInspectorDefaults(): void {
@@ -142,22 +175,47 @@ export class ScheduleComponent implements OnInit {
     });
   }
 
-  loadScheduledJobs(): void {
-    this.isLoading.set(true);
-    this.inspectionsService.getInspections(1, 50, true, 'scheduled').subscribe({
+  loadScheduledJobs(append: boolean = false): void {
+    this.isLoading.set(!append);
+    const page = this.currentPage();
+    const limit = this.pageSize();
+    const search = this.searchSignal() || undefined;
+
+    this.inspectionsService.getInspections(page, limit, true, 'scheduled', search).subscribe({
       next: (res) => {
-        const sorted = [...res.data].sort((a, b) => {
-          const dateA = a.scheduled_date ? new Date(a.scheduled_date).getTime() : 0;
-          const dateB = b.scheduled_date ? new Date(b.scheduled_date).getTime() : 0;
-          return dateA - dateB;
-        });
-        this.scheduledJobs.set(sorted);
+        this.totalCount.set(res.meta.total);
+        
+        const newJobs = res.data;
+        if (append) {
+          this.scheduledJobs.update(current => {
+            const combined = [...current, ...newJobs];
+            // Remove duplicates just in case (by id)
+            return Array.from(new Map(combined.map(item => [item.id, item])).values())
+              .sort((a, b) => this.sortJobs(a, b));
+          });
+        } else {
+          const sorted = [...newJobs].sort((a, b) => this.sortJobs(a, b));
+          this.scheduledJobs.set(sorted);
+        }
         this.isLoading.set(false);
       },
       error: () => {
         this.isLoading.set(false);
       },
     });
+  }
+
+  loadMore(): void {
+    if (this.hasMore() && !this.isLoading()) {
+      this.currentPage.update(p => p + 1);
+      this.loadScheduledJobs(true);
+    }
+  }
+
+  private sortJobs(a: Inspection, b: Inspection): number {
+    const dateA = a.scheduled_date ? new Date(a.scheduled_date).getTime() : 0;
+    const dateB = b.scheduled_date ? new Date(b.scheduled_date).getTime() : 0;
+    return dateA - dateB;
   }
 
   getMenuItems(job: Inspection): DropdownItem[] {
