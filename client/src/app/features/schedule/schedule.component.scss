@@ -8,7 +8,7 @@
 
 // ─── Header ──────────────────────────────────
 .form-page-header {
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
 }
 
 // ─── Form Container (Matching InspectionForm) ──────────────────────────
@@ -16,18 +16,18 @@
   background: $color-surface;
   border-radius: 1.5rem;
   border: 1px solid $color-border;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
   animation: fadeIn 0.3s ease-out forwards;
   margin-bottom: 2rem;
 
   &.edit-mode {
     border-color: rgba($color-primary, 0.3);
-    box-shadow: 0 10px 30px -5px rgba($color-primary, 0.08);
+    box-shadow: 0 10px 30px -5px rgba($color-primary, 0.1);
   }
 }
 
 .form-body {
-  padding: 2.5rem;
+  padding: 2rem;
   margin: 0;
 
   .form-grid {
@@ -38,39 +38,65 @@
 
   .form-row {
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
     gap: 1.5rem;
 
-    @media (min-width: 640px) {
-      grid-template-columns: 1fr 1fr;
+    @media (max-width: 640px) {
+      grid-template-columns: 1fr;
+      gap: 1.25rem;
     }
   }
 
   .form-error-banner {
-    background: rgba($color-error, 0.08);
+    position: sticky;
+    top: 1.5rem;
+    z-index: 110;
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     color: $color-error;
-    padding: 1rem 1.25rem;
+    padding: 0.875rem 1.25rem;
     border-radius: 0.875rem;
     margin-bottom: 2rem;
     display: flex;
     align-items: center;
     font-size: 0.875rem;
     font-weight: 600;
-    border: 1px solid rgba($color-error, 0.1);
+    border: 1px solid rgba($color-error, 0.15);
+    border-left: 4px solid $color-error;
+    box-shadow: 0 12px 30px -10px rgba($color-error, 0.15);
     animation: slideDown 0.3s ease-out;
 
     lucide-icon {
       flex-shrink: 0;
+      color: $color-error;
     }
   }
 
   .form-actions {
+    position: sticky;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    background: rgba($color-surface, 0.8);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 1.25rem 2rem;
+    margin: 2rem -2rem -2rem -2rem;
+    border-top: 1px solid rgba($color-border, 0.6);
     display: flex;
     justify-content: flex-end;
-    align-items: center;
-    gap: 1.25rem;
-    padding-top: 2rem;
-    border-top: 1px solid rgba($color-border, 0.6);
+    box-shadow: 0 -10px 20px -5px rgba(0, 0, 0, 0.04);
+
+    @media (max-width: 640px) {
+      padding: 1rem;
+      
+      app-button {
+        width: 100%;
+        ::ng-deep .app-button { width: 100%; }
+      }
+    }
   }
 }
 
@@ -120,153 +146,11 @@
   }
 }
 
-// ─── Job List ──────────────────────────────────
-.job-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.job-card {
-  @include card-premium(true);
-  padding: 1.5rem;
-  position: relative;
-  z-index: 1;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease, z-index 0s 0.3s;
-
-  &:hover, &:focus-within, &:has(.is-open) {
-    z-index: 100;
-    transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease, z-index 0s 0s;
-  }
-
-  &:has(.is-open) {
-    z-index: 110 !important;
-  }
-
-  &--today {
-    border-left: 4px solid $color-primary;
-    background: linear-gradient(to right, rgba($color-primary, 0.04), transparent);
-    box-shadow: 0 10px 25px -5px rgba($color-primary, 0.05);
-  }
-
-  &--past {
-    opacity: 0.5;
-    filter: grayscale(0.8);
-    border-left: 4px solid transparent;
-    
-    &:hover, &:focus-within, &:has(.is-open) {
-      filter: grayscale(0.2);
-      opacity: 1 !important;
-    }
-  }
-}
-
-.job-card-left {
-  display: flex;
-  align-items: center;
-  gap: 1.25rem;
-  flex: 1;
-  min-width: 0;
-}
-
-.job-date-badge {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 3rem;
-  height: 3rem;
-  border-radius: 1rem;
-  background: $color-surface-light;
-  color: $color-text-muted;
-  flex-shrink: 0;
-  border: 1px solid $color-border;
-
-  &--today {
-    background: rgba($color-primary, 0.1);
-    color: $color-primary;
-    border-color: rgba($color-primary, 0.2);
-  }
-}
-
-.job-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.job-client {
-  font-size: 1.125rem;
-  font-weight: 700;
-  color: $color-text;
-  margin: 0 0 0.5rem 0;
-}
-
-.job-meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-
-.job-meta-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.875rem;
-  color: $color-text-muted;
-  font-weight: 500;
-}
-
-.job-card-right {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  flex-shrink: 0;
-}
-
-.job-price {
-  font-size: 1rem;
-  font-weight: 700;
-  color: $color-success;
-  background: rgba($color-success, 0.1);
-  padding: 0.35rem 0.75rem;
-  border-radius: 0.5rem;
-}
-
-.today-badge {
-  padding: 0.35rem 0.75rem;
-  border-radius: 0.5rem;
-  background: $color-primary;
-  color: white;
-  font-size: 0.6875rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  box-shadow: 0 4px 10px rgba($color-primary, 0.2);
-}
-
-.status-badge {
-  font-size: 0.625rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  padding: 0.125rem 0.625rem;
-  border-radius: 1rem;
-  letter-spacing: 0.025em;
-  
-  &--cancelled {
-    background: rgba($color-error, 0.08);
-    color: $color-error;
-    border: 1px solid rgba($color-error, 0.15);
-  }
-}
-
 // ─── Grouped Schedule ──────────────────────────
 .schedule-groups {
   display: flex;
   flex-direction: column;
-  gap: 3.5rem;
+  gap: 1.5rem;
   animation: fadeIn 0.4s ease-out;
 }
 

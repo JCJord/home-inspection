@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, ConflictException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, FindOptionsWhere, ILike } from 'typeorm';
+import { Repository, FindOptionsWhere, ILike, Brackets } from 'typeorm';
 import { Inspection } from './inspection.entity';
 import { CreateInspectionDto } from './dto/create-inspection.dto';
 import { UpdateInspectionDto } from './dto/update-inspection.dto';
@@ -43,55 +43,60 @@ export class InspectionsService {
       template = await this.templateRepository.findOne({ where: { id: createInspectionDto.template_id } });
     }
     if (!template) {
-      template = await this.templateRepository.findOne({ where: { name: 'System Default' } });
+      const defaultTemplate = await this.templateRepository.findOne({ where: { name: 'System Default' } });
+      if (defaultTemplate) {
+        template = defaultTemplate;
+      }
     }
 
     const inspection = this.inspectionRepository.create({
       ...createInspectionDto,
-      inspector_id: inspector.id,
-      template_id: template?.id || undefined,
-      template_snapshot: template?.structure || undefined,
-      metadata_values: {}
+      inspector_id: inspectorId,
+      template_id: template?.id,
+      template_snapshot: template?.structure,
+      metadata_values: {},
+      status: 'scheduled'
     });
 
     const savedInspection = await this.inspectionRepository.save(inspection);
 
+    // Increment used inspections
     inspector.free_inspections_used += 1;
     await this.inspectorRepository.save(inspector);
 
-    // Emit event for background tasks (e.g. Email Notification)
-    if (savedInspection.status === 'scheduled' && createInspectionDto.send_email !== false) {
-      savedInspection.inspector = inspector;
-      this.eventEmitter.emit('inspection.scheduled', savedInspection);
-    }
+    // Add relation back for event
+    savedInspection.inspector = inspector;
+    this.eventEmitter.emit('inspection.scheduled', savedInspection);
 
     return savedInspection;
   }
 
-  async findAll(inspectorId: string, page: number = 1, limit: number = 10, status?: string, search?: string): Promise<{ data: Inspection[], meta: { total: number, page: number, limit: number, totalPages: number } }> {
+  async findAll(inspectorId: string, page: number = 1, limit: number = 10, status?: string, search?: string) {
     const skip = (page - 1) * limit;
 
-    let where: FindOptionsWhere<Inspection> | FindOptionsWhere<Inspection>[] = { inspector_id: inspectorId };
-    
-    if (status || search) {
-      if (search) {
-        const searchPattern = `%${search}%`;
-        where = [
-          { inspector_id: inspectorId, client_name: ILike(searchPattern), ...(status ? { status } : {}) },
-          { inspector_id: inspectorId, address: ILike(searchPattern), ...(status ? { status } : {}) },
-        ];
-      } else if (status) {
-        where.status = status;
-      }
+    const queryBuilder = this.inspectionRepository.createQueryBuilder('inspection')
+      .where('inspection.inspector_id = :inspectorId', { inspectorId });
+
+    if (status) {
+      queryBuilder.andWhere('inspection.status = :status', { status });
     }
 
-    const [data, total] = await this.inspectionRepository.findAndCount({
-      where,
-      order: { scheduled_date: 'DESC' },
-      relations: ['findings'],
-      skip,
-      take: limit,
-    });
+    if (search) {
+      const searchPattern = `%${search}%`;
+      queryBuilder.andWhere(
+        new Brackets((qb) => {
+          qb.where('inspection.client_name ILike :search', { search: searchPattern })
+            .orWhere('inspection.address ILike :search', { search: searchPattern });
+        }),
+      );
+    }
+
+    const [data, total] = await queryBuilder
+      .leftJoinAndSelect('inspection.findings', 'findings')
+      .orderBy('inspection.scheduled_date', 'DESC')
+      .skip(skip)
+      .take(limit)
+      .getManyAndCount();
 
     return {
       data,
@@ -241,5 +246,19 @@ export class InspectionsService {
 
     inspection.status = 'cancelled';
     return await this.inspectionRepository.save(inspection);
+  }
+
+  async getInspectionStats(inspectorId: string) {
+    const total = await this.inspectionRepository.count({ where: { inspector_id: inspectorId } });
+    const scheduled = await this.inspectionRepository.count({ where: { inspector_id: inspectorId, status: 'scheduled' } });
+    const inProgress = await this.inspectionRepository.count({ where: { inspector_id: inspectorId, status: 'in_progress' } });
+    const published = await this.inspectionRepository.count({ where: { inspector_id: inspectorId, status: 'published' } });
+
+    return {
+      total,
+      scheduled,
+      inProgress,
+      published,
+    };
   }
 }

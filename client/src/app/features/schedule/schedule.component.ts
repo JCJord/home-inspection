@@ -9,29 +9,29 @@ import { Inspection } from '../../core/models/inspection.interface';
 import { ButtonComponent } from '../../shared/components/button/button.component';
 import { TextInputComponent } from '../../shared/components/inputs/text-input/text-input.component';
 import { SearchInputComponent } from '../../shared/components/inputs/search-input/search-input.component';
-import { SkeletonComponent } from '../../shared/components/skeleton/skeleton.component';
 import { BackButtonComponent } from '../../shared/components/back-button/back-button.component';
-import { DropdownMenuComponent, DropdownItem } from '../../shared/components/dropdown-menu/dropdown-menu.component';
-import { ConfirmPillComponent } from '../../shared/components/confirm-pill/confirm-pill.component';
+import { ScheduledJobCardComponent } from './components/scheduled-job-card/scheduled-job-card.component';
 import {
-  LucideAngularModule,
   Calendar,
-  Plus,
-  MapPin,
-  User,
   Clock,
+  Plus,
+  MoreVertical,
+  Edit2,
+  Trash2,
+  MapPin,
   DollarSign,
-  X,
   AlertCircle,
   Phone,
   Mail,
-  Edit2,
-  Trash2,
-  MoreVertical,
-  Check,
-  ChevronDown,
+  User,
+  X,
   Search,
+  ChevronDown,
+  ChevronRight,
+  Ban,
 } from 'lucide-angular';
+import { LucideAngularModule } from 'lucide-angular';
+import { TemplatesService } from '../templates/services/templates.service';
 import { ToggleSwitchComponent } from '../../shared/components/inputs/toggle-switch/toggle-switch.component';
 
 @Component({
@@ -40,16 +40,14 @@ import { ToggleSwitchComponent } from '../../shared/components/inputs/toggle-swi
   imports: [
     CommonModule,
     ReactiveFormsModule,
+    FormsModule,
+    LucideAngularModule,
     ButtonComponent,
     TextInputComponent,
-    LucideAngularModule,
-    SkeletonComponent,
-    BackButtonComponent,
-    DropdownMenuComponent,
-    ConfirmPillComponent,
-    ToggleSwitchComponent,
     SearchInputComponent,
-    FormsModule,
+    BackButtonComponent,
+    ScheduledJobCardComponent,
+    ToggleSwitchComponent,
   ],
   templateUrl: './schedule.component.html',
   styleUrl: './schedule.component.scss',
@@ -59,6 +57,12 @@ import { ToggleSwitchComponent } from '../../shared/components/inputs/toggle-swi
       useValue: {
         Calendar,
         Plus,
+        Edit2,
+        Trash2,
+        MoreVertical,
+        ChevronDown,
+        Search,
+        ChevronRight,
         MapPin,
         User,
         Clock,
@@ -67,39 +71,39 @@ import { ToggleSwitchComponent } from '../../shared/components/inputs/toggle-swi
         AlertCircle,
         Phone,
         Mail,
-        Edit2,
-        Trash2,
-        MoreVertical,
-        ChevronDown,
-        Search,
+        Ban,
       },
     },
   ],
 })
 export class ScheduleComponent implements OnInit {
-  private router = inject(Router);
   private fb = inject(FormBuilder);
   private inspectionsService = inject(InspectionsService);
   private inspectorsService = inject(InspectorsService);
+  private templatesService = inject(TemplatesService);
+  private router = inject(Router);
 
   scheduledJobs = signal<Inspection[]>([]);
-  isLoading = signal<boolean>(true);
+  templates = this.templatesService.templates;
+  isLoading = signal<boolean>(false);
   isSubmitting = signal<boolean>(false);
+  errorMessage = signal<string | null>(null);
+
+  // Modal/Form states
   showBookingForm = signal<boolean>(false);
   isEditMode = signal<boolean>(false);
   editingJob = signal<Inspection | null>(null);
-  errorMessage = signal<string | null>(null);
-  successMessage = signal<string | null>(null);
 
+  // Confirmation states
   confirmingJobId = signal<string | null>(null);
   confirmationType = signal<'delete' | 'cancel' | null>(null);
 
   readonly icons = {
     Calendar,
     Plus,
+    Clock,
     MapPin,
     User,
-    Clock,
     DollarSign,
     X,
     AlertCircle,
@@ -108,88 +112,106 @@ export class ScheduleComponent implements OnInit {
     Edit2,
     Trash2,
     MoreVertical,
-    Check,
     ChevronDown,
     Search,
+    ChevronRight,
+    Ban,
   };
 
-  searchControl = new FormControl<string>('', { nonNullable: true });
-  private searchSignal = signal<string>('');
+  searchQuery = signal<string>('');
+  public searchControl = new FormControl<string>('', { nonNullable: true });
   currentPage = signal<number>(1);
   pageSize = signal<number>(15);
   totalCount = signal<number>(0);
-  
+
   hasMore = computed(() => this.scheduledJobs().length < this.totalCount());
-  isSearching = computed(() => this.searchSignal().length > 0);
 
-  todayJobs = computed(() => 
-    this.scheduledJobs().filter(job => this.isToday(job.scheduled_date))
-  );
+  filteredJobs = computed(() => {
+    const query = this.searchQuery().toLowerCase().trim();
+    if (!query) return this.scheduledJobs();
 
-  upcomingJobs = computed(() => 
-    this.scheduledJobs().filter(job => !this.isToday(job.scheduled_date) && !this.isPast(job.scheduled_date))
-  );
-
-  pastJobs = computed(() => {
-    const jobs = this.scheduledJobs().filter(job => this.isPast(job.scheduled_date) && !this.isToday(job.scheduled_date));
-    // When searching, we don't separate them, but the template will handle the view
-    return jobs;
+    return this.scheduledJobs().filter(job =>
+      job.client_name?.toLowerCase().includes(query) ||
+      job.address?.toLowerCase().includes(query)
+    );
   });
+
+  isSearching = computed(() => this.searchQuery().length > 0);
+
+  todayJobs = computed(() =>
+    this.filteredJobs().filter(job => this.isToday(job.scheduled_date))
+  );
+
+  upcomingJobs = computed(() =>
+    this.filteredJobs().filter(job => !this.isToday(job.scheduled_date) && !this.isPast(job.scheduled_date))
+  );
+
+  pastJobs = computed(() =>
+    this.filteredJobs().filter(job => this.isPast(job.scheduled_date) && !this.isToday(job.scheduled_date))
+  );
 
   bookingForm: FormGroup = this.fb.group({
     client_name: ['', [Validators.required, Validators.maxLength(100)]],
     client_email: ['', [Validators.email]],
     client_phone: [''],
-    address: ['', [Validators.maxLength(300)]],
-    agreed_price: [null],
+    address: ['', [Validators.required]],
     scheduled_date: ['', [Validators.required]],
+    agreed_price: [null, [Validators.min(0), Validators.max(99999999.99)]],
+    template_id: [''],
     send_email: [true],
   });
 
   ngOnInit(): void {
     this.loadScheduledJobs();
     this.loadInspectorDefaults();
+    this.loadTemplates();
     this.setupSearch();
+  }
+
+  loadTemplates(): void {
+    this.templatesService.getTemplates().subscribe();
   }
 
   setupSearch(): void {
     this.searchControl.valueChanges.pipe(
-      debounceTime(400),
+      debounceTime(300),
       distinctUntilChanged()
-    ).subscribe((val) => {
-      this.searchSignal.set(val || '');
-      this.currentPage.set(1);
-      this.loadScheduledJobs(false);
+    ).subscribe(value => {
+      this.searchQuery.set(value);
+      this.currentPage.set(1); // Reset to page 1 on search
     });
   }
 
   loadInspectorDefaults(): void {
     this.inspectorsService.getProfile().subscribe({
       next: (profile) => {
-        if (!this.isEditMode()) {
+        if ((profile as any).preferred_template_id) {
           this.bookingForm.patchValue({
-            send_email: profile.default_send_email_confirmation ?? true
+            template_id: (profile as any).preferred_template_id
           });
         }
-      }
+      },
     });
   }
 
   loadScheduledJobs(append: boolean = false): void {
+    if (!append) {
+      this.currentPage.set(1);
+    }
+    
     this.isLoading.set(!append);
-    const page = this.currentPage();
+    const page = !append ? 1 : this.currentPage();
     const limit = this.pageSize();
-    const search = this.searchSignal() || undefined;
+    const search = undefined;
 
     this.inspectionsService.getInspections(page, limit, true, 'scheduled', search).subscribe({
       next: (res) => {
         this.totalCount.set(res.meta.total);
-        
+
         const newJobs = res.data;
         if (append) {
           this.scheduledJobs.update(current => {
             const combined = [...current, ...newJobs];
-            // Remove duplicates just in case (by id)
             return Array.from(new Map(combined.map(item => [item.id, item])).values())
               .sort((a, b) => this.sortJobs(a, b));
           });
@@ -216,39 +238,6 @@ export class ScheduleComponent implements OnInit {
     const dateA = a.scheduled_date ? new Date(a.scheduled_date).getTime() : 0;
     const dateB = b.scheduled_date ? new Date(b.scheduled_date).getTime() : 0;
     return dateA - dateB;
-  }
-
-  getMenuItems(job: Inspection): DropdownItem[] {
-    return [
-      {
-        label: 'Open Inspection',
-        icon: this.icons.Clock,
-        action: () => this.openInspection(job),
-      },
-      {
-        label: 'Edit Schedule',
-        icon: this.icons.Edit2,
-        action: () => this.toggleBookingForm(job),
-      },
-      {
-        label: 'Delete',
-        icon: this.icons.Trash2,
-        danger: true,
-        action: () => {
-          this.confirmingJobId.set(job.id);
-          this.confirmationType.set('delete');
-        },
-      },
-      {
-        label: 'Cancel Inspection',
-        icon: this.icons.X,
-        danger: true,
-        action: () => {
-          this.confirmingJobId.set(job.id);
-          this.confirmationType.set('cancel');
-        },
-      },
-    ];
   }
 
   openInspection(job: Inspection): void {
@@ -280,6 +269,8 @@ export class ScheduleComponent implements OnInit {
         address: job.address,
         agreed_price: job.agreed_price,
         scheduled_date: formattedDate,
+        template_id: job.template_id || '',
+        send_email: true, // Default to true on edit too, or use a value if it exists in job
       });
     } else {
       this.isEditMode.set(false);
@@ -287,75 +278,52 @@ export class ScheduleComponent implements OnInit {
       this.showBookingForm.update((v) => !v);
       if (!this.showBookingForm()) {
         this.bookingForm.reset();
-        this.loadInspectorDefaults(); // Reset to defaults when closing/opening fresh
+        this.loadInspectorDefaults();
         this.errorMessage.set(null);
       }
     }
   }
 
-  onSubmitBooking(): void {
-    if (this.bookingForm.valid && !this.isSubmitting()) {
-      this.isSubmitting.set(true);
-      this.errorMessage.set(null);
-
-      const formValue = { ...this.bookingForm.value };
-
-      // Clean up empty strings
-      if (!formValue.client_email) delete formValue.client_email;
-      if (!formValue.client_phone) delete formValue.client_phone;
-      if (!formValue.address) delete formValue.address;
-      if (formValue.agreed_price !== null && formValue.agreed_price !== undefined && formValue.agreed_price !== '') {
-        formValue.agreed_price = Number(formValue.agreed_price);
-      } else {
-        delete formValue.agreed_price;
-      }
-
-      // Convert datetime-local to ISO string
-      if (formValue.scheduled_date) {
-        formValue.scheduled_date = new Date(formValue.scheduled_date).toISOString();
-      }
-
-      const request$ = this.isEditMode()
-        ? this.inspectionsService.updateInspection(this.editingJob()!.id, formValue)
-        : this.inspectionsService.createInspection(formValue);
-
-      request$.subscribe({
-        next: (res) => {
-          if (this.isEditMode()) {
-            this.scheduledJobs.update((jobs) =>
-              jobs
-                .map((j) => (j.id === res.id ? res : j))
-                .sort((a, b) => {
-                  const dateA = a.scheduled_date ? new Date(a.scheduled_date).getTime() : 0;
-                  const dateB = b.scheduled_date ? new Date(b.scheduled_date).getTime() : 0;
-                  return dateA - dateB;
-                })
-            );
-          } else {
-            this.scheduledJobs.update((jobs) =>
-              [res, ...jobs].sort((a, b) => {
-                const dateA = a.scheduled_date ? new Date(a.scheduled_date).getTime() : 0;
-                const dateB = b.scheduled_date ? new Date(b.scheduled_date).getTime() : 0;
-                return dateA - dateB;
-              })
-            );
-          }
-          this.successMessage.set(this.isEditMode() ? 'Inspection Updated Successfully' : 'Inspection Scheduled Successfully');
-          setTimeout(() => this.successMessage.set(null), 5000);
-
-          this.isSubmitting.set(false);
-          this.showBookingForm.set(false);
-          this.bookingForm.reset();
-        },
-        error: (err) => {
-          console.error('Failed to book/update job', err);
-          this.errorMessage.set(err.error?.message || 'Failed to process request. Please try again.');
-          this.isSubmitting.set(false);
-        },
-      });
-    } else {
+  onSubmit(): void {
+    if (this.bookingForm.invalid) {
       this.bookingForm.markAllAsTouched();
+      return;
     }
+
+    this.isSubmitting.set(true);
+    this.errorMessage.set(null);
+
+    const formData = this.bookingForm.value;
+    const jobData = {
+      ...formData,
+      // Ensure date is in ISO format for the backend
+      scheduled_date: formData.scheduled_date ? new Date(formData.scheduled_date).toISOString() : null,
+      // Normalize empty strings to null for optional fields
+      client_email: formData.client_email || null,
+      client_phone: formData.client_phone || null,
+      // Ensure agreed_price is a number or null, avoiding empty strings or undefined
+      agreed_price: (formData.agreed_price === '' || formData.agreed_price === null || formData.agreed_price === undefined) ? null : Number(formData.agreed_price),
+      // Remove template_id if empty to avoid validation errors
+      template_id: formData.template_id || undefined,
+      send_email: formData.send_email
+    };
+
+    const request = this.isEditMode()
+      ? this.inspectionsService.updateInspection(this.editingJob()!.id, jobData)
+      : this.inspectionsService.createInspection(jobData);
+
+    request.subscribe({
+      next: () => {
+        this.isSubmitting.set(false);
+        this.toggleBookingForm();
+        this.loadScheduledJobs();
+      },
+      error: (err) => {
+        this.isSubmitting.set(false);
+        this.errorMessage.set('Failed to save inspection. Please try again.');
+        console.error(err);
+      },
+    });
   }
 
   deleteJob(job: Inspection): void {
@@ -392,6 +360,16 @@ export class ScheduleComponent implements OnInit {
     });
   }
 
+  onCancelJob(job: Inspection): void {
+    this.confirmingJobId.set(job.id);
+    this.confirmationType.set('cancel');
+  }
+
+  onDeleteJob(job: Inspection): void {
+    this.confirmingJobId.set(job.id);
+    this.confirmationType.set('delete');
+  }
+
   onConfirm(job: Inspection): void {
     if (this.confirmationType() === 'delete') {
       this.deleteJob(job);
@@ -405,7 +383,7 @@ export class ScheduleComponent implements OnInit {
     this.confirmationType.set(null);
   }
 
-  formatDate(dateStr?: string): string {
+  formatDate(dateStr?: string | Date): string {
     if (!dateStr) return 'No date set';
     const date = new Date(dateStr);
     return date.toLocaleDateString('en-US', {
@@ -417,12 +395,7 @@ export class ScheduleComponent implements OnInit {
     });
   }
 
-  formatPrice(price?: number): string {
-    if (price === null || price === undefined) return '';
-    return `$${Number(price).toFixed(2)}`;
-  }
-
-  isToday(dateStr?: string): boolean {
+  public isToday(dateStr?: string | Date): boolean {
     if (!dateStr) return false;
     const date = new Date(dateStr);
     const today = new Date();
@@ -433,9 +406,11 @@ export class ScheduleComponent implements OnInit {
     );
   }
 
-  isPast(dateStr?: string): boolean {
+  public isPast(dateStr?: string | Date): boolean {
     if (!dateStr) return false;
-    return new Date(dateStr) < new Date();
+    const date = new Date(dateStr);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return date < today;
   }
 }
-

@@ -1,12 +1,13 @@
-import { Component, inject, input, output } from '@angular/core';
+import { Component, inject, input, output, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ControlContainer, FormGroupDirective, ReactiveFormsModule } from '@angular/forms';
 import { LucideAngularModule, Edit2 } from 'lucide-angular';
+import { CurrencyMaskDirective } from '../../../directives/currency-mask.directive';
 
 @Component({
   selector: 'app-text-input',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, LucideAngularModule],
+  imports: [CommonModule, ReactiveFormsModule, LucideAngularModule, CurrencyMaskDirective],
   templateUrl: './text-input.component.html',
   styleUrl: './text-input.component.scss',
   providers: [{ provide: 'lucideIcons', useValue: { Edit2 } }],
@@ -41,6 +42,16 @@ export class TextInputComponent {
    * @default 'text'
    */
   type = input<'text' | 'email' | 'number' | 'tel'>('text');
+
+  /**
+   * Whether to apply currency masking.
+   */
+  isCurrency = input<boolean>(false);
+
+  /**
+   * Computed input type (forces text if currency mask is active)
+   */
+  inputType = computed(() => this.isCurrency() ? 'text' : this.type());
 
   /**
    * Optional prefix text displayed before the input value.

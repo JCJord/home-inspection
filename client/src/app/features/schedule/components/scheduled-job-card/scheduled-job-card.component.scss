@@ -1,0 +1,168 @@
+@use 'sass:color';
+@use '/variables' as *;
+
+.job-card {
+  background: $color-surface;
+  border: 1px solid $color-border;
+  border-radius: 14px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  position: relative;
+  z-index: 1;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: color.adjust($color-border, $lightness: -8%);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 20px -10px rgba(0, 0, 0, 0.05);
+    z-index: 10;
+  }
+
+  // Left accent bar — the only visual state indicator
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 12px;
+    bottom: 12px;
+    width: 3px;
+    border-radius: 0 3px 3px 0;
+    background: $color-border; // default (upcoming)
+  }
+
+  &--today::before {
+    background: $color-primary;
+    box-shadow: 0 0 8px rgba($color-primary, 0.4);
+  }
+
+  &--past {
+    opacity: 0.65;
+    &::before { background: $color-border; }
+  }
+
+  &--cancelled {
+    opacity: 0.6;
+    &::before { background: $color-error; }
+  }
+
+  .card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 24px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 12px;
+
+    .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+    }
+
+    &--today {
+      background: rgba($color-primary, 0.08);
+      color: $color-primary;
+      .dot { background: $color-primary; }
+    }
+
+    &--cancelled {
+      background: rgba($color-error, 0.08);
+      color: $color-error;
+      .dot { background: $color-error; }
+    }
+  }
+
+  .card-address {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: color 0.12s;
+
+    &:hover .addr-text { color: $color-primary; }
+
+    lucide-icon {
+      color: $color-text-muted;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .addr-text {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: $color-text;
+      line-height: 1.35;
+      transition: color 0.12s;
+    }
+  }
+
+  .card-when {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    lucide-icon { color: $color-text-muted; }
+
+    .when-date {
+      font-size: 0.8125rem;
+      font-weight: 500;
+      color: $color-text;
+
+      &--today { color: $color-primary; }
+    }
+
+    .when-sep { color: $color-text-muted; font-size: 0.8125rem; }
+
+    .when-time { font-size: 0.8125rem; color: $color-text-muted; }
+  }
+
+  .card-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .meta-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.75rem;
+    color: $color-text-muted;
+    background: $color-surface-light;
+    padding: 3px 8px;
+    border-radius: 20px;
+
+    lucide-icon { width: 12px; height: 12px; }
+  }
+
+  .card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    border-top: 1px solid rgba($color-border, 0.5);
+    padding-top: 10px;
+    margin-top: 4px;
+
+    .price-tag {
+      margin-right: auto; // pushes to left
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: $color-primary-dark;
+    }
+  }
+}
