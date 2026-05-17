@@ -1,66 +1,339 @@
-<main class="dashboard-content">
-  <!-- Today's Agenda -->
-  <div class="agenda-section">
-    <div class="agenda-header">
-      <h2 class="flex items-center gap-2">
-        <lucide-icon [name]="icons.Calendar" [size]="22"></lucide-icon>
-        Today's Agenda
-      </h2>
-      <button class="view-all-link" (click)="goToSchedule()">
-        View Schedule
-        <lucide-icon [name]="icons.ArrowRight" [size]="16"></lucide-icon>
-      </button>
-    </div>
-
-    @if (isLoadingAgenda()) {
-    <div class="agenda-card">
-      <div class="flex items-center gap-3">
-        <app-skeleton width="44px" height="44px" borderRadius="12px"></app-skeleton>
-        <div class="flex flex-col gap-2 flex-1">
-          <app-skeleton width="160px" height="18px" borderRadius="4px"></app-skeleton>
-          <app-skeleton width="220px" height="14px" borderRadius="4px"></app-skeleton>
-        </div>
+<main class="dashboard-content flex flex-col gap-8">
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="hero-content">
+      <div class="flex flex-col gap-1">
+        <h1 class="hero-greeting">{{ userGreeting() }}, {{ userName() }}</h1>
+        <p class="hero-date">{{ today() }}</p>
+      </div>
+      <div class="hero-summary">
+        <span class="summary-badge">
+          <lucide-icon [name]="icons.Calendar" [size]="14"></lucide-icon>
+          {{ stats().todayCount }} Jobs Today
+        </span>
+        <span class="summary-badge warning" *ngIf="stats().reportsDue > 0">
+          <lucide-icon [name]="icons.FileText" [size]="14"></lucide-icon>
+          {{ stats().reportsDue }} Reports Due
+        </span>
       </div>
     </div>
-    } @else if (todaysJobs().length > 0) {
-    @for (job of todaysJobs(); track job.id) {
-    <div class="agenda-card">
-      <div class="agenda-card-body">
-        <div class="agenda-time-badge">
-          <lucide-icon [name]="icons.Clock" [size]="16"></lucide-icon>
-          <span>{{ formatTime(job.scheduled_date) }}</span>
-        </div>
-        <div class="agenda-info">
-          <h3 class="agenda-client">{{ job.client_name }}</h3>
-          <div class="agenda-meta">
-            @if (job.address) {
-            <span class="agenda-meta-item">
-              <lucide-icon [name]="icons.MapPin" [size]="14"></lucide-icon>
-              {{ job.address }}
-            </span>
-            }
-            @if (job.agreed_price) {
-            <span class="agenda-meta-item agenda-price">
-              <lucide-icon [name]="icons.DollarSign" [size]="14"></lucide-icon>
-              {{ formatPrice(job.agreed_price) }}
-            </span>
-            }
+  </section>
+
+  <!-- Pinned Active Inspection Skeleton -->
+  <section class="active-workspace" *ngIf="isLoading()">
+    <div class="section-header mb-4">
+      <h2 class="flex items-center gap-2 text-primary font-bold">
+        <app-skeleton width="140px" height="24px" borderRadius="6px"></app-skeleton>
+      </h2>
+    </div>
+    
+    <div class="active-card-container cursor-default">
+      <div class="active-card-glow"></div>
+      <div class="active-card-main">
+        <div class="active-card-info">
+          <div class="active-icon-wrapper opacity-50 bg-slate-100 border-none">
+            <app-skeleton width="24px" height="24px" borderRadius="4px"></app-skeleton>
+          </div>
+          <div class="active-details flex-1">
+            <div class="flex flex-wrap items-center gap-2 mb-2">
+              <app-skeleton width="180px" height="20px" borderRadius="4px"></app-skeleton>
+            </div>
+            <p class="active-address">
+              <app-skeleton width="220px" height="14px" borderRadius="4px"></app-skeleton>
+            </p>
           </div>
         </div>
+
+        <div class="active-card-progress">
+          <div class="progress-info mb-2">
+            <app-skeleton width="120px" height="12px" borderRadius="4px"></app-skeleton>
+            <app-skeleton width="30px" height="12px" borderRadius="4px"></app-skeleton>
+          </div>
+          <div class="progress-track">
+            <app-skeleton width="100%" height="8px" borderRadius="100px"></app-skeleton>
+          </div>
+        </div>
+
+        <div class="active-card-actions">
+          <app-skeleton width="150px" height="38px" borderRadius="8px" class="w-full md:w-auto"></app-skeleton>
+        </div>
       </div>
-      <app-button variant="solid" size="sm" [isLoading]="startingJobId() === job.id"
-        [disabled]="startingJobId() !== null" (click)="startInspection(job)">
-        <lucide-icon [name]="icons.Play" [size]="14"></lucide-icon>
-        <span>Start Inspection</span>
-      </app-button>
     </div>
-    }
-    } @else {
-    <div class="agenda-empty">
-      <lucide-icon [name]="icons.Calendar" [size]="24"></lucide-icon>
-      <p>No inspections scheduled for today.</p>
-      <button class="book-link" (click)="goToSchedule()">Book a job →</button>
+  </section>
+
+  <!-- Pinned Active Inspection -->
+  <section class="active-workspace" *ngIf="!isLoading() && activeInspection() as job">
+    <div class="section-header mb-4">
+      <h2 class="flex items-center gap-2 text-primary font-bold">
+        <div class="pulse-dot"></div>
+        Ongoing Inspection
+      </h2>
     </div>
-    }
+    
+    <div class="active-card-container" (click)="resumeInspection(job)">
+      <div class="active-card-glow"></div>
+      <div class="active-card-main">
+        <div class="active-card-info">
+          <div class="active-icon-wrapper">
+            <lucide-icon [name]="icons.Play" [size]="24"></lucide-icon>
+          </div>
+          <div class="active-details">
+            <div class="flex flex-wrap items-center gap-2 mb-1">
+              <h3 class="active-client">{{ job.client_name }}</h3>
+              <span class="active-status-badge">Live</span>
+            </div>
+            <p class="active-address">
+              <lucide-icon [name]="icons.MapPin" [size]="14"></lucide-icon>
+              {{ job.address }}
+            </p>
+          </div>
+        </div>
+
+        <div class="active-card-progress">
+          <div class="progress-info">
+            <span class="progress-label">Inspection Progress</span>
+            <span class="progress-value">{{ activeJobProgress() }}%</span>
+          </div>
+          <div class="progress-track">
+            <div class="progress-bar" [style.width.%]="activeJobProgress()"></div>
+          </div>
+        </div>
+
+        <div class="active-card-actions">
+          <app-button variant="solid" size="md" class="w-full md:w-auto" (click)="resumeInspection(job)">
+            <span>Continue Inspection</span>
+            <lucide-icon [name]="icons.ChevronRight" [size]="16"></lucide-icon>
+          </app-button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Metrics Pulse Grid Skeleton -->
+  <section class="stats-grid grid grid-cols-2 lg:grid-cols-4 gap-4" *ngIf="isLoading()">
+    <div class="stat-card cursor-default" *ngFor="let item of [1, 2, 3, 4]">
+      <div class="stat-icon bg-slate-50 border-none opacity-60 flex items-center justify-center">
+        <app-skeleton width="20px" height="20px" borderRadius="4px"></app-skeleton>
+      </div>
+      <div class="stat-info flex flex-col gap-2">
+        <app-skeleton width="70px" height="12px" borderRadius="4px"></app-skeleton>
+        <app-skeleton width="45px" height="26px" borderRadius="6px"></app-skeleton>
+      </div>
+    </div>
+  </section>
+
+  <!-- Metrics Pulse Grid -->
+  <section class="stats-grid grid grid-cols-2 lg:grid-cols-4 gap-4" *ngIf="!isLoading()">
+    <!-- Today -->
+    <div class="stat-card blue">
+      <div class="stat-icon bg-blue-100 text-blue-600">
+        <lucide-icon [name]="icons.Calendar" [size]="20"></lucide-icon>
+      </div>
+      <div class="stat-info">
+        <p class="stat-label">Today's Jobs</p>
+        <p class="stat-value">{{ stats().todayCount }}</p>
+      </div>
+    </div>
+
+    <!-- Reports Due -->
+    <div class="stat-card amber">
+      <div class="stat-icon bg-amber-100 text-amber-600">
+        <lucide-icon [name]="icons.FileText" [size]="20"></lucide-icon>
+      </div>
+      <div class="stat-info">
+        <p class="stat-label">Reports Due</p>
+        <p class="stat-value text-amber-600">{{ stats().reportsDue }}</p>
+      </div>
+    </div>
+
+    <!-- Month Jobs -->
+    <div class="stat-card purple">
+      <div class="stat-icon bg-purple-100 text-purple-600">
+        <lucide-icon [name]="icons.CheckCircle" [size]="20"></lucide-icon>
+      </div>
+      <div class="stat-info">
+        <p class="stat-label">Month Jobs</p>
+        <p class="stat-value">{{ stats().monthJobsCount }}</p>
+      </div>
+    </div>
+
+    <!-- Revenue -->
+    <div class="stat-card emerald">
+      <div class="stat-icon bg-emerald-100 text-emerald-600">
+        <lucide-icon [name]="icons.TrendingUp" [size]="20"></lucide-icon>
+      </div>
+      <div class="stat-info">
+        <p class="stat-label">Revenue</p>
+        <p class="stat-value text-emerald-600">{{ formatPrice(stats().monthRevenue) }}</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="flex flex-col lg:flex-row gap-8">
+    <!-- Today's Agenda (Timeline) -->
+    <section class="agenda-section flex-1">
+      <div class="agenda-header mb-6">
+        <h2 class="agenda-title">
+          Today's Agenda
+          <span class="agenda-count-badge">{{ todaysJobs().length }} jobs</span>
+        </h2>
+        <button class="view-all-link" (click)="goToSchedule()">
+          <span>View Full Schedule</span>
+          <lucide-icon [name]="icons.ArrowRight" [size]="14"></lucide-icon>
+        </button>
+      </div>
+
+      <div class="timeline-container" *ngIf="!isLoading(); else loadingTpl">
+        @if (todaysJobs().length > 0) {
+        <div class="timeline">
+          @for (job of todaysJobs(); track job.id) {
+          <div class="timeline-item">
+            <div class="timeline-marker">
+              <div class="marker-dot" [class.active]="job.status === 'in_progress'"
+                [class.completed]="job.status === 'published'"></div>
+              <div class="marker-line"></div>
+            </div>
+            <div class="timeline-content">
+              <div class="job-time">{{ formatTime(job.scheduled_date) }}</div>
+              <div class="job-card-premium">
+                <div class="job-card-body">
+                  <div class="job-main">
+                    <h3 class="job-client">{{ job.client_name }}</h3>
+                    <p class="job-address">
+                      <lucide-icon [name]="icons.MapPin" [size]="14"></lucide-icon>
+                      {{ job.address }}
+                    </p>
+                  </div>
+                  <div class="job-actions">
+                    <app-button variant="solid" size="sm" *ngIf="job.status === 'scheduled'"
+                      [isLoading]="startingJobId() === job.id" (click)="startInspection(job)">
+                      <lucide-icon [name]="icons.Play" [size]="14"></lucide-icon>
+                      <span>Start</span>
+                    </app-button>
+                    <app-button variant="outline" size="sm" *ngIf="job.status === 'in_progress'"
+                      (click)="resumeInspection(job)">
+                      <span>Resume</span>
+                    </app-button>
+                    <div class="status-pill"
+                      [ngClass]="{
+                        'status-pill--published': job.status === 'published',
+                        'status-pill--cancelled': job.status === 'cancelled'
+                      }"
+                      *ngIf="job.status === 'published' || job.status === 'cancelled'">
+                      {{ job.status | titlecase }}
+                    </div>
+                  </div>
+                </div>
+
+                <div class="job-card-footer" *ngIf="job.client_phone || job.address">
+                  <button class="footer-btn" (click)="callClient(job.client_phone || '', $event)" *ngIf="job.client_phone">
+                    <lucide-icon [name]="icons.Phone" [size]="14"></lucide-icon>
+                    <span>Call</span>
+                  </button>
+                  <button class="footer-btn" (click)="getDirections(job.address || '', $event)" *ngIf="job.address">
+                    <lucide-icon [name]="icons.Navigation" [size]="14"></lucide-icon>
+                    <span>Directions</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          }
+        </div>
+
+        <!-- Upcoming Tomorrow Subtle Row -->
+        <div class="tomorrow-peek mt-8 pt-6 border-t border-slate-100" *ngIf="tomorrowJobs().length > 0">
+          <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Upcoming Tomorrow</h4>
+          <div class="flex flex-wrap gap-4">
+            <div class="peek-item" *ngFor="let job of tomorrowJobs()">
+              <span class="peek-time">{{ formatTime(job.scheduled_date) }}</span>
+              <span class="peek-client">{{ job.client_name }}</span>
+              <span class="peek-divider" *ngIf="job.address">·</span>
+              <span class="peek-address" *ngIf="job.address">{{ job.address }}</span>
+            </div>
+          </div>
+        </div>
+        } @else {
+        <div class="empty-agenda">
+          <div class="empty-icon">
+            <lucide-icon [name]="icons.Calendar" [size]="32"></lucide-icon>
+          </div>
+          <h3>Clear Schedule Today</h3>
+          <p>No inspections booked for today. Use the time to catch up on reports or marketing.</p>
+          <app-button variant="outline" size="md" (click)="goToSchedule()">
+            Book a Job
+          </app-button>
+        </div>
+        }
+      </div>
+
+      <ng-template #loadingTpl>
+        <div class="timeline">
+          <div class="timeline-item" *ngFor="let item of [1, 2]">
+            <div class="timeline-marker">
+              <div class="marker-dot opacity-40"></div>
+              <div class="marker-line opacity-40"></div>
+            </div>
+            <div class="timeline-content">
+              <div class="job-time">
+                <app-skeleton width="60px" height="14px" borderRadius="4px"></app-skeleton>
+              </div>
+              <div class="job-card-premium">
+                <div class="job-card-body">
+                  <div class="job-main flex flex-col gap-2 flex-1 w-full">
+                    <app-skeleton width="140px" height="18px" borderRadius="4px"></app-skeleton>
+                    <div class="flex items-center gap-1.5 mt-1">
+                      <app-skeleton width="240px" height="12px" borderRadius="4px"></app-skeleton>
+                    </div>
+                  </div>
+                  <div class="job-actions">
+                    <app-skeleton width="80px" height="32px" borderRadius="8px"></app-skeleton>
+                  </div>
+                </div>
+                
+                <div class="job-card-footer">
+                  <div class="flex-1">
+                    <app-skeleton width="100%" height="32px" borderRadius="8px"></app-skeleton>
+                  </div>
+                  <div class="flex-1">
+                    <app-skeleton width="100%" height="32px" borderRadius="8px"></app-skeleton>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </ng-template>
+    </section>
+
+    <!-- Quick Actions (Sidebar/Bottom) -->
+    <section class="quick-actions lg:w-80">
+      <h2 class="text-lg font-bold mb-6">Quick Actions</h2>
+      <div class="flex flex-col gap-3">
+        <button class="action-card" (click)="goToSchedule()">
+          <div class="action-icon bg-primary/10 text-primary">
+            <lucide-icon [name]="icons.Plus" [size]="20"></lucide-icon>
+          </div>
+          <div class="action-label">New Inspection</div>
+          <lucide-icon [name]="icons.ChevronRight" [size]="16" class="text-slate-300"></lucide-icon>
+        </button>
+
+        <button class="action-card" (click)="goToTemplates()">
+          <div class="action-icon bg-indigo-100 text-indigo-600">
+            <lucide-icon [name]="icons.Layout" [size]="20"></lucide-icon>
+          </div>
+          <div class="action-label">Manage Templates</div>
+          <lucide-icon [name]="icons.ChevronRight" [size]="16" class="text-slate-300"></lucide-icon>
+        </button>
+
+        <button class="action-card" (click)="goToClients()">
+          <div class="action-icon bg-rose-100 text-rose-600">
+            <lucide-icon [name]="icons.Users" [size]="20"></lucide-icon>
+          </div>
+          <div class="action-label">Client Directory</div>
+          <lucide-icon [name]="icons.ChevronRight" [size]="16" class="text-slate-300"></lucide-icon>
+        </button>
+      </div>
+    </section>
   </div>
 </main>

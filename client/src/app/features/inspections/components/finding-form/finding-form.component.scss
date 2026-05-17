@@ -62,7 +62,7 @@
         text-align: center;
 
         &:hover {
-          background: darken($color-surface-light, 3%);
+          background: color.adjust($color-surface-light, $lightness: -3%);
         }
 
         &.active {
@@ -390,11 +390,11 @@
         gap: 0.5rem;
         font-size: 0.75rem;
         font-weight: 500;
-        color: darken($color-primary, 15%);
+        color: color.adjust($color-primary, $lightness: -15%);
         flex: 1 1 200px;
         
         strong {
-          color: darken($color-primary, 25%);
+          color: color.adjust($color-primary, $lightness: -25%);
         }
         
         .ai-icon {

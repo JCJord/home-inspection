@@ -1,3 +1,4 @@
+@use 'sass:color';
 @use '/variables' as *;
 
 :host {
@@ -141,8 +142,8 @@
         
         .card-content {
           .stat-label { color: $color-safety; }
-          .stat-value { color: darken($color-safety, 5%); }
-          .stat-footer { color: rgba(darken($color-safety, 10%), 0.8); }
+          .stat-value { color: color.adjust($color-safety, $lightness: -5%); }
+          .stat-footer { color: rgba(color.adjust($color-safety, $lightness: -10%), 0.8); }
         }
       }
 
@@ -158,13 +159,13 @@
 
         .card-icon {
           background-color: rgba($color-minor, 0.15);
-          color: darken($color-minor, 15%);
+          color: color.adjust($color-minor, $lightness: -15%);
         }
         
         .card-content {
-          .stat-label { color: darken($color-minor, 15%); }
-          .stat-value { color: darken($color-minor, 15%); }
-          .stat-footer { color: rgba(darken($color-minor, 15%), 0.8); }
+          .stat-label { color: color.adjust($color-minor, $lightness: -15%); }
+          .stat-value { color: color.adjust($color-minor, $lightness: -15%); }
+          .stat-footer { color: rgba(color.adjust($color-minor, $lightness: -15%), 0.8); }
         }
       }
 
@@ -180,13 +181,13 @@
 
         .card-icon {
           background-color: rgba($color-informational, 0.15);
-          color: darken($color-informational, 10%);
+          color: color.adjust($color-informational, $lightness: -10%);
         }
         
         .card-content {
-          .stat-label { color: darken($color-informational, 10%); }
-          .stat-value { color: darken($color-informational, 10%); }
-          .stat-footer { color: rgba(darken($color-informational, 10%), 0.8); }
+          .stat-label { color: color.adjust($color-informational, $lightness: -10%); }
+          .stat-value { color: color.adjust($color-informational, $lightness: -10%); }
+          .stat-footer { color: rgba(color.adjust($color-informational, $lightness: -10%), 0.8); }
         }
       }
     }
