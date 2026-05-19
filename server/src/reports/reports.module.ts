@@ -8,6 +8,6 @@ import { AuthModule } from '../auth/auth.module';
   imports: [AuthModule],
   controllers: [ReportsController],
   providers: [ReportsService, PdfService],
-  exports: [ReportsService],
+  exports: [ReportsService, PdfService],
 })
 export class ReportsModule {}

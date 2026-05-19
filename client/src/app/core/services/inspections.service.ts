@@ -308,8 +308,9 @@ export class InspectionsService {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 
-  publishInspection(id: string): Observable<Inspection> {
-    return this.http.post<Inspection>(`${this.apiUrl}/${id}/publish`, {}).pipe(
+  publishInspection(id: string, html?: string): Observable<Inspection> {
+    const payload = html ? { html } : {};
+    return this.http.post<Inspection>(`${this.apiUrl}/${id}/publish`, payload).pipe(
       tap((updatedIns) => {
         // Update state store and list cache
         this._inspections.update(list => list.map(i => i.id === id ? updatedIns : i));

@@ -21,8 +21,10 @@ export class ReportGeneratorComponent implements OnInit {
   private reportsService = inject(ReportsService);
 
   @Input() inspection: Inspection | null = null;
+  @Input() mode: 'download' | 'publish' = 'download';
   @Output() completed = new EventEmitter<Blob>();
   @Output() error = new EventEmitter<string>();
+  @Output() htmlReady = new EventEmitter<string>();
 
   isGenerating = signal(false);
   generationProgress = signal(0);
@@ -176,6 +178,17 @@ export class ReportGeneratorComponent implements OnInit {
 
     try {
       const finalHtml = await this.prepareContentToExport();
+
+      if (this.mode === 'publish') {
+        this.generationProgress.set(100);
+        this.currentStatus.set('HTML Compiled!');
+        setTimeout(() => {
+          this.isGenerating.set(false);
+          this.htmlReady.emit(finalHtml);
+        }, 300);
+        return;
+      }
+
       this.currentStatus.set('Finalizing PDF...');
 
       this.reportsService.generatePdfFromHtml(finalHtml).subscribe({

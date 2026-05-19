@@ -11,6 +11,7 @@ import { Template } from '../templates/template.entity';
 import { MulterModule } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
+import { ReportsModule } from '../reports/reports.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { extname } from 'path';
       }),
     }),
     AuthModule,
+    ReportsModule,
   ],
   controllers: [InspectionsController],
   providers: [InspectionsService],

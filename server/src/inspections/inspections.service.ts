@@ -9,6 +9,9 @@ import { Report } from '../reports/report.entity';
 import { SubscriptionStatus } from '../common/enums/subscription-status.enum';
 import { Template } from '../templates/template.entity';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { PdfService } from '../reports/pdf.service';
+import * as fs from 'fs';
+import * as path from 'path';
 
 @Injectable()
 export class InspectionsService {
@@ -22,6 +25,7 @@ export class InspectionsService {
     @InjectRepository(Template)
     private readonly templateRepository: Repository<Template>,
     private readonly eventEmitter: EventEmitter2,
+    private readonly pdfService: PdfService,
   ) { }
 
   async create(inspectorId: string, createInspectionDto: CreateInspectionDto): Promise<Inspection> {
@@ -136,7 +140,7 @@ export class InspectionsService {
   async findOne(inspectorId: string, id: string): Promise<Inspection> {
     const inspection = await this.inspectionRepository.findOne({
       where: { id, inspector_id: inspectorId },
-      relations: ['findings', 'findings.photos', 'inspector', 'template'],
+      relations: ['findings', 'findings.photos', 'inspector', 'template', 'report'],
     });
 
     if (!inspection) {
@@ -182,10 +186,10 @@ export class InspectionsService {
     return await this.inspectionRepository.save(inspection);
   }
 
-  async publish(inspectorId: string, id: string): Promise<Inspection> {
+  async publish(inspectorId: string, id: string, html?: string): Promise<Inspection> {
     const inspection = await this.findOne(inspectorId, id);
 
-    if (inspection.status === 'published') {
+    if (inspection.status === 'published' && !html) {
       throw new ConflictException('Inspection is already published');
     }
 
@@ -193,20 +197,44 @@ export class InspectionsService {
       throw new BadRequestException('Cannot publish an inspection with no findings');
     }
 
+    let pdfUrl = 'mock_pdf_url.pdf';
+
+    if (html) {
+      try {
+        const pdfBuffer = await this.pdfService.generateFromHtml(html);
+        const uploadDir = path.join(process.cwd(), 'uploads', 'reports');
+        if (!fs.existsSync(uploadDir)) {
+          fs.mkdirSync(uploadDir, { recursive: true });
+        }
+        const filePath = path.join(uploadDir, `${id}.pdf`);
+        await fs.promises.writeFile(filePath, pdfBuffer);
+        pdfUrl = `/uploads/reports/${id}.pdf`;
+      } catch (error) {
+        throw new BadRequestException(`Failed to compile PDF report: ${error.message}`);
+      }
+    }
+
     await this.inspectionRepository.manager.transaction(async (manager) => {
       inspection.status = 'published';
       await manager.save(inspection);
 
-      const report = manager.create(Report, {
-        inspection_id: inspection.id,
-        pdf_url: 'mock_pdf_url.pdf', // Mock URL
-        status: 'done',
-        published_at: new Date(),
-      });
+      let report = await manager.findOne(Report, { where: { inspection_id: inspection.id } });
+      if (report) {
+        report.pdf_url = pdfUrl;
+        report.status = 'done';
+        report.published_at = new Date();
+      } else {
+        report = manager.create(Report, {
+          inspection_id: inspection.id,
+          pdf_url: pdfUrl,
+          status: 'done',
+          published_at: new Date(),
+        });
+      }
       await manager.save(report);
     });
 
-    return inspection;
+    return await this.findOne(inspectorId, id);
   }
 
   async unpublish(inspectorId: string, id: string): Promise<Inspection> {
@@ -224,7 +252,7 @@ export class InspectionsService {
       await manager.delete(Report, { inspection_id: inspection.id });
     });
 
-    return inspection;
+    return await this.findOne(inspectorId, id);
   }
 
   async remove(inspectorId: string, id: string): Promise<void> {

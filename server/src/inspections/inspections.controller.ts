@@ -80,8 +80,12 @@ export class InspectionsController {
   }
 
   @Post(':id/publish')
-  publish(@GetUser('sub') inspectorId: string, @Param('id') id: string) {
-    return this.inspectionsService.publish(inspectorId, id);
+  publish(
+    @GetUser('sub') inspectorId: string,
+    @Param('id') id: string,
+    @Body() body?: { html?: string },
+  ) {
+    return this.inspectionsService.publish(inspectorId, id, body?.html);
   }
 
   @Post(':id/unpublish')

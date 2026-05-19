@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, computed, inject, ViewChild } from '@angular/core';
+import { Component, OnInit, signal, computed, inject, ViewChild, ElementRef, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { InspectionsService } from '../../../../core/services/inspections.service';
@@ -7,7 +7,7 @@ import { Finding, Inspection } from '../../../../core/models/inspection.interfac
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { FindingCardComponent } from '../../components/finding-card/finding-card.component';
 import { SkeletonComponent } from '../../../../shared/components/skeleton/skeleton.component';
-import { LucideAngularModule, ArrowLeft, Send, RefreshCw, AlertCircle, Plus, X, Check, Loader2, FileText, Download, LockOpen, Edit, Camera, Image, Cloud, Thermometer, Calendar, Maximize, Home, Users } from 'lucide-angular';
+import { LucideAngularModule, ArrowLeft, Send, RefreshCw, AlertCircle, Plus, X, Check, Loader2, FileText, Download, LockOpen, Edit, Camera, Image, Cloud, Thermometer, Calendar, Maximize, Home, Users, ChevronDown, Trash2 } from 'lucide-angular';
 import { ReportGeneratorComponent } from '../../../reports/components/report-generator/report-generator.component';
 import { BackButtonComponent } from '../../../../shared/components/back-button/back-button.component';
 import { ImageCompressionService } from '../../../../core/services/image-compression.service';
@@ -31,12 +31,13 @@ import { ResolveImagePipe } from '../../../../shared/pipes/resolve-image.pipe';
   styleUrl: './inspection-details.component.scss',
 })
 export class InspectionDetailsComponent implements OnInit {
-  @ViewChild(ReportGeneratorComponent) reportGenerator!: ReportGeneratorComponent;
+  @ViewChild(ReportGeneratorComponent) reportGenerator?: ReportGeneratorComponent;
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private inspectionsService = inject(InspectionsService);
   private reportsService = inject(ReportsService);
   private compressionService = inject(ImageCompressionService);
+  private elementRef = inject(ElementRef);
 
   inspection = signal<Inspection | null>(null);
   isLoading = signal<boolean>(true);
@@ -47,17 +48,35 @@ export class InspectionDetailsComponent implements OnInit {
   selectedSection = signal<string>('');
   isDeletingFinding = signal<boolean>(false);
   deletingId = signal<string | null>(null);
-  publishState = signal<'idle' | 'confirm' | 'loading' | 'success'>('idle');
+  publishState = signal<'idle' | 'confirm' | 'compiling' | 'uploading' | 'success' | 'error'>('idle');
   isGeneratingPdf = signal<boolean>(false);
   isReportGeneratorActive = signal<boolean>(false);
+  reportGeneratorMode = signal<'download' | 'publish'>('download');
+  isCopying = signal<boolean>(false);
+  copyLinkSuccess = signal<boolean>(false);
+  isActionsMenuOpen = signal<boolean>(false);
 
-  readonly icons = { ArrowLeft, Send, RefreshCw, AlertCircle, Plus, X, Check, Loader2, FileText, Download, LockOpen, Edit, Camera, Image, Cloud, Thermometer, Calendar, Maximize, Home, Users };
+  readonly icons = { ArrowLeft, Send, RefreshCw, AlertCircle, Plus, X, Check, Loader2, FileText, Download, LockOpen, Edit, Camera, Image, Cloud, Thermometer, Calendar, Maximize, Home, Users, ChevronDown, Trash2 };
   readonly apiUrl = environment.apiUrl.replace('/api', '');
 
   isPublished = computed(() => this.inspection()?.status === 'published');
   isScheduled = computed(() => this.inspection()?.status === 'scheduled');
   isCancelled = computed(() => this.inspection()?.status === 'cancelled');
   hasFindings = computed(() => (this.inspection()?.findings?.length ?? 0) > 0);
+
+  toggleActionsMenu(event: Event): void {
+    event.stopPropagation();
+    this.isActionsMenuOpen.update(open => !open);
+  }
+
+  @HostListener('document:click', ['$event.target'])
+  onClickOutside(targetElement: EventTarget | null) {
+    if (!targetElement) return;
+    const clickedInside = this.elementRef.nativeElement.contains(targetElement as Node);
+    if (!clickedInside) {
+      this.isActionsMenuOpen.set(false);
+    }
+  }
 
   groupedFindings = computed(() => {
     const findings = this.inspection()?.findings || [];
@@ -118,6 +137,7 @@ export class InspectionDetailsComponent implements OnInit {
     this.errorMessage.set(null);
     this.inspectionsService.getInspectionById(id).subscribe({
       next: (data) => {
+        console.log('=== LOADED INSPECTION FROM SWR/DB ===', data);
         this.inspection.set(data);
         this.isLoading.set(false);
         if (data.template_snapshot?.sections?.length && !this.selectedSection()) {
@@ -148,12 +168,22 @@ export class InspectionDetailsComponent implements OnInit {
     const inspection = this.inspection();
     if (!inspection) return;
 
-    this.publishState.set('loading');
-    this.inspectionsService.publishInspection(inspection.id).subscribe({
+    this.publishState.set('compiling');
+    this.reportGeneratorMode.set('publish');
+    this.isReportGeneratorActive.set(true);
+  }
+
+  onReportHtmlReady(html: string): void {
+    const inspection = this.inspection();
+    if (!inspection) return;
+
+    this.publishState.set('uploading');
+    this.inspectionsService.publishInspection(inspection.id, html).subscribe({
       next: (updated) => {
+        console.log('=== RETURNED INSPECTION AFTER PUBLISH ===', updated);
         this.inspection.set(updated);
         this.publishState.set('success');
-        // Reset to idle after a delay if needed, or stay success
+        this.isReportGeneratorActive.set(false);
         setTimeout(() => {
           this.publishState.set('idle');
         }, 3000);
@@ -161,7 +191,8 @@ export class InspectionDetailsComponent implements OnInit {
       error: (err) => {
         console.error('Failed to publish inspection', err);
         this.errorMessage.set(err.error?.message || 'Failed to publish inspection.');
-        this.publishState.set('idle');
+        this.publishState.set('error');
+        this.isReportGeneratorActive.set(false);
       },
     });
   }
@@ -224,6 +255,7 @@ export class InspectionDetailsComponent implements OnInit {
 
   generateReport(): void {
     this.isGeneratingPdf.set(true);
+    this.reportGeneratorMode.set('download');
     this.isReportGeneratorActive.set(true);
   }
 
@@ -246,6 +278,49 @@ export class InspectionDetailsComponent implements OnInit {
     this.isGeneratingPdf.set(false);
     this.isReportGeneratorActive.set(false);
     this.errorMessage.set(error);
+    this.publishState.set('error');
+  }
+
+  copyReportLink(): void {
+    const inspection = this.inspection();
+    if (!inspection) return;
+
+    const fullUrl = `${window.location.origin}/uploads/reports/${inspection.id}.pdf`;
+    this.isCopying.set(true);
+    navigator.clipboard.writeText(fullUrl).then(() => {
+      this.copyLinkSuccess.set(true);
+      setTimeout(() => {
+        this.copyLinkSuccess.set(false);
+        this.isCopying.set(false);
+      }, 2000);
+    }).catch(err => {
+      console.error('Failed to copy link', err);
+      this.isCopying.set(false);
+    });
+  }
+
+  downloadPublishedReport(): void {
+    const inspection = this.inspection();
+    if (!inspection) return;
+
+    const fileUrl = `${this.apiUrl}/uploads/reports/${inspection.id}.pdf`;
+    const safeAddress = inspection.address || 'Inspection';
+    const filename = `Report-${safeAddress.replace(/ /g, '_')}.pdf`;
+
+    fetch(fileUrl)
+      .then(res => res.blob())
+      .then(blob => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.click();
+        window.URL.revokeObjectURL(url);
+      })
+      .catch(err => {
+        console.error('Failed to download report', err);
+        window.open(fileUrl, '_blank');
+      });
   }
 
   handleDeleteFinding(finding: Finding): void {
