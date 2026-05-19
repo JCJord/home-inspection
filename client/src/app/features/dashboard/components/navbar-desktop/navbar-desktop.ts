@@ -1,6 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
-import { LucideAngularModule, LayoutDashboard, ClipboardList, Settings, LogOut, Layers } from 'lucide-angular';
+import { LucideAngularModule, LayoutDashboard, ClipboardList, Settings, LogOut, Layers, Calendar } from 'lucide-angular';
 import { AuthService } from '../../../../core/services/auth.service';
 
 @Component({
@@ -14,7 +14,7 @@ export class NavbarDesktop {
   authService = inject(AuthService);
   private router = inject(Router);
 
-  readonly icons = { LayoutDashboard, ClipboardList, Settings, LogOut, Layers };
+  readonly icons = { LayoutDashboard, ClipboardList, Settings, LogOut, Layers, Calendar };
 
   onLogout() {
     this.authService.logout();

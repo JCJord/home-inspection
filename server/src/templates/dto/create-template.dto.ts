@@ -11,6 +11,10 @@ export class TemplatePresetDto {
   description: string;
 
   @IsString()
+  @IsOptional()
+  recommendation?: string;
+
+  @IsString()
   @IsNotEmpty()
   severity: string;
 }

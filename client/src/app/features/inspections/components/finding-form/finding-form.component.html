@@ -166,20 +166,20 @@
     </app-textarea-input>
  
     <!-- AI Generation Trigger Bar -->
-    <div class="ai-trigger-container mb-4 mt-2">
-      <div class="flex justify-between items-center p-3 bg-blue-50 border border-blue-100 rounded-lg" [class.opacity-50]="isPublishedSignal()">
-         <div class="text-xs text-blue-800 flex items-center">
-           <lucide-icon [name]="icons.Sparkles" [size]="16" class="text-blue-500 mr-2"></lucide-icon>
+    <div class="ai-trigger-container" [class.opacity-50]="isPublishedSignal()">
+      <div class="ai-bar">
+         <div class="ai-text">
+           <lucide-icon [name]="icons.Sparkles" [size]="16" class="ai-icon"></lucide-icon>
            <span><strong>AI Assistant:</strong> Tap to rewrite your keywords into a clinical report finding.</span>
          </div>
-         <button type="button" class="ai-generate-btn shrink-0 ml-4 px-3 py-1.5 bg-white border border-blue-200 rounded text-xs font-bold text-blue-700 hover:bg-blue-100 transition-colors flex items-center" 
+         <button type="button" class="ai-generate-btn" 
            (click)="generateAiComment()" [disabled]="isGeneratingAi() || !isPremium() || isPublishedSignal()"
            [class.premium-lock]="!isPremium()" [title]="!isPremium() ? 'Available for users with Active subscription only' : ''">
            @if (isGeneratingAi()) {
              <div class="spinner-small mr-2"></div>
-             Generating...
+             <span>Generating...</span>
            } @else {
-             {{ isPremium() ? '✨ Generate AI Content' : 'Upgrade for AI' }}
+             <span>{{ isPremium() ? '✨ Generate AI Content' : 'Upgrade for AI' }}</span>
            }
          </button>
       </div>

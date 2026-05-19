@@ -432,7 +432,8 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
 
     this.findingForm.patchValue({
       severity: preset.severity || 'Minor',
-      description: descriptionValue
+      description: descriptionValue,
+      recommendation: preset.recommendation || ''
     });
   }
 

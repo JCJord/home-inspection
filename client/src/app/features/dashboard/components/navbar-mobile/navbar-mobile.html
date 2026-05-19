@@ -7,22 +7,58 @@
       </a>
     </li>
     <li>
+      <a routerLink="/schedule" routerLinkActive="active">
+        <lucide-icon [img]="icons.Calendar" [size]="24" />
+        <span>Schedule</span>
+      </a>
+    </li>
+    <li>
       <a routerLink="/inspections" routerLinkActive="active">
         <lucide-icon [img]="icons.ClipboardList" [size]="24" />
         <span>Inspections</span>
       </a>
     </li>
     <li>
-      <a routerLink="/templates" routerLinkActive="active">
-        <lucide-icon [img]="icons.Layers" [size]="24" />
-        <span>Templates</span>
-      </a>
-    </li>
-    <li>
-      <a routerLink="/settings" routerLinkActive="active">
-        <lucide-icon [img]="icons.Settings" [size]="24" />
-        <span>Settings</span>
+      <a href="#" (click)="toggleMenu($event)" [class.active]="isMenuOpen()">
+        <lucide-icon [img]="icons.Menu" [size]="24" />
+        <span>Menu</span>
       </a>
     </li>
   </ul>
 </nav>
+
+<!-- Slide-up Menu Overlay -->
+@if (isMenuOpen()) {
+  <div class="menu-backdrop" (click)="closeMenu()"></div>
+  <div class="mobile-menu-sheet">
+    <div class="menu-header">
+      <h3>More Options</h3>
+      <button class="close-btn" (click)="closeMenu()">
+        <lucide-icon [img]="icons.X" [size]="20"></lucide-icon>
+      </button>
+    </div>
+    
+    <div class="menu-content">
+      <ul class="menu-list">
+        <li>
+          <a routerLink="/templates" routerLinkActive="active" (click)="closeMenu()">
+            <div class="menu-item-icon">
+              <lucide-icon [img]="icons.Layers" [size]="20"></lucide-icon>
+            </div>
+            <span>Templates</span>
+            <lucide-icon [img]="icons.ChevronRight" [size]="16" class="chevron"></lucide-icon>
+          </a>
+        </li>
+        <li>
+          <a routerLink="/settings" routerLinkActive="active" (click)="closeMenu()">
+            <div class="menu-item-icon">
+              <lucide-icon [img]="icons.Settings" [size]="20"></lucide-icon>
+            </div>
+            <span>Settings</span>
+            <lucide-icon [img]="icons.ChevronRight" [size]="16" class="chevron"></lucide-icon>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+}

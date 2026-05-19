@@ -14,6 +14,7 @@ export interface Photo {
 export interface TemplatePreset {
   title: string;
   description: string;
+  recommendation?: string;
   severity: string;
 }
 
@@ -55,13 +56,15 @@ export interface SectionStatus {
 
 export interface Inspection {
   id: string;
-  address: string;
+  address?: string;
   client_name: string;
   client_email?: string;
   client_phone?: string;
-  year_built: number;
+  year_built?: number;
   square_footage?: number;
-  status: 'in_progress' | 'published';
+  status: 'scheduled' | 'in_progress' | 'published' | 'cancelled';
+  scheduled_date?: string;
+  agreed_price?: number;
   findings?: Finding[];
   weather?: string;
   temperature?: number;
@@ -70,6 +73,7 @@ export interface Inspection {
   foundation_type?: string;
   cover_photo_url?: string;
   template_id?: string;
+  template?: { id: string; name: string; structure: TemplateStructure };
   template_snapshot?: TemplateStructure;
   metadata_values?: Record<string, string>;
   section_statuses?: Record<string, SectionStatus>;

@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, ConflictException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, FindOptionsWhere, ILike, Brackets } from 'typeorm';
 import { Inspection } from './inspection.entity';
 import { CreateInspectionDto } from './dto/create-inspection.dto';
 import { UpdateInspectionDto } from './dto/update-inspection.dto';
@@ -8,6 +8,7 @@ import { Inspector } from '../inspectors/inspector.entity';
 import { Report } from '../reports/report.entity';
 import { SubscriptionStatus } from '../common/enums/subscription-status.enum';
 import { Template } from '../templates/template.entity';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Injectable()
 export class InspectionsService {
@@ -20,6 +21,7 @@ export class InspectionsService {
     private readonly reportRepository: Repository<Report>,
     @InjectRepository(Template)
     private readonly templateRepository: Repository<Template>,
+    private readonly eventEmitter: EventEmitter2,
   ) { }
 
   async create(inspectorId: string, createInspectionDto: CreateInspectionDto): Promise<Inspection> {
@@ -41,35 +43,84 @@ export class InspectionsService {
       template = await this.templateRepository.findOne({ where: { id: createInspectionDto.template_id } });
     }
     if (!template) {
-      template = await this.templateRepository.findOne({ where: { name: 'System Default' } });
+      const defaultTemplate = await this.templateRepository.findOne({ where: { name: 'System Default' } });
+      if (defaultTemplate) {
+        template = defaultTemplate;
+      }
     }
+    const status = createInspectionDto.scheduled_date ? 'scheduled' : 'in_progress';
 
     const inspection = this.inspectionRepository.create({
       ...createInspectionDto,
-      inspector_id: inspector.id,
-      template_id: template?.id || undefined,
-      template_snapshot: template?.structure || undefined,
-      metadata_values: {}
+      inspector_id: inspectorId,
+      template_id: template?.id,
+      template_snapshot: template?.structure,
+      metadata_values: {},
+      status
     });
 
     const savedInspection = await this.inspectionRepository.save(inspection);
 
+    // Increment used inspections
     inspector.free_inspections_used += 1;
     await this.inspectorRepository.save(inspector);
+
+    // Add relation back for event (only for scheduled bookings)
+    if (savedInspection.status === 'scheduled') {
+      savedInspection.inspector = inspector;
+      this.eventEmitter.emit('inspection.scheduled', savedInspection);
+    }
 
     return savedInspection;
   }
 
-  async findAll(inspectorId: string, page: number = 1, limit: number = 10): Promise<{ data: Inspection[], meta: { total: number, page: number, limit: number, totalPages: number } }> {
+  async findAll(
+    inspectorId: string,
+    page: number = 1,
+    limit: number = 10,
+    status?: string,
+    search?: string,
+    startDate?: string,
+    endDate?: string,
+  ) {
     const skip = (page - 1) * limit;
 
-    const [data, total] = await this.inspectionRepository.findAndCount({
-      where: { inspector_id: inspectorId },
-      order: { updated_at: 'DESC' },
-      relations: ['findings'],
-      skip,
-      take: limit,
-    });
+    const queryBuilder = this.inspectionRepository.createQueryBuilder('inspection')
+      .where('inspection.inspector_id = :inspectorId', { inspectorId });
+
+    if (startDate) {
+      queryBuilder.andWhere('inspection.scheduled_date >= :startDate', { startDate });
+    }
+
+    if (endDate) {
+      queryBuilder.andWhere('inspection.scheduled_date <= :endDate', { endDate });
+    }
+
+    if (status) {
+      queryBuilder.andWhere('inspection.status = :status', { status });
+    }
+
+    if (search) {
+      const searchPattern = `%${search}%`;
+      queryBuilder.andWhere(
+        new Brackets((qb) => {
+          qb.where('inspection.client_name ILike :search', { search: searchPattern })
+            .orWhere('inspection.address ILike :search', { search: searchPattern });
+        }),
+      );
+    }
+
+    if (status === 'scheduled') {
+      queryBuilder.orderBy('inspection.scheduled_date', 'ASC');
+    } else {
+      queryBuilder.orderBy('inspection.updated_at', 'DESC');
+    }
+
+    const [data, total] = await queryBuilder
+      .leftJoinAndSelect('inspection.findings', 'findings')
+      .skip(skip)
+      .take(limit)
+      .getManyAndCount();
 
     return {
       data,
@@ -85,7 +136,7 @@ export class InspectionsService {
   async findOne(inspectorId: string, id: string): Promise<Inspection> {
     const inspection = await this.inspectionRepository.findOne({
       where: { id, inspector_id: inspectorId },
-      relations: ['findings', 'findings.photos', 'inspector'],
+      relations: ['findings', 'findings.photos', 'inspector', 'template'],
     });
 
     if (!inspection) {
@@ -100,6 +151,14 @@ export class InspectionsService {
 
     if (inspection.status === 'published') {
       throw new BadRequestException('Cannot edit a published inspection');
+    }
+
+    if (inspection.status === 'cancelled') {
+      throw new ForbiddenException('Cannot update a cancelled inspection');
+    }
+
+    if (updateInspectionDto.template_id && inspection.status !== 'scheduled') {
+      throw new BadRequestException('Cannot change template once inspection has started');
     }
 
     // Merge JSON objects to prevent overwriting other fields
@@ -177,5 +236,53 @@ export class InspectionsService {
     const inspection = await this.findOne(inspectorId, id);
     inspection.cover_photo_url = coverPhotoUrl;
     return await this.inspectionRepository.save(inspection);
+  }
+
+  async startInspection(inspectorId: string, id: string): Promise<Inspection> {
+    const inspection = await this.findOne(inspectorId, id);
+
+    if (inspection.status !== 'scheduled') {
+      throw new BadRequestException('Only scheduled inspections can be started');
+    }
+
+    if (!inspection.template_id) {
+      throw new BadRequestException('Cannot start inspection without a template selected');
+    }
+
+    const template = await this.templateRepository.findOne({ where: { id: inspection.template_id } });
+    if (!template) {
+      throw new NotFoundException('Template not found');
+    }
+
+    return await this.inspectionRepository.manager.transaction(async (manager) => {
+      inspection.template_snapshot = template.structure;
+      inspection.status = 'in_progress';
+      return await manager.save(inspection);
+    });
+  }
+
+  async cancel(inspectorId: string, id: string): Promise<Inspection> {
+    const inspection = await this.findOne(inspectorId, id);
+
+    if (inspection.status === 'published') {
+      throw new BadRequestException('Cannot cancel a published inspection');
+    }
+
+    inspection.status = 'cancelled';
+    return await this.inspectionRepository.save(inspection);
+  }
+
+  async getInspectionStats(inspectorId: string) {
+    const total = await this.inspectionRepository.count({ where: { inspector_id: inspectorId } });
+    const scheduled = await this.inspectionRepository.count({ where: { inspector_id: inspectorId, status: 'scheduled' } });
+    const inProgress = await this.inspectionRepository.count({ where: { inspector_id: inspectorId, status: 'in_progress' } });
+    const published = await this.inspectionRepository.count({ where: { inspector_id: inspectorId, status: 'published' } });
+
+    return {
+      total,
+      scheduled,
+      inProgress,
+      published,
+    };
   }
 }

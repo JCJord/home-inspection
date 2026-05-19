@@ -8,13 +8,15 @@ import {
   Min,
   Max,
   IsNumber,
+  IsDateString,
+  IsBoolean,
 } from 'class-validator';
 
 export class CreateInspectionDto {
+  @IsOptional()
   @IsString({ message: 'Property address must be a valid string' })
-  @IsNotEmpty({ message: 'Property address is required' })
   @MaxLength(300, { message: 'Property address cannot exceed 300 characters' })
-  address: string;
+  address?: string;
 
   @IsString({ message: 'Client name must be a valid string' })
   @IsNotEmpty({ message: 'Client name is required' })
@@ -29,10 +31,11 @@ export class CreateInspectionDto {
   @IsString({ message: 'Client phone must be a valid string' })
   client_phone?: string;
 
+  @IsOptional()
   @IsInt({ message: 'Year built must be a whole number' })
   @Min(1800, { message: 'Year built must be after 1800' })
   @Max(new Date().getFullYear(), { message: 'Year built cannot be in the future' })
-  year_built: number;
+  year_built?: number;
 
   @IsOptional()
   @IsInt({ message: 'Square footage must be a whole number' })
@@ -78,4 +81,17 @@ export class CreateInspectionDto {
 
   @IsOptional()
   section_statuses?: Record<string, any>;
+
+  @IsOptional()
+  @IsDateString({}, { message: 'Scheduled date must be a valid ISO 8601 date string' })
+  scheduled_date?: string;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'Agreed price must be a valid number' })
+  @Min(0, { message: 'Agreed price cannot be negative' })
+  agreed_price?: number;
+
+  @IsOptional()
+  @IsBoolean({ message: 'Send email must be a boolean' })
+  send_email?: boolean;
 }

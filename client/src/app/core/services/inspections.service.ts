@@ -61,9 +61,17 @@ export class InspectionsService {
 
   // --- Inspection Methods ---
 
-  getInspections(page: number = 1, limit: number = 10, forceRefresh: boolean = false): Observable<{ data: Inspection[], meta: { total: number, page: number, limit: number, totalPages: number } }> {
-    // Return cached data if not stale and not forced
-    if (!this._needsRefresh() && !forceRefresh && this._inspections().length > 0 && page === 1) {
+  getInspections(
+    page: number = 1,
+    limit: number = 10,
+    forceRefresh: boolean = false,
+    status?: string,
+    search?: string,
+    startDate?: string,
+    endDate?: string,
+  ): Observable<{ data: Inspection[], meta: { total: number, page: number, limit: number, totalPages: number } }> {
+    // Return cached data if not stale and not forced (only for unfiltered queries)
+    if (!status && !search && !startDate && !endDate && !this._needsRefresh() && !forceRefresh && this._inspections().length > 0 && page === 1) {
       return of({
         data: this._inspections(),
         meta: {
@@ -79,6 +87,22 @@ export class InspectionsService {
       .set('page', page.toString())
       .set('limit', limit.toString());
 
+    if (status) {
+      params = params.set('status', status);
+    }
+    
+    if (search) {
+      params = params.set('search', search);
+    }
+
+    if (startDate) {
+      params = params.set('startDate', startDate);
+    }
+
+    if (endDate) {
+      params = params.set('endDate', endDate);
+    }
+
     // Only show loading spinner if we have no data at all
     if (this._inspections().length === 0) {
       this._isLoading.set(true);
@@ -87,13 +111,20 @@ export class InspectionsService {
     return this.http.get<{ data: Inspection[], meta: { total: number, page: number, limit: number, totalPages: number } }>(this.apiUrl, { params }).pipe(
       tap({
         next: (res) => {
+          // Always update the visible signals so the view updates on search and filters
           this._inspections.set(res.data);
           this._totalCount.set(res.meta.total);
-          if (page === 1) {
-            this.saveToCache(res.data, res.meta.total);
+
+          // Only update persistent cache and needsRefresh status for clean, unfiltered queries
+          if (!status && !search && !startDate && !endDate) {
+            if (page === 1) {
+              this.saveToCache(res.data, res.meta.total);
+              this._needsRefresh.set(false);
+            } else {
+              this._needsRefresh.set(true);
+            }
           }
           this._isLoading.set(false);
-          this._needsRefresh.set(false); // Reset flag on success
         },
         error: () => this._isLoading.set(false)
       })
@@ -111,9 +142,9 @@ export class InspectionsService {
             this.imageCacheService.prefetchInspection(fresh); // <--- BACKGROUND PREFETCH
           }),
           catchError(err => {
-             // If network fails, and we already have cached, return it.
-             if (cached) return of(this.mergePendingMutations(cached)); 
-             throw err;
+            // If network fails, and we already have cached, return it.
+            if (cached) return of(this.mergePendingMutations(cached));
+            throw err;
           })
         );
 
@@ -123,7 +154,7 @@ export class InspectionsService {
           // Emit cached immediately, then the network response
           return concat(of(this.mergePendingMutations(cached)), network$);
         }
-        
+
         return network$;
       })
     );
@@ -132,7 +163,7 @@ export class InspectionsService {
   public mergePendingMutations(inspection: Inspection): Inspection {
     const pendingTasks = this.mutationQueueService.allTasks()
       .filter(t => t.inspectionId === inspection.id);
-    
+
     if (pendingTasks.length === 0) return inspection;
 
     // Create a deep-ish clone to avoid reference pollution
@@ -142,7 +173,7 @@ export class InspectionsService {
       section_statuses: { ...(inspection.section_statuses || {}) },
       findings: (inspection.findings || []).map(f => ({ ...f, photos: [...(f.photos || [])] }))
     };
-    
+
     pendingTasks.forEach(task => {
       // 1. Handle Inspection Updates
       if (task.type === MutationType.UPDATE_INSPECTION) {
@@ -179,10 +210,10 @@ export class InspectionsService {
         const idx = merged.findings?.findIndex(f => f.id === task.findingId);
         if (idx !== undefined && idx > -1) {
           const f = merged.findings![idx];
-          merged.findings![idx] = { 
-            ...f, 
+          merged.findings![idx] = {
+            ...f,
             ...task.payload,
-            isSyncing: task.status !== 'COMPLETED' 
+            isSyncing: task.status !== 'COMPLETED'
           };
         }
       }
@@ -191,7 +222,7 @@ export class InspectionsService {
       if (task.type === MutationType.UPLOAD_PHOTO) {
         const targetId = task.findingId || task.clientFindingId;
         const finding = merged.findings?.find(f => f.id === targetId);
-        
+
         if (finding) {
           const tempId = `temp-${task.id}`;
           const serverPhotoId = (task as any).result?.id;
@@ -279,9 +310,14 @@ export class InspectionsService {
 
   publishInspection(id: string): Observable<Inspection> {
     return this.http.post<Inspection>(`${this.apiUrl}/${id}/publish`, {}).pipe(
-      tap(() => {
-        // Garbage Collection: Remove from cache after successful publish
-        this.persistenceService.deleteInspection(id).catch(err => 
+      tap((updatedIns) => {
+        // Update state store and list cache
+        this._inspections.update(list => list.map(i => i.id === id ? updatedIns : i));
+        this.saveToCache(this._inspections(), this._totalCount());
+        this._needsRefresh.set(true);
+
+        // Garbage Collection: Remove from individual inspection cache after successful publish
+        this.persistenceService.deleteInspection(id).catch(err =>
           console.warn('Failed to clean up cache after publish', err)
         );
       })
@@ -289,7 +325,33 @@ export class InspectionsService {
   }
 
   unpublishInspection(id: string): Observable<Inspection> {
-    return this.http.post<Inspection>(`${this.apiUrl}/${id}/unpublish`, {});
+    return this.http.post<Inspection>(`${this.apiUrl}/${id}/unpublish`, {}).pipe(
+      tap((updatedIns) => {
+        this._inspections.update(list => list.map(i => i.id === id ? updatedIns : i));
+        this.saveToCache(this._inspections(), this._totalCount());
+        this._needsRefresh.set(true);
+      })
+    );
+  }
+
+  cancelInspection(id: string): Observable<Inspection> {
+    return this.http.post<Inspection>(`${this.apiUrl}/${id}/cancel`, {}).pipe(
+      tap((updatedIns) => {
+        this._inspections.update(list => list.map(i => i.id === id ? updatedIns : i));
+        this.saveToCache(this._inspections(), this._totalCount());
+        this._needsRefresh.set(true);
+      })
+    );
+  }
+
+  startInspection(id: string): Observable<Inspection> {
+    return this.http.patch<Inspection>(`${this.apiUrl}/${id}/start`, {}).pipe(
+      tap((updatedIns) => {
+        this._inspections.update(list => list.map(i => i.id === id ? updatedIns : i));
+        this.saveToCache(this._inspections(), this._totalCount());
+        this._needsRefresh.set(true);
+      })
+    );
   }
 
   updatePhoto(inspectionId: string, findingId: string, photoId: string, dto: { caption: string }): Observable<Photo> {
@@ -299,7 +361,13 @@ export class InspectionsService {
   uploadCoverPhoto(id: string, file: File): Observable<Inspection> {
     const formData = new FormData();
     formData.append('cover_photo', file);
-    return this.http.post<Inspection>(`${this.apiUrl}/${id}/cover-photo`, formData);
+    return this.http.post<Inspection>(`${this.apiUrl}/${id}/cover-photo`, formData).pipe(
+      tap((updatedIns) => {
+        this._inspections.update(list => list.map(i => i.id === id ? updatedIns : i));
+        this.saveToCache(this._inspections(), this._totalCount());
+        this._needsRefresh.set(true);
+      })
+    );
   }
 
   // --- Finding Methods ---

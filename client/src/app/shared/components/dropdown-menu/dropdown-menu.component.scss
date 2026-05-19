@@ -3,6 +3,10 @@
 .dropdown-container {
   position: relative;
   display: inline-block;
+  
+  &.is-open {
+    z-index: 1000;
+  }
 
   .dropdown-trigger {
     color: $color-text-muted;

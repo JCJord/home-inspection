@@ -55,6 +55,8 @@ export class InspectionDetailsComponent implements OnInit {
   readonly apiUrl = environment.apiUrl.replace('/api', '');
 
   isPublished = computed(() => this.inspection()?.status === 'published');
+  isScheduled = computed(() => this.inspection()?.status === 'scheduled');
+  isCancelled = computed(() => this.inspection()?.status === 'cancelled');
   hasFindings = computed(() => (this.inspection()?.findings?.length ?? 0) > 0);
 
   groupedFindings = computed(() => {
@@ -182,6 +184,44 @@ export class InspectionDetailsComponent implements OnInit {
     });
   }
 
+  onStartInspection(): void {
+    const inspection = this.inspection();
+    if (!inspection) return;
+
+    this.isLoading.set(true);
+    this.inspectionsService.startInspection(inspection.id).subscribe({
+      next: () => {
+        // Trigger a fresh fetch so UI reactively shows everything
+        this.loadInspection(inspection.id);
+      },
+      error: (err) => {
+        console.error('Failed to start inspection', err);
+        this.errorMessage.set(err.error?.message || 'Failed to start inspection.');
+        this.isLoading.set(false);
+      }
+    });
+  }
+
+  onCancel(): void {
+    const id = this.inspection()?.id;
+    if (!id) return;
+
+    if (confirm('Are you sure you want to cancel this inspection? This will lock the record permanently.')) {
+      this.isLoading.set(true);
+      this.inspectionsService.cancelInspection(id).subscribe({
+        next: () => {
+          this.isLoading.set(false);
+          this.loadInspection(id);
+        },
+        error: (err) => {
+          console.error('Failed to cancel inspection', err);
+          this.isLoading.set(false);
+          this.errorMessage.set(err.error?.message || 'Failed to cancel inspection.');
+        }
+      });
+    }
+  }
+
   generateReport(): void {
     this.isGeneratingPdf.set(true);
     this.isReportGeneratorActive.set(true);
@@ -196,7 +236,8 @@ export class InspectionDetailsComponent implements OnInit {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `Report-${inspection.address.replace(/ /g, '_')}.pdf`;
+    const safeAddress = inspection.address || 'Inspection';
+    a.download = `Report-${safeAddress.replace(/ /g, '_')}.pdf`;
     a.click();
     window.URL.revokeObjectURL(url);
   }
@@ -230,6 +271,12 @@ export class InspectionDetailsComponent implements OnInit {
         }
       });
     }, 400);
+  }
+
+  editInspection(): void {
+    const inspection = this.inspection();
+    if (!inspection) return;
+    this.router.navigate(['/inspections', inspection.id, 'edit']);
   }
 
   addFinding(): void {

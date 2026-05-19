@@ -47,10 +47,22 @@ export class InspectionsController {
     @GetUser('sub') inspectorId: string,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
+    @Query('status') status?: string,
+    @Query('search') search?: string,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
   ) {
     const pageNumber = parseInt(page || '1', 10);
     const limitNumber = parseInt(limit || '10', 10);
-    return this.inspectionsService.findAll(inspectorId, pageNumber, limitNumber);
+    return this.inspectionsService.findAll(
+      inspectorId,
+      pageNumber,
+      limitNumber,
+      status,
+      search,
+      startDate,
+      endDate,
+    );
   }
 
   @Get(':id')
@@ -75,6 +87,16 @@ export class InspectionsController {
   @Post(':id/unpublish')
   unpublish(@GetUser('sub') inspectorId: string, @Param('id') id: string) {
     return this.inspectionsService.unpublish(inspectorId, id);
+  }
+
+  @Post(':id/cancel')
+  cancel(@GetUser('sub') inspectorId: string, @Param('id') id: string) {
+    return this.inspectionsService.cancel(inspectorId, id);
+  }
+
+  @Patch(':id/start')
+  startInspection(@GetUser('sub') inspectorId: string, @Param('id') id: string) {
+    return this.inspectionsService.startInspection(inspectorId, id);
   }
 
   @Delete(':id')

@@ -94,6 +94,11 @@ export class InspectionCardComponent {
   });
 
   statusLabel = computed(() => {
-    return this.inspection().status === 'published' ? 'Published' : 'In Progress';
+    switch (this.inspection().status) {
+      case 'published': return 'Published';
+      case 'scheduled': return 'Scheduled';
+      case 'cancelled': return 'Cancelled';
+      default: return 'In Progress';
+    }
   });
 }

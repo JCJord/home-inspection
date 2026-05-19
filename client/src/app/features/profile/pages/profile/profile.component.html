@@ -168,6 +168,23 @@
       </div>
     </form>
 
+    <div class="card">
+      <div class="card-header">
+        <lucide-icon [img]="icons.Bell" [size]="20"></lucide-icon>
+        <h3>Automation & Workflow</h3>
+      </div>
+      
+      <div class="card-body p-0">
+        <form [formGroup]="profileForm">
+          <app-toggle-switch
+            formControlName="default_send_email_confirmation"
+            label="Default Email Confirmations"
+            description="Automatically enable the 'Send Confirmation' toggle when scheduling new inspections.">
+          </app-toggle-switch>
+        </form>
+      </div>
+    </div>
+
     <!-- Document Signature Section -->
     <div class="card signature-card">
       <div class="card-header">

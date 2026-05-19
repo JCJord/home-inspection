@@ -1,42 +1,690 @@
 @use 'variables' as *;
+@use '/cards' as *;
 
 .dashboard-content {
-  padding: 2rem;
+  padding: 1.5rem;
   flex: 1;
 
   @media (min-width: 768px) {
-    padding: 3rem 2rem;
+    padding: 2.5rem;
   }
 }
 
-.welcome-card {
-  background: white;
-  border-radius: 12px;
-  padding: 2.5rem;
-  border: 1px solid $color-border;
-  box-shadow: 0 4px 6px rgba($color-text, 0.05);
-  max-width: 600px;
-  margin: 0 auto;
+// ─── Hero Section ────────────────────────────────────
+.hero-section {
+  position: relative;
+  overflow: hidden;
+  border-radius: 20px;
+  background: linear-gradient(135deg, $color-primary-dark 0%, $color-primary 100%);
+  padding: 2rem;
+  color: white;
+  box-shadow: 0 10px 25px -5px rgba($color-primary-dark, 0.3);
+  min-height: 160px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 
   @media (min-width: 768px) {
-    margin: 0;
+    padding: 3rem;
+    min-height: 180px;
   }
 
-  h2 {
+  &::before {
+    content: '';
+    position: absolute;
+    top: -60px;
+    right: -60px;
+    width: 220px;
+    height: 220px;
+    background: rgba(white, 0.06);
+    border-radius: 50%;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -80px;
+    right: 60px;
+    width: 160px;
+    height: 160px;
+    background: rgba(white, 0.04);
+    border-radius: 50%;
+  }
+}
+
+.hero-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+
+  @media (min-width: 768px) {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
+.hero-greeting {
+  font-size: 1.75rem;
+  font-weight: 800;
+  margin: 0;
+  letter-spacing: -0.025em;
+
+  @media (min-width: 768px) {
+    font-size: 2.25rem;
+  }
+}
+
+.hero-date {
+  font-size: 1rem;
+  opacity: 0.9;
+  font-weight: 500;
+}
+
+.hero-summary {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+
+  @media (min-width: 768px) {
     margin-top: 0;
-    color: $color-primary-dark;
-    font-size: 1.75rem;
-    margin-bottom: 1rem;
+  }
+}
+
+.summary-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(white, 0.15);
+  backdrop-filter: blur(4px);
+  padding: 0.5rem 1rem;
+  border-radius: 100px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  border: 1px solid rgba(white, 0.1);
+
+  &.warning {
+    background: rgba($color-warning, 0.2);
+    border-color: rgba($color-warning, 0.3);
+  }
+}
+
+// ─── Active Workspace ───────────────────────────────
+.active-card-container {
+  position: relative;
+  border-radius: 1.5rem;
+  overflow: hidden;
+  cursor: pointer;
+  background: white;
+  border: 1px solid rgba($color-primary, 0.15);
+  box-shadow: 0 10px 30px -10px rgba($color-primary, 0.15);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:hover {
+    transform: translateY(-4px);
+    border-color: rgba($color-primary, 0.3);
+    box-shadow: 0 20px 40px -15px rgba($color-primary, 0.2);
+    
+    .active-card-glow { opacity: 1; }
+    .active-icon-wrapper { background: $color-primary; color: white; }
+  }
+}
+
+.active-card-glow {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: radial-gradient(circle at 0% 0%, rgba($color-primary, 0.08) 0%, transparent 50%);
+  opacity: 0.5;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.active-card-main {
+  position: relative;
+  z-index: 1;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  width: 100%;
+
+  @media (min-width: 640px) {
+    padding: 1.5rem;
+    gap: 1.5rem;
   }
 
-  p {
-    color: $color-text;
-    font-size: 1.1rem;
-    margin-bottom: 0.75rem;
-
-    &.email-text {
-      color: $color-text-muted;
-      margin-top: 1.5rem;
+  // Medium screens (tablets & small laptops where desktop sidebar consumes 250px)
+  @media (min-width: 1024px) {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    padding: 1.75rem;
+    gap: 1.5rem;
+    align-items: center;
+    
+    .active-card-actions {
+      grid-column: span 2;
+      justify-content: flex-start;
+      margin-top: 0.5rem;
+      border-top: 1px solid rgba($color-border, 0.5);
+      padding-top: 1rem;
+      
+      app-button {
+        width: auto;
+      }
     }
   }
+
+  // Large desktop screens (ample horizontal room for complete side-by-side distribution)
+  @media (min-width: 1280px) {
+    grid-template-columns: 1.5fr 1fr 1fr;
+    padding: 2rem;
+    
+    .active-card-actions {
+      grid-column: auto;
+      justify-content: flex-end;
+      margin-top: 0;
+      border-top: none;
+      padding-top: 0;
+    }
+  }
+}
+
+.active-card-info {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.active-icon-wrapper {
+  width: 56px;
+  height: 56px;
+  background: rgba($color-primary, 0.1);
+  color: $color-primary;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.active-client {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: $color-text;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.active-status-badge {
+  font-size: 0.625rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: $color-primary;
+  color: white;
+  padding: 0.25rem 0.625rem;
+  border-radius: 100px;
+  box-shadow: 0 4px 10px rgba($color-primary, 0.3);
+}
+
+.active-address {
+  font-size: 0.875rem;
+  color: $color-text-muted;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.active-card-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.progress-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.progress-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: $color-text-muted;
+}
+
+.progress-value {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: $color-primary;
+}
+
+.progress-track {
+  height: 8px;
+  background: #f1f5f9;
+  border-radius: 100px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, $color-primary, $color-primary-light);
+  border-radius: 100px;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.active-card-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.pulse-dot {
+  width: 10px;
+  height: 10px;
+  background: $color-primary;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+// ─── Stats Grid ─────────────────────────────────────
+.stat-card {
+  @include card-premium(false);
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.75rem;
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  min-width: 0; // Prevent content from forcing card expansion
+
+  // Keep clean vertical/column layout on smaller screens to prevent icon-text horizontal collision.
+  // Switch to the premium side-by-side row layout once there is substantial horizontal room.
+  @media (min-width: 1150px) {
+    padding: 1.5rem;
+    flex-direction: row;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: 1.5rem 1.5rem 0 0;
+  }
+
+  &.blue::before   { background: #3b82f6; }
+  &.amber::before  { background: #f59e0b; }
+  &.purple::before { background: #8b5cf6; }
+  &.emerald::before { background: #10b981; }
+}
+
+.stat-icon {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  flex-shrink: 0;
+}
+
+.stat-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  width: 100%;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: $color-text-muted;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.stat-value {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: $color-text;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+
+  @media (min-width: 640px) {
+    font-size: 1.5rem;
+  }
+}
+
+// ─── Timeline Agenda ────────────────────────────────
+.agenda-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.agenda-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.25rem;
+  font-weight: 500;
+  color: $color-text;
+  margin: 0;
+}
+
+.agenda-count-badge {
+  background-color: $color-bg;
+  border: 1px solid $color-border;
+  border-radius: 100px;
+  padding: 2px 9px;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: $color-text-muted;
+}
+
+.view-all-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid $color-border;
+  border-radius: 100px;
+  padding: 5px 14px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: $color-text-muted;
+  background-color: $color-surface;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+
+  &:hover {
+    background-color: $color-bg;
+    color: $color-primary;
+    border-color: rgba($color-primary, 0.3);
+  }
+}
+
+.timeline {
+  position: relative;
+  padding-left: 2rem;
+}
+
+.timeline-item {
+  position: relative;
+  padding-bottom: 2.5rem;
+
+  &:last-child {
+    padding-bottom: 0;
+    .marker-line { display: none; }
+  }
+}
+
+.timeline-marker {
+  position: absolute;
+  left: -2rem;
+  top: 0;
+  bottom: 0;
+  width: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.marker-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #e2e8f0;
+  border: 2px solid white;
+  box-shadow: 0 0 0 1px #e2e8f0;
+  z-index: 1;
+  margin-top: 0.5rem;
+
+  &.active {
+    background: $color-primary;
+    box-shadow: 0 0 0 1px $color-primary;
+  }
+
+  &.completed {
+    background: $color-success;
+    box-shadow: 0 0 0 1px $color-success;
+  }
+}
+
+.marker-line {
+  flex: 1;
+  width: 2px;
+  background: #e2e8f0;
+  margin: 4px 0;
+}
+
+.job-time {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: $color-primary;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+}
+
+.job-card-premium {
+  @include card-premium(false);
+  display: flex;
+  flex-direction: column;
+  padding: 1.25rem;
+  gap: 0.75rem;
+}
+
+.job-card-body {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+
+  @media (max-width: 640px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+}
+
+.job-client {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.job-address {
+  font-size: 0.8125rem;
+  color: $color-text-muted;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin: 2px 0 0 0;
+}
+
+.job-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+
+  @media (max-width: 640px) {
+    width: 100%;
+    
+    app-button {
+      width: 100%;
+    }
+  }
+}
+
+.job-card-footer {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  border-top: 1px solid $color-border;
+  padding-top: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+.footer-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  flex: 1;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  border: 1px solid $color-border;
+  background-color: $color-surface;
+  color: $color-text-muted;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: $color-bg;
+    color: $color-primary;
+    border-color: rgba($color-primary, 0.3);
+  }
+}
+
+.status-pill {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.25rem 0.75rem;
+  border-radius: 100px;
+  background: #f1f5f9;
+  color: #64748b;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  &--published {
+    background-color: rgba($color-success, 0.1);
+    color: #15803D;
+  }
+
+  &--in-progress {
+    background-color: rgba($color-primary, 0.1);
+    color: #0082CC;
+  }
+
+  &--cancelled {
+    background-color: #f1f5f9;
+    color: #64748b;
+  }
+}
+
+// ─── Tomorrow Peek ───────────────────────────────────
+.peek-item {
+  background: white;
+  border: 1px solid #f1f5f9;
+  padding: 0.5rem 1rem;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.peek-time {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: $color-primary;
+}
+
+.peek-client {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: $color-text;
+}
+
+.peek-divider {
+  color: $color-text-muted;
+  font-weight: bold;
+}
+
+.peek-address {
+  font-size: 0.75rem;
+  color: $color-text-muted;
+}
+
+// ─── Quick Actions ──────────────────────────────────
+.quick-actions {
+  flex-shrink: 0;
+}
+
+.action-card {
+  width: 100%;
+  @include card-premium(true);
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  text-align: left;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #fafafa;
+    border-color: $color-primary;
+  }
+}
+
+.action-icon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 100px; // was 10px, changed to circle as requested
+  flex-shrink: 0;
+}
+
+.action-label {
+  flex: 1;
+  font-weight: 600;
+  color: $color-text;
+}
+
+// ─── Empty State ─────────────────────────────────────
+.empty-agenda {
+  @include card-premium(false);
+  padding: 3rem 2rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+
+  .empty-icon {
+    width: 64px;
+    height: 64px;
+    background: #f1f5f9;
+    color: #cbd5e1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+  }
+
+  h3 { font-size: 1.125rem; font-weight: 700; margin: 0; }
+  p { font-size: 0.875rem; color: $color-text-muted; max-width: 320px; margin: 0; }
 }

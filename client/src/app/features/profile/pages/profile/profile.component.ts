@@ -16,7 +16,8 @@ import { Router } from '@angular/router';
 import { LucideAngularModule, Camera, User, BadgeCheck, Phone, Mail, Building, FileText, CheckCircle2, LogOut, RotateCcw } from 'lucide-angular';
 import { environment } from '../../../../../environments/environment';
 import { ImageCompressionService } from '../../../../core/services/image-compression.service';
-import { Palette, Type, FileText as FileTextIcon, Zap, Check, TrendingUp, Trash2, X } from 'lucide-angular';
+import { Palette, Type, FileText as FileTextIcon, Zap, Check, TrendingUp, Trash2, X, Bell } from 'lucide-angular';
+import { ToggleSwitchComponent } from '../../../../shared/components/inputs/toggle-switch/toggle-switch.component';
 
 @Component({
   selector: 'app-profile',
@@ -30,7 +31,8 @@ import { Palette, Type, FileText as FileTextIcon, Zap, Check, TrendingUp, Trash2
     SpinnerComponent,
     SkeletonComponent,
     SignaturePadComponent,
-    LucideAngularModule
+    LucideAngularModule,
+    ToggleSwitchComponent
   ],
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.scss'
@@ -43,7 +45,7 @@ export class ProfileComponent implements OnInit {
   private destroyRef = inject(DestroyRef);
   private compressionService = inject(ImageCompressionService);
 
-  readonly icons = { Camera, User, BadgeCheck, Phone, Mail, Building, FileText, CheckCircle2, LogOut, Palette, Type, FileTextIcon, Zap, Check, TrendingUp, Trash2, X, RotateCcw };
+  readonly icons = { Camera, User, BadgeCheck, Phone, Mail, Building, FileText, CheckCircle2, LogOut, Palette, Type, FileTextIcon, Zap, Check, TrendingUp, Trash2, X, RotateCcw, Bell };
 
   readonly brandFontOptions = [
     { value: 'modern', label: 'Modern (Sans-serif)' },
@@ -60,7 +62,8 @@ export class ProfileComponent implements OnInit {
     brand_primary_color: ['#1E40AF'],
     brand_font_family: ['modern'],
     report_footer_text: ['', [Validators.maxLength(150)]],
-    signature: ['']
+    signature: [''],
+    default_send_email_confirmation: [true]
   });
 
   profile = signal<Inspector | null>(null);

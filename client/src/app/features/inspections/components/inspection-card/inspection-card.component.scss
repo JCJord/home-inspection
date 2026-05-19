@@ -110,6 +110,24 @@
           background: $color-primary;
         }
       }
+
+      &.scheduled {
+        background: rgba($color-text-muted, 0.1);
+        color: $color-text-muted;
+
+        .dot {
+          background: $color-text-muted;
+        }
+      }
+
+      &.cancelled {
+        background: rgba($color-safety, 0.1);
+        color: $color-safety;
+
+        .dot {
+          background: $color-safety;
+        }
+      }
     }
   }
 

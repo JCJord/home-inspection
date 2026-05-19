@@ -1,4 +1,4 @@
-<div class="dropdown-container">
+<div class="dropdown-container" [class.is-open]="isOpen()">
   <button 
     class="dropdown-trigger flex items-center justify-center rounded-full p-1.5 transition-colors"
     (click)="toggle($event)"

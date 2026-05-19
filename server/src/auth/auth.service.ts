@@ -149,7 +149,17 @@ export class AuthService {
 
       // Create new session
       const user = await this.inspectorsService.findOne(userId);
-      return this.generateTokens(user, userAgent);
+      const tokens = await this.generateTokens(user, userAgent);
+
+      return {
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          subscription_status: user.subscription_status,
+        },
+        ...tokens,
+      };
     } catch (e) {
       throw new UnauthorizedException('Invalid refresh token');
     }
