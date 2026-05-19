@@ -144,15 +144,50 @@
 .active-card-main {
   position: relative;
   z-index: 1;
-  padding: 1.5rem;
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1.5rem;
-  align-items: center;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  width: 100%;
 
-  @media (min-width: 768px) {
+  @media (min-width: 640px) {
+    padding: 1.5rem;
+    gap: 1.5rem;
+  }
+
+  // Medium screens (tablets & small laptops where desktop sidebar consumes 250px)
+  @media (min-width: 1024px) {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    padding: 1.75rem;
+    gap: 1.5rem;
+    align-items: center;
+    
+    .active-card-actions {
+      grid-column: span 2;
+      justify-content: flex-start;
+      margin-top: 0.5rem;
+      border-top: 1px solid rgba($color-border, 0.5);
+      padding-top: 1rem;
+      
+      app-button {
+        width: auto;
+      }
+    }
+  }
+
+  // Large desktop screens (ample horizontal room for complete side-by-side distribution)
+  @media (min-width: 1280px) {
     grid-template-columns: 1.5fr 1fr 1fr;
     padding: 2rem;
+    
+    .active-card-actions {
+      grid-column: auto;
+      justify-content: flex-end;
+      margin-top: 0;
+      border-top: none;
+      padding-top: 0;
+    }
   }
 }
 
@@ -265,8 +300,12 @@
   gap: 0.75rem;
   position: relative;
   overflow: hidden;
+  width: 100%;
+  min-width: 0; // Prevent content from forcing card expansion
 
-  @media (min-width: 640px) {
+  // Keep clean vertical/column layout on smaller screens to prevent icon-text horizontal collision.
+  // Switch to the premium side-by-side row layout once there is substantial horizontal room.
+  @media (min-width: 1150px) {
     padding: 1.5rem;
     flex-direction: row;
     align-items: center;
