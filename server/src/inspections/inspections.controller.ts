@@ -49,10 +49,20 @@ export class InspectionsController {
     @Query('limit') limit?: string,
     @Query('status') status?: string,
     @Query('search') search?: string,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
   ) {
     const pageNumber = parseInt(page || '1', 10);
     const limitNumber = parseInt(limit || '10', 10);
-    return this.inspectionsService.findAll(inspectorId, pageNumber, limitNumber, status, search);
+    return this.inspectionsService.findAll(
+      inspectorId,
+      pageNumber,
+      limitNumber,
+      status,
+      search,
+      startDate,
+      endDate,
+    );
   }
 
   @Get(':id')

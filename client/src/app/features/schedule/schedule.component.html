@@ -1,120 +1,109 @@
 <div class="max-w-7xl mx-auto p-6 pb-24 relative min-h-full h-auto">
-  @if (showBookingForm()) {
-    <!-- Booking Form Container (Component Switch) -->
-    <div class="form-page-header">
-      <div class="flex items-center gap-3">
-        <app-back-button (clicked)="toggleBookingForm()"></app-back-button>
-        <div>
-          <h1 class="text-2xl font-bold text-standard mb-1">
-            {{ isEditMode() ? 'Edit Scheduled Job' : 'Schedule New Inspection' }}
-          </h1>
-          <p class="text-standard-muted text-sm">
-            {{ isEditMode() ? 'Update existing booking details' : 'Add a new client to your schedule' }}
-          </p>
-        </div>
+  <!-- Schedule View Header -->
+  <div class="form-page-header">
+    <div class="flex flex-wrap gap-3 justify-between items-center">
+      <div>
+        <h1 class="text-2xl font-bold text-standard mb-2">Inspection Schedule</h1>
+        <p class="text-standard-muted text-sm">Manage your upcoming bookings and history.</p>
       </div>
+      <app-button (click)="goToBookJob()" variant="solid">
+        <lucide-icon [name]="icons.Plus" [size]="18"></lucide-icon>
+        <span>Book Inspection</span>
+      </app-button>
     </div>
+  </div>
 
-    <div class="form-container" [class.edit-mode]="isEditMode()">
-      <div class="form-body">
-        @if (errorMessage()) {
-        <div class="form-error-banner">
-          <lucide-icon [name]="icons.AlertCircle" [size]="18" class="mr-2"></lucide-icon>
-          <span>{{ errorMessage() }}</span>
-        </div>
-        }
-
-        <form [formGroup]="bookingForm" (ngSubmit)="onSubmit()" class="form-grid">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <app-text-input label="Client Name" placeholder="e.g. John Doe" name="client_name">
-            </app-text-input>
-
-            <app-text-input label="Client Email" placeholder="john@example.com" type="email" name="client_email">
-            </app-text-input>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <app-text-input label="Client Phone" placeholder="(555) 000-0000" name="client_phone">
-            </app-text-input>
-
-            <app-text-input label="Property Address" placeholder="123 Main St, City, State" name="address">
-            </app-text-input>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="input-wrapper">
-              <label class="input-label mb-1.5 block text-xs font-medium text-standard/80">Inspection Date & Time</label>
-              <input type="datetime-local" class="input-field w-full p-2.5 rounded-lg border border-slate-100 bg-slate-50/50 focus:border-primary/30 focus:bg-white transition-all outline-none text-sm" formControlName="scheduled_date"
-                [class.border-error/30]="bookingForm.get('scheduled_date')?.touched && bookingForm.get('scheduled_date')?.invalid">
-              @if (bookingForm.get('scheduled_date')?.touched && bookingForm.get('scheduled_date')?.invalid) {
-              <span class="input-error text-[10px] text-error mt-1 block">Date and time are required</span>
-              }
-            </div>
-
-            <app-text-input label="Agreed Price" placeholder="450.00" name="agreed_price" [isCurrency]="true" prefix="$">
-            </app-text-input>
-          </div>
-
-          <div class="email-notification pt-2">
-            <app-toggle-switch 
-              formControlName="send_email"
-              label="Send Confirmation Email"
-              description="Client will receive a professional confirmation with job details.">
-            </app-toggle-switch>
-          </div>
-
-          <div class="form-actions">
-            <app-button type="submit" variant="solid" [isLoading]="isSubmitting()" [disabled]="isSubmitting()">
-              {{ isEditMode() ? 'Save Changes' : 'Create Inspection' }}
-            </app-button>
-          </div>
-        </form>
-      </div>
-    </div>
-  } @else {
-    <!-- Schedule View Header -->
-    <div class="form-page-header">
-      <div class="flex flex-wrap gap-3 justify-between items-center">
-        <div>
-          <h1 class="text-2xl font-bold text-standard mb-2">Inspection Schedule</h1>
-          <p class="text-standard-muted text-sm">Manage your upcoming bookings and history.</p>
-        </div>
-        <app-button (click)="toggleBookingForm()" variant="solid">
-          <lucide-icon [name]="icons.Plus" [size]="18"></lucide-icon>
-          <span>Book Inspection</span>
-        </app-button>
-      </div>
-    </div>
-
-
-    <!-- Search and Filters -->
-    <div class="flex items-center justify-between gap-3 mb-8">
+  <!-- Search and Filters -->
+  <div class="flex flex-col gap-4 mb-8">
+    <div class="flex items-center justify-between gap-3">
       <div class="w-full sm:w-80">
-        <app-search-input [formControl]="searchControl" placeholder="Search jobs..."
-          (clear)="searchQuery.set('')">
+        <app-search-input [formControl]="searchControl" placeholder="Search by client or address..."
+          (clear)="searchControl.setValue('')">
         </app-search-input>
       </div>
     </div>
 
-    @if (isLoading() && scheduledJobs().length === 0) {
-      <div class="job-list grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-        @for (i of [1,2,3]; track i) {
-          <div class="skeleton-job-card h-40 animate-pulse bg-slate-100 rounded-xl"></div>
-        }
+    <!-- Quick Filters Pill Row -->
+    <div class="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+      <button 
+        (click)="setDateFilter('all')" 
+        [class.active]="dateFilter() === 'all'" 
+        class="filter-pill">
+        All
+      </button>
+      <button 
+        (click)="setDateFilter('today')" 
+        [class.active]="dateFilter() === 'today'" 
+        class="filter-pill">
+        Today
+      </button>
+      <button 
+        (click)="setDateFilter('week')" 
+        [class.active]="dateFilter() === 'week'" 
+        class="filter-pill">
+        This Week
+      </button>
+      <button 
+        (click)="setDateFilter('month')" 
+        [class.active]="dateFilter() === 'month'" 
+        class="filter-pill">
+        This Month
+      </button>
+      <button 
+        (click)="setDateFilter('cancelled')" 
+        [class.active]="dateFilter() === 'cancelled'" 
+        class="filter-pill">
+        Cancelled
+      </button>
+    </div>
+  </div>
+
+  @if (isLoading() && scheduledJobs().length === 0) {
+    <div class="job-list grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+      @for (i of [1,2,3]; track i) {
+        <div class="skeleton-job-card h-40 animate-pulse bg-slate-100 rounded-xl"></div>
+      }
+    </div>
+  } @else {
+    @if (isSearching()) {
+      <!-- Search Results View -->
+      <div class="schedule-groups search-results">
+        <div class="job-group">
+          <div class="group-header">
+            <span class="group-dot group-dot--search"></span>
+            <h2 class="group-title">Search Results</h2>
+            <span class="group-count">{{ filteredJobs().length }}</span>
+          </div>
+
+          <div class="job-list grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+            @for (job of filteredJobs(); track job.id) {
+              <app-scheduled-job-card
+                [job]="job"
+                [confirmingJobId]="confirmingJobId()"
+                [confirmationType]="confirmationType()"
+                (confirm)="onConfirm($event)"
+                (cancelConfirmation)="onCancelConfirmation()"
+                (open)="openInspection($event)"
+                (edit)="editJob($event)"
+                (delete)="onDeleteJob($event)"
+                (cancel)="onCancelJob($event)">
+              </app-scheduled-job-card>
+            }
+          </div>
+        </div>
       </div>
-    } @else {
-      @if (isSearching()) {
-        <!-- Search Results View -->
-        <div class="schedule-groups search-results">
+    } @else if (scheduledJobs().length > 0) {
+      <div class="schedule-groups">
+        <!-- Today Group -->
+        @if (todayJobs().length > 0) {
           <div class="job-group">
             <div class="group-header">
-              <span class="group-dot group-dot--search"></span>
-              <h2 class="group-title">Search Results</h2>
-              <span class="group-count">{{ filteredJobs().length }}</span>
+              <span class="group-dot group-dot--today"></span>
+              <h2 class="group-title">Today's Agenda</h2>
+              <span class="group-count">{{ todayJobs().length }}</span>
             </div>
-
             <div class="job-list grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-              @for (job of filteredJobs(); track job.id) {
+              @for (job of todayJobs(); track job.id) {
                 <app-scheduled-job-card
                   [job]="job"
                   [confirmingJobId]="confirmingJobId()"
@@ -122,114 +111,86 @@
                   (confirm)="onConfirm($event)"
                   (cancelConfirmation)="onCancelConfirmation()"
                   (open)="openInspection($event)"
-                  (edit)="toggleBookingForm($event)"
+                  (edit)="editJob($event)"
                   (delete)="onDeleteJob($event)"
                   (cancel)="onCancelJob($event)">
                 </app-scheduled-job-card>
               }
             </div>
           </div>
-        </div>
-      } @else if (scheduledJobs().length > 0) {
-        <div class="schedule-groups">
-          <!-- Today Group -->
-          @if (todayJobs().length > 0) {
-            <div class="job-group">
-              <div class="group-header">
-                <span class="group-dot group-dot--today"></span>
-                <h2 class="group-title">Today's Agenda</h2>
-                <span class="group-count">{{ todayJobs().length }}</span>
-              </div>
-              <div class="job-list grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-                @for (job of todayJobs(); track job.id) {
-                  <app-scheduled-job-card
-                    [job]="job"
-                    [confirmingJobId]="confirmingJobId()"
-                    [confirmationType]="confirmationType()"
-                    (confirm)="onConfirm($event)"
-                    (cancelConfirmation)="onCancelConfirmation()"
-                    (open)="openInspection($event)"
-                    (edit)="toggleBookingForm($event)"
-                    (delete)="onDeleteJob($event)"
-                    (cancel)="onCancelJob($event)">
-                  </app-scheduled-job-card>
-                }
-              </div>
-            </div>
-          }
+        }
 
-          <!-- Upcoming Group -->
-          @if (upcomingJobs().length > 0) {
-            <div class="job-group">
-              <div class="group-header">
-                <span class="group-dot group-dot--upcoming"></span>
-                <h2 class="group-title">Upcoming</h2>
-                <span class="group-count">{{ upcomingJobs().length }}</span>
-              </div>
-              <div class="job-list grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-                @for (job of upcomingJobs(); track job.id) {
-                  <app-scheduled-job-card
-                    [job]="job"
-                    [confirmingJobId]="confirmingJobId()"
-                    [confirmationType]="confirmationType()"
-                    (confirm)="onConfirm($event)"
-                    (cancelConfirmation)="onCancelConfirmation()"
-                    (open)="openInspection($event)"
-                    (edit)="toggleBookingForm($event)"
-                    (delete)="onDeleteJob($event)"
-                    (cancel)="onCancelJob($event)">
-                  </app-scheduled-job-card>
-                }
-              </div>
+        <!-- Upcoming Group -->
+        @if (upcomingJobs().length > 0) {
+          <div class="job-group">
+            <div class="group-header">
+              <span class="group-dot group-dot--upcoming"></span>
+              <h2 class="group-title">Upcoming</h2>
+              <span class="group-count">{{ upcomingJobs().length }}</span>
             </div>
-          }
-
-          <!-- Past Section -->
-          @if (pastJobs().length > 0) {
-            <div class="job-group">
-              <div class="group-header">
-                <span class="group-dot group-dot--past"></span>
-                <h2 class="group-title">History</h2>
-                <span class="group-count">{{ pastJobs().length }}</span>
-              </div>
-              <div class="job-list grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-                @for (job of pastJobs(); track job.id) {
-                  <app-scheduled-job-card
-                    [job]="job"
-                    [confirmingJobId]="confirmingJobId()"
-                    [confirmationType]="confirmationType()"
-                    (confirm)="onConfirm($event)"
-                    (cancelConfirmation)="onCancelConfirmation()"
-                    (open)="openInspection($event)"
-                    (edit)="toggleBookingForm($event)"
-                    (delete)="onDeleteJob($event)"
-                    (cancel)="onCancelJob($event)">
-                  </app-scheduled-job-card>
-                }
-              </div>
+            <div class="job-list grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+              @for (job of upcomingJobs(); track job.id) {
+                <app-scheduled-job-card
+                  [job]="job"
+                  [confirmingJobId]="confirmingJobId()"
+                  [confirmationType]="confirmationType()"
+                  (confirm)="onConfirm($event)"
+                  (cancelConfirmation)="onCancelConfirmation()"
+                  (open)="openInspection($event)"
+                  (edit)="editJob($event)"
+                  (delete)="onDeleteJob($event)"
+                  (cancel)="onCancelJob($event)">
+                </app-scheduled-job-card>
+              }
             </div>
-          }
-
-          @if (hasMore()) {
-            <div class="load-more-container">
-              <app-button variant="outline" size="sm" [isLoading]="isLoading()" (click)="loadMore()">
-                Load More
-              </app-button>
-            </div>
-          }
-        </div>
-      } @else {
-        <div class="empty-state">
-          <div class="w-12 h-12 bg-white rounded-xl shadow-sm flex items-center justify-center mx-auto mb-4 border border-slate-100/80">
-            <lucide-icon [name]="icons.Calendar" class="text-primary" [size]="20"></lucide-icon>
           </div>
-          <h2 class="text-lg font-bold text-standard mb-1">Schedule is empty</h2>
-          <p class="text-standard-muted text-xs max-w-[240px] mx-auto mb-6">Start by booking your first inspection.</p>
-          <app-button variant="solid" size="md" (click)="toggleBookingForm()">
-            Book Now
-          </app-button>
+        }
+
+        <!-- Past Section -->
+        @if (pastJobs().length > 0) {
+          <div class="job-group">
+            <div class="group-header">
+              <span class="group-dot group-dot--past"></span>
+              <h2 class="group-title">History</h2>
+              <span class="group-count">{{ pastJobs().length }}</span>
+            </div>
+            <div class="job-list grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+              @for (job of pastJobs(); track job.id) {
+                <app-scheduled-job-card
+                  [job]="job"
+                  [confirmingJobId]="confirmingJobId()"
+                  [confirmationType]="confirmationType()"
+                  (confirm)="onConfirm($event)"
+                  (cancelConfirmation)="onCancelConfirmation()"
+                  (open)="openInspection($event)"
+                  (edit)="editJob($event)"
+                  (delete)="onDeleteJob($event)"
+                  (cancel)="onCancelJob($event)">
+                </app-scheduled-job-card>
+              }
+            </div>
+          </div>
+        }
+
+        @if (hasMore()) {
+          <div class="load-more-container">
+            <app-button variant="outline" size="sm" [isLoading]="isLoading()" (click)="loadMore()">
+              Load More
+            </app-button>
+          </div>
+        }
+      </div>
+    } @else {
+      <div class="empty-state">
+        <div class="w-12 h-12 bg-white rounded-xl shadow-sm flex items-center justify-center mx-auto mb-4 border border-slate-100/80">
+          <lucide-icon [name]="icons.Calendar" class="text-primary" [size]="20"></lucide-icon>
         </div>
-      }
+        <h2 class="text-lg font-bold text-standard mb-1">Schedule is empty</h2>
+        <p class="text-standard-muted text-xs max-w-[240px] mx-auto mb-6">Start by booking your first inspection.</p>
+        <app-button variant="solid" size="md" (click)="goToBookJob()">
+          Book Now
+        </app-button>
+      </div>
     }
   }
 </div>

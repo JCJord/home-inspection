@@ -7,11 +7,11 @@ export const INSPECTIONS_ROUTES: Routes = [
   },
   {
     path: 'new',
-    loadComponent: () => import('./pages/inspection-form/inspection-form.component').then(m => m.InspectionFormComponent),
+    loadComponent: () => import('./pages/inspection-setup/inspection-setup.component').then(m => m.InspectionSetupComponent),
   },
   {
     path: ':id/edit',
-    loadComponent: () => import('./pages/inspection-form/inspection-form.component').then(m => m.InspectionFormComponent),
+    loadComponent: () => import('./pages/inspection-setup/inspection-setup.component').then(m => m.InspectionSetupComponent),
   },
   {
     path: ':id',

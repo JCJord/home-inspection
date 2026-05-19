@@ -215,6 +215,14 @@ export class HomeComponent implements OnInit {
     this.router.navigate(['/schedule']);
   }
 
+  goToNewInspection(): void {
+    this.router.navigate(['/inspections/new']);
+  }
+
+  goToBookJob(): void {
+    this.router.navigate(['/inspections/new']);
+  }
+
   goToTemplates(): void {
     this.router.navigate(['/templates']);
   }

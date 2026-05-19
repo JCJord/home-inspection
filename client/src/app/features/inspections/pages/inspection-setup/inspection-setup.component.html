@@ -1,0 +1,134 @@
+<div class="max-w-7xl mx-auto p-6 pb-24 relative min-h-full h-auto">
+  <!-- Unified Header -->
+  <div class="form-page-header mb-8">
+    <div class="flex items-center gap-3">
+      <app-back-button (clicked)="goBack()"></app-back-button>
+      <div>
+        <h1 class="text-2xl font-bold text-standard mb-1">
+          {{ isEditMode() ? 'Edit Inspection Details' : 'Set Up Inspection' }}
+        </h1>
+        <p class="text-standard-muted text-sm">
+          {{ isEditMode() ? 'Modify details for this inspection.' : 'Fill out client and property details to initialize this job.' }}
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Unified Form Container -->
+  <div class="form-container" [class.edit-mode]="isEditMode()">
+    @if (isFetching()) {
+      <div class="form-body">
+        <div class="form-grid animate-pulse">
+          <app-skeleton width="100%" height="56px" borderRadius="10px"></app-skeleton>
+          <div class="form-row">
+            <app-skeleton width="100%" height="56px" borderRadius="10px"></app-skeleton>
+            <app-skeleton width="100%" height="56px" borderRadius="10px"></app-skeleton>
+          </div>
+          <app-skeleton width="100%" height="56px" borderRadius="10px"></app-skeleton>
+          <div class="flex justify-end mt-4">
+            <app-skeleton width="140px" height="40px" borderRadius="8px"></app-skeleton>
+          </div>
+        </div>
+      </div>
+    } @else {
+      <form [formGroup]="setupForm" (ngSubmit)="onSubmit()" class="form-body">
+        @if (errorMessage()) {
+          <div class="form-error-banner">
+            <lucide-icon [name]="icons.AlertCircle" [size]="18" class="mr-2"></lucide-icon>
+            <span>{{ errorMessage() }}</span>
+          </div>
+        }
+
+        <div class="form-grid">
+          <!-- SECTION 1: Client & Address -->
+          <div class="form-section-title">Client & Address Details</div>
+          
+          <app-text-input name="client_name" label="Client Name" placeholder="John Doe"></app-text-input>
+
+          <div class="form-row">
+            <app-text-input name="client_email" label="Client Email (Optional)" type="email" placeholder="john@example.com"></app-text-input>
+            <app-text-input name="client_phone" label="Client Phone (Optional)" type="tel" placeholder="e.g. 555-0123"></app-text-input>
+          </div>
+
+          <app-text-input name="address" label="Property Address" placeholder="123 Main St, City, State"></app-text-input>
+
+          <!-- Template Selection -->
+          @if (!isEditMode() || inspectionStatus() === 'scheduled') {
+            <app-select-input name="template_id" label="Inspection Template (System default applies if empty)"
+              [options]="availableTemplates()">
+            </app-select-input>
+          } @else {
+            <div class="blueprint-card mb-2">
+              <div class="badge-icon">
+                <lucide-icon [name]="icons.Layers" [size]="20"></lucide-icon>
+              </div>
+              <div class="badge-content">
+                <span class="badge-label">Active Template blueprint</span>
+                <span class="badge-value">{{ selectedTemplateName() }}</span>
+              </div>
+            </div>
+          }
+
+          <!-- SECTION 2: Scheduling & Pricing (Optional) -->
+          <div class="form-section-title pt-4">Schedule & Price (Optional)</div>
+          <p class="text-xs text-standard-muted/80 mb-2">
+            Leave "Date & Time" blank if you want to start writing the report immediately in active/direct mode.
+          </p>
+          
+          <div class="form-row">
+            <div class="input-wrapper">
+              <label class="input-label mb-1.5 block text-xs font-medium text-standard/80">Inspection Date & Time</label>
+              <input type="datetime-local" 
+                     class="input-field w-full p-2.5 rounded-lg border border-slate-100 bg-slate-50/50 focus:border-primary/30 focus:bg-white transition-all outline-none text-sm" 
+                     formControlName="scheduled_date">
+            </div>
+
+            <app-text-input name="agreed_price" label="Agreed Price" placeholder="450.00" [isCurrency]="true" prefix="$"></app-text-input>
+          </div>
+
+          <div class="email-notification pt-2">
+            <app-toggle-switch 
+              formControlName="send_email"
+              label="Send Booking Confirmation Email"
+              description="Sends an onboarding email with date and job details (only triggers if Date is scheduled).">
+            </app-toggle-switch>
+          </div>
+
+          <!-- SECTION 3: Additional Property Details (Optional) -->
+          <div class="form-section-title pt-6">Additional Property Details (Optional)</div>
+          
+          <div class="form-row">
+            <app-text-input name="year_built" label="Year Built" type="number" placeholder="e.g. 1995"></app-text-input>
+            <app-text-input name="square_footage" label="Sq Footage" type="number" placeholder="e.g. 2500"></app-text-input>
+          </div>
+
+          <div class="form-row">
+            <app-text-input name="weather" label="Weather" placeholder="e.g. Sunny / Raining"></app-text-input>
+            <app-text-input name="temperature" label="Temperature" type="number" suffix="°F" placeholder="e.g. 75"></app-text-input>
+          </div>
+
+          <div class="form-row">
+            <app-text-input name="occupancy" label="Occupancy Status" placeholder="e.g. Occupied / Vacant"></app-text-input>
+            <app-text-input name="attendees" label="Attendees" placeholder="e.g. Buyer's Agent"></app-text-input>
+          </div>
+
+          <app-text-input name="foundation_type" label="Foundation Type" placeholder="e.g. Concrete Slab"></app-text-input>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+          @if (setupForm.invalid && setupForm.touched) {
+            <div class="footer-error-hint flex items-center gap-2 text-safety text-sm font-bold mr-auto animate-pulse">
+              <lucide-icon [name]="icons.AlertCircle" [size]="16"></lucide-icon>
+              <span>Please check required fields above</span>
+            </div>
+          }
+          
+          <app-button type="submit" [disabled]="isLoading()" [isLoading]="isLoading()" variant="solid">
+            {{ isEditMode() ? 'Save Changes' : (setupForm.get('scheduled_date')?.value ? 'Book Inspection' : 'Start Inspection') }}
+          </app-button>
+        </div>
+      </form>
+    }
+  </div>
+</div>

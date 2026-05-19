@@ -1,15 +1,12 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
+import { FormControl, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
 import { InspectionsService } from '../../core/services/inspections.service';
-import { InspectorsService } from '../../core/services/inspectors.service';
 import { Inspection } from '../../core/models/inspection.interface';
 import { ButtonComponent } from '../../shared/components/button/button.component';
-import { TextInputComponent } from '../../shared/components/inputs/text-input/text-input.component';
 import { SearchInputComponent } from '../../shared/components/inputs/search-input/search-input.component';
-import { BackButtonComponent } from '../../shared/components/back-button/back-button.component';
 import { ScheduledJobCardComponent } from './components/scheduled-job-card/scheduled-job-card.component';
 import {
   Calendar,
@@ -32,7 +29,6 @@ import {
 } from 'lucide-angular';
 import { LucideAngularModule } from 'lucide-angular';
 import { TemplatesService } from '../templates/services/templates.service';
-import { ToggleSwitchComponent } from '../../shared/components/inputs/toggle-switch/toggle-switch.component';
 
 @Component({
   selector: 'app-schedule',
@@ -43,11 +39,8 @@ import { ToggleSwitchComponent } from '../../shared/components/inputs/toggle-swi
     FormsModule,
     LucideAngularModule,
     ButtonComponent,
-    TextInputComponent,
     SearchInputComponent,
-    BackButtonComponent,
     ScheduledJobCardComponent,
-    ToggleSwitchComponent,
   ],
   templateUrl: './schedule.component.html',
   styleUrl: './schedule.component.scss',
@@ -77,22 +70,14 @@ import { ToggleSwitchComponent } from '../../shared/components/inputs/toggle-swi
   ],
 })
 export class ScheduleComponent implements OnInit {
-  private fb = inject(FormBuilder);
   private inspectionsService = inject(InspectionsService);
-  private inspectorsService = inject(InspectorsService);
   private templatesService = inject(TemplatesService);
   private router = inject(Router);
 
   scheduledJobs = signal<Inspection[]>([]);
   templates = this.templatesService.templates;
   isLoading = signal<boolean>(false);
-  isSubmitting = signal<boolean>(false);
   errorMessage = signal<string | null>(null);
-
-  // Modal/Form states
-  showBookingForm = signal<boolean>(false);
-  isEditMode = signal<boolean>(false);
-  editingJob = signal<Inspection | null>(null);
 
   // Confirmation states
   confirmingJobId = signal<string | null>(null);
@@ -123,19 +108,10 @@ export class ScheduleComponent implements OnInit {
   currentPage = signal<number>(1);
   pageSize = signal<number>(15);
   totalCount = signal<number>(0);
+  dateFilter = signal<'all' | 'today' | 'week' | 'month' | 'cancelled'>('all');
 
   hasMore = computed(() => this.scheduledJobs().length < this.totalCount());
-
-  filteredJobs = computed(() => {
-    const query = this.searchQuery().toLowerCase().trim();
-    if (!query) return this.scheduledJobs();
-
-    return this.scheduledJobs().filter(job =>
-      job.client_name?.toLowerCase().includes(query) ||
-      job.address?.toLowerCase().includes(query)
-    );
-  });
-
+  filteredJobs = computed(() => this.scheduledJobs());
   isSearching = computed(() => this.searchQuery().length > 0);
 
   todayJobs = computed(() =>
@@ -150,20 +126,8 @@ export class ScheduleComponent implements OnInit {
     this.filteredJobs().filter(job => this.isPast(job.scheduled_date) && !this.isToday(job.scheduled_date))
   );
 
-  bookingForm: FormGroup = this.fb.group({
-    client_name: ['', [Validators.required, Validators.maxLength(100)]],
-    client_email: ['', [Validators.email]],
-    client_phone: [''],
-    address: ['', [Validators.required]],
-    scheduled_date: ['', [Validators.required]],
-    agreed_price: [null, [Validators.min(0), Validators.max(99999999.99)]],
-    template_id: [''],
-    send_email: [true],
-  });
-
   ngOnInit(): void {
     this.loadScheduledJobs();
-    this.loadInspectorDefaults();
     this.loadTemplates();
     this.setupSearch();
   }
@@ -179,19 +143,14 @@ export class ScheduleComponent implements OnInit {
     ).subscribe(value => {
       this.searchQuery.set(value);
       this.currentPage.set(1); // Reset to page 1 on search
+      this.loadScheduledJobs();
     });
   }
 
-  loadInspectorDefaults(): void {
-    this.inspectorsService.getProfile().subscribe({
-      next: (profile) => {
-        if ((profile as any).preferred_template_id) {
-          this.bookingForm.patchValue({
-            template_id: (profile as any).preferred_template_id
-          });
-        }
-      },
-    });
+  setDateFilter(filter: 'all' | 'today' | 'week' | 'month' | 'cancelled'): void {
+    this.dateFilter.set(filter);
+    this.currentPage.set(1);
+    this.loadScheduledJobs();
   }
 
   loadScheduledJobs(append: boolean = false): void {
@@ -202,9 +161,40 @@ export class ScheduleComponent implements OnInit {
     this.isLoading.set(!append);
     const page = !append ? 1 : this.currentPage();
     const limit = this.pageSize();
-    const search = undefined;
+    const search = this.searchQuery().trim() || undefined;
 
-    this.inspectionsService.getInspections(page, limit, true, 'scheduled', search).subscribe({
+    let startDate: string | undefined = undefined;
+    let endDate: string | undefined = undefined;
+    let statusQuery = 'scheduled';
+
+    const filter = this.dateFilter();
+    const today = new Date();
+
+    if (filter === 'today') {
+      const start = new Date(today);
+      start.setHours(0, 0, 0, 0);
+      const end = new Date(today);
+      end.setHours(23, 59, 59, 999);
+      startDate = start.toISOString();
+      endDate = end.toISOString();
+    } else if (filter === 'week') {
+      const start = new Date(today);
+      start.setHours(0, 0, 0, 0);
+      const end = new Date(today);
+      end.setDate(today.getDate() + 7);
+      end.setHours(23, 59, 59, 999);
+      startDate = start.toISOString();
+      endDate = end.toISOString();
+    } else if (filter === 'month') {
+      const start = new Date(today.getFullYear(), today.getMonth(), 1, 0, 0, 0, 0);
+      const end = new Date(today.getFullYear(), today.getMonth() + 1, 0, 23, 59, 59, 999);
+      startDate = start.toISOString();
+      endDate = end.toISOString();
+    } else if (filter === 'cancelled') {
+      statusQuery = 'cancelled';
+    }
+
+    this.inspectionsService.getInspections(page, limit, true, statusQuery, search, startDate, endDate).subscribe({
       next: (res) => {
         this.totalCount.set(res.meta.total);
 
@@ -244,86 +234,12 @@ export class ScheduleComponent implements OnInit {
     this.router.navigate(['/inspections', job.id]);
   }
 
-  toggleBookingForm(job?: Inspection): void {
-    if (job) {
-      this.isEditMode.set(true);
-      this.editingJob.set(job);
-      this.showBookingForm.set(true);
-
-      // Format date for datetime-local input (YYYY-MM-DDTHH:mm)
-      let formattedDate = '';
-      if (job.scheduled_date) {
-        const date = new Date(job.scheduled_date);
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-        const hours = String(date.getHours()).padStart(2, '0');
-        const minutes = String(date.getMinutes()).padStart(2, '0');
-        formattedDate = `${year}-${month}-${day}T${hours}:${minutes}`;
-      }
-
-      this.bookingForm.patchValue({
-        client_name: job.client_name,
-        client_email: job.client_email,
-        client_phone: job.client_phone,
-        address: job.address,
-        agreed_price: job.agreed_price,
-        scheduled_date: formattedDate,
-        template_id: job.template_id || '',
-        send_email: true, // Default to true on edit too, or use a value if it exists in job
-      });
-    } else {
-      this.isEditMode.set(false);
-      this.editingJob.set(null);
-      this.showBookingForm.update((v) => !v);
-      if (!this.showBookingForm()) {
-        this.bookingForm.reset();
-        this.loadInspectorDefaults();
-        this.errorMessage.set(null);
-      }
-    }
+  goToBookJob(): void {
+    this.router.navigate(['/inspections/new']);
   }
 
-  onSubmit(): void {
-    if (this.bookingForm.invalid) {
-      this.bookingForm.markAllAsTouched();
-      return;
-    }
-
-    this.isSubmitting.set(true);
-    this.errorMessage.set(null);
-
-    const formData = this.bookingForm.value;
-    const jobData = {
-      ...formData,
-      // Ensure date is in ISO format for the backend
-      scheduled_date: formData.scheduled_date ? new Date(formData.scheduled_date).toISOString() : null,
-      // Normalize empty strings to null for optional fields
-      client_email: formData.client_email || null,
-      client_phone: formData.client_phone || null,
-      // Ensure agreed_price is a number or null, avoiding empty strings or undefined
-      agreed_price: (formData.agreed_price === '' || formData.agreed_price === null || formData.agreed_price === undefined) ? null : Number(formData.agreed_price),
-      // Remove template_id if empty to avoid validation errors
-      template_id: formData.template_id || undefined,
-      send_email: formData.send_email
-    };
-
-    const request = this.isEditMode()
-      ? this.inspectionsService.updateInspection(this.editingJob()!.id, jobData)
-      : this.inspectionsService.createInspection(jobData);
-
-    request.subscribe({
-      next: () => {
-        this.isSubmitting.set(false);
-        this.toggleBookingForm();
-        this.loadScheduledJobs();
-      },
-      error: (err) => {
-        this.isSubmitting.set(false);
-        this.errorMessage.set('Failed to save inspection. Please try again.');
-        console.error(err);
-      },
-    });
+  editJob(job: Inspection): void {
+    this.router.navigate(['/inspections', job.id, 'edit']);
   }
 
   deleteJob(job: Inspection): void {

@@ -260,7 +260,7 @@
           </div>
           <h3>Clear Schedule Today</h3>
           <p>No inspections booked for today. Use the time to catch up on reports or marketing.</p>
-          <app-button variant="outline" size="md" (click)="goToSchedule()">
+          <app-button variant="outline" size="md" (click)="goToBookJob()">
             Book a Job
           </app-button>
         </div>
@@ -310,7 +310,7 @@
     <section class="quick-actions lg:w-80">
       <h2 class="text-lg font-bold mb-6">Quick Actions</h2>
       <div class="flex flex-col gap-3">
-        <button class="action-card" (click)="goToSchedule()">
+        <button class="action-card" (click)="goToNewInspection()">
           <div class="action-icon bg-primary/10 text-primary">
             <lucide-icon [name]="icons.Plus" [size]="20"></lucide-icon>
           </div>

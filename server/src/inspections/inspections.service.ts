@@ -48,6 +48,7 @@ export class InspectionsService {
         template = defaultTemplate;
       }
     }
+    const status = createInspectionDto.scheduled_date ? 'scheduled' : 'in_progress';
 
     const inspection = this.inspectionRepository.create({
       ...createInspectionDto,
@@ -55,7 +56,7 @@ export class InspectionsService {
       template_id: template?.id,
       template_snapshot: template?.structure,
       metadata_values: {},
-      status: 'scheduled'
+      status
     });
 
     const savedInspection = await this.inspectionRepository.save(inspection);
@@ -64,18 +65,36 @@ export class InspectionsService {
     inspector.free_inspections_used += 1;
     await this.inspectorRepository.save(inspector);
 
-    // Add relation back for event
-    savedInspection.inspector = inspector;
-    this.eventEmitter.emit('inspection.scheduled', savedInspection);
+    // Add relation back for event (only for scheduled bookings)
+    if (savedInspection.status === 'scheduled') {
+      savedInspection.inspector = inspector;
+      this.eventEmitter.emit('inspection.scheduled', savedInspection);
+    }
 
     return savedInspection;
   }
 
-  async findAll(inspectorId: string, page: number = 1, limit: number = 10, status?: string, search?: string) {
+  async findAll(
+    inspectorId: string,
+    page: number = 1,
+    limit: number = 10,
+    status?: string,
+    search?: string,
+    startDate?: string,
+    endDate?: string,
+  ) {
     const skip = (page - 1) * limit;
 
     const queryBuilder = this.inspectionRepository.createQueryBuilder('inspection')
       .where('inspection.inspector_id = :inspectorId', { inspectorId });
+
+    if (startDate) {
+      queryBuilder.andWhere('inspection.scheduled_date >= :startDate', { startDate });
+    }
+
+    if (endDate) {
+      queryBuilder.andWhere('inspection.scheduled_date <= :endDate', { endDate });
+    }
 
     if (status) {
       queryBuilder.andWhere('inspection.status = :status', { status });
@@ -91,9 +110,14 @@ export class InspectionsService {
       );
     }
 
+    if (status === 'scheduled') {
+      queryBuilder.orderBy('inspection.scheduled_date', 'ASC');
+    } else {
+      queryBuilder.orderBy('inspection.updated_at', 'DESC');
+    }
+
     const [data, total] = await queryBuilder
       .leftJoinAndSelect('inspection.findings', 'findings')
-      .orderBy('inspection.scheduled_date', 'DESC')
       .skip(skip)
       .take(limit)
       .getManyAndCount();

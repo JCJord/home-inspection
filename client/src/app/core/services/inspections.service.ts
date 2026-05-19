@@ -61,9 +61,17 @@ export class InspectionsService {
 
   // --- Inspection Methods ---
 
-  getInspections(page: number = 1, limit: number = 10, forceRefresh: boolean = false, status?: string, search?: string): Observable<{ data: Inspection[], meta: { total: number, page: number, limit: number, totalPages: number } }> {
+  getInspections(
+    page: number = 1,
+    limit: number = 10,
+    forceRefresh: boolean = false,
+    status?: string,
+    search?: string,
+    startDate?: string,
+    endDate?: string,
+  ): Observable<{ data: Inspection[], meta: { total: number, page: number, limit: number, totalPages: number } }> {
     // Return cached data if not stale and not forced (only for unfiltered queries)
-    if (!status && !search && !this._needsRefresh() && !forceRefresh && this._inspections().length > 0 && page === 1) {
+    if (!status && !search && !startDate && !endDate && !this._needsRefresh() && !forceRefresh && this._inspections().length > 0 && page === 1) {
       return of({
         data: this._inspections(),
         meta: {
@@ -87,6 +95,14 @@ export class InspectionsService {
       params = params.set('search', search);
     }
 
+    if (startDate) {
+      params = params.set('startDate', startDate);
+    }
+
+    if (endDate) {
+      params = params.set('endDate', endDate);
+    }
+
     // Only show loading spinner if we have no data at all
     if (this._inspections().length === 0) {
       this._isLoading.set(true);
@@ -95,10 +111,12 @@ export class InspectionsService {
     return this.http.get<{ data: Inspection[], meta: { total: number, page: number, limit: number, totalPages: number } }>(this.apiUrl, { params }).pipe(
       tap({
         next: (res) => {
-          // Only update main cache for unfiltered queries
-          if (!status) {
-            this._inspections.set(res.data);
-            this._totalCount.set(res.meta.total);
+          // Always update the visible signals so the view updates on search and filters
+          this._inspections.set(res.data);
+          this._totalCount.set(res.meta.total);
+
+          // Only update persistent cache and needsRefresh status for clean, unfiltered queries
+          if (!status && !search && !startDate && !endDate) {
             if (page === 1) {
               this.saveToCache(res.data, res.meta.total);
               this._needsRefresh.set(false);

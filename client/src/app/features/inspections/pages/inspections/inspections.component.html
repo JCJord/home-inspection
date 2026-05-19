@@ -21,6 +21,45 @@
     }
   </div>
 
+  <!-- Search and Filters -->
+  <div class="flex flex-col gap-4 mb-8">
+    <div class="flex items-center justify-between gap-3">
+      <div class="w-full sm:w-80">
+        <app-search-input [formControl]="searchControl" placeholder="Search by client or address..."
+          (clear)="searchControl.setValue('')">
+        </app-search-input>
+      </div>
+    </div>
+
+    <!-- Quick Filters Pill Row -->
+    <div class="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+      <button 
+        (click)="setStatusFilter('all')" 
+        [class.active]="statusFilter() === 'all'" 
+        class="filter-pill">
+        All
+      </button>
+      <button 
+        (click)="setStatusFilter('in_progress')" 
+        [class.active]="statusFilter() === 'in_progress'" 
+        class="filter-pill">
+        In Progress
+      </button>
+      <button 
+        (click)="setStatusFilter('published')" 
+        [class.active]="statusFilter() === 'published'" 
+        class="filter-pill">
+        Published
+      </button>
+      <button 
+        (click)="setStatusFilter('cancelled')" 
+        [class.active]="statusFilter() === 'cancelled'" 
+        class="filter-pill">
+        Cancelled
+      </button>
+    </div>
+  </div>
+
   <div class="content">
     @if (isLoading()) {
     <div class="skeleton-list">
