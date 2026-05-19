@@ -50,6 +50,15 @@
           </a>
         </li>
         <li>
+          <a routerLink="/reports" routerLinkActive="active" (click)="closeMenu()">
+            <div class="menu-item-icon">
+              <lucide-icon [img]="icons.FileText" [size]="20"></lucide-icon>
+            </div>
+            <span>Reports</span>
+            <lucide-icon [img]="icons.ChevronRight" [size]="16" class="chevron"></lucide-icon>
+          </a>
+        </li>
+        <li>
           <a routerLink="/settings" routerLinkActive="active" (click)="closeMenu()">
             <div class="menu-item-icon">
               <lucide-icon [img]="icons.Settings" [size]="20"></lucide-icon>

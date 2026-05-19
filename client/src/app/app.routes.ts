@@ -41,6 +41,10 @@ export const routes: Routes = [
         loadChildren: () => import('./features/templates/templates.routes').then(m => m.TEMPLATES_ROUTES),
       },
       {
+        path: 'reports',
+        loadComponent: () => import('./features/reports/pages/reports-list/reports-list.component').then(m => m.ReportsListComponent),
+      },
+      {
         path: 'settings',
         loadChildren: () => import('./features/profile/profile.routes').then(m => m.PROFILE_ROUTES),
       },

@@ -1,0 +1,161 @@
+<div class="reports-container max-w-7xl mx-auto p-6 pb-24 relative">
+  <!-- Minimal Page Heading -->
+  <div class="flex flex-wrap gap-4 justify-between items-center mb-6">
+    <div>
+      <h1 class="text-2xl font-bold text-standard mb-2">Reports Center</h1>
+      <p class="text-standard-muted text-sm">Access and manage all active hosted inspection PDF reports.</p>
+    </div>
+    
+    <!-- Compact Metric Pills -->
+    <div class="flex items-center gap-3">
+      <div class="flex items-center gap-2 bg-light-standard px-3 py-1.5 rounded-full border border-standard text-xs font-semibold text-standard">
+        <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+        <span>{{ metrics().totalPublished }} Active Reports</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Standard Search Input Component -->
+  <div class="mb-6">
+    @if (isLoading()) {
+      <app-skeleton width="100%" height="42px" borderRadius="8px"></app-skeleton>
+    } @else {
+      <app-search-input 
+        [(ngModel)]="searchQuery" 
+        placeholder="Search reports by address, client name, or date...">
+      </app-search-input>
+    }
+  </div>
+
+  <!-- Main Work area -->
+  @if (isLoading()) {
+    <div class="flex flex-col gap-3">
+      @for (i of [1, 2, 3]; track i) {
+        <div class="reports-skeleton-item p-4 bg-surface rounded-xl border border-standard flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div class="flex items-start gap-3 flex-1">
+            <app-skeleton width="42px" height="42px" borderRadius="8px" class="flex-shrink-0"></app-skeleton>
+            <div class="flex flex-col gap-1.5 flex-1">
+              <app-skeleton width="60%" height="16px" borderRadius="4px"></app-skeleton>
+              <app-skeleton width="30%" height="12px" borderRadius="4px"></app-skeleton>
+            </div>
+          </div>
+          <div class="flex flex-col gap-1.5 sm:w-[180px] pl-11 sm:pl-0">
+            <app-skeleton width="50%" height="14px" borderRadius="4px"></app-skeleton>
+            <app-skeleton width="70%" height="10px" borderRadius="4px"></app-skeleton>
+          </div>
+          <div class="flex items-center gap-2 pl-11 sm:pl-0">
+            <app-skeleton width="60px" height="32px" borderRadius="6px"></app-skeleton>
+            <app-skeleton width="34px" height="32px" borderRadius="6px"></app-skeleton>
+          </div>
+        </div>
+      }
+    </div>
+  } @else if (filteredReports().length === 0) {
+    <!-- Clean Minimal Zero State -->
+    <div class="zero-state-container p-12 text-center rounded-xl border border-standard bg-surface flex flex-col items-center justify-center gap-3">
+      <div class="zero-icon-wrap p-4 bg-light-standard border border-standard rounded-xl text-standard-muted">
+        <lucide-icon [name]="icons.AlertCircle" [size]="32"></lucide-icon>
+      </div>
+      <h3 class="text-lg font-bold text-standard">No Reports Found</h3>
+      <p class="text-standard-muted text-sm max-w-md">
+        @if (searchQuery()) {
+          No compiled inspection reports match your search criteria. Try refining your address or client name terms.
+        } @else {
+          You haven't compiled or published any inspection reports yet. Navigate to your inspections workbench to get started.
+        }
+      </p>
+      @if (searchQuery()) {
+        <app-button variant="outline" size="sm" (click)="searchQuery.set('')">
+          Clear Filters
+        </app-button>
+      } @else {
+        <a routerLink="/inspections" style="text-decoration: none;">
+          <app-button variant="solid" size="sm">
+            Go to Workbench
+          </app-button>
+        </a>
+      }
+    </div>
+  } @else {
+    <!-- Responsive Minimal Clean Reports List -->
+    <div class="flex flex-col gap-3">
+      @for (report of filteredReports(); track report.id) {
+        <div class="reports-list-item flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-surface rounded-xl border border-standard hover:border-primary/40 hover:shadow-sm transition-all relative">
+          
+          <!-- Icon & Address / Date -->
+          <div class="flex items-start gap-4 min-w-0 flex-1">
+            <div class="report-icon-wrap">
+              <lucide-icon [name]="icons.FileText" [size]="20"></lucide-icon>
+            </div>
+            <div class="min-w-0 flex-1">
+              <h3 class="text-sm font-bold text-standard break-words leading-snug mb-1">
+                {{ report.address || 'Unnamed Address' }}
+              </h3>
+              <span class="text-xs font-semibold text-standard-muted block">
+                {{ report.scheduled_date | date: 'mediumDate' }}
+              </span>
+            </div>
+          </div>
+          
+          <!-- Client Details (Responsive placement via indents on narrow viewports) -->
+          <div class="flex flex-col gap-0.5 sm:min-w-[180px] sm:max-w-[240px] pl-13 sm:pl-0">
+            <span class="text-sm font-semibold text-standard break-words">
+              {{ report.client_name || 'Generic Client' }}
+            </span>
+            <span class="text-xs font-medium text-standard-muted break-all">
+              {{ report.client_email || 'N/A' }}
+            </span>
+          </div>
+
+          <!-- Quick Action Buttons -->
+          <div class="flex items-center gap-2 pl-13 sm:pl-0 flex-shrink-0 self-end sm:self-auto">
+            <a [href]="apiUrl + '/uploads/reports/' + report.id + '.pdf'" target="_blank" style="text-decoration: none;">
+              <app-button variant="solid" size="sm">
+                <lucide-icon [name]="icons.Maximize" [size]="12"></lucide-icon>
+                <span>View</span>
+              </app-button>
+            </a>
+
+            <!-- Dropdown Options -->
+            <div class="relative inline-block text-left">
+              <app-button 
+                variant="ghost" 
+                size="sm" 
+                class="dropdown-trigger-btn" 
+                [class.active]="activeMenuId() === report.id" 
+                (click)="toggleActionsMenu($event, report.id!)">
+                <lucide-icon [name]="icons.MoreHorizontal" [size]="14"></lucide-icon>
+              </app-button>
+
+              @if (activeMenuId() === report.id) {
+                <div class="reports-dropdown-panel" [class.open-upwards]="openUpwards()">
+                  <button class="dropdown-panel-item" (click)="downloadPublishedReport(report); activeMenuId.set(null)">
+                    <lucide-icon [name]="icons.Download" [size]="14"></lucide-icon>
+                    <span>Download PDF</span>
+                  </button>
+                  
+                  <button class="dropdown-panel-item" (click)="copyReportLink(report); activeMenuId.set(null)">
+                    @if (copiedId() === report.id) {
+                      <lucide-icon [name]="icons.Check" [size]="14" class="text-success"></lucide-icon>
+                      <span class="text-success">Copied!</span>
+                    } @else {
+                      <lucide-icon [name]="icons.FileText" [size]="14"></lucide-icon>
+                      <span>Copy Link</span>
+                    }
+                  </button>
+
+                  <div class="dropdown-panel-divider"></div>
+
+                  <button class="dropdown-panel-item danger" (click)="unpublishInspection(report); activeMenuId.set(null)">
+                    <lucide-icon [name]="icons.Trash2" [size]="14"></lucide-icon>
+                    <span>Unlock & Edit</span>
+                  </button>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

@@ -122,6 +122,7 @@ export class InspectionsService {
 
     const [data, total] = await queryBuilder
       .leftJoinAndSelect('inspection.findings', 'findings')
+      .leftJoinAndSelect('inspection.report', 'report')
       .skip(skip)
       .take(limit)
       .getManyAndCount();
