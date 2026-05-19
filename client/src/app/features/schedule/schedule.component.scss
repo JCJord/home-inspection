@@ -213,27 +213,37 @@
 
 // ─── Empty State ──────────────────────────────────
 .empty-state {
+  @include card-premium(false);
+  border-style: dashed;
+  border-color: $color-border;
+  background: $color-surface-light;
+  padding: 4rem 2rem;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 6rem 2rem;
-  color: $color-text-muted;
-  background: $color-surface;
-  border-radius: 2rem;
-  border: 1px dashed $color-border;
   text-align: center;
+  width: 100%;
+  transition: all 0.3s ease;
 
-  lucide-icon {
-    width: 4rem;
-    height: 4rem;
-    margin-bottom: 1.5rem;
-    opacity: 0.3;
+  &:hover {
+    border-color: rgba($color-primary, 0.35);
+    background: rgba($color-primary, 0.005);
+    box-shadow: 0 12px 25px -10px rgba(0, 0, 0, 0.04);
+  }
+
+  > lucide-icon {
+    width: 3.5rem;
+    height: 3.5rem;
+    margin-bottom: 1.25rem;
+    opacity: 0.25;
   }
 
   p {
-    font-size: 1.25rem;
+    font-size: 0.875rem;
     font-weight: 500;
+    color: $color-text-muted;
+    line-height: 1.4;
   }
 }
 

@@ -219,13 +219,13 @@
           }
         </div>
       } @else {
-        <div class="empty-state py-12 text-center bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
-          <div class="w-12 h-12 bg-white rounded-xl shadow-sm flex items-center justify-center mx-auto mb-4">
-            <lucide-icon [name]="icons.Calendar" class="text-primary" [size]="24"></lucide-icon>
+        <div class="empty-state">
+          <div class="w-12 h-12 bg-white rounded-xl shadow-sm flex items-center justify-center mx-auto mb-4 border border-slate-100/80">
+            <lucide-icon [name]="icons.Calendar" class="text-primary" [size]="20"></lucide-icon>
           </div>
           <h2 class="text-lg font-bold text-standard mb-1">Schedule is empty</h2>
-          <p class="text-standard-muted text-xs max-w-[200px] mx-auto mb-6">Start by booking your first inspection.</p>
-          <app-button variant="solid" size="sm" (click)="toggleBookingForm()">
+          <p class="text-standard-muted text-xs max-w-[240px] mx-auto mb-6">Start by booking your first inspection.</p>
+          <app-button variant="solid" size="md" (click)="toggleBookingForm()">
             Book Now
           </app-button>
         </div>
