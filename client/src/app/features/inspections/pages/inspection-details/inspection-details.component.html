@@ -119,17 +119,24 @@
                 Unlock to Edit
               </button>
             </div>
-          } @else if (isScheduled()) {
+                    } @else if (isScheduled()) {
             <app-button variant="solid" size="sm" (click)="onStartInspection()" [isLoading]="isLoading()">
               <lucide-icon [name]="icons.Plus" [size]="16"></lucide-icon>
               Start Inspection
             </app-button>
           } @else {
-            <app-button variant="solid" size="sm" (click)="startPublishWorkflow()">
-              <lucide-icon [name]="icons.Send" [size]="16"></lucide-icon>
-              Publish Report
-            </app-button>
+            <div class="flex items-center gap-2">
+              <app-button variant="outline" size="sm" (click)="openReportPreview()">
+                <lucide-icon [name]="icons.Eye" [size]="16"></lucide-icon>
+                Preview
+              </app-button>
+              <app-button variant="solid" size="sm" (click)="startPublishWorkflow()">
+                <lucide-icon [name]="icons.Send" [size]="16"></lucide-icon>
+                Publish Report
+              </app-button>
+            </div>
           }
+
         }
 
         <!-- CONFIRM STATE -->
@@ -466,3 +473,5 @@
   </app-report-generator>
 </div>
 }
+
+<app-report-preview [inspection]="inspection()"></app-report-preview>

@@ -7,9 +7,11 @@ import { Finding, Inspection } from '../../../../core/models/inspection.interfac
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { FindingCardComponent } from '../../components/finding-card/finding-card.component';
 import { SkeletonComponent } from '../../../../shared/components/skeleton/skeleton.component';
-import { LucideAngularModule, ArrowLeft, Send, RefreshCw, AlertCircle, Plus, X, Check, Loader2, FileText, Download, LockOpen, Edit, Camera, Image, Cloud, Thermometer, Calendar, Maximize, Home, Users, ChevronDown, Trash2 } from 'lucide-angular';
+import { LucideAngularModule, ArrowLeft, Send, RefreshCw, AlertCircle, Plus, X, Check, Loader2, FileText, Download, LockOpen, Edit, Camera, Image, Cloud, Thermometer, Calendar, Maximize, Home, Users, ChevronDown, Trash2, Eye } from 'lucide-angular';
 import { ReportGeneratorComponent } from '../../../reports/components/report-generator/report-generator.component';
+import { ReportPreviewComponent } from '../../../reports/components/report-preview/report-preview.component';
 import { BackButtonComponent } from '../../../../shared/components/back-button/back-button.component';
+
 import { ImageCompressionService } from '../../../../core/services/image-compression.service';
 import { environment } from '../../../../../environments/environment';
 import { ResolveImagePipe } from '../../../../shared/pipes/resolve-image.pipe';
@@ -23,8 +25,10 @@ import { ResolveImagePipe } from '../../../../shared/pipes/resolve-image.pipe';
     FindingCardComponent,
     LucideAngularModule,
     SkeletonComponent,
-    ReportGeneratorComponent,
+        ReportGeneratorComponent,
+    ReportPreviewComponent,
     BackButtonComponent,
+
     ResolveImagePipe
   ],
   templateUrl: './inspection-details.component.html',
@@ -32,6 +36,8 @@ import { ResolveImagePipe } from '../../../../shared/pipes/resolve-image.pipe';
 })
 export class InspectionDetailsComponent implements OnInit {
   @ViewChild(ReportGeneratorComponent) reportGenerator?: ReportGeneratorComponent;
+  @ViewChild(ReportPreviewComponent) reportPreview?: ReportPreviewComponent;
+
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private inspectionsService = inject(InspectionsService);
@@ -56,7 +62,8 @@ export class InspectionDetailsComponent implements OnInit {
   copyLinkSuccess = signal<boolean>(false);
   isActionsMenuOpen = signal<boolean>(false);
 
-  readonly icons = { ArrowLeft, Send, RefreshCw, AlertCircle, Plus, X, Check, Loader2, FileText, Download, LockOpen, Edit, Camera, Image, Cloud, Thermometer, Calendar, Maximize, Home, Users, ChevronDown, Trash2 };
+    readonly icons = { ArrowLeft, Send, RefreshCw, AlertCircle, Plus, X, Check, Loader2, FileText, Download, LockOpen, Edit, Camera, Image, Cloud, Thermometer, Calendar, Maximize, Home, Users, ChevronDown, Trash2, Eye };
+
   readonly apiUrl = environment.apiUrl.replace('/api', '');
 
   isPublished = computed(() => this.inspection()?.status === 'published');
@@ -397,7 +404,12 @@ export class InspectionDetailsComponent implements OnInit {
     }
   }
 
+    openReportPreview(): void {
+    this.reportPreview?.openPreview();
+  }
+
   routeToWorkbench(): void {
+
     const insp = this.inspection();
     if (!insp) return;
 

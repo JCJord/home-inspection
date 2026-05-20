@@ -7,7 +7,8 @@ import { Inspection, Finding, SectionStatus } from '../../../../core/models/insp
 import { WorkbenchLayoutComponent } from '../../../../shared/components/workbench-layout/workbench-layout.component';
 import { FindingFormComponent } from '../../components/finding-form/finding-form.component';
 import { FindingSwitcherComponent } from '../../components/finding-switcher/finding-switcher.component';
-import { LucideAngularModule, Home, ChevronUp, ChevronDown, Hammer, Zap, Droplets, Wind, Flame, Box, Grid, Monitor, Car, Shield, Search, Info, AlertTriangle, Copy, Edit2, Trash2, Plus, Save, Lock, Unlock, ArrowLeft, Wrench, Thermometer, Lightbulb, Paintbrush, Sun, Key, Eye, Power, FileCheck, HardHat, Construction, Ruler, ShieldCheck, ShieldAlert, BrickWall, Trees, Fan, Sparkles, Wifi, WifiOff, Trash, Settings, Check, X, Users, FileText, Image, Cloud, CloudRain, CloudLightning, Snowflake, Umbrella, Compass, MapPin, Clock, Calendar, Activity, Scissors, Heart, AlertCircle, HelpCircle, Ban, LockOpen, Send, Download, Loader2, CheckCircle2, Layers, Menu, ChevronLeft, LayoutGrid, CircleX, PieChart } from 'lucide-angular';
+import { LucideAngularModule, Home, ChevronUp, ChevronDown, Hammer, Zap, Droplets, Wind, Flame, Box, Grid, Monitor, Car, Shield, Search, Info, AlertTriangle, Copy, Edit2, Trash2, Plus, Save, Lock, Unlock, ArrowLeft, Wrench, Thermometer, Lightbulb, Paintbrush, Sun, Key, Power, FileCheck, HardHat, Construction, Ruler, ShieldCheck, ShieldAlert, BrickWall, Trees, Fan, Sparkles, Wifi, WifiOff, Trash, Settings, Check, X, Users, FileText, Image, Cloud, CloudRain, CloudLightning, Snowflake, Umbrella, Compass, MapPin, Clock, Calendar, Activity, Scissors, Heart, AlertCircle, HelpCircle, Ban, LockOpen, Send, Download, Loader2, CheckCircle2, Layers, Menu, ChevronLeft, LayoutGrid, CircleX, PieChart, Eye } from 'lucide-angular';
+
 import { BackButtonComponent } from '../../../../shared/components/back-button/back-button.component';
 import { SectionStatusToggleComponent } from '../../components/section-status-toggle/section-status-toggle';
 import { TextInputComponent } from '../../../../shared/components/inputs/text-input/text-input.component';
@@ -64,7 +65,8 @@ export class FindingDetailsComponent implements OnInit {
     Download, Loader2, CheckCircle2, Layers, Menu, PieChart
   };
 
-  readonly icons = { ChevronLeft, LayoutGrid, Plus, Home, ChevronDown, CheckCircle2, FileText, Ban, CircleX, Info, Edit2, PieChart, AlertCircle };
+    readonly icons = { ChevronLeft, LayoutGrid, Plus, Home, ChevronDown, CheckCircle2, FileText, Ban, CircleX, Info, Edit2, PieChart, AlertCircle };
+
 
   sections = computed(() => this.inspection()?.template_snapshot?.sections || []);
 
@@ -105,6 +107,11 @@ export class FindingDetailsComponent implements OnInit {
   });
 
   totalFindings = computed(() => this.inspection()?.findings?.length || 0);
+
+  canPreviewReport = computed(() => {
+    const insp = this.inspection();
+    return insp !== null && insp.status !== 'published';
+  });
 
   ngOnInit() {
     // 1. Watch for Inspection/Finding changes
@@ -306,7 +313,7 @@ export class FindingDetailsComponent implements OnInit {
     });
   }
 
-  updateSectionReasonDirect(reason: string): void {
+    updateSectionReasonDirect(reason: string): void {
     const insp = this.inspection();
     const section = this.activeSection();
     if (!insp || !section) return;
@@ -321,3 +328,4 @@ export class FindingDetailsComponent implements OnInit {
     });
   }
 }
+
