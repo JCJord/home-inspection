@@ -228,3 +228,73 @@
   from { opacity: 0; transform: translateY(-10px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+.auto-save-status-container {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 0.5rem;
+  width: 100%;
+
+  .status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    border-radius: 2rem;
+    background: white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+
+    &.saving {
+      color: $color-primary;
+      border-color: rgba($color-primary, 0.2);
+    }
+
+    &.saved {
+      color: $color-success;
+      border-color: rgba($color-success, 0.2);
+      background: rgba($color-success, 0.02);
+    }
+
+    .animate-spin {
+      animation: spin 1s linear infinite;
+    }
+  }
+
+  @media (max-width: 768px) {
+    position: fixed;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    margin-bottom: 0;
+    justify-content: center;
+    width: auto;
+    pointer-events: none;
+
+    .status-indicator {
+      pointer-events: auto;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      animation: slideUp 0.3s ease-out;
+    }
+  }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}

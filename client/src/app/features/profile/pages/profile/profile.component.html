@@ -74,6 +74,20 @@
 <div class="profile-content-wrapper">
 
   <div class="settings-stack">
+    <!-- Auto-save Status Indicator -->
+    <div class="auto-save-status-container">
+      @if (inspectorsService.isSaving()) {
+        <div class="status-indicator saving">
+          <lucide-icon [img]="icons.Loader2" [size]="14" class="animate-spin"></lucide-icon>
+          <span>Saving changes...</span>
+        </div>
+      } @else if (inspectorsService.lastSavedAt(); as lastSaved) {
+        <div class="status-indicator saved">
+          <lucide-icon [img]="icons.CheckCircle2" [size]="14"></lucide-icon>
+          <span>Saved at {{ lastSaved | date:'shortTime' }}</span>
+        </div>
+      }
+    </div>
     <!-- Top Section: Identity & Logo -->
     <div class="card identity-card">
       <div class="identity-layout">

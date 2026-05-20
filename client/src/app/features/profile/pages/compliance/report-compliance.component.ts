@@ -1,12 +1,12 @@
 import { Component, OnInit, inject, signal, DestroyRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { debounceTime, distinctUntilChanged, finalize, filter, tap, switchMap } from 'rxjs';
+import { debounceTime, distinctUntilChanged, finalize, tap, switchMap, catchError, EMPTY } from 'rxjs';
 import { InspectorsService } from '../../../../core/services/inspectors.service';
 import { SelectInputComponent } from '../../../../shared/components/inputs/select-input/select-input.component';
 import { SkeletonComponent } from '../../../../shared/components/skeleton/skeleton.component';
-import { LucideAngularModule, ShieldCheck, Scale, FileSignature, CheckCircle2, Info } from 'lucide-angular';
+import { LucideAngularModule, ShieldCheck, Scale, FileSignature, CheckCircle2, Info, Loader2 } from 'lucide-angular';
 import { ToggleSwitchComponent } from '../../../../shared/components/inputs/toggle-switch/toggle-switch.component';
 import { environment } from '../../../../../environments/environment';
 
@@ -26,10 +26,10 @@ import { environment } from '../../../../../environments/environment';
 })
 export class ReportComplianceComponent implements OnInit {
   private fb = inject(FormBuilder);
-  private inspectorsService = inject(InspectorsService);
+  public inspectorsService = inject(InspectorsService);
   private destroyRef = inject(DestroyRef);
 
-  readonly icons = { ShieldCheck, Scale, FileSignature, CheckCircle2, Info };
+  readonly icons = { ShieldCheck, Scale, FileSignature, CheckCircle2, Info, Loader2 };
   readonly sopOptions = ['InterNACHI', 'ASHI', 'TREC', 'Custom'];
 
   private readonly legalTemplates: Record<string, string> = {
@@ -55,11 +55,12 @@ export class ReportComplianceComponent implements OnInit {
   ngOnInit(): void {
     this.loadComplianceData();
     this.setupSopChangeListener();
+    this.setupValidatorsListener();
   }
 
   loadComplianceData(): void {
     this.isLoading.set(true);
-    this.inspectorsService.getProfile()
+    this.inspectorsService.getProfile(true)
       .pipe(finalize(() => this.isLoading.set(false)))
       .subscribe({
         next: (data) => {
@@ -73,10 +74,24 @@ export class ReportComplianceComponent implements OnInit {
             custom_maintenance_item_def: data.custom_maintenance_item_def || '',
             custom_informational_item_def: data.custom_informational_item_def || '',
           }, { emitEvent: false });
+          this.updateCustomFieldsValidators(data.use_standard_definitions ?? true);
           this.setupAutoSave();
         },
         error: (err) => console.error('Failed to load compliance data', err)
       });
+  }
+
+  private setupValidatorsListener(): void {
+    this.complianceForm.get('use_standard_definitions')?.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(useStandard => {
+        this.updateCustomFieldsValidators(useStandard);
+      });
+  }
+
+  private updateCustomFieldsValidators(_useStandard: boolean): void {
+    // No-op: MinLength validation removed from backend and form.
+    // Kept for potential future re-use (e.g. UI warning indicators).
   }
 
   private setupSopChangeListener(): void {
@@ -97,19 +112,54 @@ export class ReportComplianceComponent implements OnInit {
   }
 
   private setupAutoSave(): void {
+    const customDefFields = [
+      'custom_safety_hazard_def',
+      'custom_major_defect_def',
+      'custom_minor_defect_def',
+      'custom_maintenance_item_def',
+      'custom_informational_item_def',
+    ];
+
     this.complianceForm.valueChanges
       .pipe(
         debounceTime(environment.defaultDebounceTime),
         distinctUntilChanged((prev, curr) => JSON.stringify(prev) === JSON.stringify(curr)),
         tap(() => this.inspectorsService.isSaving.set(true)),
-        switchMap(values => this.inspectorsService.updateProfile(values).pipe(
-          finalize(() => this.inspectorsService.isSaving.set(false))
-        )),
+        switchMap(values => {
+          const useStandard = values.use_standard_definitions;
+          const payload: Record<string, unknown> = {};
+
+          // Always include top-level compliance fields
+          payload['sop_name'] = values.sop_name;
+          payload['custom_legal_disclaimer'] = values.custom_legal_disclaimer || null;
+          payload['use_standard_definitions'] = useStandard;
+
+          // Send custom def fields — empty string becomes null to clear the DB value
+          if (!useStandard) {
+            customDefFields.forEach(field => {
+              const val: string = values[field] ?? '';
+              payload[field] = val.length > 0 ? val : null;
+            });
+          }
+
+          return this.inspectorsService.updateProfile(payload as any).pipe(
+            catchError(err => {
+              console.error('Compliance auto-save failed', err);
+              this.inspectorsService.isSaving.set(false);
+              return EMPTY;
+            }),
+            finalize(() => this.inspectorsService.isSaving.set(false))
+          );
+        }),
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe({
-        next: () => this.inspectorsService.lastSavedAt.set(new Date()),
-        error: (err) => console.error('Auto-save failed', err)
+        next: (updated) => {
+          if (updated) {
+            this.inspectorsService.lastSavedAt.set(new Date());
+          }
+        },
+        error: (err) => console.error('Compliance auto-save stream error:', err)
       });
   }
 }
