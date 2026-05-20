@@ -169,7 +169,13 @@ export class ReportCanvasComponent implements OnInit, AfterViewInit {
     }
 
     const containerWidth = parent ? parent.clientWidth : window.innerWidth;
-    const computedScale = Math.min((containerWidth - 64) / targetWidth, 1);
+    let computedScale = Math.min((containerWidth - 64) / targetWidth, 1);
+
+    // Clamp the scale to the 1100px width threshold (~0.592) when screen size goes below 1100px
+    if (containerWidth <= 1100) {
+      computedScale = (1100 - 64) / targetWidth;
+    }
+
     this.scale.set(Math.max(computedScale, 0.1)); // Keep scale positive
 
     // Measure actual unscaled height of the inner main-content element
