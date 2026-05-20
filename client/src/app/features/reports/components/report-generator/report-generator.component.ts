@@ -191,7 +191,8 @@ export class ReportGeneratorComponent implements OnInit {
 
       this.currentStatus.set('Finalizing PDF...');
 
-      this.reportsService.generatePdfFromHtml(finalHtml).subscribe({
+      this.reportsService.generatePdfFromHtml(finalHtml, this.inspection?.id).subscribe({
+
         next: (blob) => {
           this.generationProgress.set(100);
           this.currentStatus.set('Report Ready!');

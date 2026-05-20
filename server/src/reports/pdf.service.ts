@@ -82,9 +82,9 @@ export class PdfService implements OnModuleDestroy {
     return this.sharedBrowser;
   }
 
-  public async generateFromHtml(html: string): Promise<Buffer> {
+  public async generateFromHtml(html: string, isDraft: boolean = true): Promise<Buffer> {
     const htmlSizeKb = Math.round(Buffer.byteLength(html, 'utf8') / 1024);
-    this.logger.log(`generateFromHtml starting — HTML size: ${htmlSizeKb} KB`);
+    this.logger.log(`generateFromHtml starting — HTML size: ${htmlSizeKb} KB (isDraft: ${isDraft})`);
 
     const waiting = this.pdfSemaphore.pending;
     if (waiting > 0) {
@@ -103,6 +103,31 @@ export class PdfService implements OnModuleDestroy {
       await page.setViewport({ width: 1725, height: 1080 });
       await page.emulateMediaType('screen');
       await page.setContent(html, { waitUntil: 'networkidle0', timeout: 120000 });
+
+      if (isDraft) {
+        await page.addStyleTag({
+          content: `
+            body::before {
+              content: "DRAFT / UNPUBLISHED";
+              position: fixed;
+              top: 38%;
+              left: 5%;
+              width: 90%;
+              transform: rotate(-35deg);
+              font-family: 'Inter', system-ui, -apple-system, sans-serif;
+              font-size: 110px;
+              font-weight: 900;
+              color: rgba(220, 38, 38, 0.08); /* subtle transparent red */
+              z-index: 999999;
+              pointer-events: none;
+              text-align: center;
+              letter-spacing: 0.06em;
+              display: block;
+            }
+          `
+        });
+      }
+
 
       const pdfBuffer = await page.pdf({
         format: 'A4',
