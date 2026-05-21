@@ -16,9 +16,11 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
         database: configService.get<string>('DB_NAME', 'postgres'),
         entities: [__dirname + '/../**/*.entity{.ts,.js}'],
         autoLoadEntities: true,
-        synchronize: true, // Note: Set to false in production
+        synchronize: false, // Note: Set to false in production
+        migrations: [__dirname + '/../migrations/*{.ts,.js}'],
+        migrationsRun: true,
       }),
     }),
   ],
 })
-export class DatabaseModule {}
+export class DatabaseModule { }
