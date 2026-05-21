@@ -25,6 +25,7 @@ export class ReportGeneratorComponent implements OnInit {
   @Output() completed = new EventEmitter<Blob>();
   @Output() error = new EventEmitter<string>();
   @Output() htmlReady = new EventEmitter<string>();
+  @Output() progress = new EventEmitter<{ progress: number, message: string }>();
 
   isGenerating = signal(false);
   generationProgress = signal(0);
@@ -175,6 +176,7 @@ export class ReportGeneratorComponent implements OnInit {
 
     this.isGenerating.set(true);
     this.generationProgress.set(0);
+    this.progress.emit({ progress: 0, message: 'Initializing document engine...' });
 
     try {
       const finalHtml = await this.prepareContentToExport();
@@ -182,6 +184,7 @@ export class ReportGeneratorComponent implements OnInit {
       if (this.mode === 'publish') {
         this.generationProgress.set(100);
         this.currentStatus.set('HTML Compiled!');
+        this.progress.emit({ progress: 100, message: 'HTML Compiled!' });
         setTimeout(() => {
           this.isGenerating.set(false);
           this.htmlReady.emit(finalHtml);
@@ -190,12 +193,14 @@ export class ReportGeneratorComponent implements OnInit {
       }
 
       this.currentStatus.set('Finalizing PDF...');
+      this.progress.emit({ progress: 95, message: 'Finalizing PDF on cloud...' });
 
       this.reportsService.generatePdfFromHtml(finalHtml, this.inspection?.id).subscribe({
 
         next: (blob) => {
           this.generationProgress.set(100);
           this.currentStatus.set('Report Ready!');
+          this.progress.emit({ progress: 100, message: 'Report Ready!' });
           setTimeout(() => {
             this.isGenerating.set(false);
             this.completed.emit(blob);
@@ -238,6 +243,7 @@ export class ReportGeneratorComponent implements OnInit {
 
       this.feedbackMessage.set(partMessages[part] || 'Rendering content...');
       this.currentStatus.set(`Processing Part ${index + 1} of ${totalParts}`);
+      this.progress.emit({ progress: Math.round(10 + index / totalParts * 80), message: this.feedbackMessage() });
 
       // Allow Angular render cycle and embed images
       await new Promise<void>(resolve => setTimeout(resolve, 600));
@@ -258,6 +264,7 @@ export class ReportGeneratorComponent implements OnInit {
       // Update progress (from 10% to 90%)
       const progress = Math.round(10 + (index + 1) / totalParts * 80);
       this.generationProgress.set(progress);
+      this.progress.emit({ progress, message: this.feedbackMessage() });
     }
 
     this.currentStatus.set('Finalizing PDF styles...');

@@ -162,16 +162,16 @@
               {{ publishState() === 'compiling' ? 'Compiling Draft' : 'Uploading Record' }}
             </span>
             <span class="font-bold text-primary font-mono text-sm">
-              {{ reportGenerator?.generationProgress() || 0 }}%
+              {{ combinedProgress() }}%
             </span>
           </div>
           <div class="w-full h-1.5 bg-standard/10 rounded-full overflow-hidden">
             <div class="h-full bg-primary transition-all duration-300 rounded-full"
-                 [style.width.%]="reportGenerator?.generationProgress() || 0">
+                 [style.width.%]="combinedProgress()">
             </div>
           </div>
           <span class="text-[11px] text-standard-muted font-medium italic truncate">
-            {{ reportGenerator?.feedbackMessage() || 'Synthesizing data streams...' }}
+            {{ combinedMessage() }}
           </span>
         </div>
         }
@@ -469,7 +469,8 @@
 @if (isReportGeneratorActive()) {
 <div style="height: 0; width: 0; overflow: hidden; position: absolute; visibility: hidden;">
   <app-report-generator #reportGenerator [inspection]="inspection()" [mode]="reportGeneratorMode()"
-    (completed)="onReportCompleted($event)" (htmlReady)="onReportHtmlReady($event)" (error)="onReportError($event)">
+    (completed)="onReportCompleted($event)" (htmlReady)="onReportHtmlReady($event)" (error)="onReportError($event)"
+    (progress)="onGeneratorProgress($event)">
   </app-report-generator>
 </div>
 }

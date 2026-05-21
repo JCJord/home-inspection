@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, computed, inject, ViewChild, ElementRef, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, computed, inject, ViewChild, ElementRef, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { InspectionsService } from '../../../../core/services/inspections.service';
@@ -34,7 +34,7 @@ import { ResolveImagePipe } from '../../../../shared/pipes/resolve-image.pipe';
   templateUrl: './inspection-details.component.html',
   styleUrl: './inspection-details.component.scss',
 })
-export class InspectionDetailsComponent implements OnInit {
+export class InspectionDetailsComponent implements OnInit, OnDestroy {
   @ViewChild(ReportGeneratorComponent) reportGenerator?: ReportGeneratorComponent;
   @ViewChild(ReportPreviewComponent) reportPreview?: ReportPreviewComponent;
 
@@ -61,6 +61,10 @@ export class InspectionDetailsComponent implements OnInit {
   isCopying = signal<boolean>(false);
   copyLinkSuccess = signal<boolean>(false);
   isActionsMenuOpen = signal<boolean>(false);
+  
+  combinedProgress = signal<number>(0);
+  combinedMessage = signal<string>('Initializing document engine...');
+  private uploadIntervalId: any = null;
 
   readonly icons = { ArrowLeft, Send, RefreshCw, AlertCircle, Plus, X, Check, Loader2, FileText, Download, LockOpen, Edit, Camera, Image, Cloud, Thermometer, Calendar, Maximize, Home, Users, ChevronDown, Trash2, Eye };
 
@@ -139,6 +143,10 @@ export class InspectionDetailsComponent implements OnInit {
     }
   }
 
+  ngOnDestroy(): void {
+    this.clearUploadInterval();
+  }
+
   loadInspection(id: string): void {
     this.isLoading.set(true);
     this.errorMessage.set(null);
@@ -177,7 +185,18 @@ export class InspectionDetailsComponent implements OnInit {
 
     this.publishState.set('compiling');
     this.reportGeneratorMode.set('publish');
+    this.combinedProgress.set(0);
+    this.combinedMessage.set('Initializing document engine...');
+    this.clearUploadInterval();
     this.isReportGeneratorActive.set(true);
+  }
+
+  onGeneratorProgress(event: { progress: number, message: string }): void {
+    if (this.publishState() === 'compiling') {
+      const mappedProgress = Math.round((event.progress / 100) * 75);
+      this.combinedProgress.set(mappedProgress);
+      this.combinedMessage.set(event.message);
+    }
   }
 
   onReportHtmlReady(html: string): void {
@@ -185,9 +204,51 @@ export class InspectionDetailsComponent implements OnInit {
     if (!inspection) return;
 
     this.publishState.set('uploading');
+    this.clearUploadInterval();
+
+    let currentProgress = 75;
+    this.combinedProgress.set(currentProgress);
+
+    const uploadSteps = [
+      'Transmitting secure draft to server...',
+      'Compiling final print assets...',
+      'Processing images & document flow...',
+      'Generating archival-grade PDF...',
+      'Optimizing file structure...',
+      'Verifying report integrity...',
+      'Saving official record...'
+    ];
+    let stepIndex = 0;
+    this.combinedMessage.set(uploadSteps[stepIndex]);
+
+    this.uploadIntervalId = setInterval(() => {
+      // Easing simulation: slower as we approach 98%
+      if (currentProgress < 85) {
+        currentProgress += 1.5;
+      } else if (currentProgress < 92) {
+        currentProgress += 0.8;
+      } else if (currentProgress < 97) {
+        currentProgress += 0.3;
+      } else if (currentProgress < 98) {
+        currentProgress += 0.1;
+      }
+
+      this.combinedProgress.set(Math.min(parseFloat(currentProgress.toFixed(1)), 98));
+
+      // Randomly cycle status messages to feel premium and alive
+      if (Math.random() < 0.12 && stepIndex < uploadSteps.length - 1) {
+        stepIndex++;
+        this.combinedMessage.set(uploadSteps[stepIndex]);
+      }
+    }, 250);
+
     this.inspectionsService.publishInspection(inspection.id, html).subscribe({
       next: (updated) => {
         console.log('=== RETURNED INSPECTION AFTER PUBLISH ===', updated);
+        this.clearUploadInterval();
+        this.combinedProgress.set(100);
+        this.combinedMessage.set('Report successfully published!');
+        
         this.inspection.set(updated);
         this.publishState.set('success');
         this.isReportGeneratorActive.set(false);
@@ -197,11 +258,19 @@ export class InspectionDetailsComponent implements OnInit {
       },
       error: (err) => {
         console.error('Failed to publish inspection', err);
+        this.clearUploadInterval();
         this.errorMessage.set(err.error?.message || 'Failed to publish inspection.');
         this.publishState.set('error');
         this.isReportGeneratorActive.set(false);
       },
     });
+  }
+
+  private clearUploadInterval(): void {
+    if (this.uploadIntervalId) {
+      clearInterval(this.uploadIntervalId);
+      this.uploadIntervalId = null;
+    }
   }
 
   unpublishInspection(): void {
@@ -284,6 +353,7 @@ export class InspectionDetailsComponent implements OnInit {
   onReportError(error: string): void {
     this.isGeneratingPdf.set(false);
     this.isReportGeneratorActive.set(false);
+    this.clearUploadInterval();
     this.errorMessage.set(error);
     this.publishState.set('error');
   }
