@@ -13,23 +13,22 @@ import { LucideAngularModule } from 'lucide-angular';
   template: `
     <div class="settings-container max-w-7xl mx-auto p-6 pb-24 relative">
       <header class="settings-header">
-        <div class="header-content flex flex-wrap justify-between items-start gap-4">
+        <div class="header-content flex flex-wrap justify-between items-center gap-4">
           <div>
             <h1>Settings</h1>
             <p class="subtitle">Manage your account information and preferences</p>
           </div>
 
-          <!-- Global Auto-save Status -->
           <div class="auto-save-status">
             @if (inspectorsService.isSaving()) {
               <div class="status-indicator saving">
-                <lucide-icon [name]="icons.Loader2" [size]="14" class="animate-spin"></lucide-icon>
-                Saving changes...
+                <lucide-icon [name]="icons.Loader2" [size]="13" class="animate-spin"></lucide-icon>
+                <span>Saving<span class="hidden sm:inline"> changes</span>...</span>
               </div>
             } @else if (inspectorsService.lastSavedAt(); as lastSaved) {
               <div class="status-indicator saved">
-                <lucide-icon [name]="icons.CheckCircle2" [size]="14"></lucide-icon>
-                Saved at {{ lastSaved | date:'shortTime' }}
+                <lucide-icon [name]="icons.CheckCircle2" [size]="13"></lucide-icon>
+                <span>Saved<span class="hidden sm:inline"> at {{ lastSaved | date:'shortTime' }}</span></span>
               </div>
             }
           </div>
@@ -71,32 +70,35 @@ import { LucideAngularModule } from 'lucide-angular';
     }
 
     .auto-save-status {
+      flex-shrink: 0;
+
       .status-indicator {
         display: flex;
         align-items: center;
-        gap: 0.5rem;
-        font-size: 0.8125rem;
+        gap: 0.375rem;
+        font-size: 0.75rem;
         font-weight: 600;
-        padding: 0.5rem 1rem;
-        border-radius: 2rem;
-        background: white;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-        border: 1px solid rgba(0, 0, 0, 0.05);
-        transition: all 0.3s ease;
+        padding: 0.375rem 0.75rem;
+        border-radius: 1.5rem;
+        border: 1px solid transparent;
+        transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        animation: floatIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 
         &.saving {
           color: $color-primary;
-          border-color: rgba($color-primary, 0.2);
+          background: rgba($color-primary, 0.08);
+          border-color: rgba($color-primary, 0.15);
+          animation: floatIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards, pulseGlow 2s infinite ease-in-out;
         }
 
         &.saved {
-          color: $color-success;
-          border-color: rgba($color-success, 0.2);
-          background: rgba($color-success, 0.02);
+          color: $color-text-muted;
+          background: $color-surface-light;
+          border-color: $color-border;
         }
 
         .animate-spin {
-          animation: spin 1s linear infinite;
+          animation: spin 1.2s linear infinite;
         }
       }
     }
@@ -119,6 +121,26 @@ import { LucideAngularModule } from 'lucide-angular';
       to {
         opacity: 1;
         transform: translateY(0);
+      }
+    }
+
+    @keyframes floatIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px) scale(0.95);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% {
+        box-shadow: 0 0 0 0 rgba($color-primary, 0.1);
+      }
+      50% {
+        box-shadow: 0 0 8px 2px rgba($color-primary, 0.2);
       }
     }
   `]

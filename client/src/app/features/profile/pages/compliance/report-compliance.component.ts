@@ -1,10 +1,11 @@
 import { Component, OnInit, inject, signal, DestroyRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { debounceTime, distinctUntilChanged, finalize, tap, switchMap, catchError, EMPTY } from 'rxjs';
 import { InspectorsService } from '../../../../core/services/inspectors.service';
 import { SelectInputComponent } from '../../../../shared/components/inputs/select-input/select-input.component';
+import { TextareaInputComponent } from '../../../../shared/components/inputs/textarea-input/textarea-input.component';
 import { SkeletonComponent } from '../../../../shared/components/skeleton/skeleton.component';
 import { LucideAngularModule, ShieldCheck, Scale, FileSignature, CheckCircle2, Info, Loader2 } from 'lucide-angular';
 import { ToggleSwitchComponent } from '../../../../shared/components/inputs/toggle-switch/toggle-switch.component';
@@ -17,6 +18,7 @@ import { environment } from '../../../../../environments/environment';
     CommonModule,
     ReactiveFormsModule,
     SelectInputComponent,
+    TextareaInputComponent,
     SkeletonComponent,
     LucideAngularModule,
     ToggleSwitchComponent
@@ -41,13 +43,13 @@ export class ReportComplianceComponent implements OnInit {
 
   complianceForm: FormGroup = this.fb.group({
     sop_name: ['InterNACHI'],
-    custom_legal_disclaimer: [''],
+    custom_legal_disclaimer: ['', [Validators.maxLength(10000)]],
     use_standard_definitions: [true],
-    custom_safety_hazard_def: [''],
-    custom_major_defect_def: [''],
-    custom_minor_defect_def: [''],
-    custom_maintenance_item_def: [''],
-    custom_informational_item_def: [''],
+    custom_safety_hazard_def: ['', [Validators.maxLength(1000)]],
+    custom_major_defect_def: ['', [Validators.maxLength(1000)]],
+    custom_minor_defect_def: ['', [Validators.maxLength(1000)]],
+    custom_maintenance_item_def: ['', [Validators.maxLength(1000)]],
+    custom_informational_item_def: ['', [Validators.maxLength(1000)]],
   });
 
   isLoading = signal<boolean>(true);
@@ -89,9 +91,26 @@ export class ReportComplianceComponent implements OnInit {
       });
   }
 
-  private updateCustomFieldsValidators(_useStandard: boolean): void {
-    // No-op: MinLength validation removed from backend and form.
-    // Kept for potential future re-use (e.g. UI warning indicators).
+  private updateCustomFieldsValidators(useStandard: boolean): void {
+    const fields = [
+      'custom_safety_hazard_def',
+      'custom_major_defect_def',
+      'custom_minor_defect_def',
+      'custom_maintenance_item_def',
+      'custom_informational_item_def',
+    ];
+
+    fields.forEach(field => {
+      const control = this.complianceForm.get(field);
+      if (control) {
+        if (useStandard) {
+          control.clearValidators();
+        } else {
+          control.setValidators([Validators.maxLength(1000)]);
+        }
+        control.updateValueAndValidity({ emitEvent: false });
+      }
+    });
   }
 
   private setupSopChangeListener(): void {
