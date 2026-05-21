@@ -152,6 +152,10 @@ export class TemplateEditorComponent implements OnInit, OnDestroy {
       })
     });
 
+    if (data.inspector_id === null) {
+      this.form.disable();
+    }
+
     this.form.valueChanges.pipe(
       takeUntil(this.destroy$)
     ).subscribe(() => {

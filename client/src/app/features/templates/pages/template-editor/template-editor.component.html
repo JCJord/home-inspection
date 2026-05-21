@@ -93,6 +93,17 @@
         <div class="p-4 md:p-8 relative min-h-full">
           @if (currentSection) {
           <div class="max-w-3xl mx-auto space-y-8">
+            
+            <!-- Read-Only Alert -->
+            @if (isSystemDefault()) {
+            <div class="bg-blue-50 border border-blue-200 p-4 rounded-xl flex items-start gap-3">
+              <lucide-icon [name]="iconMap['Info']" [size]="20" class="text-blue-600 flex-shrink-0 mt-0.5"></lucide-icon>
+              <div>
+                <h4 class="text-sm font-bold text-blue-900 mb-1">Official Blueprint</h4>
+                <p class="text-xs text-blue-800">This is a system default template and is in <strong>view-only</strong> mode. To customize it for your own inspections, click the "Clone Blueprint" button at the top right.</p>
+              </div>
+            </div>
+            }
 
             <!-- Section Info / Icon Picker -->
             <div class="bg-surface-standard p-6 rounded-xl border border-standard shadow-sm space-y-4">
@@ -286,24 +297,7 @@
           </div>
           }
 
-          <!-- Protected Overlay for System Blueprint -->
-          @if (isSystemDefault()) {
-          <div
-            class="absolute inset-0 bg-white bg-opacity-60 backdrop-blur-sm flex flex-col items-center justify-center z-30">
-            <div
-              class="bg-surface-standard p-8 rounded-2xl border border-standard shadow-2xl text-center max-w-sm mx-4 flex flex-col items-center gap-4">
-              <lucide-icon [name]="iconMap['Lock']" class="text-primary" [size]="36"></lucide-icon>
-              <div>
-                <h2 class="text-xl font-bold text-standard mb-2">Protected Blueprint</h2>
-                <p class="text-sm text-standard-muted">This is a system default setup. You cannot modify it directly.</p>
-              </div>
-              <app-button type="button" (click)="cloneTemplate()" variant="solid" [full]="true">
-                <lucide-icon [name]="iconMap['Copy']" [size]="18"></lucide-icon>
-                Clone to Customize
-              </app-button>
-            </div>
-          </div>
-          }
+
         </div>
       }
     </form>
