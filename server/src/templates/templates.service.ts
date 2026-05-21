@@ -17,37 +17,19 @@ export class TemplatesService implements OnApplicationBootstrap {
   ) { }
 
   async onApplicationBootstrap() {
-    await this.ensureDefaultTemplate();
+    // Delete legacy System Default template if it exists
+    const legacyTemplate = await this.templateRepository.findOne({ where: { name: 'System Default' } });
+    if (legacyTemplate) {
+      await this.templateRepository.remove(legacyTemplate);
+    }
+
     await this.ensureFullResidentialTemplate();
     await this.ensureFourPointTemplate();
     await this.ensureWindMitigationTemplate();
     await this.migrateExistingInspections();
   }
 
-  async ensureDefaultTemplate(): Promise<Template> {
-    let defaultTemplate = await this.templateRepository.findOne({ where: { name: 'System Default' } });
-    if (defaultTemplate) {
-      await this.templateRepository.remove(defaultTemplate);
-    }
-    const structure = {
-      sections: Object.values(Section).map(section => ({
-        name: section,
-        icon_key: this.getIconKeyForSection(section),
-        fields: [
-          { key: `${section.toLowerCase().replace(/[^a-z0-9]/g, '_')}_method`, label: 'Inspection Method', type: 'select', options: ['Visual Inspection', 'Physical / Tactile Testing', 'Operational Testing via Controls', 'Thermal Imaging', 'Moisture Meter'] },
-          { key: `${section.toLowerCase().replace(/[^a-z0-9]/g, '_')}_material`, label: 'Material / Type', type: 'text' }
-        ],
-        presets: this.getPresetsForSection(section)
-      }))
-    };
 
-    defaultTemplate = this.templateRepository.create({
-      name: 'System Default',
-      structure,
-    });
-    await this.templateRepository.save(defaultTemplate);
-    return defaultTemplate;
-  }
 
   async ensureFullResidentialTemplate(): Promise<Template> {
     let template = await this.templateRepository.findOne({ where: { name: 'Full Residential (InterNACHI)' } });
@@ -762,7 +744,7 @@ export class TemplatesService implements OnApplicationBootstrap {
   }
 
   async migrateExistingInspections() {
-    const defaultTemplate = await this.ensureDefaultTemplate();
+    const defaultTemplate = await this.ensureFullResidentialTemplate();
     // Find all inspections where template_snapshot is null
     const inspections = await this.inspectionRepository.find({
       where: { template_snapshot: IsNull() }
