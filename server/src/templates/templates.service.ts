@@ -611,69 +611,151 @@ export class TemplatesService implements OnApplicationBootstrap {
     const structure = {
       sections: [
         {
-          name: 'Roof Covering',
-          icon_key: 'ChevronUp',
+          name: '1. Building Code & Roof Covering',
+          icon_key: 'Home',
           fields: [
-            { key: 'roof_covering_material', label: 'Roof Covering Material', type: 'select', options: ['Asphalt Shingles', 'Concrete Tile', 'Clay Tile', 'Metal', 'Built-up / Flat'] },
-            { key: 'roof_permit_date', label: 'Permit Date of Roof Installation', type: 'text' },
-            { key: 'roof_fbc_compliance', label: 'FBC Compliance', type: 'select', options: ['FBC Compliant', 'Non-FBC Compliant', 'Unknown'] },
+            { key: 'roof_permit_application', label: 'Roof Permit Application Date', type: 'select', options: ['On or After 3/1/2002 (FBC Compliant)', 'Before 3/1/2002', 'Unknown / No Permit Found'] },
+            { key: 'roof_covering_material', label: 'Roof Covering Material', type: 'select', options: ['Asphalt / Fiberglass Shingles', 'Concrete / Clay Tile', 'Metal', 'Built-up / Flat'] },
+            { key: 'roof_documentation', label: 'Documentation Method', type: 'select', options: ['Permit Record Verified', 'Product Approval Form Verified', 'No Documentation Available'] },
           ],
           presets: [
-            { title: 'Non-FBC Compliant Roof Covering', description: 'The roof covering does not meet Florida Building Code wind resistance requirements based on permit date and material type.', recommendation: 'Recommend evaluation by a licensed roofing contractor for upgrade or replacement to qualify for insurance credit.', severity: 'Major' },
-            { title: 'Roof Covering Age Unknown', description: 'Unable to verify permit date or installation year of roof covering. Age documentation was not available at time of inspection.', recommendation: 'Recommend obtaining permit records from the local building department to verify compliance.', severity: 'Informational' },
+            {
+              title: 'A. FBC Compliant Roof Covering',
+              description: 'Roof covering was installed on or after 3/1/2002 and meets the requirements of the Florida Building Code (or 1994 South Florida Building Code). Documentation verified.',
+              recommendation: 'Submit for FBC Compliant Roof Covering credit.',
+              severity: 'Information'
+            },
+            {
+              title: 'B. Non-Compliant / Unknown Age',
+              description: 'Roof covering was installed prior to 3/1/2002, or no permit documentation could be verified at the time of inspection. Does not qualify for FBC update credit.',
+              recommendation: 'Does not qualify for FBC credit.',
+              severity: 'Information'
+            },
           ],
         },
         {
-          name: 'Roof Deck Attachment',
+          name: '2. Roof Deck Attachment',
           icon_key: 'Layers',
           fields: [
-            { key: 'deck_attachment', label: 'Roof Deck Attachment', type: 'select', options: ['6d Nails / Staples', '8d Common Nails @ 6"/12"', '8d Common Nails @ 6"/6"', 'Dimensional Lumber / Screws', 'Other / Unknown'] },
+            { key: 'deck_nail_type', label: 'Nail Size / Type', type: 'select', options: ['Staples / 6d Nails', '8d Common Nails', 'Dimensional Lumber (No Plywood)', 'Reinforced Concrete'] },
+            { key: 'deck_nail_spacing', label: 'Nail Spacing', type: 'select', options: ['6" along edge / 12" in field', '6" along edge / 6" in field', 'Not Applicable'] },
           ],
           presets: [
-            { title: 'Stapled Deck Attachment', description: 'Roof deck is attached with staples rather than nails. Staple attachment provides significantly less wind uplift resistance.', recommendation: 'Document as Category A attachment. Homeowner should be aware this affects insurance wind mitigation credit.', severity: 'Informational' },
-            { title: '6d Nail Pattern Verified', description: 'Roof deck attachment verified as 6d nails at 6 inch field spacing qualifying for enhanced wind mitigation credit.', recommendation: 'Document for insurance submission.', severity: 'Informational' },
+            {
+              title: 'Category A (Weakest): 6d Nails or Staples',
+              description: 'Roof deck is attached with staples or 6d nails. This is the baseline attachment method and does not qualify for enhanced wind uplift credit.',
+              recommendation: 'Submit as Category A (No enhanced credit).',
+              severity: 'Information'
+            },
+            {
+              title: 'Category B (Standard): 8d Nails @ 6"/12"',
+              description: 'Roof deck is attached with 8d common nails spaced a maximum of 6" along the edge and 12" in the field. Verified with metal detector in attic.',
+              recommendation: 'Submit as Category B attachment.',
+              severity: 'Information'
+            },
+            {
+              title: 'Category C (Strongest): 8d Nails @ 6"/6"',
+              description: 'Roof deck is attached with 8d common nails spaced a maximum of 6" along the edge AND 6" in the field. Provides maximum uplift resistance.',
+              recommendation: 'Submit as Category C attachment (Maximum Credit).',
+              severity: 'Information'
+            },
           ],
         },
         {
-          name: 'Roof to Wall Connection',
+          name: '3. Roof to Wall Attachment',
           icon_key: 'Link',
           fields: [
-            { key: 'connection_type', label: 'Roof to Wall Connection', type: 'select', options: ['Toenails', 'Clips', 'Single Wraps', 'Double Wraps', 'Structural Anchor Bolts'] },
-            { key: 'connector_brand', label: 'Connector Brand / Model', type: 'text' },
+            { key: 'rtw_connection', label: 'Weakest Connection Type Found', type: 'select', options: ['Toenails', 'Clips', 'Single Wraps', 'Double Wraps', 'Structural / Anchored'] },
+            { key: 'rtw_nails', label: 'Minimum Nails per Strap', type: 'select', options: ['Less than 3 Nails', '3 Nails Verified', '4 or More Nails Verified'] },
           ],
           presets: [
-            { title: 'Toenail Connection Only', description: 'Roof to wall connection is toenail only with no hurricane straps or clips observed. This is the weakest connection type for wind uplift resistance.', recommendation: 'Document as toenail connection for insurance purposes. Homeowner may want to evaluate retrofit strap installation.', severity: 'Informational' },
-            { title: 'Single Wrap Hurricane Strap Verified', description: 'Single wrap hurricane straps connecting roof rafters to wall top plate verified at time of inspection.', recommendation: 'Document for insurance submission as single wrap connection.', severity: 'Informational' },
+            {
+              title: 'Category A: Toenails',
+              description: 'Roof trusses/rafters are attached to the wall top plate using toenails only, or metal connectors are present but secured with fewer than 3 nails.',
+              recommendation: 'Submit as Toenail connection (No Credit).',
+              severity: 'Information'
+            },
+            {
+              title: 'Category B: Clips (3+ Nails)',
+              description: 'Metal connectors (clips) that do not wrap over the top of the truss/rafter are installed and secured with a minimum of 3 nails. Connector is located within 1/2" of the truss.',
+              recommendation: 'Submit as Clip connection.',
+              severity: 'Information'
+            },
+            {
+              title: 'Category C: Single Wraps',
+              description: 'Metal connectors that wrap over the top of the truss/rafter (Single Wrap) are installed and secured with a minimum of 2 nails on the front and 1 nail on the opposing side.',
+              recommendation: 'Submit as Single Wrap connection.',
+              severity: 'Information'
+            },
           ],
         },
         {
-          name: 'Roof Shape',
+          name: '4. Roof Geometry',
           icon_key: 'Triangle',
           fields: [
-            { key: 'roof_shape', label: 'Roof Shape', type: 'select', options: ['Hip Roof (>= 90% of perimeter)', 'Gable', 'Flat', 'Mansard', 'Gambrel', 'Other'] },
-            { key: 'hip_percentage', label: 'Hip Roof Percentage', type: 'text' },
+            { key: 'geometry_type', label: 'Qualifying Roof Shape', type: 'select', options: ['Hip Roof', 'Non-Hip (Gable, Flat, Mansard)', 'Flat Roof (> 5 levels)'] },
           ],
           presets: [
-            { title: 'Gable Roof — No Hip Credit', description: 'Roof geometry is primarily gable end design. Gable roofs do not qualify for hip roof wind mitigation insurance discount.', recommendation: 'Document as gable roof for insurance submission.', severity: 'Informational' },
-            { title: 'Hip Roof Verified', description: 'Roof geometry is fully hip design with no gable ends qualifying for maximum hip roof insurance wind credit.', recommendation: 'Document for insurance submission as qualifying hip roof.', severity: 'Informational' },
+            {
+              title: 'Hip Roof Verified',
+              description: 'The roof shape is a Hip Roof. All other non-hip roof shapes (gable, flat) constitute less than 10% of the total roof perimeter. Qualifies for significant wind mitigation discount.',
+              recommendation: 'Submit as Hip Roof.',
+              severity: 'Information'
+            },
+            {
+              title: 'Non-Hip Roof (Gable)',
+              description: 'The roof contains gable ends or other non-hip shapes that exceed 10% of the total roof perimeter. Does not qualify for the Hip Roof discount.',
+              recommendation: 'Submit as Non-Hip (No Credit).',
+              severity: 'Information'
+            },
           ],
         },
         {
-          name: 'Opening Protection',
-          icon_key: 'Shield',
+          name: '5. Secondary Water Resistance (SWR)',
+          icon_key: 'Droplets',
           fields: [
-            { key: 'opening_windows', label: 'Window Protection Type', type: 'select', options: ['A. Certified Impact Rated (Windborne Debris)', 'B. Non-Impact Rated / Standard', 'C. No Protection / Plywood', 'N/A (No Openings)'] },
-            { key: 'opening_doors', label: 'Door Protection Type', type: 'select', options: ['A. Certified Impact Rated (Windborne Debris)', 'B. Non-Impact Rated / Standard', 'C. No Protection / Plywood', 'N/A (No Openings)'] },
-            { key: 'opening_garage', label: 'Garage Door Rating', type: 'select', options: ['Not Rated', 'Wind Rated', 'Impact Rated'] },
+            { key: 'swr_present', label: 'SWR (Peel & Stick) Present?', type: 'select', options: ['Yes - Verified in Attic or via Photos', 'No / Cannot Verify'] },
           ],
           presets: [
-            { title: 'No Opening Protection', description: 'Windows and doors lack hurricane rated protection. No impact glass, shutters, or rated panels were observed.', recommendation: 'Document as no opening protection for insurance submission. Homeowner may consider installing protection for premium reduction.', severity: 'Informational' },
-            { title: 'Garage Door Not Wind Rated', description: 'The garage door does not display a wind load rating label and appears to be a standard residential door not rated for high wind events.', recommendation: 'Recommend evaluation for replacement with a wind-rated door to improve both safety and insurance standing.', severity: 'Major' },
-            { title: 'Impact Glass Verified on All Openings', description: 'All windows and entry doors verified as impact rated glass qualifying for maximum opening protection insurance credit.', recommendation: 'Document for insurance submission as fully protected openings.', severity: 'Informational' },
+            {
+              title: 'SWR Verified',
+              description: 'Secondary Water Resistance (SWR) was verified. A self-adhering polymer modified bitumen roofing underlayment (peel-and-stick) is applied directly to the roof deck.',
+              recommendation: 'Submit as SWR Present.',
+              severity: 'Information'
+            },
+            {
+              title: 'No SWR Verified',
+              description: 'Standard tar paper/felt was observed, or SWR could not be verified due to lack of documentation or inaccessible attic space.',
+              recommendation: 'Submit as No SWR (No Credit).',
+              severity: 'Information'
+            },
+          ],
+        },
+        {
+          name: '6. Opening Protection',
+          icon_key: 'Shield',
+          fields: [
+            { key: 'opening_glazed', label: 'Glazed (Windows/Glass Doors)', type: 'select', options: ['Category A (Hurricane Impact Rated)', 'Category X (No Protection)'] },
+            { key: 'opening_unglazed', label: 'Unglazed (Solid Doors/Garage)', type: 'select', options: ['Category A (Hurricane Impact Rated)', 'Category X (No Protection)'] },
+          ],
+          presets: [
+            {
+              title: 'Category X: No Opening Protection',
+              description: 'One or more exterior openings (windows, doors, or garage door) lack verified impact-resistant glass or approved hurricane shutters. To qualify for credit, EVERY opening must be protected.',
+              recommendation: 'Submit as Category X (No Credit).',
+              severity: 'Information'
+            },
+            {
+              title: 'Category A: Full Impact Protection',
+              description: 'All glazed and unglazed openings (including the garage door and skylights) were verified to have impact-resistant ratings meeting Large Missile testing standards.',
+              recommendation: 'Submit as Category A (Maximum Credit).',
+              severity: 'Information'
+            },
           ],
         },
       ],
     };
+
     template = this.templateRepository.create({ name: 'Wind Mitigation Inspection', structure });
     await this.templateRepository.save(template);
     return template;
