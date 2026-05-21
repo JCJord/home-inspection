@@ -64,26 +64,44 @@
                <div>
                   <div [style.background-color]="inspection?.inspector?.brand_primary_color || '#3B82F6'"
                      style="width: 140px; height: 14px; margin-bottom: 50px;"></div>
-                  <h1 style="font-size: 100px; font-weight: 900; line-height: 0.85; margin: 0 0 40px 0; letter-spacing: -0.04em; text-transform: uppercase;">
+                  <h1 style="font-size: 140px; font-weight: 900; line-height: 0.85; margin: 0 0 40px 0; letter-spacing: -0.04em; text-transform: uppercase;">
                      Home <br>Inspection <br>Report
                   </h1>
-                  <p style="font-size: 48px; font-weight: 800; color: #111; margin: 0; max-width: 1400px; line-height: 1.1;">
+                  <p style="font-size: 64px; font-weight: 800; color: #111; margin: 0; max-width: 1400px; line-height: 1.1;">
                      {{ inspection?.address }}
                   </p>
+                  <div style="margin-top: 50px; display: flex; align-items: center; gap: 15px; color: #666; font-size: 22px;">
+                     <span style="font-weight: 900; text-transform: uppercase; font-size: 22px; color: #DC2626; border: 2px solid #DC2626; padding: 4px 12px; border-radius: 4px; letter-spacing: 0.05em; display: inline-block; line-height: 1.2;">Confidential</span>
+                     <span style="font-style: italic; font-weight: 500;">Prepared exclusively for the Client named below. Non-transferable and subject to the Pre-Inspection Agreement.</span>
+                  </div>
                </div>
 
-               <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 60px; border-top: 2px solid #eee; padding-top: 80px;">
-                  <div class="meta-item">
-                     <label style="display: block; font-size: 16px; text-transform: uppercase; color: #888; margin-bottom: 15px; font-weight: 800; letter-spacing: 0.1em;">Client</label>
-                     <span style="font-size: 26px; font-weight: 800;">{{ inspection?.client_name }}</span>
+               <div style="border-top: 2px solid #eee; padding-top: 80px; display: flex; flex-direction: column; gap: 50px;">
+                  <!-- Row 1 -->
+                  <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 60px;">
+                     <div class="meta-item">
+                        <label style="display: block; font-size: 22px; text-transform: uppercase; color: #888; margin-bottom: 15px; font-weight: 800; letter-spacing: 0.1em;">Client</label>
+                        <span style="font-size: 32px; font-weight: 800;">{{ inspection?.client_name }}</span>
+                     </div>
+                     <div class="meta-item">
+                        <label style="display: block; font-size: 22px; text-transform: uppercase; color: #888; margin-bottom: 15px; font-weight: 800; letter-spacing: 0.1em;">Issue Date</label>
+                        <span style="font-size: 32px; font-weight: 800;">{{ (inspection?.created_at || today) | date:'MMMM d, yyyy' }}</span>
+                     </div>
+                     <div class="meta-item">
+                        <label style="display: block; font-size: 22px; text-transform: uppercase; color: #888; margin-bottom: 15px; font-weight: 800; letter-spacing: 0.1em;">Inspector</label>
+                        <span style="font-size: 32px; font-weight: 800;">{{ inspection?.inspector?.name || 'Inspectly Professional' }}</span>
+                     </div>
                   </div>
-                  <div class="meta-item">
-                     <label style="display: block; font-size: 16px; text-transform: uppercase; color: #888; margin-bottom: 15px; font-weight: 800; letter-spacing: 0.1em;">Issue Date</label>
-                     <span style="font-size: 26px; font-weight: 800;">{{ (inspection?.created_at || today) | date:'MMMM d, yyyy' }}</span>
-                  </div>
-                  <div class="meta-item">
-                     <label style="display: block; font-size: 16px; text-transform: uppercase; color: #888; margin-bottom: 15px; font-weight: 800; letter-spacing: 0.1em;">Inspector</label>
-                     <span style="font-size: 26px; font-weight: 800;">{{ inspection?.inspector?.name || 'Inspectly Professional' }}</span>
+                  <!-- Row 2 -->
+                  <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 60px; padding-top: 40px; border-top: 1px solid #eee;">
+                     <div class="meta-item">
+                        <label style="display: block; font-size: 22px; text-transform: uppercase; color: #888; margin-bottom: 15px; font-weight: 800; letter-spacing: 0.1em;">Phone</label>
+                        <span style="font-size: 32px; font-weight: 800;">{{ inspection?.inspector?.phone || '—' }}</span>
+                     </div>
+                     <div class="meta-item">
+                        <label style="display: block; font-size: 22px; text-transform: uppercase; color: #888; margin-bottom: 15px; font-weight: 800; letter-spacing: 0.1em;">License No.</label>
+                        <span style="font-size: 32px; font-weight: 800;">{{ inspection?.inspector?.license_number || '—' }}</span>
+                     </div>
                   </div>
                </div>
             </div>
@@ -233,180 +251,220 @@
                <div class="upperElement" style="margin-bottom: 60px;">
                   <div style="display: flex; align-items: center; gap: 20px;" id="anchor-legal-shield">
                      <span [style.color]="inspection?.inspector?.brand_primary_color || '#3B82F6'"
-                        style="font-size: 30px; font-weight: 900; opacity: 0.3;">02</span>
-                     <h3 style="font-size: 36px; font-weight: 900; text-transform: uppercase; margin: 0; letter-spacing: -0.01em;">
+                        style="font-size: 40px; font-weight: 900; opacity: 0.3;">02</span>
+                     <h3 style="font-size: 42px; font-weight: 900; text-transform: uppercase; margin: 0; letter-spacing: -0.01em;">
                         Scope, Limitations & Definitions
                      </h3>
                   </div>
                </div>
 
-               <div class="upperElement" style="margin-bottom: 60px;">
-                <!-- Legal Shield Grid: SOP & Visual Limitations Side-by-Side Cards -->
-                <div class="upperElement" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 40px; margin-bottom: 60px;">
-                   
-                   <!-- Card 1: Standard of Practice -->
-                   <div style="border: 2px solid #eee; border-top: 6px solid #111; padding: 35px; border-radius: 12px; background: #fff; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);">
-                      <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
-                         <div [style.background-color]="(inspection?.inspector?.brand_primary_color || '#3B82F6') + '15'" 
-                              [style.color]="inspection?.inspector?.brand_primary_color || '#3B82F6'"
-                              style="width: 44px; height: 44px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 900;">
-                            ✓
-                         </div>
-                         <h4 style="font-size: 24px; font-weight: 800; color: #111; margin: 0;">Standard of Practice (SOP)</h4>
-                      </div>
-                      <p style="font-size: 18px; color: #444; line-height: 1.6; margin: 0;">
-                         This visual inspection was performed in strict adherence to the 
-                         <strong style="color: #111;">{{ inspection?.inspector?.sop_name || 'Industry Standard' }}</strong> 
-                         Standards of Practice. The inspection covers only the systems and components specifically designated within those guidelines.
-                      </p>
-                   </div>
+               <!-- Legal Shield Grid: SOP & Visual Limitations Side-by-Side Cards -->
+               <table style="width: 100%; border-collapse: collapse; margin-bottom: 60px;">
+                  <tr>
+                     <!-- Card 1: Standard of Practice -->
+                     <td style="width: 50%; padding-right: 20px; vertical-align: top;">
+                        <div style="padding: 30px 0; border-top: 3px solid #111;">
+                           <div style="margin-bottom: 20px;">
+                              <h4 style="font-size: 28px; font-weight: 800; color: #111; margin: 0;">Standard of Practice (SOP)</h4>
+                           </div>
+                           <p style="font-size: 26px; color: #444; line-height: 1.6; margin: 0;">
+                              This visual inspection was performed in strict adherence to the 
+                              <strong style="color: #111;">{{ inspection?.inspector?.sop_name || 'Industry Standard' }}</strong> 
+                              Standards of Practice. The inspection covers only the systems and components specifically designated within those guidelines.
+                           </p>
+                        </div>
+                     </td>
 
-                   <!-- Card 2: Visual Limitations -->
-                   <div style="border: 2px solid #eee; border-top: 6px solid #DC2626; padding: 35px; border-radius: 12px; background: #fff; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);">
-                      <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
-                         <div style="width: 44px; height: 44px; border-radius: 8px; background: #FEF2F2; color: #DC2626; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 900;">
-                            ⚠
-                         </div>
-                         <h4 style="font-size: 24px; font-weight: 800; color: #111; margin: 0;">Visual Limitations</h4>
-                      </div>
-                      <p style="font-size: 18px; color: #444; line-height: 1.6; margin: 0;">
-                         This is a non-invasive, visual-only inspection performed at a single point in time. It specifically excludes latent, 
-                         hidden, or obstructed defects. No engineering calculations, structural integrity tests, or invasive methods were performed.
-                      </p>
-                   </div>
+                     <!-- Card 2: Visual Limitations -->
+                     <td style="width: 50%; padding-left: 20px; vertical-align: top;">
+                        <div style="padding: 30px 0; border-top: 3px solid #DC2626;">
+                           <div style="margin-bottom: 20px;">
+                              <h4 style="font-size: 28px; font-weight: 800; color: #111; margin: 0;">Visual Limitations</h4>
+                           </div>
+                           <p style="font-size: 26px; color: #444; line-height: 1.6; margin: 0;">
+                              This is a non-invasive, visual-only inspection performed at a single point in time. It specifically excludes latent, 
+                              hidden, or obstructed defects. No engineering calculations, structural integrity tests, or invasive methods were performed.
+                           </p>
+                        </div>
+                     </td>
+                  </tr>
+               </table>
 
-                </div>
-
-                <!-- Card 3: General Scope & Disclaimer Boilerplate -->
-                <div class="upperElement"
-                   style="margin-bottom: 60px; padding: 35px; background: #FAF9F6; border-left: 8px solid #111; border-radius: 8px; border: 1px solid #e5e5e5;">
-                   <h4 style="font-size: 24px; font-weight: 800; color: #111; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 0.02em;">Legal Scope & Liability Notice</h4>
-                   <p style="font-size: 18px; color: #444; line-height: 1.6; white-space: pre-wrap; margin: 0; font-weight: 500;">{{
-                      inspection?.inspector?.custom_legal_disclaimer || 'This inspection report is a professional opinion based on visual evidence at the date of the inspection. The service is visual in nature and is not a warranty, insurance policy, or absolute guarantee of system performance or future longevity.' }}</p>
-                </div>
-
-                <!-- Card 4: Specialty Exclusions List (Grid) -->
-                <div class="upperElement" style="margin-bottom: 80px;">
-                   <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 30px;">
-                      <h4 style="font-size: 26px; font-weight: 800; color: #111; margin: 0;">Strictly Excluded Systems & Testing</h4>
-                   </div>
-                   <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px;">
-                      
-                      <!-- Radon Gas -->
-                      <div style="background: #F9FAFB; border: 1px solid #E5E7EB; border-radius: 8px; padding: 25px; display: flex; flex-direction: column; gap: 8px;">
-                         <strong style="font-size: 18px; font-weight: 800; color: #374151; display: flex; align-items: center; gap: 8px;">
-                            <span style="color: #9CA3AF; font-size: 20px;">✕</span> Radon Gas
-                         </strong>
-                         <span style="font-size: 15px; color: #6B7280; line-height: 1.4;">Environmental radon testing requires specialized monitoring and is excluded unless requested.</span>
-                      </div>
-
-                      <!-- Mold & Air Quality -->
-                      <div style="background: #F9FAFB; border: 1px solid #E5E7EB; border-radius: 8px; padding: 25px; display: flex; flex-direction: column; gap: 8px;">
-                         <strong style="font-size: 18px; font-weight: 800; color: #374151; display: flex; align-items: center; gap: 8px;">
-                            <span style="color: #9CA3AF; font-size: 20px;">✕</span> Mold & Air Quality
-                         </strong>
-                         <span style="font-size: 15px; color: #6B7280; line-height: 1.4;">Microbiological testing, spores, and indoor air quality analysis are outside standard scope.</span>
-                      </div>
-
-                      <!-- Lead & Asbestos -->
-                      <div style="background: #F9FAFB; border: 1px solid #E5E7EB; border-radius: 8px; padding: 25px; display: flex; flex-direction: column; gap: 8px;">
-                         <strong style="font-size: 18px; font-weight: 800; color: #374151; display: flex; align-items: center; gap: 8px;">
-                            <span style="color: #9CA3AF; font-size: 20px;">✕</span> Lead & Asbestos
-                         </strong>
-                         <span style="font-size: 15px; color: #6B7280; line-height: 1.4;">Testing for lead-based paint, toxic hazards, or friable asbestos materials requires specialized lab tests.</span>
-                      </div>
-
-                      <!-- Wood-Destroying Insects -->
-                      <div style="background: #F9FAFB; border: 1px solid #E5E7EB; border-radius: 8px; padding: 25px; display: flex; flex-direction: column; gap: 8px;">
-                         <strong style="font-size: 18px; font-weight: 800; color: #374151; display: flex; align-items: center; gap: 8px;">
-                            <span style="color: #9CA3AF; font-size: 20px;">✕</span> Wood Pests / Termites
-                         </strong>
-                         <span style="font-size: 15px; color: #6B7280; line-height: 1.4;">Wood-destroying insect reports (WDIR) require a separate license and visual termite verification.</span>
-                      </div>
-
-                      <!-- Wells, Septic & Sewer -->
-                      <div style="background: #F9FAFB; border: 1px solid #E5E7EB; border-radius: 8px; padding: 25px; display: flex; flex-direction: column; gap: 8px;">
-                         <strong style="font-size: 18px; font-weight: 800; color: #374151; display: flex; align-items: center; gap: 8px;">
-                            <span style="color: #9CA3AF; font-size: 20px;">✕</span> Well / Septic Systems
-                         </strong>
-                         <span style="font-size: 15px; color: #6B7280; line-height: 1.4;">Subterranean waste systems, well yields, sewer lines, and septic percolation are strictly excluded.</span>
-                      </div>
-
-                      <!-- Pools, Spas & Irrigation -->
-                      <div style="background: #F9FAFB; border: 1px solid #E5E7EB; border-radius: 8px; padding: 25px; display: flex; flex-direction: column; gap: 8px;">
-                         <strong style="font-size: 18px; font-weight: 800; color: #374151; display: flex; align-items: center; gap: 8px;">
-                            <span style="color: #9CA3AF; font-size: 20px;">✕</span> Pools, Spas & Irrigation
-                         </strong>
-                         <span style="font-size: 15px; color: #6B7280; line-height: 1.4;">Underground piping, sprinkler zones, pool liners, heaters, and water chemistry are excluded.</span>
-                      </div>
-
-                   </div>
-                </div></div>
-
-               <div class="upperElement" style="margin-bottom: 50px;">
-                  <h4 style="font-size: 26px; font-weight: 800; color: #111; margin-bottom: 25px;">Finding Severity Definitions</h4>
-                  <div style="display: grid; gap: 20px;">
-                     <!-- Safety Hazard -->
-                     <div style="padding: 25px; border: 2px solid #eee; border-radius: 8px; display: flex; flex-direction: column; gap: 10px;">
-                        <strong style="color: #ef4444; font-size: 22px; text-transform: uppercase; letter-spacing: 0.05em;">Safety Hazard</strong>
-                        <span style="font-size: 20px; color: #555; line-height: 1.5;">
-                           @if (inspection?.inspector?.use_standard_definitions !== false) {
-                              A condition, system, or component that poses a significant, immediate risk of personal injury during normal, day-to-day use.
-                           } @else {
-                              {{ inspection?.inspector?.custom_safety_hazard_def }}
-                           }
-                        </span>
-                     </div>
-
-                     <!-- Major Defect -->
-                     <div style="padding: 25px; border: 2px solid #eee; border-radius: 8px; display: flex; flex-direction: column; gap: 10px;">
-                        <strong style="color: #f97316; font-size: 22px; text-transform: uppercase; letter-spacing: 0.05em;">Major Defect</strong>
-                        <span style="font-size: 20px; color: #555; line-height: 1.5;">
-                           @if (inspection?.inspector?.use_standard_definitions !== false) {
-                              A system or component that is unsafe, not functioning properly, or is at the end of its useful life, requiring immediate professional repair or replacement.
-                           } @else {
-                              {{ inspection?.inspector?.custom_major_defect_def }}
-                           }
-                        </span>
-                     </div>
-
-                     <!-- Minor Defect -->
-                     <div style="padding: 25px; border: 2px solid #eee; border-radius: 8px; display: flex; flex-direction: column; gap: 10px;">
-                        <strong style="color: #eab308; font-size: 22px; text-transform: uppercase; letter-spacing: 0.05em;">Minor Defect</strong>
-                        <span style="font-size: 20px; color: #555; line-height: 1.5;">
-                           @if (inspection?.inspector?.use_standard_definitions !== false) {
-                              A cosmetic issue or a flaw that does not affect the safety or function of the property but may require attention.
-                           } @else {
-                              {{ inspection?.inspector?.custom_minor_defect_def }}
-                           }
-                        </span>
-                     </div>
-
-                     <!-- Maintenance Item -->
-                     <div style="padding: 25px; border: 2px solid #eee; border-radius: 8px; display: flex; flex-direction: column; gap: 10px;">
-                        <strong style="color: #22c55e; font-size: 22px; text-transform: uppercase; letter-spacing: 0.05em;">Maintenance Item</strong>
-                        <span style="font-size: 20px; color: #555; line-height: 1.5;">
-                           @if (inspection?.inspector?.use_standard_definitions !== false) {
-                              A component that is nearing the end of its useful life or requires routine upkeep to prevent future deterioration.
-                           } @else {
-                              {{ inspection?.inspector?.custom_maintenance_item_def }}
-                           }
-                        </span>
-                     </div>
-
-                     <!-- Informational Item -->
-                     <div style="padding: 25px; border: 2px solid #eee; border-radius: 8px; display: flex; flex-direction: column; gap: 10px;">
-                        <strong style="color: #3b82f6; font-size: 22px; text-transform: uppercase; letter-spacing: 0.05em;">Informational Item</strong>
-                        <span style="font-size: 20px; color: #555; line-height: 1.5;">
-                           @if (inspection?.inspector?.use_standard_definitions !== false) {
-                              A documented note or observation about a condition or component, recorded for informational purposes rather than as a defect.
-                           } @else {
-                              {{ inspection?.inspector?.custom_informational_item_def || 'A documented note or observation about a condition or component, recorded for informational purposes rather than as a defect.' }}
-                           }
-                        </span>
-                     </div>
-                  </div>
+               <!-- Card 3: General Scope & Disclaimer Boilerplate -->
+               <div class="upperElement"
+                  style="margin-bottom: 40px; padding: 45px; background: #FAF9F6; border-left: 8px solid #111; border-radius: 8px; border: 1px solid #e5e5e5;">
+                  <h4 style="font-size: 28px; font-weight: 800; color: #111; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 0.02em;">Legal Scope & Liability Notice</h4>
+                  <p style="font-size: 24px; color: #444; line-height: 1.6; white-space: pre-wrap; margin: 0; font-weight: 500;">{{
+                     inspection?.inspector?.custom_legal_disclaimer || 'This inspection report is a professional opinion based on visual evidence at the date of the inspection. The service is visual in nature and is not a warranty, insurance policy, or absolute guarantee of system performance or future longevity.' }}</p>
                </div>
+
+               <!-- Card 4: Specialty Exclusions List (Grid) -->
+               <div class="upperElement" style="margin-bottom: 40px;">
+                  <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 30px;">
+                     <h4 style="font-size: 32px; font-weight: 800; color: #111; margin: 0;">Strictly Excluded Systems & Testing</h4>
+                  </div>
+                  <table style="width: 100%; border-collapse: collapse;">
+                     <tr>
+                        <!-- Radon Gas -->
+                        <td style="width: 33.33%; padding: 0 15px 20px 0; vertical-align: top;">
+                           <div style="padding: 20px 0; border-top: 2px solid #E5E7EB; display: flex; flex-direction: column; gap: 10px;">
+                              <strong style="font-size: 26px; font-weight: 800; color: #374151;">
+                                 Radon Gas
+                              </strong>
+                              <span style="font-size: 26px; color: #464646; line-height: 1.5;">Environmental radon testing requires specialized monitoring and is excluded unless requested.</span>
+                           </div>
+                        </td>
+                        <!-- Mold & Air Quality -->
+                        <td style="width: 33.33%; padding: 0 7.5px 20px 7.5px; vertical-align: top;">
+                           <div style="padding: 20px 0; border-top: 2px solid #E5E7EB; display: flex; flex-direction: column; gap: 10px;">
+                              <strong style="font-size: 26px; font-weight: 800; color: #374151;">
+                                 Mold & Air Quality
+                              </strong>
+                              <span style="font-size: 26px; color: #464646; line-height: 1.5;">Microbiological testing, spores, and indoor air quality analysis are outside standard scope.</span>
+                           </div>
+                        </td>
+                        <!-- Lead & Asbestos -->
+                        <td style="width: 33.33%; padding: 0 0 20px 15px; vertical-align: top;">
+                           <div style="padding: 20px 0; border-top: 2px solid #E5E7EB; display: flex; flex-direction: column; gap: 10px;">
+                              <strong style="font-size: 26px; font-weight: 800; color: #374151;">
+                                 Lead & Asbestos
+                              </strong>
+                              <span style="font-size: 26px; color: #464646; line-height: 1.5;">Testing for lead-based paint, toxic hazards, or friable asbestos materials requires specialized lab tests.</span>
+                           </div>
+                        </td>
+                     </tr>
+                     <tr>
+                        <!-- Wood-Destroying Insects -->
+                        <td style="width: 33.33%; padding: 0 15px 0 0; vertical-align: top;">
+                           <div style="padding: 20px 0; border-top: 2px solid #E5E7EB; display: flex; flex-direction: column; gap: 10px;">
+                              <strong style="font-size: 26px; font-weight: 800; color: #374151;">
+                                 Wood Pests / Termites
+                              </strong>
+                              <span style="font-size: 26px; color: #464646; line-height: 1.5;">Wood-destroying insect reports (WDIR) require a separate license and visual termite verification.</span>
+                           </div>
+                        </td>
+                        <!-- Wells, Septic & Sewer -->
+                        <td style="width: 33.33%; padding: 0 7.5px; vertical-align: top;">
+                           <div style="padding: 20px 0; border-top: 2px solid #E5E7EB; display: flex; flex-direction: column; gap: 10px;">
+                              <strong style="font-size: 26px; font-weight: 800; color: #374151;">
+                                 Well / Septic Systems
+                              </strong>
+                              <span style="font-size: 26px; color: #464646; line-height: 1.5;">Subterranean waste systems, well yields, sewer lines, and septic percolation are strictly excluded.</span>
+                           </div>
+                        </td>
+                        <!-- Pools, Spas & Irrigation -->
+                        <td style="width: 33.33%; padding: 0 0 0 15px; vertical-align: top;">
+                           <div style="padding: 20px 0; border-top: 2px solid #E5E7EB; display: flex; flex-direction: column; gap: 10px;">
+                              <strong style="font-size: 26px; font-weight: 800; color: #374151;">
+                                 Pools, Spas & Irrigation
+                              </strong>
+                              <span style="font-size: 26px; color: #464646; line-height: 1.5;">Underground piping, sprinkler zones, pool liners, heaters, and water chemistry are excluded.</span>
+                           </div>
+                        </td>
+                     </tr>
+                  </table>
+               </div>
+
+               <!-- 3. Severity Definitions -->
+               <h4 style="font-size: 32px; font-weight: 800; color: #111; margin-bottom: 25px;">Finding Severity Definitions</h4>
+
+               <!-- Invisible structure-only table for reliable page-break behaviour when custom defs are long -->
+               <table style="width: 100%; border-collapse: collapse; border: none;">
+
+                  <!-- Safety Hazard -->
+                  <tr>
+                     <td style="padding: 0 0 20px 0;">
+                        <div style="padding: 20px 28px; border-left: 4px solid #1a1a1a; display: flex; flex-direction: column; gap: 10px;">
+                           <strong style="color: #111; font-size: 26px; text-transform: uppercase; letter-spacing: 0.05em;">Safety Hazard</strong>
+                           <span style="font-size: 26px; color: #555; line-height: 1.55; word-break: break-all;">
+                              @if (inspection?.inspector?.use_standard_definitions !== false) {
+                                 A condition, system, or component that poses a significant, immediate risk of personal injury during normal, day-to-day use.
+                              } @else {
+                                 {{ inspection?.inspector?.custom_safety_hazard_def }}
+                              }
+                           </span>
+                        </div>
+                     </td>
+                  </tr>
+
+                  <!-- Major Defect -->
+                  <tr>
+                     <td style="padding: 0 0 20px 0;">
+                        <div style="padding: 20px 28px; border-left: 4px solid #333; display: flex; flex-direction: column; gap: 10px;">
+                           <strong style="color: #111; font-size: 26px; text-transform: uppercase; letter-spacing: 0.05em;">Major Defect</strong>
+                           <span style="font-size: 26px; color: #555; line-height: 1.55; text-wrap: wrap; word-break: break-all;">
+                              @if (inspection?.inspector?.use_standard_definitions !== false) {
+                                 A system or component that is unsafe, not functioning properly, or is at the end of its useful life, requiring immediate professional repair or replacement.
+                              } @else {
+                                 {{ inspection?.inspector?.custom_major_defect_def }}
+                              }
+                           </span>
+                        </div>
+                     </td>
+                  </tr>
+
+                  <!-- Minor Defect -->
+                  <tr>
+                     <td style="padding: 0 0 20px 0;">
+                        <div style="padding: 20px 28px; border-left: 4px solid #555; display: flex; flex-direction: column; gap: 10px;">
+                           <strong style="color: #111; font-size: 26px; text-transform: uppercase; letter-spacing: 0.05em;">Minor Defect</strong>
+                           <span style="font-size: 26px; color: #555; line-height: 1.55; text-wrap: wrap; word-break: break-all;">
+                              @if (inspection?.inspector?.use_standard_definitions !== false) {
+                                 A cosmetic issue or a flaw that does not affect the safety or function of the property but may require attention.
+                              } @else {
+                                 {{ inspection?.inspector?.custom_minor_defect_def }}
+                              }
+                           </span>
+                        </div>
+                     </td>
+                  </tr>
+
+                  <!-- Maintenance Item -->
+                  <tr>
+                     <td style="padding: 0 0 20px 0;">
+                        <div style="padding: 20px 28px; border-left: 4px solid #777; display: flex; flex-direction: column; gap: 10px;">
+                           <strong style="color: #111; font-size: 26px; text-transform: uppercase; letter-spacing: 0.05em;">Maintenance Item</strong>
+                           <span style="font-size: 26px; color: #555; line-height: 1.55; text-wrap: wrap; word-break: break-all;">
+                              @if (inspection?.inspector?.use_standard_definitions !== false) {
+                                 A component that is nearing the end of its useful life or requires routine upkeep to prevent future deterioration.
+                              } @else {
+                                 {{ inspection?.inspector?.custom_maintenance_item_def }}
+                              }
+                           </span>
+                        </div>
+                     </td>
+                  </tr>
+
+                  <!-- Informational Item -->
+                  <tr>
+                     <td style="padding: 0 0 20px 0;">
+                        <div style="padding: 20px 28px; border-left: 4px solid #999; display: flex; flex-direction: column; gap: 10px;">
+                           <strong style="color: #111; font-size: 26px; text-transform: uppercase; letter-spacing: 0.05em;">Informational Item</strong>
+                           <span style="font-size: 26px; color: #555; line-height: 1.55; text-wrap: wrap; word-break: break-all;">
+                              @if (inspection?.inspector?.use_standard_definitions !== false) {
+                                 A documented note or observation about a condition or component, recorded for informational purposes rather than as a defect.
+                              } @else {
+                                 {{ inspection?.inspector?.custom_informational_item_def || 'A documented note or observation about a condition or component, recorded for informational purposes rather than as a defect.' }}
+                              }
+                           </span>
+                        </div>
+                     </td>
+                  </tr>
+
+                  <!-- Visual & Photo Disclaimer Notice -->
+                  <tr>
+                     <td style="padding: 0;">
+                        <div style="margin-top: 10px; padding: 20px 0; display: flex; flex-direction: column; gap: 12px;">
+                           <strong style="color: #111; font-size: 26px; text-transform: uppercase; letter-spacing: 0.05em;">
+                              Representative Photo & Directional Notice
+                           </strong>
+                           <span style="font-size: 26px; color: #444; line-height: 1.55; font-weight: 500;">
+                              Visual documentation (photos or video) included in this report represents observed examples of conditions at the time of inspection and does not document every occurrence or instance of a defect throughout the property. All directional references (left, right, front, rear) are made from the perspective of an observer standing in front of the home facing the main entrance.
+                           </span>
+                        </div>
+                     </td>
+                  </tr>
+               </table>
             </div>
 
             <ng-container *ngTemplateOutlet="footer"></ng-container>
@@ -585,8 +643,8 @@
                                     </div>
                                  }
                                  @if (finding.recommendation) {
-                                    <div class="recommendation-block" style="margin-top: 30px; padding: 25px; background-color: #f8fafc; border-left: 6px solid #3b82f6; border-radius: 6px;">
-                                       <label style="font-size: 16px; font-weight: 800; text-transform: uppercase; color: #3b82f6; display: block; margin-bottom: 10px; letter-spacing: 0.05em;">Recommendation</label>
+                                    <div class="recommendation-block" style="margin-top: 30px; padding: 25px; background-color: #f9f9f8; border-left: 6px solid #111; border-radius: 6px;">
+                                       <label style="font-size: 16px; font-weight: 800; text-transform: uppercase; color: #111; display: block; margin-bottom: 10px; letter-spacing: 0.05em;">Recommendation</label>
                                        <p style="margin: 0; font-size: 20px; font-weight: 600; line-height: 1.5; color: #1e293b;">
                                           {{ finding.recommendation }}
                                        </p>

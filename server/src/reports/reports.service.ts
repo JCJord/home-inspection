@@ -21,8 +21,6 @@ export class ReportsService {
   ): Promise<Buffer> {
     this.logger.log('Generating report PDF...');
 
-    let isDraft = true;
-
     if (inspectionId && inspectorId) {
       const inspection = await this.inspectionRepository.findOne({
         where: { id: inspectionId, inspector_id: inspectorId },
@@ -31,11 +29,9 @@ export class ReportsService {
       if (!inspection) {
         throw new NotFoundException('Inspection not found or unauthorized');
       }
-
-      isDraft = inspection.status !== 'published';
     }
 
-    return this.pdfService.generateFromHtml(html, isDraft);
+    return this.pdfService.generateFromHtml(html);
   }
 }
 

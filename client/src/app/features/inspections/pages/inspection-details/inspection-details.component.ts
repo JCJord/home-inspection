@@ -25,7 +25,7 @@ import { ResolveImagePipe } from '../../../../shared/pipes/resolve-image.pipe';
     FindingCardComponent,
     LucideAngularModule,
     SkeletonComponent,
-        ReportGeneratorComponent,
+    ReportGeneratorComponent,
     ReportPreviewComponent,
     BackButtonComponent,
 
@@ -62,7 +62,7 @@ export class InspectionDetailsComponent implements OnInit {
   copyLinkSuccess = signal<boolean>(false);
   isActionsMenuOpen = signal<boolean>(false);
 
-    readonly icons = { ArrowLeft, Send, RefreshCw, AlertCircle, Plus, X, Check, Loader2, FileText, Download, LockOpen, Edit, Camera, Image, Cloud, Thermometer, Calendar, Maximize, Home, Users, ChevronDown, Trash2, Eye };
+  readonly icons = { ArrowLeft, Send, RefreshCw, AlertCircle, Plus, X, Check, Loader2, FileText, Download, LockOpen, Edit, Camera, Image, Cloud, Thermometer, Calendar, Maximize, Home, Users, ChevronDown, Trash2, Eye };
 
   readonly apiUrl = environment.apiUrl.replace('/api', '');
 
@@ -404,7 +404,7 @@ export class InspectionDetailsComponent implements OnInit {
     }
   }
 
-    openReportPreview(): void {
+  openReportPreview(): void {
     this.reportPreview?.openPreview();
   }
 
