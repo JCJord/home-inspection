@@ -31,6 +31,11 @@ export class TemplateFieldDto {
   @IsString()
   @IsNotEmpty()
   type: string;
+
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  options?: string[];
 }
 
 export class TemplateSectionDto {

@@ -12,6 +12,7 @@ import { LucideAngularModule, Home, ChevronUp, ChevronDown, Hammer, Zap, Droplet
 import { BackButtonComponent } from '../../../../shared/components/back-button/back-button.component';
 import { SectionStatusToggleComponent } from '../../components/section-status-toggle/section-status-toggle';
 import { TextInputComponent } from '../../../../shared/components/inputs/text-input/text-input.component';
+import { SelectInputComponent } from '../../../../shared/components/inputs/select-input/select-input.component';
 import { SummaryDashboardComponent } from '../../components/summary-dashboard/summary-dashboard.component';
 import { MutationQueueService, MutationType, TaskCompletion } from '../../../../core/services/mutation-queue.service';
 import { debounceTime, Subject } from 'rxjs';
@@ -19,7 +20,7 @@ import { debounceTime, Subject } from 'rxjs';
 @Component({
   selector: 'app-finding-details',
   standalone: true,
-  imports: [CommonModule, WorkbenchLayoutComponent, FindingFormComponent, FindingSwitcherComponent, LucideAngularModule, BackButtonComponent, SectionStatusToggleComponent, TextInputComponent, SummaryDashboardComponent],
+  imports: [CommonModule, WorkbenchLayoutComponent, FindingFormComponent, FindingSwitcherComponent, LucideAngularModule, BackButtonComponent, SectionStatusToggleComponent, TextInputComponent, SelectInputComponent, SummaryDashboardComponent],
   providers: [{ provide: 'lucideIcons', useValue: { Home, ChevronUp, ChevronDown, Hammer, Zap, Droplets, Wind, Flame, Box, Grid, Monitor, Car, Shield, Search, Info, AlertTriangle, Copy, Edit2, Trash2, Plus, Save, Lock, Unlock, ArrowLeft, Wrench, Thermometer, Lightbulb, Paintbrush, Sun, Key, Eye, Power, FileCheck, HardHat, Construction, Ruler, ShieldCheck, ShieldAlert, BrickWall, Trees, Fan, Sparkles, Wifi, WifiOff, Trash, Settings, Check, X, Users, FileText, Image, Cloud, CloudRain, CloudLightning, Snowflake, Umbrella, Compass, MapPin, Clock, Calendar, Activity, Scissors, Heart, AlertCircle, HelpCircle, Ban, LockOpen, Send, Download, Loader2, CheckCircle2, Layers, Menu, ChevronLeft, LayoutGrid, CircleX, PieChart } }],
   templateUrl: './finding-details.component.html',
   styleUrl: './finding-details.component.scss'

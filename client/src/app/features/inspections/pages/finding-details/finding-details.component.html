@@ -132,11 +132,22 @@
               @if (section.fields && section.fields.length > 0) {
               <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-6 pb-12 border-b border-[#E2E8F0]">
                 @for (field of section.fields; track field.key) {
-                <app-text-input [label]="field.label" [value]="inspection()?.metadata_values?.[field.key] || ''"
-                  (valueChanged)="updateMetadataValueDirect(field.key, $event)"
-                  [disabled]="inspection()?.status === 'published'"
-                  [placeholder]="'Set ' + field.label + '...'" [suffixIcon]="icons.Edit2">
-                </app-text-input>
+                  @if (field.type === 'select') {
+                    <app-select-input
+                      [name]="field.key"
+                      [label]="field.label"
+                      [options]="field.options || []"
+                      [value]="inspection()?.metadata_values?.[field.key] || ''"
+                      (valueChanged)="updateMetadataValueDirect(field.key, $event)"
+                      [disabled]="inspection()?.status === 'published'"
+                    ></app-select-input>
+                  } @else {
+                    <app-text-input [label]="field.label" [value]="inspection()?.metadata_values?.[field.key] || ''"
+                      (valueChanged)="updateMetadataValueDirect(field.key, $event)"
+                      [disabled]="inspection()?.status === 'published'"
+                      [placeholder]="'Set ' + field.label + '...'" [suffixIcon]="icons.Edit2">
+                    </app-text-input>
+                  }
                 }
               </div>
               }

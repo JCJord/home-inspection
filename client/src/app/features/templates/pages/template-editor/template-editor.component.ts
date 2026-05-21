@@ -137,7 +137,7 @@ export class TemplateEditorComponent implements OnInit, OnDestroy {
             name: [sec.name, Validators.required],
             icon_key: [sec.icon_key || 'Home'],
             fields: this.fb.array(
-              (sec.fields || []).map(f => this.createFieldGroup(f.label, f.key, f.type))
+              (sec.fields || []).map(f => this.createFieldGroup(f.label, f.key, f.type, f.options))
             ),
             presets: this.fb.array(
               (sec.presets || []).map(p => this.fb.group({
@@ -172,11 +172,12 @@ export class TemplateEditorComponent implements OnInit, OnDestroy {
     });
   }
 
-  createFieldGroup(label: string, key: string, type: string = 'text'): FormGroup {
+  createFieldGroup(label: string, key: string, type: string = 'text', options: string[] = []): FormGroup {
     const group = this.fb.group({
       label: [label, Validators.required],
       key: [key, Validators.required],
-      type: [type]
+      type: [type],
+      options_raw: [options.join(', ')]
     });
 
     group.get('label')?.valueChanges.pipe(
@@ -195,9 +196,22 @@ export class TemplateEditorComponent implements OnInit, OnDestroy {
     const currentTemplate = this.template();
     if (!currentTemplate || this.isSystemDefault()) return;
 
-    this.templatesService.updateTemplate(currentTemplate.id, val.structure).subscribe({
+    // Transform options_raw back to options array for select types
+    const structureToSave = JSON.parse(JSON.stringify(val.structure));
+    structureToSave.sections.forEach((sec: any) => {
+      sec.fields.forEach((f: any) => {
+        if (f.type === 'select') {
+          f.options = f.options_raw ? f.options_raw.split(',').map((o: string) => o.trim()).filter((o: string) => o.length > 0) : [];
+        } else {
+          delete f.options;
+        }
+        delete f.options_raw;
+      });
+    });
+
+    this.templatesService.updateTemplate(currentTemplate.id, structureToSave).subscribe({
       next: (updated) => {
-        const nextTemplate = { ...currentTemplate, name: val.name, structure: val.structure };
+        const nextTemplate = { ...currentTemplate, name: val.name, structure: structureToSave };
         this.template.set(nextTemplate);
       },
       error: (err) => console.error('Auto-save failed', err)
@@ -382,18 +396,7 @@ export class TemplateEditorComponent implements OnInit, OnDestroy {
     const currentTemplate = this.template();
     if (!currentTemplate) return;
 
-    const newName = window.prompt('Enter a name for the cloned template:', `Copy of ${currentTemplate.name}`);
-    if (newName && newName.trim()) {
-      this.templatesService.cloneTemplate(currentTemplate.id, newName.trim()).subscribe({
-        next: (cloned) => {
-          this.router.navigate(['/templates', cloned.id]);
-        },
-        error: (err) => {
-          console.error('Failed to clone blueprint', err);
-          alert('Failed to clone blueprint.');
-        }
-      });
-    }
+    this.router.navigate(['/templates/new'], { queryParams: { cloneOf: currentTemplate.id } });
   }
 
 }

@@ -180,17 +180,30 @@
                       </div>
                     }
                   </div>
-                  <div class="p-4 responsive-stack items-start">
-                    <div class="flex-1">
+                  <div class="p-4 responsive-stack items-start flex-wrap gap-4">
+                    <div class="flex-1 min-w-[200px]">
                       <app-text-input [name]="'structure.sections.' + selectedSectionIndex() + '.fields.' + fi + '.label'"
                         label="Field Label" placeholder="e.g., Siding Material">
                       </app-text-input>
                     </div>
-                    <div class="flex-1">
+                    <div class="flex-1 min-w-[200px]">
                       <app-text-input [name]="'structure.sections.' + selectedSectionIndex() + '.fields.' + fi + '.key'"
                         label="Key Slug (Auto-Generated)" placeholder="siding_material">
                       </app-text-input>
                     </div>
+                    <div class="flex-1 min-w-[200px]">
+                      <app-select-input [name]="'structure.sections.' + selectedSectionIndex() + '.fields.' + fi + '.type'"
+                        label="Field Type"
+                        [options]="[{label: 'Text Input', value: 'text'}, {label: 'Dropdown / Select', value: 'select'}]">
+                      </app-select-input>
+                    </div>
+                    @if (field.get('type')?.value === 'select') {
+                    <div class="w-full">
+                      <app-text-input [name]="'structure.sections.' + selectedSectionIndex() + '.fields.' + fi + '.options_raw'"
+                        label="Dropdown Options (Comma-Separated)" placeholder="e.g., Brick, Vinyl, Stucco, Wood">
+                      </app-text-input>
+                    </div>
+                    }
                   </div>
                 </div>
                 }

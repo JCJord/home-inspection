@@ -5,17 +5,34 @@
     </label>
   }
 
-  <select
-    [id]="name()"
-    [name]="name()"
-    [formControl]="$any(control)"
-    class="input-field"
-    [class.input-field--error]="isInvalid"
-  >
-    @for (opt of mappedOptions(); track opt.value) {
-      <option [value]="opt.value">{{ opt.label }}</option>
-    }
-  </select>
+  @if (control) {
+    <select
+      [id]="name()"
+      [name]="name()"
+      [formControl]="$any(control)"
+      class="input-field"
+      [class.input-field--error]="isInvalid"
+    >
+      @for (opt of mappedOptions(); track opt.value) {
+        <option [value]="opt.value">{{ opt.label }}</option>
+      }
+    </select>
+  } @else {
+    <select
+      [id]="name()"
+      [name]="name()"
+      [value]="value()"
+      (change)="onSelectChange($event)"
+      [disabled]="disabled()"
+      class="input-field"
+      [class.input-field--error]="isInvalid"
+    >
+      <option value="" disabled hidden>Select an option...</option>
+      @for (opt of mappedOptions(); track opt.value) {
+        <option [value]="opt.value">{{ opt.label }}</option>
+      }
+    </select>
+  }
 
   @if (isInvalid) {
     <span class="input-error">

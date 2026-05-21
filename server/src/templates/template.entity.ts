@@ -20,6 +20,7 @@ export interface TemplateField {
   key: string;
   label: string;
   type: string;
+  options?: string[];
 }
 
 export interface TemplateSection {
