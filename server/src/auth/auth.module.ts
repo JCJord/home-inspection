@@ -7,11 +7,14 @@ import { InspectorsModule } from '../inspectors/inspectors.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Session } from './session.entity';
 import { Inspector } from '../inspectors/inspector.entity';
+import { InviteCode } from './invite-code.entity';
+import { InviteCodeService } from './invite-code.service';
+import { AdminInviteCodeController } from './admin-invite-code.controller';
 
 @Module({
   imports: [
     forwardRef(() => InspectorsModule),
-    TypeOrmModule.forFeature([Session, Inspector]),
+    TypeOrmModule.forFeature([Session, Inspector, InviteCode]),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -23,8 +26,8 @@ import { Inspector } from '../inspectors/inspector.entity';
       }),
     }),
   ],
-  controllers: [AuthController],
-  providers: [AuthService],
-  exports: [AuthService, JwtModule],
+  controllers: [AuthController, AdminInviteCodeController],
+  providers: [AuthService, InviteCodeService],
+  exports: [AuthService, JwtModule, InviteCodeService],
 })
 export class AuthModule {}

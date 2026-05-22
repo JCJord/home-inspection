@@ -4,6 +4,7 @@ import {
   InternalServerErrorException,
   UnauthorizedException,
   ForbiddenException,
+  BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -17,6 +18,7 @@ import { AuthRegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { MailService } from '../mail/mail.service';
 import { ConfigService } from '@nestjs/config';
+import { InviteCodeService } from './invite-code.service';
 
 @Injectable()
 export class AuthService {
@@ -29,10 +31,11 @@ export class AuthService {
     private readonly inspectorRepository: Repository<Inspector>,
     private readonly mailService: MailService,
     private readonly configService: ConfigService,
+    private readonly inviteCodeService: InviteCodeService,
   ) {}
 
   async register(authRegisterDto: AuthRegisterDto) {
-    const { email, password, name } = authRegisterDto;
+    const { email, password, name, invite_code } = authRegisterDto;
 
     const existingUser = await this.inspectorsService.findByEmail(email);
     if (existingUser) {
@@ -43,10 +46,18 @@ export class AuthService {
     const hashedPassword = await bcrypt.hash(password, salt);
 
     try {
-      const inspector = await this.inspectorsService.create({
-        email,
-        name,
-        password_hash: hashedPassword,
+      const inspector = await this.inspectorRepository.manager.transaction(async (manager) => {
+        // Validate and consume code inside transaction
+        await this.inviteCodeService.validateAndConsumeCode(invite_code, manager);
+        
+        // Create the user manually via manager to participate in the transaction
+        const newInspector = this.inspectorRepository.create({
+          email,
+          name,
+          password_hash: hashedPassword,
+        });
+        
+        return await manager.save(newInspector);
       });
 
       const tokens = await this.generateTokens(inspector);
@@ -61,6 +72,9 @@ export class AuthService {
         ...tokens,
       };
     } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
       throw new InternalServerErrorException('Error registering new user');
     }
   }
