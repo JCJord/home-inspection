@@ -132,6 +132,20 @@ export class AuthService {
   }
 
   /**
+   * Requests a password reset link.
+   */
+  forgotPassword(email: string): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.apiUrl}/forgot-password`, { email });
+  }
+
+  /**
+   * Resets the password using a token.
+   */
+  resetPassword(token: string, password: string): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.apiUrl}/reset-password`, { token, password });
+  }
+
+  /**
    * Clears session data without navigation (used for multi-tab sync).
    */
   private clearSession() {

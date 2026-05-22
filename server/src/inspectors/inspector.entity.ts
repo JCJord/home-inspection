@@ -22,6 +22,12 @@ export class Inspector {
   password_hash: string;
 
   @Column({ nullable: true })
+  reset_password_token: string;
+
+  @Column({ type: 'timestamp', nullable: true })
+  reset_password_expires: Date;
+
+  @Column({ nullable: true })
   name: string;
 
   @Column({ nullable: true })

@@ -11,9 +11,12 @@ import { Session } from './session.entity';
 import { Inspector } from '../inspectors/inspector.entity';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import * as crypto from 'crypto';
 import { InspectorsService } from '../inspectors/inspectors.service';
 import { AuthRegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { MailService } from '../mail/mail.service';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
@@ -24,6 +27,8 @@ export class AuthService {
     private readonly sessionRepository: Repository<Session>,
     @InjectRepository(Inspector)
     private readonly inspectorRepository: Repository<Inspector>,
+    private readonly mailService: MailService,
+    private readonly configService: ConfigService,
   ) {}
 
   async register(authRegisterDto: AuthRegisterDto) {
@@ -184,6 +189,60 @@ export class AuthService {
     } catch (e) {
       // Ignore errors during logout
     }
+  }
+
+  async forgotPassword(email: string) {
+    const inspector = await this.inspectorsService.findByEmail(email);
+    if (!inspector) {
+      // Generic success to prevent email enumeration
+      return { message: 'If an account exists, a recovery link has been sent to the provided email.' };
+    }
+
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const hashedToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+
+    const expiresAt = new Date();
+    expiresAt.setMinutes(expiresAt.getMinutes() + 15);
+
+    inspector.reset_password_token = hashedToken;
+    inspector.reset_password_expires = expiresAt;
+    await this.inspectorRepository.save(inspector);
+
+    const frontendUrl = this.configService.get<string>('FRONTEND_URL', 'http://localhost:4200');
+    const resetLink = `${frontendUrl}/auth/reset-password?token=${resetToken}`;
+
+    await this.mailService.sendPasswordResetEmail(email, resetLink);
+
+    return { message: 'If an account exists, a recovery link has been sent to the provided email.' };
+  }
+
+  async resetPassword(token: string, newPassword: string) {
+    const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+
+    const inspector = await this.inspectorRepository.findOne({
+      where: { reset_password_token: hashedToken },
+    });
+
+    if (!inspector) {
+      throw new UnauthorizedException('Invalid or expired reset token');
+    }
+
+    if (inspector.reset_password_expires < new Date()) {
+      inspector.reset_password_token = null as any;
+      inspector.reset_password_expires = null as any;
+      await this.inspectorRepository.save(inspector);
+      throw new UnauthorizedException('Invalid or expired reset token');
+    }
+
+    const salt = await bcrypt.genSalt();
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    inspector.password_hash = hashedPassword;
+    inspector.reset_password_token = null as any;
+    inspector.reset_password_expires = null as any;
+    await this.inspectorRepository.save(inspector);
+
+    return { message: 'Password has been reset successfully' };
   }
 }
 

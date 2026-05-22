@@ -64,6 +64,45 @@ export class MailService {
     }
   }
 
+  async sendPasswordResetEmail(email: string, resetLink: string) {
+    this.logger.log(`Processing password reset email for ${email}`);
+    
+    try {
+      const templatePath = path.join(process.cwd(), 'dist', 'mail', 'templates', 'password-reset.hbs');
+      const finalPath = fs.existsSync(templatePath) 
+        ? templatePath 
+        : path.join(process.cwd(), 'src', 'mail', 'templates', 'password-reset.hbs');
+
+      if (!fs.existsSync(finalPath)) {
+        this.logger.error(`Email template not found at ${finalPath}`);
+        return;
+      }
+
+      const source = fs.readFileSync(finalPath, 'utf8');
+      const template = handlebars.compile(source);
+
+      const html = template({
+        reset_link: resetLink,
+        year: new Date().getFullYear(),
+      });
+
+      const { data, error } = await this.resend.emails.send({
+        from: 'Home Inspection <onboarding@resend.dev>',
+        to: email,
+        subject: 'Reset Your Password',
+        html: html,
+      });
+
+      if (error) {
+        this.logger.error(`Resend error sending to ${email}: ${JSON.stringify(error)}`);
+      } else {
+        this.logger.log(`Password reset email successfully queued for ${email}. ID: ${data?.id}`);
+      }
+    } catch (error: any) {
+      this.logger.error(`Failed to process password reset email for ${email}`, error.stack);
+    }
+  }
+
   private formatDate(date: Date | string): string {
     const d = new Date(date);
     return d.toLocaleDateString('en-US', {
