@@ -53,7 +53,7 @@ export class TemplatesService implements OnApplicationBootstrap {
               title: 'Limitation of Scope: Inaccessible Areas',
               description: 'Portions of the roof surface were inaccessible and could not be safely walked or viewed due to pitch, height, or weather conditions. This inspection is limited to visible components only. Hidden defects may exist in unobserved areas.',
               recommendation: 'Monitor unobserved areas for future signs of leakage.',
-              severity: 'Information'
+              severity: 'Informational'
             },
             {
               title: 'Damaged or Missing Shingles',
@@ -90,7 +90,7 @@ export class TemplatesService implements OnApplicationBootstrap {
               title: 'Limitation of Scope: Dense Vegetation',
               description: 'Dense vegetation, shrubs, or groundcover were observed tight against the exterior walls in one or more areas. This dense foliage conceals the foundation, siding, and lower windows. Hidden damage, wood rot, or pest intrusion may exist behind these obstructions.',
               recommendation: 'Recommend pruning or removing vegetation to maintain a 12-inch clearance from the exterior walls and reinspecting the concealed areas.',
-              severity: 'Information'
+              severity: 'informational'
             },
             {
               title: 'Negative Grade at Foundation',
@@ -143,7 +143,7 @@ export class TemplatesService implements OnApplicationBootstrap {
               title: 'Limitation of Scope: Concealed Foundation & Future Moisture',
               description: 'The foundation was inspected for visible signs of moisture or water intrusion. However, we cannot predict future conditions. Heavy rains, melting snow, and changing soil conditions can cause future seepage. Proper exterior grading and drainage are essential to prevent future water-related issues.',
               recommendation: 'Monitor foundation walls during heavy rain events.',
-              severity: 'Information'
+              severity: 'informational'
             },
             {
               title: 'Severe Horizontal Foundation Crack',
@@ -185,7 +185,7 @@ export class TemplatesService implements OnApplicationBootstrap {
               title: 'Limitation of Scope: Insulation & Safe Access',
               description: 'The attic was inspected primarily from the access hatch or safe walkways. Deep attic insulation conceals the ceiling joists, hindering the ability to safely traverse the space without risking falling through the drywall ceiling below. Concealed defects may be present beneath the insulation.',
               recommendation: 'N/A',
-              severity: 'Information'
+              severity: 'informational'
             },
             {
               title: 'Inadequate Attic Insulation',
@@ -222,13 +222,13 @@ export class TemplatesService implements OnApplicationBootstrap {
               title: 'Limitation of Scope: Furnished Home',
               description: 'The home was fully or partially furnished at the time of inspection. Furniture, rugs, wall hangings, and stored items obstruct the visual inspection of the floors, walls, and electrical outlets. Hidden defects may exist behind these obstructions. A thorough walk-through is recommended once the seller vacates.',
               recommendation: 'N/A',
-              severity: 'Information'
+              severity: 'informational'
             },
             {
               title: 'Water Stain (Tested Dry)',
               description: 'Water staining was observed on the ceiling/wall surface. The area was tested with a moisture meter and read as DRY at the time of inspection. This typically indicates a past leak (roof or plumbing) that has since been repaired.',
               recommendation: 'Recommend consulting with the current owner to confirm the history of the leak and the repairs made before cosmetically painting over the stain.',
-              severity: 'Information'
+              severity: 'informational'
             },
             {
               title: 'Active Moisture Intrusion (Elevated Reading)',
@@ -283,13 +283,13 @@ export class TemplatesService implements OnApplicationBootstrap {
               title: 'Limitation of Scope: Inoperable Lights',
               description: 'One or more light fixtures did not respond to the switch at the time of inspection. While this is most commonly a burned-out bulb, the inspector does not remove covers or replace bulbs to verify. If replacing the bulb does not fix the issue, consult an electrician.',
               recommendation: 'Replace bulbs upon moving in; consult an electrician if fixtures remain inoperable.',
-              severity: 'Information'
+              severity: 'informational'
             },
             {
               title: 'Smoke & Carbon Monoxide Detectors',
               description: 'While some detectors may have been observed, verifying the expiration dates and interconnected functionality of all smoke/CO alarms is outside the scope of this inspection. Modern standards require smoke alarms in every sleeping room and CO alarms on every level with fuel-burning appliances.',
               recommendation: 'Recommend the buyer install fresh batteries, test all units, and replace any detectors older than 10 years immediately upon taking possession of the home.',
-              severity: 'Information'
+              severity: 'informational'
             },
             {
               title: 'Burn Marks / Arcing at Receptacle',
@@ -338,19 +338,19 @@ export class TemplatesService implements OnApplicationBootstrap {
               title: 'Limitation of Scope: Concealed Plumbing & Buried Tanks',
               description: 'The inspector cannot view plumbing pipes inside walls, under floors, or underground. Buried oil/fuel tanks are not always readily apparent and are outside the scope of a standard inspection. We cannot guarantee against future leaks in concealed areas.',
               recommendation: 'Consult with the current owner regarding the presence of any known underground storage tanks.',
-              severity: 'Information'
+              severity: 'informational'
             },
             {
               title: 'Limitation of Scope: Future Gas Leaks',
               description: 'At the time of the inspection, no gas leaks were detected at visible and accessible connections. However, gas leaks can develop suddenly over time due to wear, corrosion, or appliance movement.',
               recommendation: 'Regular maintenance and immediate evacuation/utility notification upon smelling gas is required.',
-              severity: 'Information'
+              severity: 'informational'
             },
             {
               title: 'Sewer Scope Recommended (Add-On Service)',
               description: 'Due to the age of the home or the presence of mature trees, a video sewer scope inspection of the lateral line to the street is highly recommended. This can uncover hidden cracks, root intrusion, and blockages that are costly to repair.',
               recommendation: 'Contact us or a qualified plumbing contractor to schedule a sewer scope inspection before closing.',
-              severity: 'Information'
+              severity: 'informational'
             },
             {
               title: 'Active Pipe Leak',
@@ -399,7 +399,7 @@ export class TemplatesService implements OnApplicationBootstrap {
               title: 'Limitation of Scope: Not a Warranty',
               description: 'The heating and cooling systems were operated using normal user controls and found to be functional at the time of inspection. This visual inspection evaluates current condition only and is not a guarantee or warranty of future performance. HVAC systems can fail at any time without warning.',
               recommendation: 'Recommend having the HVAC system fully serviced by a licensed professional prior to closing, and maintaining an annual service contract.',
-              severity: 'Information'
+              severity: 'informational'
             },
             {
               title: 'HVAC System Near End of Service Life',
@@ -441,7 +441,7 @@ export class TemplatesService implements OnApplicationBootstrap {
               title: 'Limitation of Scope: Concealed Appliance Leaks',
               description: 'Appliances were operated through a basic cycle. However, home inspections are non-invasive. Heavy appliances (refrigerators, washing machines) were not moved, and bottom kick-plates on dishwashers were not removed. Hidden leaks or floor damage may exist beneath or behind these units.',
               recommendation: 'Monitor appliances closely during the first few days of occupancy.',
-              severity: 'Information'
+              severity: 'informational'
             },
             {
               title: 'Anti-Tip Bracket Missing',
@@ -489,7 +489,7 @@ export class TemplatesService implements OnApplicationBootstrap {
               title: 'Limitation of Scope: Stored Items / Clutter',
               description: 'A significant amount of stored items, boxes, or vehicles severely limited the visual inspection of the garage floor, walls, and electrical outlets. We cannot inspect what we cannot see. Hidden defects or damage may exist behind stored items.',
               recommendation: 'Recommend a careful walk-through of this area by the buyer during the final pre-closing walk-through once the seller has cleared the space.',
-              severity: 'Information'
+              severity: 'informational'
             },
             {
               title: 'Auto-Reverse Safety Feature Failed',
@@ -605,13 +605,13 @@ export class TemplatesService implements OnApplicationBootstrap {
               title: 'A. FBC Compliant Roof Covering',
               description: 'Roof covering was installed on or after 3/1/2002 and meets the requirements of the Florida Building Code (or 1994 South Florida Building Code). Documentation verified.',
               recommendation: 'Submit for FBC Compliant Roof Covering credit.',
-              severity: 'Information'
+              severity: 'informational'
             },
             {
               title: 'B. Non-Compliant / Unknown Age',
               description: 'Roof covering was installed prior to 3/1/2002, or no permit documentation could be verified at the time of inspection. Does not qualify for FBC update credit.',
               recommendation: 'Does not qualify for FBC credit.',
-              severity: 'Information'
+              severity: 'informational'
             },
           ],
         },
@@ -627,19 +627,19 @@ export class TemplatesService implements OnApplicationBootstrap {
               title: 'Category A (Weakest): 6d Nails or Staples',
               description: 'Roof deck is attached with staples or 6d nails. This is the baseline attachment method and does not qualify for enhanced wind uplift credit.',
               recommendation: 'Submit as Category A (No enhanced credit).',
-              severity: 'Information'
+              severity: 'informational'
             },
             {
               title: 'Category B (Standard): 8d Nails @ 6"/12"',
               description: 'Roof deck is attached with 8d common nails spaced a maximum of 6" along the edge and 12" in the field. Verified with metal detector in attic.',
               recommendation: 'Submit as Category B attachment.',
-              severity: 'Information'
+              severity: 'informational'
             },
             {
               title: 'Category C (Strongest): 8d Nails @ 6"/6"',
               description: 'Roof deck is attached with 8d common nails spaced a maximum of 6" along the edge AND 6" in the field. Provides maximum uplift resistance.',
               recommendation: 'Submit as Category C attachment (Maximum Credit).',
-              severity: 'Information'
+              severity: 'informational'
             },
           ],
         },
@@ -655,19 +655,19 @@ export class TemplatesService implements OnApplicationBootstrap {
               title: 'Category A: Toenails',
               description: 'Roof trusses/rafters are attached to the wall top plate using toenails only, or metal connectors are present but secured with fewer than 3 nails.',
               recommendation: 'Submit as Toenail connection (No Credit).',
-              severity: 'Information'
+              severity: 'informational'
             },
             {
               title: 'Category B: Clips (3+ Nails)',
               description: 'Metal connectors (clips) that do not wrap over the top of the truss/rafter are installed and secured with a minimum of 3 nails. Connector is located within 1/2" of the truss.',
               recommendation: 'Submit as Clip connection.',
-              severity: 'Information'
+              severity: 'informational'
             },
             {
               title: 'Category C: Single Wraps',
               description: 'Metal connectors that wrap over the top of the truss/rafter (Single Wrap) are installed and secured with a minimum of 2 nails on the front and 1 nail on the opposing side.',
               recommendation: 'Submit as Single Wrap connection.',
-              severity: 'Information'
+              severity: 'informational'
             },
           ],
         },
@@ -682,13 +682,13 @@ export class TemplatesService implements OnApplicationBootstrap {
               title: 'Hip Roof Verified',
               description: 'The roof shape is a Hip Roof. All other non-hip roof shapes (gable, flat) constitute less than 10% of the total roof perimeter. Qualifies for significant wind mitigation discount.',
               recommendation: 'Submit as Hip Roof.',
-              severity: 'Information'
+              severity: 'informational'
             },
             {
               title: 'Non-Hip Roof (Gable)',
               description: 'The roof contains gable ends or other non-hip shapes that exceed 10% of the total roof perimeter. Does not qualify for the Hip Roof discount.',
               recommendation: 'Submit as Non-Hip (No Credit).',
-              severity: 'Information'
+              severity: 'informational'
             },
           ],
         },
@@ -703,13 +703,13 @@ export class TemplatesService implements OnApplicationBootstrap {
               title: 'SWR Verified',
               description: 'Secondary Water Resistance (SWR) was verified. A self-adhering polymer modified bitumen roofing underlayment (peel-and-stick) is applied directly to the roof deck.',
               recommendation: 'Submit as SWR Present.',
-              severity: 'Information'
+              severity: 'informational'
             },
             {
               title: 'No SWR Verified',
               description: 'Standard tar paper/felt was observed, or SWR could not be verified due to lack of documentation or inaccessible attic space.',
               recommendation: 'Submit as No SWR (No Credit).',
-              severity: 'Information'
+              severity: 'informational'
             },
           ],
         },
@@ -725,13 +725,13 @@ export class TemplatesService implements OnApplicationBootstrap {
               title: 'Category X: No Opening Protection',
               description: 'One or more exterior openings (windows, doors, or garage door) lack verified impact-resistant glass or approved hurricane shutters. To qualify for credit, EVERY opening must be protected.',
               recommendation: 'Submit as Category X (No Credit).',
-              severity: 'Information'
+              severity: 'informational'
             },
             {
               title: 'Category A: Full Impact Protection',
               description: 'All glazed and unglazed openings (including the garage door and skylights) were verified to have impact-resistant ratings meeting Large Missile testing standards.',
               recommendation: 'Submit as Category A (Maximum Credit).',
-              severity: 'Information'
+              severity: 'informational'
             },
           ],
         },
