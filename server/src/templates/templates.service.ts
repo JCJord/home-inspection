@@ -593,7 +593,7 @@ export class TemplatesService implements OnApplicationBootstrap {
     const structure = {
       sections: [
         {
-          name: '1. Building Code & Roof Covering',
+          name: 'Building Code & Roof Covering',
           icon_key: 'Home',
           fields: [
             { key: 'roof_permit_application', label: 'Roof Permit Application Date', type: 'select', options: ['On or After 3/1/2002 (FBC Compliant)', 'Before 3/1/2002', 'Unknown / No Permit Found'] },
@@ -616,7 +616,7 @@ export class TemplatesService implements OnApplicationBootstrap {
           ],
         },
         {
-          name: '2. Roof Deck Attachment',
+          name: 'Roof Deck Attachment',
           icon_key: 'Layers',
           fields: [
             { key: 'deck_nail_type', label: 'Nail Size / Type', type: 'select', options: ['Staples / 6d Nails', '8d Common Nails', 'Dimensional Lumber (No Plywood)', 'Reinforced Concrete'] },
@@ -644,7 +644,7 @@ export class TemplatesService implements OnApplicationBootstrap {
           ],
         },
         {
-          name: '3. Roof to Wall Attachment',
+          name: 'Roof to Wall Attachment',
           icon_key: 'Link',
           fields: [
             { key: 'rtw_connection', label: 'Weakest Connection Type Found', type: 'select', options: ['Toenails', 'Clips', 'Single Wraps', 'Double Wraps', 'Structural / Anchored'] },
@@ -672,7 +672,7 @@ export class TemplatesService implements OnApplicationBootstrap {
           ],
         },
         {
-          name: '4. Roof Geometry',
+          name: 'Roof Geometry',
           icon_key: 'Triangle',
           fields: [
             { key: 'geometry_type', label: 'Qualifying Roof Shape', type: 'select', options: ['Hip Roof', 'Non-Hip (Gable, Flat, Mansard)', 'Flat Roof (> 5 levels)'] },
@@ -693,7 +693,7 @@ export class TemplatesService implements OnApplicationBootstrap {
           ],
         },
         {
-          name: '5. Secondary Water Resistance (SWR)',
+          name: 'Secondary Water Resistance (SWR)',
           icon_key: 'Droplets',
           fields: [
             { key: 'swr_present', label: 'SWR (Peel & Stick) Present?', type: 'select', options: ['Yes - Verified in Attic or via Photos', 'No / Cannot Verify'] },
@@ -714,7 +714,7 @@ export class TemplatesService implements OnApplicationBootstrap {
           ],
         },
         {
-          name: '6. Opening Protection',
+          name: 'Opening Protection',
           icon_key: 'Shield',
           fields: [
             { key: 'opening_glazed', label: 'Glazed (Windows/Glass Doors)', type: 'select', options: ['Category A (Hurricane Impact Rated)', 'Category X (No Protection)'] },
