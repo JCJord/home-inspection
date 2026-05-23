@@ -2,8 +2,9 @@ import { IsString, IsNotEmpty, IsOptional, IsEnum, IsInt, Min, MaxLength } from 
 import { Section, Severity } from '../enums';
 
 export class CreateFindingDto {
-  @IsEnum(Section)
-  section: Section;
+  @IsString()
+  @IsNotEmpty()
+  section: string;
 
   @IsEnum(Severity)
   severity: Severity;

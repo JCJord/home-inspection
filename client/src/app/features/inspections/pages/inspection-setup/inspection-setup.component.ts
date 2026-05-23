@@ -167,7 +167,9 @@ export class InspectionSetupComponent implements OnInit {
         }));
         this.availableTemplates.set(opts);
         if (opts.length > 0 && !this.isEditMode() && !this.setupForm.get('template_id')?.value) {
-          this.setupForm.get('template_id')?.setValue(opts[0].value);
+          setTimeout(() => {
+            this.setupForm.get('template_id')?.setValue(opts[0].value);
+          }, 0);
         }
       },
     });

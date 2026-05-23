@@ -5,6 +5,7 @@
   [class.active-major]="isActive && preset.severity === 'Major'"
   [class.active-minor]="isActive && preset.severity === 'Minor'"
   [class.active-maintenance]="isActive && preset.severity === 'Maintenance'"
+  [class.active-informational]="isActive && preset.severity === 'Informational'"
   (click)="onClick()"
 >
   <span class="preset-btn__title">{{ preset.title }}</span>

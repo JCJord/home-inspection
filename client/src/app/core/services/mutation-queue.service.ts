@@ -94,6 +94,12 @@ export class MutationQueueService {
     // Regenerate blob URLs for files if they exist (for UI display after refresh)
     const tasksWithUrls = allTasks.map(task => {
       const t = { ...task } as any;
+      
+      // Reset any tasks that were interrupted while SYNCING back to PENDING
+      if (t.status === 'SYNCING') {
+        t.status = 'PENDING';
+      }
+
       if (t.file && t.type === MutationType.UPLOAD_PHOTO) {
         // Recovery logic: Favor stored previewData (Base64) if available, 
         // otherwise recreate the blob URL from the stored File object.
@@ -258,12 +264,24 @@ export class MutationQueueService {
   }
 
   private async mapClientFindingIdToServerId(clientId: string, serverId: string) {
-    const affectedTasks = this.tasks().filter(t => t.clientFindingId === clientId || t.findingId === clientId);
-    for (const task of affectedTasks) {
-      const updatedTask = { ...task, findingId: serverId, clientFindingId: undefined };
-      await this.saveTaskToDB(updatedTask);
-      this.tasks.update(ts => ts.map(t => t.id === task.id ? updatedTask : t));
+    const affectedTaskIds = this.tasks().filter(t => t.clientFindingId === clientId || t.findingId === clientId).map(t => t.id);
+    
+    // 1. Update signals synchronously to prevent race conditions
+    this.tasks.update(ts => ts.map(t => {
+      if (affectedTaskIds.includes(t.id)) {
+        return { ...t, findingId: serverId, clientFindingId: undefined };
+      }
+      return t;
+    }));
+
+    // 2. Persist to DB in the background
+    for (const taskId of affectedTaskIds) {
+      const updatedTask = this.tasks().find(t => t.id === taskId);
+      if (updatedTask) {
+        await this.saveTaskToDB(updatedTask);
+      }
     }
+    
     // Re-trigger queue now that dependencies (finding IDs) are resolved
     this.processQueue();
   }

@@ -189,10 +189,11 @@ export class InspectionsService {
       // 2. Handle Finding Creation
       if (task.type === MutationType.CREATE_FINDING) {
         const payload = task.payload;
-        const exists = merged.findings?.some(f => f.id === (task.clientFindingId || task.id));
+        const targetId = (task as any).result?.id || task.clientFindingId || task.id;
+        const exists = merged.findings?.some(f => f.id === targetId);
         if (!exists) {
           merged.findings?.push({
-            id: task.clientFindingId || task.id,
+            id: targetId,
             inspection_id: merged.id,
             section: payload.section,
             severity: payload.severity,

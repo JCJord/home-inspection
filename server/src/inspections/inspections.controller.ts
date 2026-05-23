@@ -29,6 +29,7 @@ export class InspectionsController {
     @GetUser('sub') inspectorId: string,
     @Body() createInspectionDto: CreateInspectionDto,
   ) {
+    console.log('--- POST /inspections PAYLOAD ---', createInspectionDto);
     return this.inspectionsService.create(inspectorId, createInspectionDto);
   }
 

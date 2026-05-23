@@ -166,8 +166,19 @@ export class InspectionsService {
       throw new ForbiddenException('Cannot update a cancelled inspection');
     }
 
-    if (updateInspectionDto.template_id && inspection.status !== 'scheduled') {
-      throw new BadRequestException('Cannot change template once inspection has started');
+    if (updateInspectionDto.template_id && updateInspectionDto.template_id !== inspection.template_id) {
+      if (inspection.status !== 'scheduled') {
+        throw new BadRequestException('Cannot change template once inspection has started');
+      }
+      const newTemplate = await this.templateRepository.findOne({ where: { id: updateInspectionDto.template_id } });
+      if (newTemplate) {
+        inspection.template_snapshot = newTemplate.structure;
+        inspection.template = newTemplate;
+        inspection.template_id = newTemplate.id;
+      } else {
+        throw new BadRequestException('The selected template no longer exists. Please refresh the page.');
+      }
+      delete updateInspectionDto.template_id;
     }
 
     // Merge JSON objects to prevent overwriting other fields

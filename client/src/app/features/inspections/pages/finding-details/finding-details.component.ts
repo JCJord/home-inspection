@@ -50,7 +50,12 @@ export class FindingDetailsComponent implements OnInit {
   inspectionId = signal<string | null>(null);
   findingId = signal<string | null>(null);
   activeSection = signal<string | null>(null);
-  activeSectionIndex = signal<number>(-1);
+  
+  activeSectionIndex = computed(() => {
+    const section = this.activeSection();
+    if (!section || section === 'summary') return -1;
+    return this.sections().findIndex(s => s.name === section);
+  });
   
   private metadataUpdate$ = new Subject<{key: string, value: string}>();
   
@@ -150,14 +155,6 @@ export class FindingDetailsComponent implements OnInit {
       // If we have a section, set it
       if (section) {
         this.activeSection.set(section);
-        const idx = queryParams.get('idx');
-        if (idx !== null) {
-          this.activeSectionIndex.set(Number(idx));
-        } else {
-          const sections = this.sections();
-          const firstIdx = sections.findIndex(s => s.name === section);
-          this.activeSectionIndex.set(firstIdx);
-        }
       } else if (fId && fId !== 'new' && fId !== 'summary') {
         // If we have a finding ID but NO section, try to resolve it from the finding
         const found = this.finding();
@@ -221,11 +218,10 @@ export class FindingDetailsComponent implements OnInit {
 
   selectSection(sectionName: string, index: number = 0) {
     this.workbench.closeSidebar();
-    this.activeSectionIndex.set(index);
 
     if (sectionName === 'summary') {
       this.router.navigate(['/inspections', this.inspectionId(), 'findings', 'summary'], {
-        queryParams: { section: 'summary', idx: -1 }
+        queryParams: { section: 'summary' }
       });
       return;
     }
@@ -236,12 +232,12 @@ export class FindingDetailsComponent implements OnInit {
     if (sectionFindings.length > 0) {
       // If there's already data in this section, load the first finding instead of a blank 'new'
       this.router.navigate(['/inspections', this.inspectionId(), 'findings', sectionFindings[0].id], {
-        queryParams: { section: sectionName, idx: index }
+        queryParams: { section: sectionName }
       });
     } else {
       // Only go to 'new' if there truly is no data for this category
       this.router.navigate(['/inspections', this.inspectionId(), 'findings', 'new'], {
-        queryParams: { section: sectionName, idx: index }
+        queryParams: { section: sectionName }
       });
     }
   }

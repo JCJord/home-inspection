@@ -38,6 +38,8 @@ export class ImageCacheService {
    * Ensures a photo is stored in IndexedDB.
    */
   async ensureCached(url: string): Promise<void> {
+    if (url.startsWith('blob:') || url.startsWith('data:')) return;
+
     const fullUrl = this.getFullUrl(url);
     
     // Check if already in DB
