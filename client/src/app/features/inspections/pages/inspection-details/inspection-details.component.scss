@@ -297,6 +297,13 @@
           background-color: rgba($color-success, 0.04);
           .item-count-badge { background-color: $color-success; color: white; }
         }
+
+        &.group-informational {
+          color: $color-informational;
+          border-color: $color-informational;
+          background-color: rgba($color-informational, 0.04);
+          .item-count-badge { background-color: $color-informational; color: white; }
+        }
       }
     }
 

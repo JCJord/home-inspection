@@ -115,6 +115,12 @@ export class InspectionDetailsComponent implements OnInit, OnDestroy {
         severity: 'minor',
         colorClass: 'group-minor',
         items: [] as Finding[]
+      },
+      {
+        label: 'Informational Items',
+        severity: 'informational',
+        colorClass: 'group-informational',
+        items: [] as Finding[]
       }
     ];
 
