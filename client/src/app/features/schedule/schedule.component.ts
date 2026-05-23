@@ -165,12 +165,14 @@ export class ScheduleComponent implements OnInit {
 
     let startDate: string | undefined = undefined;
     let endDate: string | undefined = undefined;
-    let statusQuery = 'scheduled';
+    let statusQuery: string | undefined = 'scheduled';
 
     const filter = this.dateFilter();
     const today = new Date();
 
-    if (filter === 'today') {
+    if (filter === 'all') {
+      statusQuery = undefined;
+    } else if (filter === 'today') {
       const start = new Date(today);
       start.setHours(0, 0, 0, 0);
       const end = new Date(today);
