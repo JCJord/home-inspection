@@ -192,10 +192,25 @@ export class MutationQueueService {
     this.isProcessing = true;
 
     // Get pending tasks that are ready (not waiting for an ID)
-    const pendingTasks = this.tasks().filter(t => 
-      t.status === 'PENDING' && 
-      (t.type === MutationType.CREATE_FINDING || t.type === MutationType.UPDATE_INSPECTION || !!t.findingId)
+    // We must block tasks whose findingId is actually a clientFindingId of an uncompleted CREATE_FINDING task
+    const pendingClientIds = new Set(
+      this.tasks()
+        .filter(t => t.type === MutationType.CREATE_FINDING && t.clientFindingId)
+        .map(t => t.clientFindingId)
     );
+
+    const pendingTasks = this.tasks().filter(t => {
+      if (t.status !== 'PENDING') return false;
+      if (t.type === MutationType.CREATE_FINDING || t.type === MutationType.UPDATE_INSPECTION) return true;
+      
+      if (t.findingId) {
+        // If the findingId is waiting to be mapped from a CREATE_FINDING task, hold off
+        if (pendingClientIds.has(t.findingId)) return false;
+        return true;
+      }
+      
+      return false;
+    });
     
     // Process with concurrency limit of 2
     from(pendingTasks).pipe(
@@ -338,12 +353,26 @@ export class MutationQueueService {
   }
 
   async cancelTask(id: string) {
+    const taskToCancel = this.tasks().find(t => t.id === id);
+    if (!taskToCancel) return;
+
     // 1. Remove from signal immediately
     this.tasks.update(ts => ts.filter(t => t.id !== id));
     this.updateCounts();
     
     // 2. Remove from DB
     await this.deleteTaskFromDB(id);
+
+    // 3. Cascade cancel dependent tasks (e.g. photos waiting on a failed finding)
+    if (taskToCancel.type === MutationType.CREATE_FINDING && taskToCancel.clientFindingId) {
+      const dependentTasks = this.tasks().filter(t => 
+        t.clientFindingId === taskToCancel.clientFindingId || 
+        t.findingId === taskToCancel.clientFindingId
+      );
+      for (const t of dependentTasks) {
+        await this.cancelTask(t.id);
+      }
+    }
   }
 
   async clearAllTasks() {
