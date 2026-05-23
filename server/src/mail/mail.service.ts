@@ -103,6 +103,46 @@ export class MailService {
     }
   }
 
+  async sendReportEmail(targetEmail: string, pdfUrl: string, address: string) {
+    this.logger.log(`Processing report ready email for ${targetEmail}`);
+    
+    try {
+      const templatePath = path.join(process.cwd(), 'dist', 'mail', 'templates', 'report-ready.hbs');
+      const finalPath = fs.existsSync(templatePath) 
+        ? templatePath 
+        : path.join(process.cwd(), 'src', 'mail', 'templates', 'report-ready.hbs');
+
+      if (!fs.existsSync(finalPath)) {
+        this.logger.error(`Email template not found at ${finalPath}`);
+        return;
+      }
+
+      const source = fs.readFileSync(finalPath, 'utf8');
+      const template = handlebars.compile(source);
+
+      const html = template({
+        address: address,
+        report_link: pdfUrl,
+        year: new Date().getFullYear(),
+      });
+
+      const { data, error } = await this.resend.emails.send({
+        from: 'Home Inspection <onboarding@resend.dev>',
+        to: targetEmail,
+        subject: `Your Inspection Report for ${address} is Ready`,
+        html: html,
+      });
+
+      if (error) {
+        this.logger.error(`Resend error sending to ${targetEmail}: ${JSON.stringify(error)}`);
+      } else {
+        this.logger.log(`Report email successfully queued for ${targetEmail}. ID: ${data?.id}`);
+      }
+    } catch (error: any) {
+      this.logger.error(`Failed to process report email for ${targetEmail}`, error.stack);
+    }
+  }
+
   private formatDate(date: Date | string): string {
     const d = new Date(date);
     return d.toLocaleDateString('en-US', {

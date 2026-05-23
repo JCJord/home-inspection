@@ -325,6 +325,16 @@ export class InspectionsService {
     );
   }
 
+  sendReportToClient(id: string, email: string): Observable<Inspection> {
+    return this.http.post<Inspection>(`${this.apiUrl}/${id}/send-report`, { email }).pipe(
+      tap((updatedIns) => {
+        this._inspections.update(list => list.map(i => i.id === id ? updatedIns : i));
+        this.saveToCache(this._inspections(), this._totalCount());
+        this._needsRefresh.set(true);
+      })
+    );
+  }
+
   unpublishInspection(id: string): Observable<Inspection> {
     return this.http.post<Inspection>(`${this.apiUrl}/${id}/unpublish`, {}).pipe(
       tap((updatedIns) => {

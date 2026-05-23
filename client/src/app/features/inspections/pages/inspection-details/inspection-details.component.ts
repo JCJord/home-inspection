@@ -62,6 +62,11 @@ export class InspectionDetailsComponent implements OnInit, OnDestroy {
   copyLinkSuccess = signal<boolean>(false);
   isActionsMenuOpen = signal<boolean>(false);
   
+  isSharePanelOpen = signal<boolean>(false);
+  isSendingReport = signal<boolean>(false);
+  shareSuccess = signal<boolean>(false);
+  overrideEmail = signal<string>('');
+  
   combinedProgress = signal<number>(0);
   combinedMessage = signal<string>('Initializing document engine...');
   private uploadIntervalId: any = null;
@@ -398,6 +403,46 @@ export class InspectionDetailsComponent implements OnInit, OnDestroy {
         console.error('Failed to download report', err);
         window.open(fileUrl, '_blank');
       });
+  }
+
+  toggleSharePanel(): void {
+    if (!this.isSharePanelOpen()) {
+      this.isSharePanelOpen.set(true);
+      this.overrideEmail.set(this.inspection()?.client_email || '');
+    } else {
+      this.isSharePanelOpen.set(false);
+    }
+  }
+
+  onEmailChange(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.overrideEmail.set(input.value);
+  }
+
+  sendReportToClient(): void {
+    const inspectionId = this.inspection()?.id;
+    const email = this.overrideEmail();
+    if (!inspectionId || !email) return;
+
+    this.isSendingReport.set(true);
+    this.errorMessage.set(null);
+
+    this.inspectionsService.sendReportToClient(inspectionId, email).subscribe({
+      next: (updated) => {
+        this.inspection.set(updated);
+        this.isSendingReport.set(false);
+        this.shareSuccess.set(true);
+        setTimeout(() => {
+          this.shareSuccess.set(false);
+          this.isSharePanelOpen.set(false);
+        }, 3000);
+      },
+      error: (err) => {
+        console.error('Failed to send report', err);
+        this.errorMessage.set(err.error?.message || 'Failed to send report.');
+        this.isSendingReport.set(false);
+      }
+    });
   }
 
   handleDeleteFinding(finding: Finding): void {

@@ -17,6 +17,7 @@ import { UpdateInspectionDto } from './dto/update-inspection.dto';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { GetUser } from '../auth/decorators/get-user.decorator';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { SendReportDto } from './dto/send-report.dto';
 
 @UseGuards(AuthGuard)
 @Controller('inspections')
@@ -106,5 +107,14 @@ export class InspectionsController {
   @Delete(':id')
   remove(@GetUser('sub') inspectorId: string, @Param('id') id: string) {
     return this.inspectionsService.remove(inspectorId, id);
+  }
+
+  @Post(':id/send-report')
+  sendReport(
+    @GetUser('sub') inspectorId: string,
+    @Param('id') id: string,
+    @Body() sendReportDto: SendReportDto,
+  ) {
+    return this.inspectionsService.sendReport(inspectorId, id, sendReportDto.email);
   }
 }

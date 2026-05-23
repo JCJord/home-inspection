@@ -88,6 +88,9 @@ export class Inspection {
   @Column({ type: 'jsonb', nullable: true })
   section_statuses: Record<string, { status: string; reason?: string }>;
 
+  @Column({ type: 'timestamp', nullable: true })
+  report_sent_at: Date;
+
   @OneToMany(() => Finding, (finding) => finding.inspection, { cascade: true })
   findings: Finding[];
 

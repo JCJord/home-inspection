@@ -80,6 +80,7 @@ export interface Inspection {
   section_statuses?: Record<string, SectionStatus>;
   inspector?: Inspector;
   report?: Report;
+  report_sent_at?: string;
   created_at: string;
   updated_at: string;
 }
