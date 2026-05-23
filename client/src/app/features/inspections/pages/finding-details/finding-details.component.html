@@ -202,14 +202,12 @@
                 (deleted)="onDeleteFinding($event)">
               </app-finding-form>
               } @else {
-              <div
-                class="h-full flex flex-col items-center justify-center p-8 text-center bg-surface-standard/30 rounded-3xl border border-standard/50 min-h-[300px]">
-                <div
-                  class="w-16 h-16 rounded-full bg-light-standard flex items-center justify-center mb-4 border border-standard/50 shadow-sm">
+              <div class="card-static flex flex-col items-center justify-center p-8 text-center min-h-[300px]">
+                <div class="w-16 h-16 rounded-full bg-surface-standard flex items-center justify-center mb-4 border border-standard shadow-sm">
                   <lucide-icon [name]="icons.LayoutList" [size]="28" class="text-standard-muted"></lucide-icon>
                 </div>
                 <h3 class="text-lg font-bold text-standard mb-2">No Finding Selected</h3>
-                <p class="text-standard-muted max-w-[250px]">
+                <p class="text-standard-muted max-w-[250px] mx-auto">
                   Select a finding from the dropdown above or add a new one to get started.
                 </p>
               </div>
