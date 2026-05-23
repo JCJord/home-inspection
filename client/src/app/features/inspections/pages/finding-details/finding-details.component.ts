@@ -254,6 +254,8 @@ export class FindingDetailsComponent implements OnInit {
     const inspectionId = this.inspectionId();
     if (!inspectionId) return;
 
+    const isLastItem = this.sectionFindings().length <= 1;
+
     this.mutationQueueService.enqueue({
       type: MutationType.DELETE_FINDING,
       inspectionId,
@@ -264,6 +266,10 @@ export class FindingDetailsComponent implements OnInit {
     // Deselect finding if it was the one we just deleted
     if (this.findingId() === finding.id) {
       this.findingId.set(null);
+    }
+
+    if (isLastItem) {
+      this.isFindingsDropdownOpen.set(false);
     }
   }
 
