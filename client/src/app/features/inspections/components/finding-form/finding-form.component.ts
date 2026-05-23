@@ -74,12 +74,16 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
 
   close = output<void>();
   saved = output<Finding>();
+  deleted = output<Finding>();
   
   ngOnChanges(changes: SimpleChanges) {
     if (changes['inspectionId']) this._inspectionId.set(this.inspectionId);
     if (changes['year_built']) this._yearBuilt.set(this.year_built);
     if (changes['section']) this._section.set(this.section);
-    if (changes['finding']) this._finding.set(this.finding);
+    if (changes['finding']) {
+      this._finding.set(this.finding);
+      this.populateForm();
+    }
     if (changes['isPublished']) this._isPublished.set(this.isPublished);
   }
 
@@ -98,6 +102,7 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
   // Deletion Tracking
   activeDeleteExistingId = signal<string | null>(null);
   activeDeleteNewIndex = signal<number | null>(null);
+  isConfirmingDeleteFinding = signal<boolean>(false);
 
   severities = Object.values(Severity);
   readonly icons = { AlertCircle, FileImage, Upload, Trash2, Edit, X, Check, Sparkles, Loader2 };
@@ -125,34 +130,8 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
 
   constructor() {
     effect(() => {
-      const data = this._finding();
-      const section = this._section(); // Watch section changes to reset form if needed
-      
-      if (data) {
-        this.findingForm.patchValue({
-          severity: data.severity,
-          location: data.location || '',
-          description: data.description,
-          recommendation: data.recommendation || '',
-        });
-        this.existingPhotos.set(data.photos || []);
-        
-        // Clear and rebuild FormArray
-        this.photoCaptions.clear();
-        (data.photos || []).forEach(p => {
-          this.photoCaptions.push(this.fb.group({
-            id: [p.id],
-            caption: [p.caption || '']
-          }));
-        });
-      } else {
-        this.findingForm.reset({
-          severity: Severity.MINOR,
-        });
-        this.existingPhotos.set([]);
-        this.photoCaptions.clear();
-        this.newPhotoCaptions.clear();
-      }
+      this._finding();
+      this._section();
       
       // Handle publish state
       if (this._isPublished()) {
@@ -172,10 +151,9 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
     });
 
     // Check for and restore drafts
-    // Moving this to an effect or keeping it here but ensuring it doesn't break validation
     afterNextRender(() => {
       const draft = this.draftService.load<any>(this.draftKey);
-      if (draft && !this.isEditMode()) {
+      if (draft) {
         this.findingForm.patchValue(draft, { emitEvent: false });
         this.findingForm.markAsDirty();
       }
@@ -185,6 +163,28 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
   ngOnDestroy() {
     this.selectedFiles().forEach(item => {
       URL.revokeObjectURL(item.previewUrl);
+    });
+  }
+
+  populateForm() {
+    const data = this._finding();
+    if (!data) return;
+    
+    this.findingForm.patchValue({
+      severity: data.severity,
+      location: data.location || '',
+      description: data.description,
+      recommendation: data.recommendation || '',
+    });
+    this.existingPhotos.set(data.photos || []);
+    
+    // Clear and rebuild FormArray
+    this.photoCaptions.clear();
+    (data.photos || []).forEach(p => {
+      this.photoCaptions.push(this.fb.group({
+        id: [p.id],
+        caption: [p.caption || '']
+      }));
     });
   }
 
@@ -540,5 +540,12 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
     } else {
       this.findingForm.markAllAsTouched();
     }
+  }
+
+  onDeleteFinding(): void {
+    if (this._finding()) {
+      this.deleted.emit(this._finding()!);
+    }
+    this.isConfirmingDeleteFinding.set(false);
   }
 }

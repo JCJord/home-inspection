@@ -207,9 +207,8 @@
     </app-textarea-input>
 
     <div class="form-actions flex" [class.justify-between]="!isPublishedSignal()" [class.justify-end]="isPublishedSignal()">
-      <app-button type="button" class="cancel-btn" variant="outline" (click)="close.emit()" [disabled]="isLoading()">
-        {{ isPublishedSignal() ? 'Close' : 'Cancel' }}
-      </app-button>
+      <div></div>
+
       @if (!isPublishedSignal()) {
       <app-button type="submit" [disabled]="findingForm.invalid || showSuccess()" [isLoading]="isLoading()"
         [variant]="showSuccess() ? 'subtle' : 'solid'"
@@ -223,8 +222,13 @@
           {{ isEditMode() ? 'Save Changes' : 'Add Finding' }}
         }
       </app-button>
+      } @else {
+      <app-button type="button" variant="outline" (click)="close.emit()" [disabled]="isLoading()">
+        Close
+      </app-button>
       }
     </div>
+
   </form>
 </div>
 

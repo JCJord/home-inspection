@@ -4,10 +4,11 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { combineLatest } from 'rxjs';
 import { InspectionsService } from '../../../../core/services/inspections.service';
 import { Inspection, Finding, SectionStatus } from '../../../../core/models/inspection.interface';
+import { Severity } from '../../../../core/enums/inspection.enums';
 import { WorkbenchLayoutComponent } from '../../../../shared/components/workbench-layout/workbench-layout.component';
 import { FindingFormComponent } from '../../components/finding-form/finding-form.component';
-import { FindingSwitcherComponent } from '../../components/finding-switcher/finding-switcher.component';
-import { LucideAngularModule, Home, ChevronUp, ChevronDown, Hammer, Zap, Droplets, Wind, Flame, Box, Grid, Monitor, Car, Shield, Search, Info, AlertTriangle, Copy, Edit2, Trash2, Plus, Save, Lock, Unlock, ArrowLeft, Wrench, Thermometer, Lightbulb, Paintbrush, Sun, Key, Power, FileCheck, HardHat, Construction, Ruler, ShieldCheck, ShieldAlert, BrickWall, Trees, Fan, Sparkles, Wifi, WifiOff, Trash, Settings, Check, X, Users, FileText, Image, Cloud, CloudRain, CloudLightning, Snowflake, Umbrella, Compass, MapPin, Clock, Calendar, Activity, Scissors, Heart, AlertCircle, HelpCircle, Ban, LockOpen, Send, Download, Loader2, CheckCircle2, Layers, Menu, ChevronLeft, LayoutGrid, CircleX, PieChart, Eye } from 'lucide-angular';
+import { FindingListComponent } from '../../components/finding-list/finding-list';
+import { LucideAngularModule, Home, ChevronUp, ChevronDown, Hammer, Zap, Droplets, Wind, Flame, Box, Grid, Monitor, Car, Shield, Search, Info, AlertTriangle, Copy, Edit2, Trash2, Plus, Save, Lock, Unlock, ArrowLeft, Wrench, Thermometer, Lightbulb, Paintbrush, Sun, Key, Power, FileCheck, HardHat, Construction, Ruler, ShieldCheck, ShieldAlert, BrickWall, Trees, Fan, Sparkles, Wifi, WifiOff, Trash, Settings, Check, X, Users, FileText, Image, Cloud, CloudRain, CloudLightning, Snowflake, Umbrella, Compass, MapPin, Clock, Calendar, Activity, Scissors, Heart, AlertCircle, HelpCircle, Ban, LockOpen, Send, Download, Loader2, CheckCircle2, Layers, Menu, ChevronLeft, LayoutGrid, CircleX, PieChart, Eye, LayoutList } from 'lucide-angular';
 
 import { BackButtonComponent } from '../../../../shared/components/back-button/back-button.component';
 import { SectionStatusToggleComponent } from '../../components/section-status-toggle/section-status-toggle';
@@ -20,8 +21,8 @@ import { debounceTime, Subject } from 'rxjs';
 @Component({
   selector: 'app-finding-details',
   standalone: true,
-  imports: [CommonModule, WorkbenchLayoutComponent, FindingFormComponent, FindingSwitcherComponent, LucideAngularModule, BackButtonComponent, SectionStatusToggleComponent, TextInputComponent, SelectInputComponent, SummaryDashboardComponent],
-  providers: [{ provide: 'lucideIcons', useValue: { Home, ChevronUp, ChevronDown, Hammer, Zap, Droplets, Wind, Flame, Box, Grid, Monitor, Car, Shield, Search, Info, AlertTriangle, Copy, Edit2, Trash2, Plus, Save, Lock, Unlock, ArrowLeft, Wrench, Thermometer, Lightbulb, Paintbrush, Sun, Key, Eye, Power, FileCheck, HardHat, Construction, Ruler, ShieldCheck, ShieldAlert, BrickWall, Trees, Fan, Sparkles, Wifi, WifiOff, Trash, Settings, Check, X, Users, FileText, Image, Cloud, CloudRain, CloudLightning, Snowflake, Umbrella, Compass, MapPin, Clock, Calendar, Activity, Scissors, Heart, AlertCircle, HelpCircle, Ban, LockOpen, Send, Download, Loader2, CheckCircle2, Layers, Menu, ChevronLeft, LayoutGrid, CircleX, PieChart } }],
+  imports: [CommonModule, WorkbenchLayoutComponent, FindingFormComponent, FindingListComponent, LucideAngularModule, BackButtonComponent, SectionStatusToggleComponent, TextInputComponent, SelectInputComponent, SummaryDashboardComponent],
+  providers: [{ provide: 'lucideIcons', useValue: { Home, ChevronUp, ChevronDown, Hammer, Zap, Droplets, Wind, Flame, Box, Grid, Monitor, Car, Shield, Search, Info, AlertTriangle, Copy, Edit2, Trash2, Plus, Save, Lock, Unlock, ArrowLeft, Wrench, Thermometer, Lightbulb, Paintbrush, Sun, Key, Eye, Power, FileCheck, HardHat, Construction, Ruler, ShieldCheck, ShieldAlert, BrickWall, Trees, Fan, Sparkles, Wifi, WifiOff, Trash, Settings, Check, X, Users, FileText, Image, Cloud, CloudRain, CloudLightning, Snowflake, Umbrella, Compass, MapPin, Clock, Calendar, Activity, Scissors, Heart, AlertCircle, HelpCircle, Ban, LockOpen, Send, Download, Loader2, CheckCircle2, Layers, Menu, ChevronLeft, LayoutGrid, CircleX, PieChart, LayoutList } }],
   templateUrl: './finding-details.component.html',
   styleUrl: './finding-details.component.scss'
 })
@@ -50,6 +51,7 @@ export class FindingDetailsComponent implements OnInit {
   inspectionId = signal<string | null>(null);
   findingId = signal<string | null>(null);
   activeSection = signal<string | null>(null);
+  isFindingsDropdownOpen = signal<boolean>(false);
   
   activeSectionIndex = computed(() => {
     const section = this.activeSection();
@@ -68,10 +70,10 @@ export class FindingDetailsComponent implements OnInit {
     Wrench, Thermometer, Lightbulb, Paintbrush, Sun, Key, Eye, Power, FileCheck, HardHat, Construction, Ruler, ShieldCheck, ShieldAlert,
     BrickWall, Trees, Fan, Sparkles, Wifi, WifiOff, Trash, Settings, Check, X, Users, FileText, Image, Cloud, CloudRain, CloudLightning,
     Snowflake, Umbrella, Compass, MapPin, Clock, Calendar, Activity, Scissors, Heart, AlertCircle, HelpCircle, Ban, LockOpen, Send,
-    Download, Loader2, CheckCircle2, Layers, Menu, PieChart
+    Download, Loader2, CheckCircle2, Layers, Menu, PieChart, LayoutList
   };
 
-    readonly icons = { ChevronLeft, LayoutGrid, Plus, Home, ChevronDown, CheckCircle2, FileText, Ban, CircleX, Info, Edit2, PieChart, AlertCircle };
+    readonly icons = { ChevronLeft, LayoutGrid, Plus, Home, ChevronDown, CheckCircle2, FileText, Ban, CircleX, Info, Edit2, PieChart, AlertCircle, LayoutList };
 
 
   sections = computed(() => this.inspection()?.template_snapshot?.sections || []);
@@ -248,18 +250,54 @@ export class FindingDetailsComponent implements OnInit {
     });
   }
 
-  startNewFinding() {
-    this.router.navigate(['/inspections', this.inspectionId(), 'findings', 'new'], {
-      queryParams: { section: this.activeSection() }
+  onDeleteFinding(finding: Finding) {
+    const inspectionId = this.inspectionId();
+    if (!inspectionId) return;
+
+    this.mutationQueueService.enqueue({
+      type: MutationType.DELETE_FINDING,
+      inspectionId,
+      findingId: finding.id,
+      payload: {}
     });
+
+    // Deselect finding if it was the one we just deleted
+    if (this.findingId() === finding.id) {
+      this.findingId.set(null);
+    }
   }
 
-  onFindingSelected(finding: Finding | null) {
-    if (finding) {
-      this.editFinding(finding);
+  onFindingSelected(finding: Finding) {
+    if (!finding) {
+      this.findingId.set(null);
     } else {
-      this.startNewFinding();
+      this.findingId.set(finding.id);
     }
+    this.isFindingsDropdownOpen.set(false);
+  }
+
+  onAddFindingTriggered() {
+    const section = this.activeSection();
+    if (!section) return;
+
+    const newId = crypto.randomUUID();
+
+    this.mutationQueueService.enqueue({
+      type: MutationType.CREATE_FINDING,
+      inspectionId: this.inspectionId()!,
+      clientFindingId: newId,
+      payload: {
+        section: section,
+        severity: Severity.MAINTENANCE,
+        description: 'New Finding',
+        location: 'Not Specified',
+        recommendation: 'Evaluate and repair as necessary.'
+      }
+    });
+    
+    // Auto-select the newly created finding
+    this.findingId.set(newId);
+    this.isFindingsDropdownOpen.set(false);
   }
 
   getIconForSection(iconKey: string | undefined): any {

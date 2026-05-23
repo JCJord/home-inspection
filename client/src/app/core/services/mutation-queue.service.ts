@@ -9,6 +9,7 @@ export enum MutationType {
   UPLOAD_PHOTO = 'UPLOAD_PHOTO',
   UPDATE_PHOTO = 'UPDATE_PHOTO',
   DELETE_PHOTO = 'DELETE_PHOTO',
+  DELETE_FINDING = 'DELETE_FINDING',
   UPDATE_INSPECTION = 'UPDATE_INSPECTION'
 }
 
@@ -255,7 +256,13 @@ export class MutationQueueService {
         return this.inspectionsService.updatePhoto(task.inspectionId, task.findingId!, photoId, dto);
       }
       case MutationType.DELETE_PHOTO:
-        return this.inspectionsService.deletePhoto(task.inspectionId, task.findingId!, task.payload.photoId);
+        return this.inspectionsService.deletePhoto(task.inspectionId, task.findingId!, task.payload.photoId).pipe(
+          map(() => null)
+        );
+      case MutationType.DELETE_FINDING:
+        return this.inspectionsService.deleteFinding(task.inspectionId, task.findingId!).pipe(
+          map(() => null)
+        );
       case MutationType.UPDATE_INSPECTION:
         return this.inspectionsService.updateInspection(task.inspectionId, task.payload);
       default:

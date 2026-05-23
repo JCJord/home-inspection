@@ -271,6 +271,13 @@ export class InspectionsService {
           finding.photos = finding.photos.filter(p => p.id !== task.payload.photoId);
         }
       }
+
+      // 7. Handle Finding Deletion
+      if (task.type === MutationType.DELETE_FINDING) {
+        if (merged.findings) {
+          merged.findings = merged.findings.filter(f => f.id !== task.findingId);
+        }
+      }
     });
 
     return merged;
