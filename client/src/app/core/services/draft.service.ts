@@ -45,6 +45,17 @@ export class DraftService {
   }
 
   /**
+   * Rename a draft key
+   */
+  rename(oldKey: string, newKey: string): void {
+    const data = localStorage.getItem(this.PREFIX + oldKey);
+    if (data) {
+      localStorage.setItem(this.PREFIX + newKey, data);
+      localStorage.removeItem(this.PREFIX + oldKey);
+    }
+  }
+
+  /**
    * Clear all drafts managed by this service
    */
   clearAll(): void {

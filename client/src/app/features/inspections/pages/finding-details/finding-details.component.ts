@@ -16,6 +16,7 @@ import { TextInputComponent } from '../../../../shared/components/inputs/text-in
 import { SelectInputComponent } from '../../../../shared/components/inputs/select-input/select-input.component';
 import { SummaryDashboardComponent } from '../../components/summary-dashboard/summary-dashboard.component';
 import { MutationQueueService, MutationType, TaskCompletion } from '../../../../core/services/mutation-queue.service';
+import { DraftService } from '../../../../core/services/draft.service';
 import { debounceTime, Subject } from 'rxjs';
 
 @Component({
@@ -31,6 +32,7 @@ export class FindingDetailsComponent implements OnInit {
   private router = inject(Router);
   private inspectionsService = inject(InspectionsService);
   private mutationQueueService = inject(MutationQueueService);
+  private draftService = inject(DraftService);
 
   rawInspection = signal<Inspection | null>(null);
   inspection = computed(() => {
@@ -169,6 +171,13 @@ export class FindingDetailsComponent implements OnInit {
     // Listen for background task completions to swap temporary IDs
     this.mutationQueueService.taskCompleted$.subscribe((completion: TaskCompletion) => {
       if (completion.clientFindingId && completion.clientFindingId === this.findingId()) {
+        const section = this.activeSection();
+        if (section) {
+          const oldDraftKey = `finding:${this.inspectionId()}:${section}:${completion.clientFindingId}`;
+          const newDraftKey = `finding:${this.inspectionId()}:${section}:${completion.result.id}`;
+          this.draftService.rename(oldDraftKey, newDraftKey);
+        }
+
         // Swap ID in URL without reloading data
         this.router.navigate(['/inspections', this.inspectionId(), 'findings', completion.result.id], { 
           queryParams: { section: this.activeSection() },
@@ -253,6 +262,27 @@ export class FindingDetailsComponent implements OnInit {
   onDeleteFinding(finding: Finding) {
     const inspectionId = this.inspectionId();
     if (!inspectionId) return;
+
+    // 1. If it's a completely new, unsynced (or failed) finding, just remove it from the queue locally
+    const pendingCreateTask = this.mutationQueueService.allTasks().find(t => 
+       t.type === MutationType.CREATE_FINDING && 
+       (t.clientFindingId === finding.id || t.findingId === finding.id || t.id === finding.id) &&
+       (t.status === 'PENDING' || t.status === 'FAILED' || t.status === 'SYNCING')
+    );
+
+    if (pendingCreateTask) {
+      this.mutationQueueService.cancelTask(pendingCreateTask.id);
+      
+      if (this.findingId() === finding.id) {
+        this.findingId.set(null);
+      }
+      
+      const isLastItem = this.sectionFindings().length <= 1;
+      if (isLastItem) {
+        this.isFindingsDropdownOpen.set(false);
+      }
+      return;
+    }
 
     const isLastItem = this.sectionFindings().length <= 1;
 

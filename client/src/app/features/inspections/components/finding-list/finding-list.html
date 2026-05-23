@@ -1,8 +1,8 @@
-<div class="flex flex-col h-full bg-light-standard">
+<div class="flex flex-col flex-1 min-h-0 h-full bg-light-standard">
   <!-- Scrollable List -->
   <div class="flex-1 overflow-y-auto custom-scrollbar p-2 space-y-1">
     @for (f of findings(); track f.id) {
-    <button type="button"
+    <button type="button" #findingItem [id]="'finding-item-' + f.id"
       class="finding-item group relative w-full text-left flex items-center gap-3 px-3 py-3 rounded-xl transition-all border-none outline-none focus:outline-none focus:ring-0 active:scale-[0.99]"
       style="outline: none;"
       [class.active]="f.id === selectedFindingId()"

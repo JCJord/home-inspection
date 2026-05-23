@@ -1,4 +1,4 @@
-import { Component, input, output, signal } from '@angular/core';
+import { Component, input, output, signal, ElementRef, viewChildren, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Finding } from '../../../../core/models/inspection.interface';
 import { LucideAngularModule, Plus, Trash2, Check, X } from 'lucide-angular';
@@ -28,8 +28,27 @@ export class FindingListComponent {
   deleteFindingTriggered = output<Finding>();
 
   confirmDeleteId = signal<string | null>(null);
+  
+  findingItems = viewChildren<ElementRef>('findingItem');
 
   readonly icons = { Plus, Trash2, Check, X };
+
+  constructor() {
+    effect(() => {
+      const selectedId = this.selectedFindingId();
+      const items = this.findingItems();
+      
+      if (selectedId && items.length > 0) {
+        // Use timeout to let the DOM settle, especially if the list just opened
+        setTimeout(() => {
+          const selectedEl = items.find(el => el.nativeElement.id === `finding-item-${selectedId}`);
+          if (selectedEl) {
+            selectedEl.nativeElement.scrollIntoView({ behavior: 'auto', block: 'nearest' });
+          }
+        }, 50);
+      }
+    });
+  }
 
   getFindingLabel(finding: Finding): string {
     let snippet = finding.description || 'New Finding';

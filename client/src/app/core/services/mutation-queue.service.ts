@@ -92,8 +92,21 @@ export class MutationQueueService {
   private async loadTasks() {
     const allTasks = await this.getAllTasksFromDB();
     
+    const validTasks: MutationTask[] = [];
+
+    // Cleanup logic: If tasks were stuck in COMPLETED state due to a page reload
+    // during their 30-second buffer, remove them from DB to prevent memory leak.
+    for (const task of allTasks) {
+      if (task.status === 'COMPLETED') {
+        // Safe to remove immediately on load since SWR will fetch fresh data anyway
+        await this.deleteTaskFromDB(task.id);
+        continue;
+      }
+      validTasks.push(task);
+    }
+
     // Regenerate blob URLs for files if they exist (for UI display after refresh)
-    const tasksWithUrls = allTasks.map(task => {
+    const tasksWithUrls = validTasks.map(task => {
       const t = { ...task } as any;
       
       // Reset any tasks that were interrupted while SYNCING back to PENDING
@@ -225,7 +238,12 @@ export class MutationQueueService {
     ).subscribe();
   }
 
-  private processTask(task: MutationTask) {
+  private processTask(originalTask: MutationTask) {
+    // Re-fetch from signal because a prior task might have mapped its IDs
+    // (e.g. CREATE_FINDING mapped clientFindingId -> serverId for this task)
+    const task = this.tasks().find(t => t.id === originalTask.id);
+    if (!task) return of(null);
+
     // Mark as syncing
     this.updateTaskStatus(task.id, 'SYNCING');
 
@@ -272,11 +290,19 @@ export class MutationQueueService {
       }
       case MutationType.DELETE_PHOTO:
         return this.inspectionsService.deletePhoto(task.inspectionId, task.findingId!, task.payload.photoId).pipe(
-          map(() => null)
+          map(() => null),
+          catchError(err => {
+            if (err.status === 404) return of(null); // Already deleted
+            throw err;
+          })
         );
       case MutationType.DELETE_FINDING:
         return this.inspectionsService.deleteFinding(task.inspectionId, task.findingId!).pipe(
-          map(() => null)
+          map(() => null),
+          catchError(err => {
+            if (err.status === 404) return of(null); // Already deleted
+            throw err;
+          })
         );
       case MutationType.UPDATE_INSPECTION:
         return this.inspectionsService.updateInspection(task.inspectionId, task.payload);

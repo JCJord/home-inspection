@@ -81,7 +81,16 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
     if (changes['year_built']) this._yearBuilt.set(this.year_built);
     if (changes['section']) this._section.set(this.section);
     if (changes['finding']) {
+      const prev = changes['finding'].previousValue;
+      const curr = changes['finding'].currentValue;
+      
       this._finding.set(this.finding);
+
+      if (prev?.id === curr?.id && this.findingForm.dirty) {
+        // Prevent background sync from wiping unsaved changes for the SAME finding
+        return;
+      }
+
       this.populateForm();
     }
     if (changes['isPublished']) this._isPublished.set(this.isPublished);
@@ -186,6 +195,13 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
         caption: [p.caption || '']
       }));
     });
+
+    // Restore draft if it exists (crucial for preserving unsaved changes across ID swaps)
+    const draft = this.draftService.load<any>(this.draftKey);
+    if (draft) {
+      this.findingForm.patchValue(draft, { emitEvent: false });
+      this.findingForm.markAsDirty();
+    }
   }
 
   // Two-step Delete Flow
@@ -435,6 +451,7 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
       description: descriptionValue,
       recommendation: preset.recommendation || ''
     });
+    this.findingForm.markAsDirty();
   }
 
   isPresetActive(preset: any): boolean {
@@ -509,6 +526,10 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
       // 3. Clear local selection (Handoff complete)
       this.selectedFiles.set([]);
       this.newPhotoCaptions.clear();
+
+      // Mark the form as pristine so that ngOnChanges allows the newly merged 
+      // optimistic finding (with the new photo tasks) to repopulate existingPhotos
+      this.findingForm.markAsPristine();
 
       // Optimistic Success: Emit saved immediately
       // Create a "Temporary Finding" for the UI to display

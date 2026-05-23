@@ -133,14 +133,12 @@
           <!-- Dropdown Menu -->
           @if (isFindingsDropdownOpen()) {
           <div
-            class="absolute z-50 min-w-full md:max-w-[400px] mt-2 shadow-2xl rounded-xl border border-standard bg-light-standard overflow-hidden top-full left-0 origin-top-left">
-            <div class="max-h-[400px] flex flex-col">
-              <app-finding-list class="flex-1 overflow-hidden" [findings]="sectionFindings()"
-                [selectedFindingId]="findingId()" [disabled]="inspection()?.status === 'published'"
-                (findingSelected)="onFindingSelected($event)" (addFindingTriggered)="onAddFindingTriggered()"
-                (deleteFindingTriggered)="onDeleteFinding($event)">
-              </app-finding-list>
-            </div>
+            class="absolute z-50 min-w-full md:max-w-[400px] mt-2 shadow-2xl rounded-xl border border-standard bg-light-standard overflow-hidden top-full left-0 origin-top-left flex flex-col max-h-[400px]">
+            <app-finding-list class="flex-1 min-h-0" [findings]="sectionFindings()"
+              [selectedFindingId]="findingId()" [disabled]="inspection()?.status === 'published'"
+              (findingSelected)="onFindingSelected($event)" (addFindingTriggered)="onAddFindingTriggered()"
+              (deleteFindingTriggered)="onDeleteFinding($event)">
+            </app-finding-list>
           </div>
           }
         </div>
