@@ -3,8 +3,9 @@
   <div class="flex-1 overflow-y-auto custom-scrollbar p-2 space-y-1">
     @for (f of findings(); track f.id) {
     <button type="button"
-      class="group relative w-full text-left flex items-center gap-3 px-3 py-3 rounded-lg transition-all focus:outline-none"
-      [class.bg-primary-50]="f.id === selectedFindingId()"
+      class="finding-item group relative w-full text-left flex items-center gap-3 px-3 py-3 rounded-xl transition-all border-none outline-none focus:outline-none focus:ring-0 active:scale-[0.99]"
+      style="outline: none;"
+      [class.active]="f.id === selectedFindingId()"
       [class.hover:bg-surface-standard]="f.id !== selectedFindingId()" (click)="findingSelected.emit(f)">
       <div class="indicator-dot shrink-0" [attr.data-severity]="f.severity.toLowerCase()"></div>
       <div class="flex flex-col flex-1 min-w-0">
@@ -21,15 +22,13 @@
       @if (confirmDeleteId() === f.id) {
       <!-- Placeholder to prevent flex layout bounce -->
       <div class="w-8 h-8 shrink-0"></div>
-      
+
       <!-- Blur backdrop -->
-      <div class="absolute inset-0 z-10 rounded-lg backdrop-blur-[2px] bg-white/40" 
-           (click)="$event.stopPropagation(); cancelDelete()"></div>
-      
+      <div class="absolute inset-0 z-10 rounded-lg backdrop-blur-[2px] bg-white/40"
+        (click)="$event.stopPropagation(); cancelDelete()"></div>
+
       <div class="absolute right-2 z-20" (click)="$event.stopPropagation()">
-        <app-confirm-pill 
-          (confirm)="confirmDelete(f)" 
-          (cancel)="cancelDelete()">
+        <app-confirm-pill (confirm)="confirmDelete(f)" (cancel)="cancelDelete()">
         </app-confirm-pill>
       </div>
       } @else {
