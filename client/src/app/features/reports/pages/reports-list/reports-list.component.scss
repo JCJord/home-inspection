@@ -1,0 +1,194 @@
+@use '/variables' as *;
+
+.reports-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Custom premium icon wrapping to prevent dark/black browser fallback borders */
+.report-icon-wrap {
+  background-color: rgba($color-primary, 0.05);
+  color: $color-primary;
+  padding: 0.75rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgba($color-primary, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Minimalist list rows */
+.reports-list-item {
+  background-color: $color-surface;
+  border: 1px solid $color-border;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  &:hover {
+    transform: translateY(-1px);
+    border-color: rgba($color-primary, 0.35);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  }
+}
+
+/* Custom Indentation Spacing for responsive alignment on narrow viewports */
+.pl-13 {
+  padding-left: 3.25rem;
+}
+
+@media (min-width: 640px) {
+  .sm\:pl-0 {
+    padding-left: 0 !important;
+  }
+}
+
+/* Skeleton Loading row styles */
+.reports-skeleton-item {
+  background-color: $color-surface;
+  border: 1px solid $color-border;
+}
+
+/* Empty state styling */
+.zero-state-container {
+  background-color: $color-surface;
+  border: 1px solid $color-border;
+  
+  .zero-icon-wrap {
+    width: 64px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+/* Premium dynamic actions dropdown panel */
+.reports-dropdown-panel {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  margin-top: 0.5rem;
+  width: 13rem; /* 208px */
+  background-color: $color-surface;
+  border: 1px solid $color-border;
+  border-radius: 0.75rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
+  z-index: 50;
+  padding: 0.375rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  transform-origin: top right;
+  animation: reports-dropdown-fade-in 0.15s ease-out;
+
+  &.open-upwards {
+    top: auto;
+    bottom: 100%;
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+    box-shadow: 0 -10px 15px -3px rgba(0, 0, 0, 0.05), 0 -4px 6px -2px rgba(0, 0, 0, 0.025);
+    transform-origin: bottom right;
+    animation: reports-dropdown-fade-in-upwards 0.15s ease-out;
+  }
+
+  .dropdown-panel-item {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: $color-text;
+    background: transparent;
+    border: none;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.15s ease;
+
+    lucide-icon {
+      color: $color-text-muted;
+      transition: color 0.15s ease;
+    }
+
+    &:hover {
+      background-color: $color-surface-light;
+      color: $color-primary;
+
+      lucide-icon {
+        color: $color-primary;
+      }
+    }
+
+    &.danger {
+      color: $color-safety;
+
+      lucide-icon {
+        color: $color-safety;
+      }
+
+      &:hover {
+        background-color: rgba($color-safety, 0.08);
+        color: $color-safety;
+      }
+    }
+  }
+
+  .dropdown-panel-divider {
+    height: 1px;
+    background-color: $color-border;
+    margin: 0.25rem 0.375rem;
+  }
+}
+
+/* Dropdown trigger custom overrides */
+.dropdown-trigger-btn {
+  display: inline-block;
+  
+  ::ng-deep .app-button {
+    border-radius: 50% !important;
+    padding: 0.5rem !important;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none !important;
+    background-color: transparent !important;
+    color: $color-text-muted;
+    transition: all 0.2s ease;
+    
+    &:hover, &.active {
+      color: $color-text !important;
+      background-color: rgba($color-text, 0.05) !important;
+    }
+  }
+
+  &.active ::ng-deep .app-button {
+    color: $color-text !important;
+    background-color: rgba($color-text, 0.05) !important;
+  }
+}
+
+@keyframes reports-dropdown-fade-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes reports-dropdown-fade-in-upwards {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}

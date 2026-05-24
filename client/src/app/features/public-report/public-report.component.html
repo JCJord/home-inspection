@@ -1,0 +1,506 @@
+@if (isLoading()) {
+<div class="flex justify-center items-center min-h-screen" style="background-color: var(--color-bg, #F8FAFC);">
+  <div class="animate-spin rounded-full h-12 w-12 border-b-2" style="border-color: var(--color-primary, #00A3FF);">
+  </div>
+</div>
+} @else if (error()) {
+<div class="flex flex-col items-center justify-center min-h-screen text-center p-4">
+  <div class="w-16 h-16 rounded-full flex items-center justify-center mb-4" style="background-color: #FEE2E2;">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #EF4444;">
+      <circle cx="12" cy="12" r="10"></circle>
+      <line x1="12" y1="8" x2="12" y2="12"></line>
+      <line x1="12" y1="16" x2="12.01" y2="16"></line>
+    </svg>
+  </div>
+  <h2 class="text-xl font-bold mb-2">Report Unavailable</h2>
+  <p class="max-w-sm">{{ error() }}</p>
+</div>
+} @else if (inspection()) {
+<div class="public-report-app-layout flex min-h-screen w-full relative">
+
+  <!-- Desktop Sidebar (Fixed Full Height Left) -->
+  <aside
+    class="desktop-sidebar hidden lg:flex flex-col w-[280px] fixed left-0 top-0 bottom-0 z-40 shadow-sm bg-surface">
+    <div class="sidebar-header p-6">
+      <h2 class="text-lg font-bold m-0">Live Report</h2>
+      <p class="text-xs mt-1 truncate address-text text-text-muted">{{ inspection()?.address }}</p>
+    </div>
+    <div class="flex-1 overflow-y-auto py-6 px-4 no-scrollbar">
+      <!-- Executive Summary Link -->
+      <button (click)="scrollToSection('executive-summary')"
+        class="toc-item text-left px-4 py-3 text-[15px] font-bold rounded-xl transition-all duration-200 flex items-center justify-between cursor-pointer border-none mb-6"
+        [class.active]="activeSection() === 'executive-summary' || activeSection() === ''">
+        <span>Executive Summary</span>
+        @if (activeSection() === 'executive-summary' || activeSection() === '') {
+        <div class="active-dot w-2 h-2 rounded-full flex-shrink-0"></div>
+        }
+      </button>
+
+      <h3 class="text-[11px] font-bold uppercase tracking-widest mb-4 px-2 section-title text-text-muted">Detailed
+        Findings</h3>
+      <nav class="flex flex-col gap-1.5">
+        @for (group of groupedFindings(); track group.name; let i = $index) {
+        <button (click)="scrollToSection(group.name)" [title]="group.name"
+          class="toc-item text-left px-4 py-3 text-[14px] font-medium rounded-xl transition-all duration-200 flex items-center justify-between cursor-pointer border-none"
+          [class.active]="activeSection() === group.name">
+          <span class="flex items-center gap-2 pr-2 min-w-0">
+            <span class="text-[11px] font-black opacity-40 flex-shrink-0">4.{{ i + 1 }}</span>
+            <span class="truncate">{{ group.name }}</span>
+          </span>
+          <div class="flex items-center gap-2 flex-shrink-0">
+            @if (group.findings.length > 0) {
+            <span
+              class="finding-count-badge bg-surface-light text-text-muted text-[10px] font-black px-1.5 py-0.5 rounded-full">{{
+              group.findings.length }}</span>
+            }
+            @if (activeSection() === group.name) {
+            <div class="active-dot w-2 h-2 rounded-full flex-shrink-0"></div>
+            }
+          </div>
+        </button>
+        }
+      </nav>
+    </div>
+  </aside>
+
+  <!-- Main Content Area -->
+  <div class="main-content-area flex-1 lg:ml-[280px] min-w-0 flex flex-col relative w-full">
+
+    <!-- Top Bar -->
+    <div
+      class="sticky-top-bar sticky top-0 z-30 backdrop-blur-md px-6 py-4 flex justify-between items-center w-full shadow-sm bg-surface/80 border-b border-border">
+      <div class="inspector-info flex items-center gap-4">
+        <button
+          class="menu-toggle lg:hidden p-2 -ml-2 rounded-lg transition-colors cursor-pointer bg-transparent border-none text-text-primary"
+          (click)="toggleMobileMenu()" aria-label="Open sections menu">
+          <lucide-icon [name]="icons.Menu" [size]="24"></lucide-icon>
+        </button>
+
+        @if (inspection()?.inspector?.logo_url) {
+        <img [src]="getAbsoluteImageUrl(inspection()?.inspector?.logo_url)" alt="Inspector Logo"
+          class="h-10 w-auto object-contain">
+        }
+        <span class="company-name font-bold text-xl hidden sm:inline-block">{{ inspection()?.inspector?.company_name ||
+          inspection()?.inspector?.name }}</span>
+      </div>
+
+      @if (inspection()?.report?.pdf_url) {
+      <a [href]="getAbsoluteImageUrl(inspection()?.report?.pdf_url)" target="_blank"
+        class="download-btn flex items-center gap-2 px-5 py-2.5 text-white font-bold rounded-xl transition-transform hover:scale-105 active:scale-95 no-underline shadow-md bg-text-primary">
+        <lucide-icon [name]="icons.Download" [size]="18"></lucide-icon>
+        <span class="hidden sm:inline">Download PDF</span>
+        <span class="sm:hidden">PDF</span>
+      </a>
+      }
+    </div>
+
+    <!-- Fluid Report Container -->
+    <div class="report-container w-full px-6 lg:px-12 xl:px-16 py-8 pb-24">
+
+      <!-- Hero Section -->
+      <div class="hero-section rounded-3xl overflow-hidden shadow-lg bg-surface">
+        @if (inspection()?.cover_photo_url) {
+        <img [src]="getAbsoluteImageUrl(inspection()?.cover_photo_url)" alt="Property Cover"
+          class="cover-photo w-full h-[350px] lg:h-[500px] object-cover">
+        } @else {
+        <div
+          class="cover-photo-placeholder flex items-center justify-center w-full h-[350px] lg:h-[500px] bg-surface-light">
+          <lucide-icon [name]="icons.Image" [size]="64" class="opacity-20 text-text-muted"></lucide-icon>
+        </div>
+        }
+
+        <div class="hero-content p-8 lg:p-12">
+          <h1 class="address text-3xl lg:text-5xl font-black mb-4 leading-tight">{{ inspection()?.address }}</h1>
+          <div class="meta flex flex-wrap gap-6 font-bold text-sm lg:text-base text-text-muted">
+            <div class="meta-item flex items-center gap-2">
+              <lucide-icon [name]="icons.Calendar" [size]="18"></lucide-icon>
+              {{ inspection()?.scheduled_date | date:'longDate' }}
+            </div>
+            <div class="meta-item flex items-center gap-2">
+              <lucide-icon [name]="icons.Users" [size]="18"></lucide-icon>
+              Inspector: {{ inspection()?.inspector?.name }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- NEW: General Info (Property Conditions) -->
+      <div class="general-info-grid mt-8 grid grid-cols-2 md:grid-cols-4 gap-4">
+        @if (getSectionMetadata('weather')) {
+        <div class="info-card p-5 rounded-2xl flex flex-col gap-1 bg-surface shadow-sm border border-border/50">
+          <span class="text-[10px] font-black uppercase tracking-widest text-text-muted">Weather</span>
+          <span class="font-bold text-sm">{{ getSectionMetadata('weather') }}</span>
+        </div>
+        }
+        @if (getSectionMetadata('temperature')) {
+        <div class="info-card p-5 rounded-2xl flex flex-col gap-1 bg-surface shadow-sm border border-border/50">
+          <span class="text-[10px] font-black uppercase tracking-widest text-text-muted">Temperature</span>
+          <span class="font-bold text-sm">{{ getSectionMetadata('temperature') }}</span>
+        </div>
+        }
+        @if (getSectionMetadata('occupancy')) {
+        <div class="info-card p-5 rounded-2xl flex flex-col gap-1 bg-surface shadow-sm border border-border/50">
+          <span class="text-[10px] font-black uppercase tracking-widest text-text-muted">Occupancy</span>
+          <span class="font-bold text-sm">{{ getSectionMetadata('occupancy') }}</span>
+        </div>
+        }
+        @if (getSectionMetadata('year_built')) {
+        <div class="info-card p-5 rounded-2xl flex flex-col gap-1 bg-surface shadow-sm border border-border/50">
+          <span class="text-[10px] font-black uppercase tracking-widest text-text-muted">Year Built</span>
+          <span class="font-bold text-sm">{{ getSectionMetadata('year_built') }}</span>
+        </div>
+        }
+      </div>
+
+      <!-- NEW: Executive Summary Section -->
+      <div class="section-group finding-section-container scroll-mt-28 mt-20" id="section-executive-summary">
+        <h2 class="section-header text-4xl font-black mb-6 text-text-primary">Executive Summary</h2>
+        <p class="text-lg text-text-muted mb-8 leading-relaxed max-w-4xl">
+          This section summarizes the most significant findings from the inspection, specifically focusing on Safety Hazards and Major Defects that require immediate attention or specialized evaluation. 
+          <br><br>
+          <strong>Categories:</strong> This report divides findings into five categories: Safety Hazards (colored in red), Major Defects (in orange), Minor Defects (in yellow), Maintenance Items (in green), and Informational Items (in blue).
+        </p>
+
+        <!-- Severity Definitions Key -->
+        <div class="severity-definitions p-6 md:p-8 rounded-3xl mb-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 bg-surface shadow-md border border-border/50">
+          <div class="flex flex-col">
+            <div class="flex items-center gap-3 mb-3">
+              <span class="w-4 h-4 rounded-full flex-shrink-0" style="background-color: #EF4444;"></span>
+              <strong class="text-sm font-black uppercase tracking-wider text-text-primary">Safety Hazard</strong>
+            </div>
+            <p class="text-sm text-text-muted m-0 leading-relaxed font-medium">A condition that poses a significant risk of personal injury during normal use of the property.</p>
+          </div>
+          <div class="flex flex-col">
+            <div class="flex items-center gap-3 mb-3">
+              <span class="w-4 h-4 rounded-full flex-shrink-0" style="background-color: #F97316;"></span>
+              <strong class="text-sm font-black uppercase tracking-wider text-text-primary">Major Defect</strong>
+            </div>
+            <p class="text-sm text-text-muted m-0 leading-relaxed font-medium">A condition that significantly affects the habitability, safety, or primary function of a critical system.</p>
+          </div>
+          <div class="flex flex-col">
+            <div class="flex items-center gap-3 mb-3">
+              <span class="w-4 h-4 rounded-full flex-shrink-0" style="background-color: #EAB308;"></span>
+              <strong class="text-sm font-black uppercase tracking-wider text-text-primary">Minor Defect</strong>
+            </div>
+            <p class="text-sm text-text-muted m-0 leading-relaxed font-medium">A condition that is not functioning as intended or needs repair, but does not pose a significant risk.</p>
+          </div>
+          <div class="flex flex-col">
+            <div class="flex items-center gap-3 mb-3">
+              <span class="w-4 h-4 rounded-full flex-shrink-0" style="background-color: #22C55E;"></span>
+              <strong class="text-sm font-black uppercase tracking-wider text-text-primary">Maintenance Item</strong>
+            </div>
+            <p class="text-sm text-text-muted m-0 leading-relaxed font-medium">A routine maintenance task recommended to preserve the condition of the property or prevent future issues.</p>
+          </div>
+          <div class="flex flex-col">
+            <div class="flex items-center gap-3 mb-3">
+              <span class="w-4 h-4 rounded-full flex-shrink-0" style="background-color: #3B82F6;"></span>
+              <strong class="text-sm font-black uppercase tracking-wider text-text-primary">Informational</strong>
+            </div>
+            <p class="text-sm text-text-muted m-0 leading-relaxed font-medium">General information or observations about the property that do not require any action.</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 gap-4">
+          @for (finding of getSevereFindings(); track finding.id; let fIdx = $index) {
+          <div
+            class="finding-card card-static p-6 flex flex-col md:flex-row items-start gap-5 cursor-pointer hover:bg-surface-light transition-colors"
+            (click)="scrollToSection(finding.section)">
+            <span class="font-black text-2xl text-text-muted opacity-30 w-8">0{{ fIdx + 1 }}</span>
+            <span
+              class="severity-badge px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest flex-shrink-0"
+              [ngClass]="getSeverityColor(finding.severity)">
+              {{ finding.severity }}
+            </span>
+            <div class="flex-1">
+              <div class="text-[11px] font-black uppercase tracking-widest text-text-muted mb-1">{{ finding.section }}
+              </div>
+              <div class="text-base font-semibold text-text-primary">{{ finding.description }}</div>
+            </div>
+            <lucide-icon [name]="icons.ChevronRight" [size]="20"
+              class="text-text-muted opacity-50 hidden md:block"></lucide-icon>
+          </div>
+          } @empty {
+          <div
+            class="p-10 md:p-12 text-center bg-[#F0FDF4] text-[#166534] rounded-3xl border border-[#BBF7D0] shadow-sm">
+            <lucide-icon [name]="icons.Check" [size]="56" class="mx-auto mb-4 text-[#22C55E]"></lucide-icon>
+            <h3 class="text-2xl font-black mb-2 uppercase tracking-widest">Excellent News</h3>
+            <p class="text-lg font-medium opacity-90 max-w-lg mx-auto">No safety hazards or major defects were
+              identified during this visual inspection.</p>
+          </div>
+          }
+        </div>
+      </div>
+
+      <!-- Detailed Findings Sections -->
+      <div class="mt-24 mb-10 pb-6 border-b-2 border-border">
+        <h2 class="text-3xl font-black uppercase tracking-widest text-text-muted">Detailed Findings</h2>
+      </div>
+
+      @for (group of groupedFindings(); track group.name; let gIdx = $index) {
+      <div class="section-group finding-section-container scroll-mt-28 mt-20" [id]="'section-' + group.name">
+        <h2 class="section-header text-4xl font-black mb-6 text-text-primary flex items-center">
+          <span class="text-text-muted opacity-30 mr-4">4.{{ gIdx + 1 }}</span> {{ group.name }}
+        </h2>
+
+        <!-- NEW: Section Metadata -->
+        @if (hasSectionMetadata(group.name)) {
+        <div
+          class="section-metadata flex flex-wrap gap-4 mb-10 bg-surface p-6 rounded-3xl border border-border/50 shadow-sm">
+          @for (field of getSectionFields(group.name); track field.key) {
+          @if (getSectionMetadata(field.key)) {
+          <div class="flex flex-col min-w-[120px]">
+            <span class="text-[10px] font-black uppercase tracking-widest text-text-muted">{{ field.label }}</span>
+            <span class="text-sm font-bold text-text-primary">{{ getSectionMetadata(field.key) }}</span>
+          </div>
+          }
+          }
+        </div>
+        } @else {
+        <div class="mb-10"></div>
+        }
+
+        <div class="grid grid-cols-1 gap-8">
+          @if (getSectionStatus(group.name).status !== 'inspected') {
+          <!-- Empty State: Not Inspected -->
+          <div
+            class="p-10 md:p-14 text-center bg-surface-light text-text-muted rounded-3xl border-2 border-dashed border-border/80">
+            <h3 class="text-xl font-black mb-3 uppercase tracking-widest">Not Inspected</h3>
+            <p class="max-w-md mx-auto text-base font-medium">{{ getSectionStatus(group.name).reason || 'This section
+              was not inspected.' }}</p>
+          </div>
+          } @else if (group.findings.length === 0) {
+          <!-- Empty State: No Defects -->
+          <div class="p-10 md:p-14 text-center bg-[#F0FDF4] text-[#166534] rounded-3xl border border-[#BBF7D0]">
+            <lucide-icon [name]="icons.Check" [size]="48" class="mx-auto mb-4 text-[#22C55E] opacity-80"></lucide-icon>
+            <h3 class="text-xl font-black mb-2 uppercase tracking-widest">Visually Evaluated</h3>
+            <p class="text-base font-medium opacity-90">No material defects were observed in this section.</p>
+          </div>
+          } @else {
+          <!-- Findings Cards -->
+          @for (finding of group.findings; track finding.id; let fIdx = $index) {
+          <div
+            class="finding-card card-static overflow-hidden transition-all hover:shadow-xl duration-300 border border-border/50">
+            <div class="finding-header p-6 md:p-8 flex flex-col md:flex-row items-start gap-6">
+              <!-- Explicit 4.X numbering -->
+              <div
+                class="finding-number flex-shrink-0 flex items-center justify-center w-14 h-14 bg-surface-light rounded-2xl font-black text-xl text-text-muted">
+                {{ gIdx + 1 }}.{{ fIdx + 1 }}
+              </div>
+
+              <div class="flex-1 flex flex-col gap-5 w-full">
+                <div class="flex items-center gap-3 flex-wrap">
+                  <span
+                    class="severity-badge px-4 py-1.5 rounded-full text-[11px] font-black uppercase tracking-widest shadow-sm"
+                    [ngClass]="getSeverityColor(finding.severity)">
+                    {{ finding.severity }}
+                  </span>
+                  @if (finding.location) {
+                  <div
+                    class="location-tag text-xs font-bold uppercase tracking-wider text-text-muted inline-flex items-center gap-1.5 bg-surface-light px-3 py-1.5 rounded-lg">
+                    <lucide-icon [name]="icons.Home" [size]="14"></lucide-icon>
+                    {{ finding.location }}
+                  </div>
+                  }
+                </div>
+
+                <div class="finding-observation flex flex-col gap-2">
+                  <span class="text-[11px] font-black uppercase tracking-widest text-text-muted">Observation</span>
+                  <div class="text-xl font-medium leading-relaxed text-text-primary">
+                    {{ finding.description }}
+                  </div>
+                </div>
+
+                <!-- NEW: Recommendation -->
+                @if (finding.recommendation) {
+                <div
+                  class="finding-recommendation mt-2 bg-surface-light border-l-4 border-text-primary p-5 rounded-r-2xl">
+                  <span
+                    class="text-[11px] font-black uppercase tracking-widest text-text-primary block mb-2">Recommendation</span>
+                  <p class="text-base font-bold m-0 leading-relaxed text-text-primary">{{ finding.recommendation }}</p>
+                </div>
+                }
+              </div>
+            </div>
+
+            @if (finding.photos && finding.photos.length > 0) {
+            <!-- Clickable photos with desktop slider controls -->
+            <div class="relative group/strip w-full">
+              <!-- Desktop Left Button -->
+              @if (finding.photos.length > 2) {
+              <button (click)="scrollStrip(strip, -400)"
+                class="absolute left-2 top-[40%] -translate-y-1/2 z-10 hidden md:flex items-center justify-center p-2 bg-surface hover:bg-surface-light text-text-primary rounded-full shadow-lg border border-border/80 opacity-0 group-hover/strip:opacity-100 transition-opacity cursor-pointer h-12 w-12">
+                <lucide-icon [name]="icons.ChevronLeft" [size]="24"></lucide-icon>
+              </button>
+              }
+
+              <div #strip
+                class="photo-strip flex overflow-x-auto gap-4 p-6 md:p-8 pt-0 scroll-smooth snap-x snap-mandatory no-scrollbar">
+                @for (photo of finding.photos; track photo.id; let pIdx = $index) {
+                <div
+                  class="photo-item flex-none w-[85%] md:w-[45%] lg:w-[400px] h-[250px] lg:h-[300px] snap-center rounded-2xl overflow-hidden shadow-md relative group cursor-pointer border border-border/30"
+                  (click)="openLightbox(finding.photos, pIdx)">
+                  <img [src]="getAbsoluteImageUrl(photo.storage_url)" alt="Finding Photo"
+                    class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+                  <div
+                    class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
+                    <div
+                      class="opacity-0 group-hover:opacity-100 bg-white/95 p-4 rounded-full shadow-xl transition-all duration-300 transform scale-75 group-hover:scale-100">
+                      <lucide-icon [name]="icons.Image" [size]="28" class="text-text-primary"></lucide-icon>
+                    </div>
+                  </div>
+                  @if (photo.caption) {
+                  <div
+                    class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-5 pt-16">
+                    <p class="text-white text-sm font-semibold m-0 truncate shadow-sm">{{ photo.caption }}</p>
+                  </div>
+                  }
+                </div>
+                }
+              </div>
+
+              <!-- Desktop Right Button -->
+              @if (finding.photos.length > 2) {
+              <button (click)="scrollStrip(strip, 400)"
+                class="absolute right-2 top-[40%] -translate-y-1/2 z-10 hidden md:flex items-center justify-center p-2 bg-surface hover:bg-surface-light text-text-primary rounded-full shadow-lg border border-border/80 opacity-0 group-hover/strip:opacity-100 transition-opacity cursor-pointer h-12 w-12">
+                <lucide-icon [name]="icons.ChevronRight" [size]="24"></lucide-icon>
+              </button>
+              }
+            </div>
+            }
+          </div>
+          }
+          }
+        </div>
+      </div>
+      }
+
+      <div class="report-footer mt-32 pt-16 border-t border-border/50 text-center flex flex-col items-center">
+        
+        <div class="legal-disclaimer max-w-4xl mx-auto mb-16 p-8 md:p-10 bg-surface-light rounded-3xl border border-border/50 text-left w-full">
+          <h4 class="text-sm font-black uppercase tracking-widest text-text-primary mb-3">Legal Notice & Disclaimer</h4>
+          <p class="text-sm md:text-base text-text-muted leading-relaxed m-0 font-medium">
+            {{ inspection()?.inspector?.custom_legal_disclaimer || 'This inspection report is a professional opinion based on a non-invasive, visual examination of the readily accessible installed systems and components of the property at the time of the inspection. We report on those systems and components that, in our professional judgement, are not functioning properly, are significantly deficient, or present safety hazards. This service is not a warranty, insurance policy, or absolute guarantee of future system performance or longevity.' }}
+          </p>
+        </div>
+
+        <div class="inspector-details mb-8">
+          <p class="company-name font-black text-3xl mb-3 text-text-primary">{{ inspection()?.inspector?.company_name ||
+            inspection()?.inspector?.name }}</p>
+          @if (inspection()?.inspector?.phone) {
+          <p class="phone-number text-lg font-bold text-text-muted">{{ inspection()?.inspector?.phone }}</p>
+          }
+        </div>
+
+        <div
+          class="powered-by inline-flex items-center gap-2 px-6 py-3 rounded-full bg-surface-light border border-border/50 shadow-sm">
+          <lucide-icon [name]="icons.Check" [size]="18" class="text-text-muted"></lucide-icon>
+          <span class="font-black uppercase tracking-widest text-[10px] text-text-muted">Powered by Inspectly</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Mobile Menu Overlay -->
+@if (isMobileMenuOpen()) {
+<div class="mobile-menu-overlay fixed inset-0 z-[100] lg:hidden">
+  <!-- Backdrop -->
+  <div class="backdrop absolute inset-0 bg-black/40 backdrop-blur-sm" (click)="toggleMobileMenu()"></div>
+
+  <!-- Slide-over panel -->
+  <div
+    class="slide-panel absolute inset-y-0 left-0 w-[85%] max-w-[320px] bg-surface shadow-2xl flex flex-col transform transition-transform duration-300">
+    <div class="panel-header flex items-center justify-between p-6 border-b border-border/50">
+      <div class="flex flex-col">
+        <h3 class="font-black text-xl m-0 text-text-primary">Sections</h3>
+        <span class="address-text text-xs font-bold text-text-muted mt-1 truncate max-w-[200px]">{{
+          inspection()?.address }}</span>
+      </div>
+      <button
+        class="close-btn p-2.5 rounded-full transition-colors bg-surface-light hover:bg-border cursor-pointer shadow-sm active:scale-95 border-none text-text-primary"
+        (click)="toggleMobileMenu()">
+        <lucide-icon [name]="icons.X" [size]="20"></lucide-icon>
+      </button>
+    </div>
+
+    <div class="flex-1 overflow-y-auto p-4 flex flex-col gap-1.5 no-scrollbar">
+      <!-- Executive Summary -->
+      <button (click)="scrollToSection('executive-summary')"
+        class="toc-item flex items-center justify-between w-full text-left px-5 py-4 rounded-xl transition-all border-none cursor-pointer bg-transparent"
+        [class.active]="activeSection() === 'executive-summary' || activeSection() === ''">
+        <span class="text-[15px] font-bold text-text-primary">Executive Summary</span>
+        @if (activeSection() === 'executive-summary' || activeSection() === '') {
+        <div class="active-dot w-2.5 h-2.5 rounded-full flex-shrink-0 ms-3"></div>
+        }
+      </button>
+
+      <div class="h-px bg-border/50 my-2 mx-4"></div>
+
+      @for (group of groupedFindings(); track group.name; let i = $index) {
+      <button (click)="scrollToSection(group.name)" [title]="group.name"
+        class="toc-item flex items-center justify-between w-full text-left px-5 py-4 rounded-xl transition-all border-none cursor-pointer bg-transparent"
+        [class.active]="activeSection() === group.name">
+        <span class="text-[15px] font-medium text-text-primary flex items-center gap-2 min-w-0 pr-2">
+          <span class="text-xs font-black opacity-30 flex-shrink-0">4.{{ i + 1 }}</span>
+          <span class="truncate">{{ group.name }}</span>
+        </span>
+        <div class="flex items-center gap-2">
+          @if (group.findings.length > 0) {
+          <span class="bg-surface-light text-text-muted text-[10px] font-black px-2 py-1 rounded-full">{{
+            group.findings.length }}</span>
+          }
+          @if (activeSection() === group.name) {
+          <div class="active-dot w-2.5 h-2.5 rounded-full flex-shrink-0"></div>
+          }
+        </div>
+      </button>
+      }
+    </div>
+  </div>
+</div>
+}
+
+<!-- NEW: Lightbox Overlay -->
+@if (lightboxOpen()) {
+<div class="lightbox-overlay fixed inset-0 z-[200] bg-black/95 flex flex-col backdrop-blur-md transition-opacity">
+  <!-- Toolbar -->
+  <div
+    class="flex justify-between items-center p-4 md:p-6 text-white absolute top-0 left-0 right-0 z-10 bg-gradient-to-b from-black/80 to-transparent">
+    <div class="text-xs md:text-sm font-black tracking-widest uppercase opacity-70">
+      Photo {{ lightboxCurrentIndex() + 1 }} of {{ lightboxPhotos().length }}
+    </div>
+    <button (click)="closeLightbox()"
+      class="p-3 hover:bg-white/20 rounded-full transition-all border border-white/10 bg-black/50 text-white cursor-pointer flex items-center justify-center backdrop-blur-md active:scale-95">
+      <lucide-icon [name]="icons.X" [size]="24"></lucide-icon>
+    </button>
+  </div>
+
+  <!-- Image Container -->
+  <div class="flex-1 relative flex flex-col items-center justify-center p-4 md:p-12 w-full h-full">
+    @if (lightboxCurrentIndex() > 0) {
+    <button (click)="prevPhoto()"
+      class="absolute left-2 md:left-8 top-1/2 -translate-y-1/2 p-3 md:p-5 bg-black/50 hover:bg-white/10 text-white rounded-full transition-all border border-white/10 cursor-pointer z-10 flex items-center justify-center backdrop-blur-md active:scale-95 shadow-xl">
+      <lucide-icon [name]="icons.ChevronLeft" [size]="32"></lucide-icon>
+    </button>
+    }
+
+    <img [src]="lightboxPhotos()[lightboxCurrentIndex()].url"
+      class="max-w-full max-h-full object-contain select-none transition-all duration-300 shadow-2xl">
+
+    @if (lightboxPhotos()[lightboxCurrentIndex()].caption) {
+    <div
+      class="absolute bottom-6 md:bottom-12 left-1/2 -translate-x-1/2 bg-black/80 backdrop-blur-md border border-white/10 text-white px-6 py-3 md:px-8 md:py-4 rounded-2xl text-sm md:text-base font-medium max-w-[90%] md:max-w-2xl text-center shadow-2xl">
+      {{ lightboxPhotos()[lightboxCurrentIndex()].caption }}
+    </div>
+    }
+
+    @if (lightboxCurrentIndex() < lightboxPhotos().length - 1) { <button (click)="nextPhoto()"
+      class="absolute right-2 md:right-8 top-1/2 -translate-y-1/2 p-3 md:p-5 bg-black/50 hover:bg-white/10 text-white rounded-full transition-all border border-white/10 cursor-pointer z-10 flex items-center justify-center backdrop-blur-md active:scale-95 shadow-xl">
+      <lucide-icon [name]="icons.ChevronRight" [size]="32"></lucide-icon>
+      </button>
+      }
+  </div>
+</div>
+}
+}

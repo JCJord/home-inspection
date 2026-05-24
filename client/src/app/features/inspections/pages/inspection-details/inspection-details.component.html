@@ -81,8 +81,7 @@
   <div class="error-state">
     <lucide-icon [name]="icons.AlertCircle" [size]="32"></lucide-icon>
     <p>{{ errorMessage() }}</p>
-    <app-button variant="outline" size="sm" (click)="goBack()">
-      <lucide-icon [name]="icons.ArrowLeft" [size]="16"></lucide-icon>
+    <app-button variant="outline" size="md" (click)="goBack()">
       Back to Inspections
     </app-button>
   </div>
@@ -102,34 +101,42 @@
 
         <!-- IDLE STATE -->
         @if (isCancelled()) {
-          <span class="status-badge bg-safety/10 text-safety px-4 py-2 rounded-full font-bold uppercase text-xs tracking-wider border border-safety/20">
-            Cancelled
-          </span>
+        <span
+          class="status-badge bg-safety/10 text-safety px-4 py-2 rounded-full font-bold uppercase text-xs tracking-wider border border-safety/20">
+          Cancelled
+        </span>
         } @else if (publishState() === 'idle') {
-          @if (isPublished()) {
-            <div class="flex items-center gap-3">
-              <span class="status-badge published">
-                <span class="dot"></span>
-                Published
-              </span>
-              <button
-                class="text-xs text-standard-muted hover:text-primary transition-colors flex items-center gap-1 font-medium bg-transparent border-none p-0 cursor-pointer"
-                (click)="unpublishInspection()" title="Unlock to edit again">
-                <lucide-icon [name]="icons.LockOpen" [size]="14"></lucide-icon>
-                Unlock to Edit
-              </button>
-            </div>
-          } @else if (isScheduled()) {
-            <app-button variant="solid" size="sm" (click)="onStartInspection()" [isLoading]="isLoading()">
-              <lucide-icon [name]="icons.Plus" [size]="16"></lucide-icon>
-              Start Inspection
-            </app-button>
-          } @else {
-            <app-button variant="solid" size="sm" (click)="startPublishWorkflow()">
-              <lucide-icon [name]="icons.Send" [size]="16"></lucide-icon>
-              Publish Report
-            </app-button>
-          }
+        @if (isPublished()) {
+        <div class="flex items-center gap-3">
+          <span class="status-badge published">
+            <span class="dot"></span>
+            Published
+          </span>
+          <button
+            class="text-xs text-standard-muted hover:text-primary transition-colors flex items-center gap-1 font-medium bg-transparent border-none p-0 cursor-pointer"
+            (click)="unpublishInspection()" title="Unlock to edit again">
+            <lucide-icon [name]="icons.LockOpen" [size]="14"></lucide-icon>
+            Unlock to Edit
+          </button>
+        </div>
+        } @else if (isScheduled()) {
+        <app-button variant="solid" size="sm" (click)="onStartInspection()" [isLoading]="isLoading()">
+          <lucide-icon [name]="icons.Plus" [size]="16"></lucide-icon>
+          Start Inspection
+        </app-button>
+        } @else {
+        <div class="flex items-center gap-2">
+          <app-button variant="outline" size="sm" (click)="openReportPreview()">
+            <lucide-icon [name]="icons.Eye" [size]="16"></lucide-icon>
+            Preview
+          </app-button>
+          <app-button variant="solid" size="sm" (click)="startPublishWorkflow()">
+            <lucide-icon [name]="icons.Send" [size]="16"></lucide-icon>
+            Publish Report
+          </app-button>
+        </div>
+        }
+
         }
 
         <!-- CONFIRM STATE -->
@@ -146,18 +153,53 @@
         </div>
         }
 
-        <!-- LOADING STATE -->
-        @if (publishState() === 'loading') {
-        <div class="loading-workflow flex items-center justify-center">
-          <lucide-icon [name]="icons.Loader2" [size]="20" class="animate-spin text-white"></lucide-icon>
+        <!-- COMPILING / UPLOADING STATE -->
+        @if (publishState() === 'compiling' || publishState() === 'uploading') {
+        <div
+          class="flex flex-col gap-2 min-w-[280px] p-4 bg-light-standard border border-standard rounded-2xl animate-fade-in shadow-sm">
+          <div class="flex justify-between items-center text-xs">
+            <span class="font-bold text-standard-muted uppercase tracking-wider flex items-center gap-2">
+              <lucide-icon [name]="icons.Loader2" [size]="14" class="animate-spin text-primary"></lucide-icon>
+              {{ publishState() === 'compiling' ? 'Compiling Draft' : 'Uploading Record' }}
+            </span>
+            <span class="font-bold text-primary font-mono text-sm">
+              {{ combinedProgress() }}%
+            </span>
+          </div>
+          <div class="w-full h-1.5 bg-standard/10 rounded-full overflow-hidden">
+            <div class="h-full bg-primary transition-all duration-300 rounded-full"
+              [style.width.%]="combinedProgress()">
+            </div>
+          </div>
+          <span class="text-[11px] text-standard-muted font-medium italic truncate">
+            {{ combinedMessage() }}
+          </span>
         </div>
         }
 
         <!-- SUCCESS STATE -->
         @if (publishState() === 'success') {
-        <div class="success-workflow flex items-center gap-2 px-4 py-2 bg-success text-white rounded-lg">
+        <div class="success-alert-badge animate-fade-in">
           <lucide-icon [name]="icons.Check" [size]="18"></lucide-icon>
-          <span class="font-bold">Published</span>
+          <span class="font-bold text-sm">Report Saved Successfully!</span>
+        </div>
+        }
+
+        <!-- ERROR STATE -->
+        @if (publishState() === 'error') {
+        <div
+          class="flex flex-col gap-2 p-4 bg-safety/10 text-safety border border-safety/20 rounded-2xl animate-fade-in shadow-sm min-w-[280px]">
+          <div class="flex items-center gap-2 font-bold text-xs uppercase tracking-wider">
+            <lucide-icon [name]="icons.AlertCircle" [size]="16" class="text-safety"></lucide-icon>
+            Publish Failed
+          </div>
+          <p class="text-[11px] font-medium text-safety/80 leading-relaxed">
+            Puppeteer compilation or server storage failed. Please check connection and try again.
+          </p>
+          <button (click)="publishState.set('idle')"
+            class="text-xs font-bold text-safety hover:underline self-start bg-transparent border-none cursor-pointer p-0">
+            Retry Publish
+          </button>
         </div>
         }
       </div>
@@ -168,21 +210,86 @@
   <div class="details-content" style="overflow-x: hidden; width: 100%;">
     @if (isPublished()) {
     <div
-      class="report-action-bar flex justify-between items-center bg-light-standard border-b border-standard px-6 py-4 rounded-t-[1.5rem]">
+      class="report-action-bar flex flex-wrap justify-between items-center gap-4 bg-light-standard border-b border-standard px-6 py-4 rounded-t-[1.5rem] animate-fade-in">
       <div class="flex items-center gap-2">
-        <lucide-icon [name]="icons.FileText" [size]="18" class="text-primary"></lucide-icon>
-        <span class="text-sm font-semibold text-standard">Inspection Report Generated</span>
+        <lucide-icon [name]="icons.Check" [size]="18" class="text-success"></lucide-icon>
+        <span class="text-sm font-bold text-standard">Report secure copy hosted online</span>
       </div>
-      <app-button variant="outline" size="sm" (click)="generateReport()" [disabled]="isGeneratingPdf()">
-        @if (isGeneratingPdf()) {
-        <lucide-icon [name]="icons.Loader2" [size]="16" class="animate-spin"></lucide-icon>
-        Generating...
-        } @else {
-        <lucide-icon [name]="icons.Download" [size]="16"></lucide-icon>
-        Download Report
+      <div class="flex flex-wrap items-center gap-3">
+        @if (insp.report_sent_at) {
+        <span class="text-xs font-bold text-standard-muted bg-standard/5 px-2 py-1 rounded-md border border-standard">
+          Sent: {{ insp.report_sent_at | date:'MMM d, h:mm a' }}
+        </span>
         }
-      </app-button>
+
+        <app-button variant="solid" size="sm" (click)="toggleSharePanel()">
+          <lucide-icon [name]="icons.Send" [size]="16"></lucide-icon>
+          Send to Client
+        </app-button>
+
+        <a [href]="'/report/' + insp.id" target="_blank" style="text-decoration: none;">
+          <app-button variant="outline" size="sm">
+            <lucide-icon [name]="icons.ExternalLink" [size]="16"></lucide-icon>
+            View Live Report
+          </app-button>
+        </a>
+
+        <div class="relative inline-block text-left">
+          <app-button variant="outline" size="sm" (click)="toggleActionsMenu($event)">
+            Actions
+            <lucide-icon [name]="icons.ChevronDown" [size]="16" class="ml-1"></lucide-icon>
+          </app-button>
+
+          @if (isActionsMenuOpen()) {
+          <div class="actions-dropdown-menu animate-fade-in">
+            <button class="dropdown-menu-item" (click)="downloadPublishedReport(); isActionsMenuOpen.set(false)">
+              <lucide-icon [name]="icons.Download" [size]="16"></lucide-icon>
+              Download PDF
+            </button>
+
+            <button class="dropdown-menu-item" (click)="copyReportLink(); isActionsMenuOpen.set(false)">
+              @if (copyLinkSuccess()) {
+              <lucide-icon [name]="icons.Check" [size]="16" class="text-success"></lucide-icon>
+              Copied Link!
+              } @else {
+              <lucide-icon [name]="icons.FileText" [size]="16"></lucide-icon>
+              Copy Share Link
+              }
+            </button>
+
+            <div class="dropdown-menu-divider"></div>
+
+            <button class="dropdown-menu-item danger" (click)="unpublishInspection(); isActionsMenuOpen.set(false)">
+              <lucide-icon [name]="icons.LockOpen" [size]="16"></lucide-icon>
+              Unlock & Edit
+            </button>
+          </div>
+          }
+        </div>
+      </div>
     </div>
+    @if (isSharePanelOpen()) {
+    <div class="share-panel bg-light-standard border-b border-standard px-6 py-4 flex flex-col gap-3 animate-fade-in">
+      <h3 class="text-sm font-bold text-standard mb-1">Send Report to Client</h3>
+      <div class="flex items-center gap-3 flex-wrap">
+        <input type="email" [value]="overrideEmail()" (input)="onEmailChange($event)"
+          class="flex-1 min-w-[200px] max-w-sm px-3 py-2 text-sm border border-standard rounded-lg bg-surface-standard text-standard outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+          placeholder="client@example.com">
+        <div class="flex items-center gap-2">
+          <app-button variant="outline" size="sm" (click)="toggleSharePanel()">Cancel</app-button>
+          <app-button variant="solid" size="sm" (click)="sendReportToClient()" [isLoading]="isSendingReport()">
+            Send Email
+          </app-button>
+        </div>
+      </div>
+      @if (shareSuccess()) {
+      <div class="flex items-center gap-2 text-success text-sm font-bold animate-fade-in mt-1">
+        <lucide-icon [name]="icons.Check" [size]="16"></lucide-icon>
+        Report sent successfully!
+      </div>
+      }
+    </div>
+    }
     }
     <div class="summary-container flex flex-col gap-8">
       <!-- Cover Photo Section -->
@@ -224,8 +331,10 @@
           }
 
           @if (isUploadingCover()) {
-          <div class="absolute inset-0 bg-white/60 backdrop-blur-sm flex flex-col items-center justify-center z-10">
-            <lucide-icon [name]="icons.Loader2" [size]="40" class="animate-spin text-primary mb-2"></lucide-icon>
+          <div class="absolute inset-0 bg-white/60 backdrop-blur-sm flex flex-col items-center justify-center gap-2 z-10">
+            <div class="flex items-center justify-center">
+              <lucide-icon [name]="icons.Loader2" [size]="40" class="animate-spin text-primary block"></lucide-icon>
+            </div>
             <span class="font-bold text-primary">Uploading...</span>
           </div>
           }
@@ -302,93 +411,93 @@
       </div>
 
       @if (isCancelled()) {
-        <div class="cancelled-info-card bg-safety/5 border border-safety/10 rounded-[2rem] p-10 flex flex-col items-center text-center gap-6">
-          <div class="w-20 h-20 rounded-full bg-safety/10 flex items-center justify-center text-safety">
-            <lucide-icon [name]="icons.AlertCircle" [size]="40"></lucide-icon>
-          </div>
-          <div class="flex flex-col gap-3">
-            <h2 class="text-2xl font-bold text-standard">Inspection Cancelled</h2>
-            <p class="text-standard-muted max-w-md mx-auto">
-              This record has been marked as <strong>cancelled</strong>. No further findings can be added and the report cannot be published.
-            </p>
-          </div>
-          <app-button variant="outline" size="md" (click)="goBack()">
-            <lucide-icon [name]="icons.ArrowLeft" [size]="16"></lucide-icon>
-            Back to Inspections
-          </app-button>
+      <div
+        class="cancelled-info-card bg-safety/5 border border-safety/10 rounded-[2rem] p-10 flex flex-col items-center text-center gap-6">
+        <div class="w-20 h-20 rounded-full bg-safety/10 flex items-center justify-center text-safety">
+          <lucide-icon [name]="icons.AlertCircle" [size]="40"></lucide-icon>
         </div>
-      } @else if (isScheduled()) {
-        <div class="ready-to-begin-card">
-          <div class="card-icon">
-            <lucide-icon [name]="icons.LockOpen" [size]="40"></lucide-icon>
-          </div>
-          <div class="card-content">
-            <h2 class="title">Ready to begin?</h2>
-            <p class="description">
-              You are about to start the inspection for <strong>{{ insp.address }}</strong>.
-              This will lock in the <strong>{{ insp.template?.name || 'Default Template' }}</strong> blueprint.
-            </p>
-          </div>
-          <div class="card-actions">
-            <app-button variant="outline" size="lg" (click)="editInspection()">
-              <lucide-icon [name]="icons.Edit" [size]="18"></lucide-icon>
-              Edit Details
-            </app-button>
-            <app-button variant="solid" size="lg" (click)="onStartInspection()" [isLoading]="isLoading()">
-              <lucide-icon [name]="icons.Plus" [size]="18"></lucide-icon>
-              Start Inspection
-            </app-button>
-          </div>
-        </div>
-      } @else {
-        <div
-          class="summary-header flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-standard">
-          <div class="flex flex-col gap-1">
-            <h2 class="text-2xl font-bold text-standard">Executive Summary</h2>
-            <p class="text-sm text-standard-muted">Overview of all recorded findings grouped by severity</p>
-          </div>
-          <app-button variant="outline" size="sm" (click)="routeToWorkbench()">
-            <lucide-icon [name]="icons.Edit" [size]="16"></lucide-icon>
-            Manage Findings
-          </app-button>
-        </div>
-
-        @for (group of groupedFindings(); track group.severity) {
-        <div class="severity-group flex flex-col gap-6">
-          <div class="group-header flex items-center justify-between px-5 py-3 border" [class]="group.colorClass">
-            <div class="flex items-center gap-3">
-              <span class="group-label text-sm font-bold uppercase tracking-wider">{{ group.label }}</span>
-            </div>
-            <span class="item-count-badge text-[10px] font-bold px-2 py-0.5 rounded-full">
-              {{ group.items.length }} <span class="hidden sm:inline">{{ group.items.length === 1 ? 'item' : 'items'
-                }}</span>
-            </span>
-          </div>
-
-          <div class="findings-grid flex flex-col gap-4">
-            @for (finding of group.items; track finding.id) {
-            <app-finding-card [finding]="finding" [readOnly]="true" (edit)="editFinding(finding)"></app-finding-card>
-            }
-          </div>
-        </div>
-        }
-
-        @if (groupedFindings().length === 0) {
-        <div
-          class="empty-state-summary flex flex-col items-center justify-center py-20 px-6 bg-surface-standard rounded-[2rem] border border-dashed border-standard">
-          <div class="w-16 h-16 rounded-full bg-light-standard flex items-center justify-center mb-4">
-            <lucide-icon [name]="icons.FileText" [size]="32" class="text-standard-muted"></lucide-icon>
-          </div>
-          <h3 class="text-lg font-bold text-standard mb-2">No findings recorded yet</h3>
-          <p class="text-standard-muted text-center max-w-sm mb-8">
-            This inspection doesn't have any findings yet. Start recording observations to generate the summary.
+        <div class="flex flex-col gap-3">
+          <h2 class="text-2xl font-bold text-standard">Inspection Cancelled</h2>
+          <p class="text-standard-muted max-w-md mx-auto">
+            This record has been marked as <strong>cancelled</strong>. No further findings can be added and the report
+            cannot be published.
           </p>
-          <app-button (click)="routeToWorkbench()">
+        </div>
+        <app-button variant="outline" size="md" (click)="goBack()">
+          Back to Inspections
+        </app-button>
+      </div>
+      } @else if (isScheduled()) {
+      <div class="ready-to-begin-card">
+        <div class="card-icon">
+          <lucide-icon [name]="icons.LockOpen" [size]="40"></lucide-icon>
+        </div>
+        <div class="card-content">
+          <h2 class="title">Ready to begin?</h2>
+          <p class="description">
+            You are about to start the inspection for <strong>{{ insp.address }}</strong>.
+            This will lock in the <strong>{{ insp.template?.name || 'Default Template' }}</strong> blueprint.
+          </p>
+        </div>
+        <div class="card-actions">
+          <app-button variant="outline" size="lg" (click)="editInspection()">
+            <lucide-icon [name]="icons.Edit" [size]="18"></lucide-icon>
+            Edit Details
+          </app-button>
+          <app-button variant="solid" size="lg" (click)="onStartInspection()" [isLoading]="isLoading()">
             <lucide-icon [name]="icons.Plus" [size]="18"></lucide-icon>
             Start Inspection
           </app-button>
         </div>
-        }
+      </div>
+      } @else {
+      <div
+        class="summary-header flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-standard">
+        <div class="flex flex-col gap-1">
+          <h2 class="text-2xl font-bold text-standard">Executive Summary</h2>
+          <p class="text-sm text-standard-muted">Overview of all recorded findings grouped by severity</p>
+        </div>
+        <app-button variant="outline" size="sm" (click)="routeToWorkbench()">
+          <lucide-icon [name]="icons.Edit" [size]="16"></lucide-icon>
+          Manage Findings
+        </app-button>
+      </div>
+
+      @for (group of groupedFindings(); track group.severity) {
+      <div class="severity-group flex flex-col gap-6">
+        <div class="group-header flex items-center justify-between px-5 py-3 border" [class]="group.colorClass">
+          <div class="flex items-center gap-3">
+            <span class="group-label text-sm font-bold uppercase tracking-wider">{{ group.label }}</span>
+          </div>
+          <span class="item-count-badge text-[10px] font-bold px-2 py-0.5 rounded-full">
+            {{ group.items.length }} <span class="hidden sm:inline">{{ group.items.length === 1 ? 'item' : 'items'
+              }}</span>
+          </span>
+        </div>
+
+        <div class="findings-grid flex flex-col gap-4">
+          @for (finding of group.items; track finding.id) {
+          <app-finding-card [finding]="finding" [readOnly]="true" (edit)="editFinding(finding)"></app-finding-card>
+          }
+        </div>
+      </div>
+      }
+
+      @if (groupedFindings().length === 0) {
+      <div
+        class="empty-state-summary flex flex-col items-center justify-center py-20 px-6 bg-surface-standard rounded-[2rem] border border-dashed border-standard">
+        <div class="w-16 h-16 rounded-full bg-light-standard flex items-center justify-center mb-4">
+          <lucide-icon [name]="icons.FileText" [size]="32" class="text-standard-muted"></lucide-icon>
+        </div>
+        <h3 class="text-lg font-bold text-standard mb-2">No findings recorded yet</h3>
+        <p class="text-standard-muted text-center max-w-sm mb-8">
+          This inspection doesn't have any findings yet. Start recording observations to generate the summary.
+        </p>
+        <app-button (click)="routeToWorkbench()">
+          Go to Workbench
+        </app-button>
+      </div>
+      }
       }
     </div>
   </div>
@@ -397,8 +506,11 @@
 
 @if (isReportGeneratorActive()) {
 <div style="height: 0; width: 0; overflow: hidden; position: absolute; visibility: hidden;">
-  <app-report-generator [inspection]="inspection()" (completed)="onReportCompleted($event)"
-    (error)="onReportError($event)">
+  <app-report-generator #reportGenerator [inspection]="inspection()" [mode]="reportGeneratorMode()"
+    (completed)="onReportCompleted($event)" (htmlReady)="onReportHtmlReady($event)" (error)="onReportError($event)"
+    (progress)="onGeneratorProgress($event)">
   </app-report-generator>
 </div>
 }
+
+<app-report-preview [inspection]="inspection()"></app-report-preview>

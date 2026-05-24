@@ -4,7 +4,6 @@ import { AiService } from './ai.service';
 import { GenerateCommentRequestDto } from './dto/generate-comment.dto';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { InspectorsService } from '../inspectors/inspectors.service';
-import { SubscriptionStatus } from '../common/enums/subscription-status.enum';
 
 @Controller('ai')
 export class AiController {
@@ -23,11 +22,7 @@ export class AiController {
     const inspectorId = req.user.sub;
     const inspector = await this.inspectorsService.findOne(inspectorId);
 
-    if (inspector.subscription_status !== SubscriptionStatus.ACTIVE) {
-      throw new ForbiddenException(
-        'AI Finding generation is only available for users with an Active subscription. Please upgrade your plan.'
-      );
-    }
+
 
     const result = await this.aiService.generateComment(
       generateCommentDto.section,

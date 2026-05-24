@@ -20,6 +20,7 @@ export interface TemplateField {
   key: string;
   label: string;
   type: string;
+  options?: string[];
 }
 
 export interface TemplateSection {
@@ -27,6 +28,7 @@ export interface TemplateSection {
   icon_key: string;
   fields: TemplateField[];
   presets: TemplatePreset[];
+  location_presets?: string[];
 }
 
 export interface TemplateStructure {

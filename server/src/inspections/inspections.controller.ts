@@ -10,6 +10,7 @@ import {
   Query,
   UseInterceptors,
   UploadedFile,
+  BadRequestException,
 } from '@nestjs/common';
 import { InspectionsService } from './inspections.service';
 import { CreateInspectionDto } from './dto/create-inspection.dto';
@@ -17,6 +18,7 @@ import { UpdateInspectionDto } from './dto/update-inspection.dto';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { GetUser } from '../auth/decorators/get-user.decorator';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { SendReportDto } from './dto/send-report.dto';
 
 @UseGuards(AuthGuard)
 @Controller('inspections')
@@ -28,18 +30,26 @@ export class InspectionsController {
     @GetUser('sub') inspectorId: string,
     @Body() createInspectionDto: CreateInspectionDto,
   ) {
+    console.log('--- POST /inspections PAYLOAD ---', createInspectionDto);
     return this.inspectionsService.create(inspectorId, createInspectionDto);
   }
 
   @Post(':id/cover-photo')
-  @UseInterceptors(FileInterceptor('cover_photo'))
+  @UseInterceptors(FileInterceptor('cover_photo', {
+    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+    fileFilter: (req, file, cb) => {
+      if (!file.mimetype.match(/^image\/(jpeg|png|webp)$/)) {
+        return cb(new BadRequestException('Only JPEG, PNG and WebP images are allowed'), false);
+      }
+      cb(null, true);
+    },
+  }))
   uploadCoverPhoto(
     @GetUser('sub') inspectorId: string,
     @Param('id') id: string,
     @UploadedFile() file: Express.Multer.File,
   ) {
-    const coverPhotoUrl = `/uploads/${file.filename}`;
-    return this.inspectionsService.uploadCoverPhoto(inspectorId, id, coverPhotoUrl);
+    return this.inspectionsService.uploadCoverPhoto(inspectorId, id, file);
   }
 
   @Get()
@@ -80,8 +90,12 @@ export class InspectionsController {
   }
 
   @Post(':id/publish')
-  publish(@GetUser('sub') inspectorId: string, @Param('id') id: string) {
-    return this.inspectionsService.publish(inspectorId, id);
+  publish(
+    @GetUser('sub') inspectorId: string,
+    @Param('id') id: string,
+    @Body() body?: { html?: string },
+  ) {
+    return this.inspectionsService.publish(inspectorId, id, body?.html);
   }
 
   @Post(':id/unpublish')
@@ -102,5 +116,14 @@ export class InspectionsController {
   @Delete(':id')
   remove(@GetUser('sub') inspectorId: string, @Param('id') id: string) {
     return this.inspectionsService.remove(inspectorId, id);
+  }
+
+  @Post(':id/send-report')
+  sendReport(
+    @GetUser('sub') inspectorId: string,
+    @Param('id') id: string,
+    @Body() sendReportDto: SendReportDto,
+  ) {
+    return this.inspectionsService.sendReport(inspectorId, id, sendReportDto.email);
   }
 }

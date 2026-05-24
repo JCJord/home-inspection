@@ -1,6 +1,6 @@
 <div class="auth-container">
   <div class="auth-card">
-    <div class="auth-header">
+    <div class="auth-header" *ngIf="!isRegistrationSuccess()">
       <!-- <div class="logo">
         <i class="fas fa-user-plus"></i>
       </div> -->
@@ -8,7 +8,7 @@
       <p>Join us and start managing your inspections</p>
     </div>
 
-    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="auth-form">
+    <form *ngIf="!isRegistrationSuccess()" [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="auth-form">
       <app-text-input name="fullName" label="Full Name" placeholder="Enter your full name"></app-text-input>
 
       <app-text-input name="email" label="Email Address" placeholder="Enter your email" type="email"></app-text-input>
@@ -18,13 +18,43 @@
       <app-password-input name="confirmPassword" label="Confirm Password"
         placeholder="Repeat your password"></app-password-input>
 
+      <app-text-input name="inviteCode" label="Invite Code" placeholder="Enter your beta invite code"></app-text-input>
+
       <app-button type="submit" variant="solid" [full]="true" [isLoading]="isLoading()" [disabled]="registerForm.invalid">
         Sign Up
       </app-button>
     </form>
 
-    <div class="auth-footer">
+    <div class="auth-footer" *ngIf="!isRegistrationSuccess()">
       <p>Already have an account? <a routerLink="/auth/login">Log in here</a></p>
+    </div>
+
+    <div *ngIf="isRegistrationSuccess()" class="flex flex-col items-center justify-center py-6 text-center">
+      <div class="flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 text-blue-600 mb-6">
+        <lucide-icon [img]="MailCheckIcon" size="32"></lucide-icon>
+      </div>
+      
+      <h1 class="text-2xl font-bold text-gray-900 mb-2">Check your email</h1>
+      <p class="text-gray-600 mb-8 max-w-sm">
+        We've sent a verification link to <span class="font-semibold text-gray-900">{{ registeredEmail() }}</span>.
+        Please click the link to verify your account.
+      </p>
+
+      <div class="w-full space-y-4">
+        <app-button 
+          variant="outline" 
+          [full]="true" 
+          [disabled]="resendCooldown() > 0 || isResending()"
+          [isLoading]="isResending()"
+          (click)="resendEmail()">
+          <span *ngIf="resendCooldown() > 0">Resend in {{ formattedCooldown }}</span>
+          <span *ngIf="resendCooldown() === 0">Resend Email</span>
+        </app-button>
+
+        <p class="text-sm text-gray-500">
+          Wrong email? <a routerLink="/auth/register" (click)="isRegistrationSuccess.set(false)" class="text-blue-600 hover:text-blue-700 font-medium">Try again</a>
+        </p>
+      </div>
     </div>
   </div>
 </div>

@@ -1,0 +1,89 @@
+@use '/variables' as *;
+@use '../input-base' as base;
+
+.input-container {
+  @include base.input-container;
+  position: relative;
+}
+
+.input-label {
+  @include base.label-style;
+}
+
+.input-wrapper {
+  @include base.field-style;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  gap: 8px;
+  cursor: text;
+
+  &:focus-within {
+    border-color: $color-primary;
+    box-shadow: 0 0 0 4px $color-primary-glow;
+  }
+}
+
+.input-field {
+  background: transparent;
+  border: none;
+  padding: 12px 0;
+  flex: 1;
+  min-width: 0;
+  outline: none;
+  color: inherit;
+  font-size: inherit;
+
+  &::placeholder {
+    color: rgba($color-text-muted, 0.5);
+  }
+}
+
+.input-suffix {
+  color: $color-text-muted;
+  user-select: none;
+}
+
+.dropdown-list {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  margin-top: 0.25rem;
+  max-height: 200px;
+  overflow-y: auto;
+  background-color: $color-surface;
+  border: 1px solid $color-border;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  list-style: none;
+  padding: 0;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.25);
+    border-radius: 4px;
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.4);
+    }
+  }
+
+  li {
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    color: $color-text;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+
+    &:hover {
+      background-color: rgba($color-primary, 0.1);
+      color: $color-primary;
+    }
+  }
+}

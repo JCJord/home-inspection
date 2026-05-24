@@ -64,6 +64,124 @@ export class MailService {
     }
   }
 
+  async sendPasswordResetEmail(email: string, resetLink: string) {
+    this.logger.log(`Processing password reset email for ${email}`);
+    
+    try {
+      const templatePath = path.join(process.cwd(), 'dist', 'mail', 'templates', 'password-reset.hbs');
+      const finalPath = fs.existsSync(templatePath) 
+        ? templatePath 
+        : path.join(process.cwd(), 'src', 'mail', 'templates', 'password-reset.hbs');
+
+      if (!fs.existsSync(finalPath)) {
+        this.logger.error(`Email template not found at ${finalPath}`);
+        return;
+      }
+
+      const source = fs.readFileSync(finalPath, 'utf8');
+      const template = handlebars.compile(source);
+
+      const html = template({
+        reset_link: resetLink,
+        year: new Date().getFullYear(),
+      });
+
+      const { data, error } = await this.resend.emails.send({
+        from: 'Home Inspection <onboarding@resend.dev>',
+        to: email,
+        subject: 'Reset Your Password',
+        html: html,
+      });
+
+      if (error) {
+        this.logger.error(`Resend error sending to ${email}: ${JSON.stringify(error)}`);
+      } else {
+        this.logger.log(`Password reset email successfully queued for ${email}. ID: ${data?.id}`);
+      }
+    } catch (error: any) {
+      this.logger.error(`Failed to process password reset email for ${email}`, error.stack);
+    }
+  }
+
+  async sendReportEmail(targetEmail: string, pdfUrl: string, address: string) {
+    this.logger.log(`Processing report ready email for ${targetEmail}`);
+    
+    try {
+      const templatePath = path.join(process.cwd(), 'dist', 'mail', 'templates', 'report-ready.hbs');
+      const finalPath = fs.existsSync(templatePath) 
+        ? templatePath 
+        : path.join(process.cwd(), 'src', 'mail', 'templates', 'report-ready.hbs');
+
+      if (!fs.existsSync(finalPath)) {
+        this.logger.error(`Email template not found at ${finalPath}`);
+        return;
+      }
+
+      const source = fs.readFileSync(finalPath, 'utf8');
+      const template = handlebars.compile(source);
+
+      const html = template({
+        address: address,
+        report_link: pdfUrl,
+        year: new Date().getFullYear(),
+      });
+
+      const { data, error } = await this.resend.emails.send({
+        from: 'Home Inspection <onboarding@resend.dev>',
+        to: targetEmail,
+        subject: `Your Inspection Report for ${address} is Ready`,
+        html: html,
+      });
+
+      if (error) {
+        this.logger.error(`Resend error sending to ${targetEmail}: ${JSON.stringify(error)}`);
+      } else {
+        this.logger.log(`Report email successfully queued for ${targetEmail}. ID: ${data?.id}`);
+      }
+    } catch (error: any) {
+      this.logger.error(`Failed to process report email for ${targetEmail}`, error.stack);
+    }
+  }
+
+  async sendEmailVerification(email: string, verifyLink: string, name: string) {
+    this.logger.log(`Processing email verification for ${email}`);
+    
+    try {
+      const templatePath = path.join(process.cwd(), 'dist', 'mail', 'templates', 'email-verification.hbs');
+      const finalPath = fs.existsSync(templatePath) 
+        ? templatePath 
+        : path.join(process.cwd(), 'src', 'mail', 'templates', 'email-verification.hbs');
+
+      if (!fs.existsSync(finalPath)) {
+        this.logger.error(`Email template not found at ${finalPath}`);
+        return;
+      }
+
+      const source = fs.readFileSync(finalPath, 'utf8');
+      const template = handlebars.compile(source);
+
+      const html = template({
+        verify_link: verifyLink,
+        name: name || 'there',
+      });
+
+      const { data, error } = await this.resend.emails.send({
+        from: 'Home Inspection <onboarding@resend.dev>',
+        to: email,
+        subject: 'Verify your email address',
+        html: html,
+      });
+
+      if (error) {
+        this.logger.error(`Resend error sending to ${email}: ${JSON.stringify(error)}`);
+      } else {
+        this.logger.log(`Verification email successfully queued for ${email}. ID: ${data?.id}`);
+      }
+    } catch (error: any) {
+      this.logger.error(`Failed to process verification email for ${email}`, error.stack);
+    }
+  }
+
   private formatDate(date: Date | string): string {
     const d = new Date(date);
     return d.toLocaleDateString('en-US', {

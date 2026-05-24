@@ -100,11 +100,7 @@
         <div class="identity-info">
           <h2>{{ profile()?.name }}</h2>
           <p class="email">{{ profile()?.email }}</p>
-          <div class="badge-row">
-            <span class="subscription-badge" [attr.data-tier]="profile()?.subscription_status">
-              {{ profile()?.subscription_status | titlecase }} Plan
-            </span>
-          </div>
+
         </div>
       </div>
     </div>
@@ -235,64 +231,6 @@
       </div>
     </div>
 
-    <!-- Subscription & Usage Card (Lower prominence) -->
-    <div class="card usage-card" [class.is-pro]="profile()?.subscription_status === 'active'">
-      <div class="card-header">
-        <lucide-icon [img]="profile()?.subscription_status === 'active' ? icons.Zap : icons.BadgeCheck" [size]="20"></lucide-icon>
-        <h3>{{ profile()?.subscription_status === 'active' ? 'Subscription & Plan' : 'Usage & Quota' }}</h3>
-      </div>
-      
-      <div class="usage-content">
-        @if (profile()?.subscription_status === 'active') {
-          <div class="pro-status-layout">
-            <div class="pro-badge-container">
-              <div class="pro-badge">
-                <lucide-icon [img]="icons.Zap" [size]="16"></lucide-icon>
-                <span>Professional</span>
-              </div>
-              <div class="status-indicator">
-                <div class="dot"></div>
-                Active
-              </div>
-            </div>
-
-            <div class="benefits-grid">
-              <div class="benefit-item">
-                <lucide-icon [img]="icons.Check" [size]="16" class="text-success"></lucide-icon>
-                <span><strong>Unlimited</strong> Inspections</span>
-              </div>
-              <div class="benefit-item">
-                <lucide-icon [img]="icons.Check" [size]="16" class="text-success"></lucide-icon>
-                <span>Premium Report PDF Branding</span>
-              </div>
-            </div>
-
-            <div class="usage-stats-lite mt-4 pt-4 border-t border-standard border-opacity-10">
-              <div class="flex items-center gap-2 text-sm text-standard-muted">
-                <lucide-icon [img]="icons.TrendingUp" [size]="16"></lucide-icon>
-                <span>Total inspections completed: <strong>{{ profile()?.free_inspections_used || 0 }}</strong></span>
-              </div>
-            </div>
-          </div>
-        } @else {
-          <div class="usage-stats">
-            <div class="usage-main">
-              <span class="count">{{ profile()?.free_inspections_used || 0 }}</span>
-              <span class="total">/ 10</span>
-            </div>
-            <p class="usage-label">Free Inspections Used</p>
-          </div>
-          <div class="usage-progress">
-            <div class="progress-bar">
-              <div class="progress" [style.width.%]="(profile()?.free_inspections_used || 0) * 10"></div>
-            </div>
-            <p class="upgrade-hint mt-3 text-xs text-standard-muted">
-              Upgrade to Pro for unlimited inspections and premium branding.
-            </p>
-          </div>
-        }
-      </div>
-    </div>
 
     <div class="logout-action">
       <app-button (click)="onLogout()" variant="danger">

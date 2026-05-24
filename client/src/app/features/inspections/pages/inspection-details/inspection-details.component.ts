@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, computed, inject, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, computed, inject, ViewChild, ElementRef, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { InspectionsService } from '../../../../core/services/inspections.service';
@@ -7,9 +7,11 @@ import { Finding, Inspection } from '../../../../core/models/inspection.interfac
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { FindingCardComponent } from '../../components/finding-card/finding-card.component';
 import { SkeletonComponent } from '../../../../shared/components/skeleton/skeleton.component';
-import { LucideAngularModule, ArrowLeft, Send, RefreshCw, AlertCircle, Plus, X, Check, Loader2, FileText, Download, LockOpen, Edit, Camera, Image, Cloud, Thermometer, Calendar, Maximize, Home, Users } from 'lucide-angular';
+import { LucideAngularModule, ArrowLeft, Send, RefreshCw, AlertCircle, Plus, X, Check, Loader2, FileText, Download, LockOpen, Edit, Camera, Image, Cloud, Thermometer, Calendar, Maximize, Home, Users, ChevronDown, Trash2, Eye, ExternalLink } from 'lucide-angular';
 import { ReportGeneratorComponent } from '../../../reports/components/report-generator/report-generator.component';
+import { ReportPreviewComponent } from '../../../reports/components/report-preview/report-preview.component';
 import { BackButtonComponent } from '../../../../shared/components/back-button/back-button.component';
+
 import { ImageCompressionService } from '../../../../core/services/image-compression.service';
 import { environment } from '../../../../../environments/environment';
 import { ResolveImagePipe } from '../../../../shared/pipes/resolve-image.pipe';
@@ -24,19 +26,24 @@ import { ResolveImagePipe } from '../../../../shared/pipes/resolve-image.pipe';
     LucideAngularModule,
     SkeletonComponent,
     ReportGeneratorComponent,
+    ReportPreviewComponent,
     BackButtonComponent,
+
     ResolveImagePipe
   ],
   templateUrl: './inspection-details.component.html',
   styleUrl: './inspection-details.component.scss',
 })
-export class InspectionDetailsComponent implements OnInit {
-  @ViewChild(ReportGeneratorComponent) reportGenerator!: ReportGeneratorComponent;
+export class InspectionDetailsComponent implements OnInit, OnDestroy {
+  @ViewChild(ReportGeneratorComponent) reportGenerator?: ReportGeneratorComponent;
+  @ViewChild(ReportPreviewComponent) reportPreview?: ReportPreviewComponent;
+
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private inspectionsService = inject(InspectionsService);
   private reportsService = inject(ReportsService);
   private compressionService = inject(ImageCompressionService);
+  private elementRef = inject(ElementRef);
 
   inspection = signal<Inspection | null>(null);
   isLoading = signal<boolean>(true);
@@ -47,17 +54,45 @@ export class InspectionDetailsComponent implements OnInit {
   selectedSection = signal<string>('');
   isDeletingFinding = signal<boolean>(false);
   deletingId = signal<string | null>(null);
-  publishState = signal<'idle' | 'confirm' | 'loading' | 'success'>('idle');
+  publishState = signal<'idle' | 'confirm' | 'compiling' | 'uploading' | 'success' | 'error'>('idle');
   isGeneratingPdf = signal<boolean>(false);
   isReportGeneratorActive = signal<boolean>(false);
+  reportGeneratorMode = signal<'download' | 'publish'>('download');
+  isCopying = signal<boolean>(false);
+  copyLinkSuccess = signal<boolean>(false);
+  isActionsMenuOpen = signal<boolean>(false);
+  
+  isSharePanelOpen = signal<boolean>(false);
+  isSendingReport = signal<boolean>(false);
+  shareSuccess = signal<boolean>(false);
+  overrideEmail = signal<string>('');
+  
+  combinedProgress = signal<number>(0);
+  combinedMessage = signal<string>('Initializing document engine...');
+  private uploadIntervalId: any = null;
 
-  readonly icons = { ArrowLeft, Send, RefreshCw, AlertCircle, Plus, X, Check, Loader2, FileText, Download, LockOpen, Edit, Camera, Image, Cloud, Thermometer, Calendar, Maximize, Home, Users };
+  readonly icons = { ArrowLeft, Send, RefreshCw, AlertCircle, Plus, X, Check, Loader2, FileText, Download, LockOpen, Edit, Camera, Image, Cloud, Thermometer, Calendar, Maximize, Home, Users, ChevronDown, Trash2, Eye, ExternalLink };
+
   readonly apiUrl = environment.apiUrl.replace('/api', '');
 
   isPublished = computed(() => this.inspection()?.status === 'published');
   isScheduled = computed(() => this.inspection()?.status === 'scheduled');
   isCancelled = computed(() => this.inspection()?.status === 'cancelled');
   hasFindings = computed(() => (this.inspection()?.findings?.length ?? 0) > 0);
+
+  toggleActionsMenu(event: Event): void {
+    event.stopPropagation();
+    this.isActionsMenuOpen.update(open => !open);
+  }
+
+  @HostListener('document:click', ['$event.target'])
+  onClickOutside(targetElement: EventTarget | null) {
+    if (!targetElement) return;
+    const clickedInside = this.elementRef.nativeElement.contains(targetElement as Node);
+    if (!clickedInside) {
+      this.isActionsMenuOpen.set(false);
+    }
+  }
 
   groupedFindings = computed(() => {
     const findings = this.inspection()?.findings || [];
@@ -79,6 +114,12 @@ export class InspectionDetailsComponent implements OnInit {
         label: 'Maintenance & Minor Items',
         severity: 'minor',
         colorClass: 'group-minor',
+        items: [] as Finding[]
+      },
+      {
+        label: 'Informational Items',
+        severity: 'informational',
+        colorClass: 'group-informational',
         items: [] as Finding[]
       }
     ];
@@ -113,11 +154,16 @@ export class InspectionDetailsComponent implements OnInit {
     }
   }
 
+  ngOnDestroy(): void {
+    this.clearUploadInterval();
+  }
+
   loadInspection(id: string): void {
     this.isLoading.set(true);
     this.errorMessage.set(null);
     this.inspectionsService.getInspectionById(id).subscribe({
       next: (data) => {
+        console.log('=== LOADED INSPECTION FROM SWR/DB ===', data);
         this.inspection.set(data);
         this.isLoading.set(false);
         if (data.template_snapshot?.sections?.length && !this.selectedSection()) {
@@ -148,22 +194,94 @@ export class InspectionDetailsComponent implements OnInit {
     const inspection = this.inspection();
     if (!inspection) return;
 
-    this.publishState.set('loading');
-    this.inspectionsService.publishInspection(inspection.id).subscribe({
+    this.publishState.set('compiling');
+    this.reportGeneratorMode.set('publish');
+    this.combinedProgress.set(0);
+    this.combinedMessage.set('Initializing document engine...');
+    this.clearUploadInterval();
+    this.isReportGeneratorActive.set(true);
+  }
+
+  onGeneratorProgress(event: { progress: number, message: string }): void {
+    if (this.publishState() === 'compiling') {
+      const mappedProgress = Math.round((event.progress / 100) * 75);
+      this.combinedProgress.set(mappedProgress);
+      this.combinedMessage.set(event.message);
+    }
+  }
+
+  onReportHtmlReady(html: string): void {
+    const inspection = this.inspection();
+    if (!inspection) return;
+
+    this.publishState.set('uploading');
+    this.clearUploadInterval();
+
+    let currentProgress = 75;
+    this.combinedProgress.set(currentProgress);
+
+    const uploadSteps = [
+      'Transmitting secure draft to server...',
+      'Compiling final print assets...',
+      'Processing images & document flow...',
+      'Generating archival-grade PDF...',
+      'Optimizing file structure...',
+      'Verifying report integrity...',
+      'Saving official record...'
+    ];
+    let stepIndex = 0;
+    this.combinedMessage.set(uploadSteps[stepIndex]);
+
+    this.uploadIntervalId = setInterval(() => {
+      // Easing simulation: slower as we approach 98%
+      if (currentProgress < 85) {
+        currentProgress += 1.5;
+      } else if (currentProgress < 92) {
+        currentProgress += 0.8;
+      } else if (currentProgress < 97) {
+        currentProgress += 0.3;
+      } else if (currentProgress < 98) {
+        currentProgress += 0.1;
+      }
+
+      this.combinedProgress.set(Math.min(parseFloat(currentProgress.toFixed(1)), 98));
+
+      // Randomly cycle status messages to feel premium and alive
+      if (Math.random() < 0.12 && stepIndex < uploadSteps.length - 1) {
+        stepIndex++;
+        this.combinedMessage.set(uploadSteps[stepIndex]);
+      }
+    }, 250);
+
+    this.inspectionsService.publishInspection(inspection.id, html).subscribe({
       next: (updated) => {
+        console.log('=== RETURNED INSPECTION AFTER PUBLISH ===', updated);
+        this.clearUploadInterval();
+        this.combinedProgress.set(100);
+        this.combinedMessage.set('Report successfully published!');
+        
         this.inspection.set(updated);
         this.publishState.set('success');
-        // Reset to idle after a delay if needed, or stay success
+        this.isReportGeneratorActive.set(false);
         setTimeout(() => {
           this.publishState.set('idle');
         }, 3000);
       },
       error: (err) => {
         console.error('Failed to publish inspection', err);
+        this.clearUploadInterval();
         this.errorMessage.set(err.error?.message || 'Failed to publish inspection.');
-        this.publishState.set('idle');
+        this.publishState.set('error');
+        this.isReportGeneratorActive.set(false);
       },
     });
+  }
+
+  private clearUploadInterval(): void {
+    if (this.uploadIntervalId) {
+      clearInterval(this.uploadIntervalId);
+      this.uploadIntervalId = null;
+    }
   }
 
   unpublishInspection(): void {
@@ -224,6 +342,7 @@ export class InspectionDetailsComponent implements OnInit {
 
   generateReport(): void {
     this.isGeneratingPdf.set(true);
+    this.reportGeneratorMode.set('download');
     this.isReportGeneratorActive.set(true);
   }
 
@@ -245,7 +364,91 @@ export class InspectionDetailsComponent implements OnInit {
   onReportError(error: string): void {
     this.isGeneratingPdf.set(false);
     this.isReportGeneratorActive.set(false);
+    this.clearUploadInterval();
     this.errorMessage.set(error);
+    this.publishState.set('error');
+  }
+
+  copyReportLink(): void {
+    const inspection = this.inspection();
+    if (!inspection) return;
+
+    const fullUrl = `${window.location.origin}/report/${inspection.id}`;
+    this.isCopying.set(true);
+    navigator.clipboard.writeText(fullUrl).then(() => {
+      this.copyLinkSuccess.set(true);
+      setTimeout(() => {
+        this.copyLinkSuccess.set(false);
+        this.isCopying.set(false);
+      }, 2000);
+    }).catch(err => {
+      console.error('Failed to copy link', err);
+      this.isCopying.set(false);
+    });
+  }
+
+  downloadPublishedReport(): void {
+    const inspection = this.inspection();
+    if (!inspection) return;
+
+    const fileUrl = `${this.apiUrl}/uploads/reports/${inspection.id}.pdf`;
+    const safeAddress = inspection.address || 'Inspection';
+    const filename = `Report-${safeAddress.replace(/ /g, '_')}.pdf`;
+
+    fetch(fileUrl)
+      .then(res => res.blob())
+      .then(blob => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.click();
+        window.URL.revokeObjectURL(url);
+      })
+      .catch(err => {
+        console.error('Failed to download report', err);
+        window.open(fileUrl, '_blank');
+      });
+  }
+
+  toggleSharePanel(): void {
+    if (!this.isSharePanelOpen()) {
+      this.isSharePanelOpen.set(true);
+      this.overrideEmail.set(this.inspection()?.client_email || '');
+    } else {
+      this.isSharePanelOpen.set(false);
+    }
+  }
+
+  onEmailChange(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.overrideEmail.set(input.value);
+  }
+
+  sendReportToClient(): void {
+    const inspectionId = this.inspection()?.id;
+    const email = this.overrideEmail();
+    if (!inspectionId || !email) return;
+
+    this.isSendingReport.set(true);
+    this.errorMessage.set(null);
+
+    this.inspectionsService.sendReportToClient(inspectionId, email).subscribe({
+      next: (updated) => {
+        this.inspection.set(updated);
+        this.isSendingReport.set(false);
+        this.shareSuccess.set(true);
+        setTimeout(() => {
+          this.shareSuccess.set(false);
+          this.isSharePanelOpen.set(false);
+        }, 3000);
+      },
+      error: (err) => {
+        console.error('Failed to send report', err);
+        this.errorMessage.set(err.error?.message || 'Failed to send report.');
+        this.isSendingReport.set(false);
+      }
+    });
   }
 
   handleDeleteFinding(finding: Finding): void {
@@ -322,7 +525,12 @@ export class InspectionDetailsComponent implements OnInit {
     }
   }
 
+  openReportPreview(): void {
+    this.reportPreview?.openPreview();
+  }
+
   routeToWorkbench(): void {
+
     const insp = this.inspection();
     if (!insp) return;
 

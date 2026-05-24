@@ -5,7 +5,6 @@ import {
   IsOptional,
   IsString,
   MaxLength,
-  MinLength,
   ValidateIf
 } from 'class-validator';
 import { BrandFont } from '../../common/enums/brand-font.enum';
@@ -66,35 +65,30 @@ export class UpdateProfileDto {
   @ValidateIf(o => o.use_standard_definitions === false)
   @IsOptional()
   @IsString()
-  @MinLength(10, { message: 'Custom safety hazard definition is too short.' })
   @MaxLength(1000)
   custom_safety_hazard_def?: string;
 
   @ValidateIf(o => o.use_standard_definitions === false)
   @IsOptional()
   @IsString()
-  @MinLength(10, { message: 'Custom major defect definition is too short.' })
   @MaxLength(1000)
   custom_major_defect_def?: string;
 
   @ValidateIf(o => o.use_standard_definitions === false)
   @IsOptional()
   @IsString()
-  @MinLength(10, { message: 'Custom minor defect definition is too short.' })
   @MaxLength(1000)
   custom_minor_defect_def?: string;
 
   @ValidateIf(o => o.use_standard_definitions === false)
   @IsOptional()
   @IsString()
-  @MinLength(10, { message: 'Custom maintenance item definition is too short.' })
   @MaxLength(1000)
   custom_maintenance_item_def?: string;
 
   @ValidateIf(o => o.use_standard_definitions === false)
   @IsOptional()
   @IsString()
-  @MinLength(10, { message: 'Custom informational item definition is too short.' })
   @MaxLength(1000)
   custom_informational_item_def?: string;
 

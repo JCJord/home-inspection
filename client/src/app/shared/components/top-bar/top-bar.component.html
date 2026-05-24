@@ -6,10 +6,6 @@
   </div>
 
   <div class="user-info">
-    <div class="subscription-badge" [ngClass]="authService.currentUser()?.subscription_status || 'free'">
-      <lucide-icon [img]="icons.ShieldCheck" [size]="14"></lucide-icon>
-      <span>{{ authService.currentUser()?.subscription_status | titlecase }}</span>
-    </div>
     <span class="user-name">{{ authService.currentUser()?.name }}</span>
   </div>
 </header>

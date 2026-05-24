@@ -104,6 +104,8 @@ export class PdfService implements OnModuleDestroy {
       await page.emulateMediaType('screen');
       await page.setContent(html, { waitUntil: 'networkidle0', timeout: 120000 });
 
+
+
       const pdfBuffer = await page.pdf({
         format: 'A4',
         timeout: 120000,

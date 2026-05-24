@@ -70,7 +70,10 @@ export class Inspection {
   foundation_type: string;
 
   @Column({ nullable: true })
-  cover_photo_url: string;
+  cover_photo_key?: string;
+
+  // Dynamically populated, not saved in DB
+  cover_photo_url?: string;
 
   @Column({ name: 'template_id', nullable: true })
   template_id: string;
@@ -87,6 +90,9 @@ export class Inspection {
 
   @Column({ type: 'jsonb', nullable: true })
   section_statuses: Record<string, { status: string; reason?: string }>;
+
+  @Column({ type: 'timestamp', nullable: true })
+  report_sent_at: Date;
 
   @OneToMany(() => Finding, (finding) => finding.inspection, { cascade: true })
   findings: Finding[];

@@ -54,7 +54,7 @@ export class TemplateEditorComponent implements OnInit, OnDestroy {
   @ViewChild('sidebarContent') sidebarContent!: ElementRef;
   @ViewChild('workbench') workbench!: WorkbenchLayoutComponent;
 
-  severityOptions = ['Minor', 'Major', 'Safety', 'Maintenance'];
+  severityOptions = ['Minor', 'Major', 'Safety', 'Maintenance', 'Informational'];
   form!: FormGroup;
   private destroy$ = new Subject<void>();
 
@@ -136,8 +136,9 @@ export class TemplateEditorComponent implements OnInit, OnDestroy {
           (data.structure?.sections || []).map(sec => this.fb.group({
             name: [sec.name, Validators.required],
             icon_key: [sec.icon_key || 'Home'],
+            location_presets_raw: [(sec.location_presets || []).join(', ')],
             fields: this.fb.array(
-              (sec.fields || []).map(f => this.createFieldGroup(f.label, f.key, f.type))
+              (sec.fields || []).map(f => this.createFieldGroup(f.label, f.key, f.type, f.options))
             ),
             presets: this.fb.array(
               (sec.presets || []).map(p => this.fb.group({
@@ -151,6 +152,10 @@ export class TemplateEditorComponent implements OnInit, OnDestroy {
         )
       })
     });
+
+    if (data.inspector_id === null) {
+      this.form.disable();
+    }
 
     this.form.valueChanges.pipe(
       takeUntil(this.destroy$)
@@ -168,11 +173,12 @@ export class TemplateEditorComponent implements OnInit, OnDestroy {
     });
   }
 
-  createFieldGroup(label: string, key: string, type: string = 'text'): FormGroup {
+  createFieldGroup(label: string, key: string, type: string = 'text', options: string[] = []): FormGroup {
     const group = this.fb.group({
       label: [label, Validators.required],
       key: [key, Validators.required],
-      type: [type]
+      type: [type],
+      options_raw: [options.join(', ')]
     });
 
     group.get('label')?.valueChanges.pipe(
@@ -191,9 +197,27 @@ export class TemplateEditorComponent implements OnInit, OnDestroy {
     const currentTemplate = this.template();
     if (!currentTemplate || this.isSystemDefault()) return;
 
-    this.templatesService.updateTemplate(currentTemplate.id, val.structure).subscribe({
+    // Transform options_raw back to options array for select types and parse location_presets
+    const structureToSave = JSON.parse(JSON.stringify(val.structure));
+    structureToSave.sections.forEach((sec: any) => {
+      if (sec.location_presets_raw !== undefined) {
+        sec.location_presets = sec.location_presets_raw ? sec.location_presets_raw.split(',').map((s: string) => s.trim()).filter(Boolean) : [];
+        delete sec.location_presets_raw;
+      }
+      
+      sec.fields.forEach((f: any) => {
+        if (f.type === 'select') {
+          f.options = f.options_raw ? f.options_raw.split(',').map((o: string) => o.trim()).filter((o: string) => o.length > 0) : [];
+        } else {
+          delete f.options;
+        }
+        delete f.options_raw;
+      });
+    });
+
+    this.templatesService.updateTemplate(currentTemplate.id, structureToSave).subscribe({
       next: (updated) => {
-        const nextTemplate = { ...currentTemplate, name: val.name, structure: val.structure };
+        const nextTemplate = { ...currentTemplate, name: val.name, structure: structureToSave };
         this.template.set(nextTemplate);
       },
       error: (err) => console.error('Auto-save failed', err)
@@ -228,6 +252,7 @@ export class TemplateEditorComponent implements OnInit, OnDestroy {
     const newSec = this.fb.group({
       name: ['New Section', Validators.required],
       icon_key: ['Home'],
+      location_presets_raw: [''],
       fields: this.fb.array([
         this.createFieldGroup('Material / Type', 'new_section_material'),
         this.createFieldGroup('Inspection Method', 'new_section_method')
@@ -378,18 +403,7 @@ export class TemplateEditorComponent implements OnInit, OnDestroy {
     const currentTemplate = this.template();
     if (!currentTemplate) return;
 
-    const newName = window.prompt('Enter a name for the cloned template:', `Copy of ${currentTemplate.name}`);
-    if (newName && newName.trim()) {
-      this.templatesService.cloneTemplate(currentTemplate.id, newName.trim()).subscribe({
-        next: (cloned) => {
-          this.router.navigate(['/templates', cloned.id]);
-        },
-        error: (err) => {
-          console.error('Failed to clone blueprint', err);
-          alert('Failed to clone blueprint.');
-        }
-      });
-    }
+    this.router.navigate(['/templates/new'], { queryParams: { cloneOf: currentTemplate.id } });
   }
 
 }

@@ -28,6 +28,10 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 };
 
 function addTokenHeader(request: HttpRequest<any>, token: string | null) {
+  if (request.url.includes('X-Amz-Signature') || request.url.includes('cloudflarestorage.com')) {
+    return request;
+  }
+
   if (token && (request.url.startsWith('http') || request.url.startsWith('/'))) {
     return request.clone({
       setHeaders: {

@@ -189,10 +189,12 @@ export class InspectionsService {
       // 2. Handle Finding Creation
       if (task.type === MutationType.CREATE_FINDING) {
         const payload = task.payload;
-        const exists = merged.findings?.some(f => f.id === (task.clientFindingId || task.id));
+        // Use findingId (set by mapClientFindingIdToServerId), fallback to clientFindingId, then task.id
+        const targetId = task.findingId || task.clientFindingId || task.id;
+        const exists = merged.findings?.some(f => f.id === targetId);
         if (!exists) {
           merged.findings?.push({
-            id: task.clientFindingId || task.id,
+            id: targetId,
             inspection_id: merged.id,
             section: payload.section,
             severity: payload.severity,
@@ -270,6 +272,13 @@ export class InspectionsService {
           finding.photos = finding.photos.filter(p => p.id !== task.payload.photoId);
         }
       }
+
+      // 7. Handle Finding Deletion
+      if (task.type === MutationType.DELETE_FINDING) {
+        if (merged.findings) {
+          merged.findings = merged.findings.filter(f => f.id !== task.findingId);
+        }
+      }
     });
 
     return merged;
@@ -308,8 +317,9 @@ export class InspectionsService {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 
-  publishInspection(id: string): Observable<Inspection> {
-    return this.http.post<Inspection>(`${this.apiUrl}/${id}/publish`, {}).pipe(
+  publishInspection(id: string, html?: string): Observable<Inspection> {
+    const payload = html ? { html } : {};
+    return this.http.post<Inspection>(`${this.apiUrl}/${id}/publish`, payload).pipe(
       tap((updatedIns) => {
         // Update state store and list cache
         this._inspections.update(list => list.map(i => i.id === id ? updatedIns : i));
@@ -320,6 +330,16 @@ export class InspectionsService {
         this.persistenceService.deleteInspection(id).catch(err =>
           console.warn('Failed to clean up cache after publish', err)
         );
+      })
+    );
+  }
+
+  sendReportToClient(id: string, email: string): Observable<Inspection> {
+    return this.http.post<Inspection>(`${this.apiUrl}/${id}/send-report`, { email }).pipe(
+      tap((updatedIns) => {
+        this._inspections.update(list => list.map(i => i.id === id ? updatedIns : i));
+        this.saveToCache(this._inspections(), this._totalCount());
+        this._needsRefresh.set(true);
       })
     );
   }

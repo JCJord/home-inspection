@@ -7,7 +7,6 @@ import {
   OneToMany,
 } from 'typeorm';
 import { Inspection } from '../inspections/inspection.entity';
-import { SubscriptionStatus } from '../common/enums/subscription-status.enum';
 import { SOPType } from '../common/enums/sop.enum';
 
 @Entity('inspectors')
@@ -20,6 +19,21 @@ export class Inspector {
 
   @Column()
   password_hash: string;
+
+  @Column({ type: 'boolean', default: false })
+  is_email_verified: boolean;
+
+  @Column({ nullable: true })
+  email_verification_token: string;
+
+  @Column({ type: 'timestamp', nullable: true })
+  email_verification_expires: Date;
+
+  @Column({ nullable: true })
+  reset_password_token: string;
+
+  @Column({ type: 'timestamp', nullable: true })
+  reset_password_expires: Date;
 
   @Column({ nullable: true })
   name: string;
@@ -34,22 +48,13 @@ export class Inspector {
   license_number: string;
 
   @Column({ nullable: true })
-  logo_url: string;
+  logo_key?: string;
 
   @Column({ type: 'text', nullable: true })
   signature: string;
 
   @Column({ nullable: true })
   certifications: string;
-
-  @Column({
-    type: 'varchar',
-    default: SubscriptionStatus.FREE,
-  })
-  subscription_status: SubscriptionStatus;
-
-  @Column({ default: 0 })
-  free_inspections_used: number;
 
   @Column({ type: 'varchar', default: '#1E40AF' })
   brand_primary_color: string;

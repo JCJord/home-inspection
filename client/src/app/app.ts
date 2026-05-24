@@ -1,5 +1,5 @@
 import { Component, signal, inject } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from './core/services/auth.service';
 import { NavbarDesktop } from './features/dashboard/components/navbar-desktop/navbar-desktop';
@@ -17,5 +17,16 @@ import { SyncHudComponent } from './shared/components/sync-hud/sync-hud.componen
 })
 export class App {
   authService = inject(AuthService);
+  private router = inject(Router);
+  
   protected readonly title = signal('client');
+  isPublicRoute = signal<boolean>(false);
+
+  constructor() {
+    this.router.events.subscribe(event => {
+      if (event instanceof NavigationEnd) {
+        this.isPublicRoute.set(event.urlAfterRedirects.includes('/report/'));
+      }
+    });
+  }
 }

@@ -1,4 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { StorageService } from '../common/storage/storage.service';
+import * as path from 'path';
 import { CreateInspectorDto } from './dto/create-inspector.dto';
 import { UpdateInspectorDto } from './dto/update-inspector.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
@@ -7,7 +9,10 @@ import { InspectorsRepository } from './inspectors.repository';
 
 @Injectable()
 export class InspectorsService {
-  constructor(private readonly inspectorsRepository: InspectorsRepository) { }
+  constructor(
+    private readonly inspectorsRepository: InspectorsRepository,
+    private readonly storageService: StorageService,
+  ) { }
 
   async create(createInspectorDto: CreateInspectorDto): Promise<Inspector> {
     return await this.inspectorsRepository.create(createInspectorDto);
@@ -43,10 +48,16 @@ export class InspectorsService {
     return inspector;
   }
 
-  async getProfile(id: string): Promise<Inspector> {
+  async getProfile(id: string) {
     const inspector = await this.findOne(id);
     const { password_hash, ...result } = inspector;
-    return result as Inspector;
+    
+    let logo_url: string | null = null;
+    if (result.logo_key) {
+      logo_url = await this.storageService.getPresignedUrl(result.logo_key);
+    }
+    
+    return { ...result, logo_url };
   }
 
   async updateProfile(
@@ -58,10 +69,16 @@ export class InspectorsService {
     return result as Inspector;
   }
 
-  async uploadLogo(id: string, logoUrl: string): Promise<Inspector> {
-    const inspector = await this.update(id, { logo_url: logoUrl } as UpdateInspectorDto);
+  async uploadLogo(id: string, file: Express.Multer.File) {
+    const ext = path.extname(file.originalname);
+    const key = `users/${id}/profile/logo${ext}`;
+    const logo_key = await this.storageService.uploadFile(file.buffer, key, file.mimetype);
+    
+    const inspector = await this.update(id, { logo_key } as any);
     const { password_hash, ...result } = inspector;
-    return result as Inspector;
+    
+    const logo_url = await this.storageService.getPresignedUrl(logo_key || '');
+    return { ...result, logo_url };
   }
 
   async remove(id: string): Promise<void> {

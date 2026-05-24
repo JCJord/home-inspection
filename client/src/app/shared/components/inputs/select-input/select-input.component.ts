@@ -1,4 +1,4 @@
-import { Component, inject, input, computed } from '@angular/core';
+import { Component, inject, input, computed, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ControlContainer, FormGroupDirective, ReactiveFormsModule } from '@angular/forms';
 
@@ -21,14 +21,13 @@ export interface SelectOption {
   ],
 })
 export class SelectInputComponent {
-  private formGroupDirective = inject(FormGroupDirective);
+  private formGroupDirective = inject(FormGroupDirective, { optional: true });
 
   /**
    * The name of the form control to bind to.
    * Must exist in the parent FormGroup.
-   * @required
    */
-  name = input.required<string>();
+  name = input<string>('');
 
   /**
    * Optional label displayed above the select.
@@ -57,10 +56,30 @@ export class SelectInputComponent {
   });
 
   /**
+   * Manual value binding (used if no form control is provided)
+   */
+  value = input<string | number>('');
+
+  /**
+   * Whether the input is disabled
+   */
+  disabled = input<boolean>(false);
+
+  /**
+   * Emits when the input value changes (manual binding)
+   */
+  valueChanged = output<string>();
+
+  onSelectChange(event: Event) {
+    const target = event.target as HTMLSelectElement;
+    this.valueChanged.emit(target.value);
+  }
+
+  /**
    * Accesses the injected form control.
    */
   get control() {
-    return this.formGroupDirective.form.get(this.name());
+    return this.formGroupDirective?.form.get(this.name());
   }
 
   /**

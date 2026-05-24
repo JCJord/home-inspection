@@ -22,6 +22,7 @@ export interface TemplateField {
   key: string;
   label: string;
   type: string;
+  options?: string[];
 }
 
 export interface TemplateSection {
@@ -29,6 +30,7 @@ export interface TemplateSection {
   icon_key: string;
   fields: TemplateField[];
   presets: TemplatePreset[];
+  location_presets?: string[];
 }
 
 export interface TemplateStructure {
@@ -78,6 +80,16 @@ export interface Inspection {
   metadata_values?: Record<string, string>;
   section_statuses?: Record<string, SectionStatus>;
   inspector?: Inspector;
+  report?: Report;
+  report_sent_at?: string;
   created_at: string;
   updated_at: string;
+}
+
+export interface Report {
+  id: string;
+  inspection_id: string;
+  pdf_url: string;
+  status: string;
+  published_at: string;
 }

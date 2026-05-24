@@ -4,22 +4,26 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { combineLatest } from 'rxjs';
 import { InspectionsService } from '../../../../core/services/inspections.service';
 import { Inspection, Finding, SectionStatus } from '../../../../core/models/inspection.interface';
+import { Severity } from '../../../../core/enums/inspection.enums';
 import { WorkbenchLayoutComponent } from '../../../../shared/components/workbench-layout/workbench-layout.component';
 import { FindingFormComponent } from '../../components/finding-form/finding-form.component';
-import { FindingSwitcherComponent } from '../../components/finding-switcher/finding-switcher.component';
-import { LucideAngularModule, Home, ChevronUp, ChevronDown, Hammer, Zap, Droplets, Wind, Flame, Box, Grid, Monitor, Car, Shield, Search, Info, AlertTriangle, Copy, Edit2, Trash2, Plus, Save, Lock, Unlock, ArrowLeft, Wrench, Thermometer, Lightbulb, Paintbrush, Sun, Key, Eye, Power, FileCheck, HardHat, Construction, Ruler, ShieldCheck, ShieldAlert, BrickWall, Trees, Fan, Sparkles, Wifi, WifiOff, Trash, Settings, Check, X, Users, FileText, Image, Cloud, CloudRain, CloudLightning, Snowflake, Umbrella, Compass, MapPin, Clock, Calendar, Activity, Scissors, Heart, AlertCircle, HelpCircle, Ban, LockOpen, Send, Download, Loader2, CheckCircle2, Layers, Menu, ChevronLeft, LayoutGrid, CircleX, PieChart } from 'lucide-angular';
+import { FindingListComponent } from '../../components/finding-list/finding-list';
+import { LucideAngularModule, Home, ChevronUp, ChevronDown, Hammer, Zap, Droplets, Wind, Flame, Box, Grid, Monitor, Car, Shield, Search, Info, AlertTriangle, Copy, Edit2, Trash2, Plus, Save, Lock, Unlock, ArrowLeft, Wrench, Thermometer, Lightbulb, Paintbrush, Sun, Key, Power, FileCheck, HardHat, Construction, Ruler, ShieldCheck, ShieldAlert, BrickWall, Trees, Fan, Sparkles, Wifi, WifiOff, Trash, Settings, Check, X, Users, FileText, Image, Cloud, CloudRain, CloudLightning, Snowflake, Umbrella, Compass, MapPin, Clock, Calendar, Activity, Scissors, Heart, AlertCircle, HelpCircle, Ban, LockOpen, Send, Download, Loader2, CheckCircle2, Layers, Menu, ChevronLeft, LayoutGrid, CircleX, PieChart, Eye, LayoutList } from 'lucide-angular';
+
 import { BackButtonComponent } from '../../../../shared/components/back-button/back-button.component';
 import { SectionStatusToggleComponent } from '../../components/section-status-toggle/section-status-toggle';
 import { TextInputComponent } from '../../../../shared/components/inputs/text-input/text-input.component';
+import { SelectInputComponent } from '../../../../shared/components/inputs/select-input/select-input.component';
 import { SummaryDashboardComponent } from '../../components/summary-dashboard/summary-dashboard.component';
 import { MutationQueueService, MutationType, TaskCompletion } from '../../../../core/services/mutation-queue.service';
+import { DraftService } from '../../../../core/services/draft.service';
 import { debounceTime, Subject } from 'rxjs';
 
 @Component({
   selector: 'app-finding-details',
   standalone: true,
-  imports: [CommonModule, WorkbenchLayoutComponent, FindingFormComponent, FindingSwitcherComponent, LucideAngularModule, BackButtonComponent, SectionStatusToggleComponent, TextInputComponent, SummaryDashboardComponent],
-  providers: [{ provide: 'lucideIcons', useValue: { Home, ChevronUp, ChevronDown, Hammer, Zap, Droplets, Wind, Flame, Box, Grid, Monitor, Car, Shield, Search, Info, AlertTriangle, Copy, Edit2, Trash2, Plus, Save, Lock, Unlock, ArrowLeft, Wrench, Thermometer, Lightbulb, Paintbrush, Sun, Key, Eye, Power, FileCheck, HardHat, Construction, Ruler, ShieldCheck, ShieldAlert, BrickWall, Trees, Fan, Sparkles, Wifi, WifiOff, Trash, Settings, Check, X, Users, FileText, Image, Cloud, CloudRain, CloudLightning, Snowflake, Umbrella, Compass, MapPin, Clock, Calendar, Activity, Scissors, Heart, AlertCircle, HelpCircle, Ban, LockOpen, Send, Download, Loader2, CheckCircle2, Layers, Menu, ChevronLeft, LayoutGrid, CircleX, PieChart } }],
+  imports: [CommonModule, WorkbenchLayoutComponent, FindingFormComponent, FindingListComponent, LucideAngularModule, BackButtonComponent, SectionStatusToggleComponent, TextInputComponent, SelectInputComponent, SummaryDashboardComponent],
+  providers: [{ provide: 'lucideIcons', useValue: { Home, ChevronUp, ChevronDown, Hammer, Zap, Droplets, Wind, Flame, Box, Grid, Monitor, Car, Shield, Search, Info, AlertTriangle, Copy, Edit2, Trash2, Plus, Save, Lock, Unlock, ArrowLeft, Wrench, Thermometer, Lightbulb, Paintbrush, Sun, Key, Eye, Power, FileCheck, HardHat, Construction, Ruler, ShieldCheck, ShieldAlert, BrickWall, Trees, Fan, Sparkles, Wifi, WifiOff, Trash, Settings, Check, X, Users, FileText, Image, Cloud, CloudRain, CloudLightning, Snowflake, Umbrella, Compass, MapPin, Clock, Calendar, Activity, Scissors, Heart, AlertCircle, HelpCircle, Ban, LockOpen, Send, Download, Loader2, CheckCircle2, Layers, Menu, ChevronLeft, LayoutGrid, CircleX, PieChart, LayoutList } }],
   templateUrl: './finding-details.component.html',
   styleUrl: './finding-details.component.scss'
 })
@@ -28,6 +32,7 @@ export class FindingDetailsComponent implements OnInit {
   private router = inject(Router);
   private inspectionsService = inject(InspectionsService);
   private mutationQueueService = inject(MutationQueueService);
+  private draftService = inject(DraftService);
 
   rawInspection = signal<Inspection | null>(null);
   inspection = computed(() => {
@@ -48,7 +53,13 @@ export class FindingDetailsComponent implements OnInit {
   inspectionId = signal<string | null>(null);
   findingId = signal<string | null>(null);
   activeSection = signal<string | null>(null);
-  activeSectionIndex = signal<number>(-1);
+  isFindingsDropdownOpen = signal<boolean>(false);
+  
+  activeSectionIndex = computed(() => {
+    const section = this.activeSection();
+    if (!section || section === 'summary') return -1;
+    return this.sections().findIndex(s => s.name === section);
+  });
   
   private metadataUpdate$ = new Subject<{key: string, value: string}>();
   
@@ -61,10 +72,11 @@ export class FindingDetailsComponent implements OnInit {
     Wrench, Thermometer, Lightbulb, Paintbrush, Sun, Key, Eye, Power, FileCheck, HardHat, Construction, Ruler, ShieldCheck, ShieldAlert,
     BrickWall, Trees, Fan, Sparkles, Wifi, WifiOff, Trash, Settings, Check, X, Users, FileText, Image, Cloud, CloudRain, CloudLightning,
     Snowflake, Umbrella, Compass, MapPin, Clock, Calendar, Activity, Scissors, Heart, AlertCircle, HelpCircle, Ban, LockOpen, Send,
-    Download, Loader2, CheckCircle2, Layers, Menu, PieChart
+    Download, Loader2, CheckCircle2, Layers, Menu, PieChart, LayoutList
   };
 
-  readonly icons = { ChevronLeft, LayoutGrid, Plus, Home, ChevronDown, CheckCircle2, FileText, Ban, CircleX, Info, Edit2, PieChart, AlertCircle };
+    readonly icons = { ChevronLeft, LayoutGrid, Plus, Home, ChevronDown, CheckCircle2, FileText, Ban, CircleX, Info, Edit2, PieChart, AlertCircle, LayoutList };
+
 
   sections = computed(() => this.inspection()?.template_snapshot?.sections || []);
 
@@ -80,6 +92,11 @@ export class FindingDetailsComponent implements OnInit {
   currentSectionPresets = computed(() => {
     const section = this.currentSection();
     return section?.presets || [];
+  });
+
+  currentSectionLocationPresets = computed(() => {
+    const section = this.currentSection();
+    return section?.location_presets || [];
   });
 
   sectionFindings = computed(() => {
@@ -105,6 +122,11 @@ export class FindingDetailsComponent implements OnInit {
   });
 
   totalFindings = computed(() => this.inspection()?.findings?.length || 0);
+
+  canPreviewReport = computed(() => {
+    const insp = this.inspection();
+    return insp !== null && insp.status !== 'published';
+  });
 
   ngOnInit() {
     // 1. Watch for Inspection/Finding changes
@@ -142,14 +164,6 @@ export class FindingDetailsComponent implements OnInit {
       // If we have a section, set it
       if (section) {
         this.activeSection.set(section);
-        const idx = queryParams.get('idx');
-        if (idx !== null) {
-          this.activeSectionIndex.set(Number(idx));
-        } else {
-          const sections = this.sections();
-          const firstIdx = sections.findIndex(s => s.name === section);
-          this.activeSectionIndex.set(firstIdx);
-        }
       } else if (fId && fId !== 'new' && fId !== 'summary') {
         // If we have a finding ID but NO section, try to resolve it from the finding
         const found = this.finding();
@@ -162,6 +176,13 @@ export class FindingDetailsComponent implements OnInit {
     // Listen for background task completions to swap temporary IDs
     this.mutationQueueService.taskCompleted$.subscribe((completion: TaskCompletion) => {
       if (completion.clientFindingId && completion.clientFindingId === this.findingId()) {
+        const section = this.activeSection();
+        if (section) {
+          const oldDraftKey = `finding:${this.inspectionId()}:${section}:${completion.clientFindingId}`;
+          const newDraftKey = `finding:${this.inspectionId()}:${section}:${completion.result.id}`;
+          this.draftService.rename(oldDraftKey, newDraftKey);
+        }
+
         // Swap ID in URL without reloading data
         this.router.navigate(['/inspections', this.inspectionId(), 'findings', completion.result.id], { 
           queryParams: { section: this.activeSection() },
@@ -213,11 +234,10 @@ export class FindingDetailsComponent implements OnInit {
 
   selectSection(sectionName: string, index: number = 0) {
     this.workbench.closeSidebar();
-    this.activeSectionIndex.set(index);
 
     if (sectionName === 'summary') {
       this.router.navigate(['/inspections', this.inspectionId(), 'findings', 'summary'], {
-        queryParams: { section: 'summary', idx: -1 }
+        queryParams: { section: 'summary' }
       });
       return;
     }
@@ -228,12 +248,12 @@ export class FindingDetailsComponent implements OnInit {
     if (sectionFindings.length > 0) {
       // If there's already data in this section, load the first finding instead of a blank 'new'
       this.router.navigate(['/inspections', this.inspectionId(), 'findings', sectionFindings[0].id], {
-        queryParams: { section: sectionName, idx: index }
+        queryParams: { section: sectionName }
       });
     } else {
       // Only go to 'new' if there truly is no data for this category
       this.router.navigate(['/inspections', this.inspectionId(), 'findings', 'new'], {
-        queryParams: { section: sectionName, idx: index }
+        queryParams: { section: sectionName }
       });
     }
   }
@@ -244,18 +264,81 @@ export class FindingDetailsComponent implements OnInit {
     });
   }
 
-  startNewFinding() {
-    this.router.navigate(['/inspections', this.inspectionId(), 'findings', 'new'], {
-      queryParams: { section: this.activeSection() }
+  onDeleteFinding(finding: Finding) {
+    const inspectionId = this.inspectionId();
+    if (!inspectionId) return;
+
+    // 1. If it's a completely new, unsynced (or failed) finding, just remove it from the queue locally
+    const pendingCreateTask = this.mutationQueueService.allTasks().find(t => 
+       t.type === MutationType.CREATE_FINDING && 
+       (t.clientFindingId === finding.id || t.findingId === finding.id || t.id === finding.id) &&
+       (t.status === 'PENDING' || t.status === 'FAILED' || t.status === 'SYNCING')
+    );
+
+    if (pendingCreateTask) {
+      this.mutationQueueService.cancelTask(pendingCreateTask.id);
+      
+      if (this.findingId() === finding.id) {
+        this.findingId.set(null);
+      }
+      
+      const isLastItem = this.sectionFindings().length <= 1;
+      if (isLastItem) {
+        this.isFindingsDropdownOpen.set(false);
+      }
+      return;
+    }
+
+    const isLastItem = this.sectionFindings().length <= 1;
+
+    this.mutationQueueService.enqueue({
+      type: MutationType.DELETE_FINDING,
+      inspectionId,
+      findingId: finding.id,
+      payload: {}
     });
+
+    // Deselect finding if it was the one we just deleted
+    if (this.findingId() === finding.id) {
+      this.findingId.set(null);
+    }
+
+    if (isLastItem) {
+      this.isFindingsDropdownOpen.set(false);
+    }
   }
 
-  onFindingSelected(finding: Finding | null) {
-    if (finding) {
-      this.editFinding(finding);
+  onFindingSelected(finding: Finding) {
+    if (!finding) {
+      this.findingId.set(null);
     } else {
-      this.startNewFinding();
+      this.findingId.set(finding.id);
     }
+    this.isFindingsDropdownOpen.set(false);
+  }
+
+  onAddFindingTriggered() {
+    const section = this.activeSection();
+    if (!section) return;
+
+    const newId = crypto.randomUUID();
+
+    this.mutationQueueService.enqueue({
+      type: MutationType.CREATE_FINDING,
+      inspectionId: this.inspectionId()!,
+      clientFindingId: newId,
+      payload: {
+        section: section,
+        severity: Severity.MAINTENANCE,
+        description: 'New Finding',
+        location: '',
+        recommendation: 'Evaluate and repair as necessary.'
+      }
+    });
+    
+    // Auto-select the newly created finding
+    this.findingId.set(newId);
+    this.isFindingsDropdownOpen.set(false);
   }
 
   getIconForSection(iconKey: string | undefined): any {
@@ -306,7 +389,7 @@ export class FindingDetailsComponent implements OnInit {
     });
   }
 
-  updateSectionReasonDirect(reason: string): void {
+    updateSectionReasonDirect(reason: string): void {
     const insp = this.inspection();
     const section = this.activeSection();
     if (!insp || !section) return;
@@ -321,3 +404,4 @@ export class FindingDetailsComponent implements OnInit {
     });
   }
 }
+

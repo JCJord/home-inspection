@@ -1,4 +1,4 @@
-@if (authService.isAuthenticated()) {
+@if (authService.isAuthenticated() && !isPublicRoute()) {
   <div class="app-layout">
     <app-navbar-desktop class="desktop-only"></app-navbar-desktop>
     <div class="app-main">

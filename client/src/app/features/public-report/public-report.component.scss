@@ -1,0 +1,211 @@
+@use '/variables' as *;
+@use '/cards' as *;
+
+:host {
+  display: block;
+  min-height: 100vh;
+  background-color: $color-bg;
+  color: $color-text;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+// Layout components
+.public-report-app-layout {
+  background-color: $color-bg;
+}
+
+.desktop-sidebar {
+  background-color: $color-surface;
+  border-right: 1px solid $color-border;
+  
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+
+  .sidebar-header {
+    background-color: rgba($color-surface-light, 0.5);
+    border-bottom: 1px solid $color-border;
+    
+    h2 { color: $color-text; }
+    .address-text { color: $color-text-muted; }
+  }
+
+  .section-title {
+    color: $color-text-muted;
+  }
+
+  .toc-item {
+    color: $color-text;
+    background-color: transparent;
+    
+    &:hover {
+      background-color: rgba($color-text-muted, 0.05);
+    }
+    
+    &.active {
+      color: $color-primary;
+      font-weight: 700;
+      background-color: rgba($color-primary, 0.1);
+      
+      .active-dot {
+        background-color: $color-primary;
+        box-shadow: 0 0 8px rgba($color-primary, 0.5);
+      }
+    }
+  }
+}
+
+.sticky-top-bar {
+  background-color: rgba($color-surface, 0.95);
+  border-bottom: 1px solid $color-border;
+
+  .menu-toggle {
+    color: $color-text;
+    &:hover { color: $color-primary; }
+  }
+  
+  .company-name {
+    color: $color-text;
+  }
+
+  .download-btn {
+    background-color: $color-primary;
+    &:hover { background-color: $color-primary-dark; }
+  }
+}
+
+.hero-section {
+  background-color: $color-surface;
+  border-color: $color-border;
+
+  .cover-photo-placeholder {
+    background-color: $color-surface-light;
+    color: $color-text-muted;
+  }
+  
+  .hero-content {
+    .address { color: $color-text; }
+    .meta { color: $color-text-muted; }
+  }
+}
+
+.finding-section-container {
+  .section-header {
+    color: $color-text;
+    border-color: $color-border;
+  }
+}
+
+.finding-card {
+  .finding-header {
+    border-bottom: 1px solid $color-border;
+  }
+  
+  .finding-description {
+    color: $color-text;
+  }
+
+  .location-tag {
+    background-color: rgba($color-text-muted, 0.05);
+    color: $color-text-muted;
+    strong { color: $color-text; }
+  }
+
+  .photo-strip {
+    background-color: $color-surface-light;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    &::-webkit-scrollbar { display: none; }
+
+    .photo-item {
+      border-color: $color-border;
+    }
+  }
+}
+
+.report-footer {
+  border-top: 1px solid $color-border;
+  
+  .company-name { color: $color-text; }
+  .phone-number { color: $color-text-muted; }
+  
+  .powered-by {
+    background-color: $color-surface;
+    border-color: $color-border;
+    color: $color-text;
+    
+    .powered-icon { color: $color-primary; }
+  }
+}
+
+.mobile-menu-overlay {
+  .backdrop {
+    background-color: rgba(0, 0, 0, 0.6);
+  }
+  
+  .slide-panel {
+    background-color: $color-surface;
+  }
+
+  .panel-header {
+    background-color: rgba($color-surface-light, 0.5);
+    border-bottom: 1px solid $color-border;
+    
+    h3 { color: $color-text; }
+    .address-text { color: $color-text-muted; }
+    
+    .close-btn {
+      color: $color-text-muted;
+      border: 1px solid rgba($color-border, 0.5);
+      &:hover {
+        color: $color-text;
+        background-color: rgba($color-text-muted, 0.1);
+      }
+    }
+  }
+
+  .toc-item {
+    color: $color-text;
+    background-color: transparent;
+    
+    &:hover {
+      background-color: rgba($color-text-muted, 0.05);
+    }
+    
+    &.active {
+      color: $color-primary;
+      font-weight: 900;
+      background-color: rgba($color-primary, 0.1);
+      
+      .active-dot {
+        background-color: $color-primary;
+        box-shadow: 0 0 8px rgba($color-primary, 0.5);
+      }
+    }
+  }
+}
+
+// --- Custom Utility Classes Mapping ---
+// Maps Tailwind-like classes from HTML to standard variables
+.bg-surface { background-color: $color-surface !important; }
+.bg-surface-light { background-color: $color-surface-light !important; }
+.text-text-primary { color: $color-text !important; }
+.text-text-muted { color: $color-text-muted !important; }
+.border-border { border-color: $color-border !important; }
+
+.section-metadata {
+  border-color: rgba($color-border, 0.5);
+}
+
+.finding-number {
+  color: $color-text-muted;
+}
+
+.finding-recommendation {
+  border-left-color: $color-text;
+}

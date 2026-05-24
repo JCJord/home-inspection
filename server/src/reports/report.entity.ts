@@ -21,7 +21,10 @@ export class Report {
   inspection: Inspection;
 
   @Column({ nullable: true })
-  pdf_url: string;
+  pdf_key?: string;
+
+  // Dynamically populated, not saved in DB
+  pdf_url?: string;
 
   @Column({ default: 'pending' })
   status: string;

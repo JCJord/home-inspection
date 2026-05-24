@@ -2,7 +2,7 @@ import { Component, OnInit, inject, signal, DestroyRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { debounceTime, distinctUntilChanged, finalize, switchMap, filter, tap } from 'rxjs';
+import { debounceTime, distinctUntilChanged, finalize, switchMap, filter, tap, of, catchError } from 'rxjs';
 import { InspectorsService } from '../../../../core/services/inspectors.service';
 import { Inspector } from '../../../../core/models/inspector.interface';
 import { TextInputComponent } from '../../../../shared/components/inputs/text-input/text-input.component';
@@ -13,7 +13,7 @@ import { SkeletonComponent } from '../../../../shared/components/skeleton/skelet
 import { SignaturePadComponent } from '../../../../shared/components/signature-pad/signature-pad.component';
 import { AuthService } from '../../../../core/services/auth.service';
 import { Router } from '@angular/router';
-import { LucideAngularModule, Camera, User, BadgeCheck, Phone, Mail, Building, FileText, CheckCircle2, LogOut, RotateCcw } from 'lucide-angular';
+import { LucideAngularModule, Camera, User, BadgeCheck, Phone, Mail, Building, FileText, CheckCircle2, LogOut, RotateCcw, Loader2 } from 'lucide-angular';
 import { environment } from '../../../../../environments/environment';
 import { ImageCompressionService } from '../../../../core/services/image-compression.service';
 import { Palette, Type, FileText as FileTextIcon, Zap, Check, TrendingUp, Trash2, X, Bell } from 'lucide-angular';
@@ -39,13 +39,13 @@ import { ToggleSwitchComponent } from '../../../../shared/components/inputs/togg
 })
 export class ProfileComponent implements OnInit {
   private fb = inject(FormBuilder);
-  private inspectorsService = inject(InspectorsService);
+  public inspectorsService = inject(InspectorsService);
   private authService = inject(AuthService);
   private router = inject(Router);
   private destroyRef = inject(DestroyRef);
   private compressionService = inject(ImageCompressionService);
 
-  readonly icons = { Camera, User, BadgeCheck, Phone, Mail, Building, FileText, CheckCircle2, LogOut, Palette, Type, FileTextIcon, Zap, Check, TrendingUp, Trash2, X, RotateCcw, Bell };
+  readonly icons = { Camera, User, BadgeCheck, Phone, Mail, Building, FileText, CheckCircle2, LogOut, Palette, Type, FileTextIcon, Zap, Check, TrendingUp, Trash2, X, RotateCcw, Bell, Loader2 };
 
   readonly brandFontOptions = [
     { value: 'modern', label: 'Modern (Sans-serif)' },
@@ -118,18 +118,24 @@ export class ProfileComponent implements OnInit {
           this.message.set(null);
         }),
         switchMap(values => this.inspectorsService.updateProfile(values).pipe(
+          catchError(err => {
+            this.showMessage('error', 'Auto-save failed. Your changes might not be saved.');
+            console.error(err);
+            return of(null);
+          }),
           finalize(() => this.inspectorsService.isSaving.set(false))
         )),
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe({
         next: (updated) => {
-          this.profile.set(updated);
-          this.inspectorsService.lastSavedAt.set(new Date());
+          if (updated) {
+            this.profile.set(updated);
+            this.inspectorsService.lastSavedAt.set(new Date());
+          }
         },
         error: (err) => {
-          this.showMessage('error', 'Auto-save failed. Your changes might not be saved.');
-          console.error(err);
+          console.error('Outer profile auto-save stream encountered an error', err);
         }
       });
   }

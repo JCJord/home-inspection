@@ -9,6 +9,7 @@ export enum MutationType {
   UPLOAD_PHOTO = 'UPLOAD_PHOTO',
   UPDATE_PHOTO = 'UPDATE_PHOTO',
   DELETE_PHOTO = 'DELETE_PHOTO',
+  DELETE_FINDING = 'DELETE_FINDING',
   UPDATE_INSPECTION = 'UPDATE_INSPECTION'
 }
 
@@ -91,9 +92,28 @@ export class MutationQueueService {
   private async loadTasks() {
     const allTasks = await this.getAllTasksFromDB();
     
+    const validTasks: MutationTask[] = [];
+
+    // Cleanup logic: If tasks were stuck in COMPLETED state due to a page reload
+    // during their 30-second buffer, remove them from DB to prevent memory leak.
+    for (const task of allTasks) {
+      if (task.status === 'COMPLETED') {
+        // Safe to remove immediately on load since SWR will fetch fresh data anyway
+        await this.deleteTaskFromDB(task.id);
+        continue;
+      }
+      validTasks.push(task);
+    }
+
     // Regenerate blob URLs for files if they exist (for UI display after refresh)
-    const tasksWithUrls = allTasks.map(task => {
+    const tasksWithUrls = validTasks.map(task => {
       const t = { ...task } as any;
+      
+      // Reset any tasks that were interrupted while SYNCING back to PENDING
+      if (t.status === 'SYNCING') {
+        t.status = 'PENDING';
+      }
+
       if (t.file && t.type === MutationType.UPLOAD_PHOTO) {
         // Recovery logic: Favor stored previewData (Base64) if available, 
         // otherwise recreate the blob URL from the stored File object.
@@ -185,10 +205,25 @@ export class MutationQueueService {
     this.isProcessing = true;
 
     // Get pending tasks that are ready (not waiting for an ID)
-    const pendingTasks = this.tasks().filter(t => 
-      t.status === 'PENDING' && 
-      (t.type === MutationType.CREATE_FINDING || t.type === MutationType.UPDATE_INSPECTION || !!t.findingId)
+    // We must block tasks whose findingId is actually a clientFindingId of an uncompleted CREATE_FINDING task
+    const pendingClientIds = new Set(
+      this.tasks()
+        .filter(t => t.type === MutationType.CREATE_FINDING && t.clientFindingId)
+        .map(t => t.clientFindingId)
     );
+
+    const pendingTasks = this.tasks().filter(t => {
+      if (t.status !== 'PENDING') return false;
+      if (t.type === MutationType.CREATE_FINDING || t.type === MutationType.UPDATE_INSPECTION) return true;
+      
+      if (t.findingId) {
+        // If the findingId is waiting to be mapped from a CREATE_FINDING task, hold off
+        if (pendingClientIds.has(t.findingId)) return false;
+        return true;
+      }
+      
+      return false;
+    });
     
     // Process with concurrency limit of 2
     from(pendingTasks).pipe(
@@ -203,7 +238,12 @@ export class MutationQueueService {
     ).subscribe();
   }
 
-  private processTask(task: MutationTask) {
+  private processTask(originalTask: MutationTask) {
+    // Re-fetch from signal because a prior task might have mapped its IDs
+    // (e.g. CREATE_FINDING mapped clientFindingId -> serverId for this task)
+    const task = this.tasks().find(t => t.id === originalTask.id);
+    if (!task) return of(null);
+
     // Mark as syncing
     this.updateTaskStatus(task.id, 'SYNCING');
 
@@ -249,7 +289,21 @@ export class MutationQueueService {
         return this.inspectionsService.updatePhoto(task.inspectionId, task.findingId!, photoId, dto);
       }
       case MutationType.DELETE_PHOTO:
-        return this.inspectionsService.deletePhoto(task.inspectionId, task.findingId!, task.payload.photoId);
+        return this.inspectionsService.deletePhoto(task.inspectionId, task.findingId!, task.payload.photoId).pipe(
+          map(() => null),
+          catchError(err => {
+            if (err.status === 404) return of(null); // Already deleted
+            throw err;
+          })
+        );
+      case MutationType.DELETE_FINDING:
+        return this.inspectionsService.deleteFinding(task.inspectionId, task.findingId!).pipe(
+          map(() => null),
+          catchError(err => {
+            if (err.status === 404) return of(null); // Already deleted
+            throw err;
+          })
+        );
       case MutationType.UPDATE_INSPECTION:
         return this.inspectionsService.updateInspection(task.inspectionId, task.payload);
       default:
@@ -258,12 +312,24 @@ export class MutationQueueService {
   }
 
   private async mapClientFindingIdToServerId(clientId: string, serverId: string) {
-    const affectedTasks = this.tasks().filter(t => t.clientFindingId === clientId || t.findingId === clientId);
-    for (const task of affectedTasks) {
-      const updatedTask = { ...task, findingId: serverId, clientFindingId: undefined };
-      await this.saveTaskToDB(updatedTask);
-      this.tasks.update(ts => ts.map(t => t.id === task.id ? updatedTask : t));
+    const affectedTaskIds = this.tasks().filter(t => t.clientFindingId === clientId || t.findingId === clientId).map(t => t.id);
+    
+    // 1. Update signals synchronously to prevent race conditions
+    this.tasks.update(ts => ts.map(t => {
+      if (affectedTaskIds.includes(t.id)) {
+        return { ...t, findingId: serverId, clientFindingId: undefined };
+      }
+      return t;
+    }));
+
+    // 2. Persist to DB in the background
+    for (const taskId of affectedTaskIds) {
+      const updatedTask = this.tasks().find(t => t.id === taskId);
+      if (updatedTask) {
+        await this.saveTaskToDB(updatedTask);
+      }
     }
+    
     // Re-trigger queue now that dependencies (finding IDs) are resolved
     this.processQueue();
   }
@@ -313,12 +379,26 @@ export class MutationQueueService {
   }
 
   async cancelTask(id: string) {
+    const taskToCancel = this.tasks().find(t => t.id === id);
+    if (!taskToCancel) return;
+
     // 1. Remove from signal immediately
     this.tasks.update(ts => ts.filter(t => t.id !== id));
     this.updateCounts();
     
     // 2. Remove from DB
     await this.deleteTaskFromDB(id);
+
+    // 3. Cascade cancel dependent tasks (e.g. photos waiting on a failed finding)
+    if (taskToCancel.type === MutationType.CREATE_FINDING && taskToCancel.clientFindingId) {
+      const dependentTasks = this.tasks().filter(t => 
+        t.clientFindingId === taskToCancel.clientFindingId || 
+        t.findingId === taskToCancel.clientFindingId
+      );
+      for (const t of dependentTasks) {
+        await this.cancelTask(t.id);
+      }
+    }
   }
 
   async clearAllTasks() {

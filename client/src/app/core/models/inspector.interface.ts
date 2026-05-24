@@ -1,4 +1,3 @@
-import { SubscriptionStatus } from '../enums/subscription-status.enum';
 
 export interface Inspector {
   id: string;
@@ -22,8 +21,6 @@ export interface Inspector {
   custom_maintenance_item_def?: string;
   custom_informational_item_def?: string;
   default_send_email_confirmation?: boolean;
-  subscription_status: SubscriptionStatus;
-  free_inspections_used: number;
   created_at: Date;
   updated_at: Date;
 }

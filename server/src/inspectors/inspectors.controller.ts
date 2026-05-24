@@ -11,6 +11,7 @@ import {
   UploadedFile,
   UsePipes,
   ValidationPipe,
+  BadRequestException,
 } from '@nestjs/common';
 import { InspectorsService } from './inspectors.service';
 import { CreateInspectorDto } from './dto/create-inspector.dto';
@@ -42,14 +43,20 @@ export class InspectorsController {
 
   @Post('profile/logo')
   @UseGuards(AuthGuard)
-  @UseInterceptors(FileInterceptor('logo'))
-  uploadLogo(
+  @UseInterceptors(FileInterceptor('logo', {
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+    fileFilter: (req, file, cb) => {
+      if (!file.mimetype.match(/^image\/(jpeg|png|webp)$/)) {
+        return cb(new BadRequestException('Only JPEG, PNG and WebP images are allowed'), false);
+      }
+      cb(null, true);
+    },
+  }))
+  async uploadLogo(
     @GetUser('sub') userId: string,
     @UploadedFile() file: Express.Multer.File,
   ) {
-    // For now, we store the local path. In production, this would be an R2 URL.
-    const logoUrl = `/uploads/${file.filename}`;
-    return this.inspectorsService.uploadLogo(userId, logoUrl);
+    return this.inspectorsService.uploadLogo(userId, file);
   }
 
   @Post()

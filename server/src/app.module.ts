@@ -17,6 +17,8 @@ import { ReportsModule } from './reports/reports.module';
 import { TemplatesModule } from './templates/templates.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { MailModule } from './mail/mail.module';
+import { PublicReportsModule } from './public-reports/public-reports.module';
+import { StorageModule } from './common/storage/storage.module';
 
 @Module({
   imports: [
@@ -40,6 +42,8 @@ import { MailModule } from './mail/mail.module';
     TemplatesModule,
     EventEmitterModule.forRoot(),
     MailModule,
+    PublicReportsModule,
+    StorageModule,
   ],
   controllers: [AppController],
   providers: [

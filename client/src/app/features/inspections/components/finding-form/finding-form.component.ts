@@ -5,7 +5,6 @@ import { InspectionsService } from '../../../../core/services/inspections.servic
 import { Section, Severity } from '../../../../core/enums/inspection.enums';
 import { Finding, Photo } from '../../../../core/models/inspection.interface';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
-import { TextInputComponent } from '../../../../shared/components/inputs/text-input/text-input.component';
 import { TextareaInputComponent } from '../../../../shared/components/inputs/textarea-input/textarea-input.component';
 import { LucideAngularModule, AlertCircle, FileImage, Upload, Trash2, Edit, X, Check, Sparkles, Loader2 } from 'lucide-angular';
 import { CreateFindingDto } from '../../../../core/dtos/create-finding.dto';
@@ -16,6 +15,7 @@ import { ImageCompressionService } from '../../../../core/services/image-compres
 import { environment } from '../../../../../environments/environment';
 import { ImageEditorModalComponent } from '../../../../shared/components/image-editor-modal/image-editor-modal.component';
 import { PresetButtonComponent } from '../../../../shared/components/preset-button/preset-button.component';
+import { LocationComboboxComponent } from '../../../../shared/components/inputs/location-combobox/location-combobox.component';
 import { DraftService } from '../../../../core/services/draft.service';
 import { MutationQueueService, MutationType } from '../../../../core/services/mutation-queue.service';
 import { ResolveImagePipe } from '../../../../shared/pipes/resolve-image.pipe';
@@ -37,7 +37,7 @@ import { TemplatePreset } from '../../../../core/models/inspection.interface';
 @Component({
   selector: 'app-finding-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ButtonComponent, TextInputComponent, TextareaInputComponent, LucideAngularModule, ImageEditorModalComponent, PresetButtonComponent, ResolveImagePipe],
+  imports: [CommonModule, ReactiveFormsModule, ButtonComponent, TextareaInputComponent, LocationComboboxComponent, LucideAngularModule, ImageEditorModalComponent, PresetButtonComponent, ResolveImagePipe],
   templateUrl: './finding-form.component.html',
   styleUrl: './finding-form.component.scss',
 })
@@ -50,12 +50,12 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
   private draftService = inject(DraftService);
   private mutationQueueService = inject(MutationQueueService);
 
-  isPremium = this.authService.isPremium;
 
   @Input({ required: true }) inspectionId!: string;
   @Input({ required: true }) year_built!: number;
   @Input({ required: true }) section!: string;
   @Input() presets: TemplatePreset[] = [];
+  @Input() locationPresets: string[] = [];
   @Input() finding: Finding | null = null;
   @Input() isPublished: boolean = false;
 
@@ -74,12 +74,28 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
 
   close = output<void>();
   saved = output<Finding>();
+  deleted = output<Finding>();
   
   ngOnChanges(changes: SimpleChanges) {
     if (changes['inspectionId']) this._inspectionId.set(this.inspectionId);
     if (changes['year_built']) this._yearBuilt.set(this.year_built);
     if (changes['section']) this._section.set(this.section);
-    if (changes['finding']) this._finding.set(this.finding);
+    if (changes['finding']) {
+      const prev = changes['finding'].previousValue;
+      const curr = changes['finding'].currentValue;
+      
+      this._finding.set(this.finding);
+
+      if (prev?.id === curr?.id && this.findingForm.dirty) {
+        // Prevent background sync from wiping unsaved changes for the SAME finding
+        // But we must gracefully synchronize the photoCaptions FormArray with the new photos
+        // to handle temp ID swaps without losing typed data.
+        this.syncPhotoCaptions(curr?.photos || []);
+        return;
+      }
+
+      this.populateForm();
+    }
     if (changes['isPublished']) this._isPublished.set(this.isPublished);
   }
 
@@ -92,12 +108,17 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
   isEditMode = computed(() => !!this._finding());
 
   selectedFiles = signal<SelectedPhoto[]>([]);
-  existingPhotos = signal<Photo[]>([]);
+  
+  existingPhotos = computed(() => {
+    return this._finding()?.photos || [];
+  });
+
   photoToEdit = signal<EditTarget | null>(null);
   
   // Deletion Tracking
   activeDeleteExistingId = signal<string | null>(null);
   activeDeleteNewIndex = signal<number | null>(null);
+  isConfirmingDeleteFinding = signal<boolean>(false);
 
   severities = Object.values(Severity);
   readonly icons = { AlertCircle, FileImage, Upload, Trash2, Edit, X, Check, Sparkles, Loader2 };
@@ -125,34 +146,8 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
 
   constructor() {
     effect(() => {
-      const data = this._finding();
-      const section = this._section(); // Watch section changes to reset form if needed
-      
-      if (data) {
-        this.findingForm.patchValue({
-          severity: data.severity,
-          location: data.location || '',
-          description: data.description,
-          recommendation: data.recommendation || '',
-        });
-        this.existingPhotos.set(data.photos || []);
-        
-        // Clear and rebuild FormArray
-        this.photoCaptions.clear();
-        (data.photos || []).forEach(p => {
-          this.photoCaptions.push(this.fb.group({
-            id: [p.id],
-            caption: [p.caption || '']
-          }));
-        });
-      } else {
-        this.findingForm.reset({
-          severity: Severity.MINOR,
-        });
-        this.existingPhotos.set([]);
-        this.photoCaptions.clear();
-        this.newPhotoCaptions.clear();
-      }
+      this._finding();
+      this._section();
       
       // Handle publish state
       if (this._isPublished()) {
@@ -172,10 +167,9 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
     });
 
     // Check for and restore drafts
-    // Moving this to an effect or keeping it here but ensuring it doesn't break validation
     afterNextRender(() => {
       const draft = this.draftService.load<any>(this.draftKey);
-      if (draft && !this.isEditMode()) {
+      if (draft) {
         this.findingForm.patchValue(draft, { emitEvent: false });
         this.findingForm.markAsDirty();
       }
@@ -185,6 +179,50 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
   ngOnDestroy() {
     this.selectedFiles().forEach(item => {
       URL.revokeObjectURL(item.previewUrl);
+    });
+  }
+
+  populateForm() {
+    const data = this._finding();
+    if (!data) return;
+    
+    this.findingForm.patchValue({
+      severity: data.severity,
+      location: data.location || '',
+      description: data.description,
+      recommendation: data.recommendation || '',
+    });
+    this.syncPhotoCaptions(data.photos || []);
+
+    // Restore draft if it exists (crucial for preserving unsaved changes across ID swaps)
+    const draft = this.draftService.load<any>(this.draftKey);
+    if (draft) {
+      this.findingForm.patchValue(draft, { emitEvent: false });
+      this.findingForm.markAsDirty();
+    }
+  }
+
+  syncPhotoCaptions(photos: Photo[]) {
+    // Gracefully update the FormArray to match the new photos array
+    // without wiping out currently typed captions in dirty controls.
+    
+    while (this.photoCaptions.length > photos.length) {
+      this.photoCaptions.removeAt(this.photoCaptions.length - 1);
+    }
+    
+    photos.forEach((p, i) => {
+      if (i < this.photoCaptions.length) {
+        const group = this.photoCaptions.at(i);
+        group.get('id')?.setValue(p.id, { emitEvent: false });
+        if (!group.get('caption')?.dirty) {
+          group.get('caption')?.setValue(p.caption || '', { emitEvent: false });
+        }
+      } else {
+        this.photoCaptions.push(this.fb.group({
+          id: [p.id],
+          caption: [p.caption || '']
+        }));
+      }
     });
   }
 
@@ -239,7 +277,8 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
     // Optimistic UI Update: Remove from local list immediately
     const index = this.existingPhotos().findIndex(p => p.id === photoId);
     if (index > -1) {
-      this.existingPhotos.update(photos => photos.filter(p => p.id !== photoId));
+      // computed signal will update on its own when MutationQueue modifies the state
+      // but we can proactively remove the form control
       this.photoCaptions.removeAt(index);
     }
 
@@ -286,7 +325,8 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
     this.compressionService.compressImage(rawFile).then(async file => {
       if (target.type === 'existing') {
         const oldPhoto = target.photo;
-        const caption = this.photoCaptions.at(this.existingPhotos().findIndex(p => p.id === oldPhoto.id)).get('caption')?.value || '';
+        const index = this.existingPhotos().findIndex(p => p.id === oldPhoto.id);
+        const caption = index > -1 ? this.photoCaptions.at(index).get('caption')?.value || '' : '';
 
         // OFFLINE-RESILIENT workflow: 
         // 1. Enqueue Delete for the old one
@@ -435,6 +475,7 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
       description: descriptionValue,
       recommendation: preset.recommendation || ''
     });
+    this.findingForm.markAsDirty();
   }
 
   isPresetActive(preset: any): boolean {
@@ -510,6 +551,10 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
       this.selectedFiles.set([]);
       this.newPhotoCaptions.clear();
 
+      // Mark the form as pristine so that ngOnChanges allows the newly merged 
+      // optimistic finding (with the new photo tasks) to repopulate existingPhotos
+      this.findingForm.markAsPristine();
+
       // Optimistic Success: Emit saved immediately
       // Create a "Temporary Finding" for the UI to display
       const tempFinding: Finding = {
@@ -540,5 +585,12 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
     } else {
       this.findingForm.markAllAsTouched();
     }
+  }
+
+  onDeleteFinding(): void {
+    if (this._finding()) {
+      this.deleted.emit(this._finding()!);
+    }
+    this.isConfirmingDeleteFinding.set(false);
   }
 }

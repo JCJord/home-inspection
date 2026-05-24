@@ -11,10 +11,11 @@ export class ReportsService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/reports`;
 
-  generatePdfFromHtml(html: string, productId?: string): Observable<Blob> {
-    const payload = { html, productId };
+  generatePdfFromHtml(html: string, inspectionId?: string): Observable<Blob> {
+    const payload = { html, inspectionId };
     return this.http.post(`${this.apiUrl}/generate`, payload, { responseType: 'blob' });
   }
+
 
   // Deprecated: Moving logic to component for advanced control
   generatePdf(inspection: Inspection): Observable<Blob> {

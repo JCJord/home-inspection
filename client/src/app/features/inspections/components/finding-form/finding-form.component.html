@@ -78,8 +78,8 @@
             <img [src]="photo.storage_url | resolveImage | async" alt="Finding photo">
             
             @if (photo.isSyncing) {
-              <div class="absolute inset-0 bg-black/40 flex flex-col items-center justify-center text-white backdrop-blur-[1px]">
-                <lucide-icon [name]="icons.Loader2" class="animate-spin mb-1" [size]="16"></lucide-icon>
+              <div class="absolute inset-0 bg-black/40 flex flex-col items-center justify-center gap-1 text-white backdrop-blur-[1px]">
+                <lucide-icon [name]="icons.Loader2" class="animate-spin" [size]="16"></lucide-icon>
                 <span class="text-[8px] font-bold uppercase tracking-widest">Syncing</span>
               </div>
             } @else if ($any(photo).hasError) {
@@ -158,8 +158,11 @@
     </div>
 
     <!-- Location -->
-    <app-text-input name="location" label="Location (Optional)" placeholder="e.g., Master Bathroom, North Attic">
-    </app-text-input>
+    <app-location-combobox 
+      formControlName="location" 
+      [locationPresets]="locationPresets"
+      placeholder="e.g., Master Bathroom, North Attic">
+    </app-location-combobox>
  
     <!-- Description (Observation) -->
     <app-textarea-input name="description" label="Observation Note *" placeholder="Type 2-3 keywords (e.g., 'water stain ceiling') and tap ✨ Generate AI Content..." [rows]="5" [maxLength]="2200">
@@ -173,13 +176,12 @@
            <span><strong>AI Assistant:</strong> Tap to rewrite your keywords into a clinical report finding.</span>
          </div>
          <button type="button" class="ai-generate-btn" 
-           (click)="generateAiComment()" [disabled]="isGeneratingAi() || !isPremium() || isPublishedSignal()"
-           [class.premium-lock]="!isPremium()" [title]="!isPremium() ? 'Available for users with Active subscription only' : ''">
+           (click)="generateAiComment()" [disabled]="isGeneratingAi() || isPublishedSignal()">
            @if (isGeneratingAi()) {
              <div class="spinner-small mr-2"></div>
              <span>Generating...</span>
            } @else {
-             <span>{{ isPremium() ? '✨ Generate AI Content' : 'Upgrade for AI' }}</span>
+             <span>✨ Generate AI Content</span>
            }
          </button>
       </div>
@@ -188,11 +190,6 @@
           <div class="flex items-center gap-2 px-3 py-1.5 rounded-md bg-red-50 border border-red-200 text-red-700 text-xs font-bold animate-pulse">
             <lucide-icon [name]="icons.AlertCircle" [size]="14" class="text-red-500"></lucide-icon>
             <span>{{ aiErrorMessage() }}</span>
-          </div>
-        } @else if (!isPremium()) {
-          <div class="flex items-center gap-2 px-3 py-1.5 rounded-md bg-amber-50 border border-amber-200 text-amber-700 text-xs font-medium">
-            <span class="text-lg leading-none">✨</span>
-            <span>AI Finding generation is available for Active users.</span>
           </div>
         } @else {
           <div class="flex items-center gap-2 px-3 py-1.5 rounded-md bg-blue-50/50 border border-transparent text-blue-700 text-[11px] italic">
@@ -207,9 +204,8 @@
     </app-textarea-input>
 
     <div class="form-actions flex" [class.justify-between]="!isPublishedSignal()" [class.justify-end]="isPublishedSignal()">
-      <app-button type="button" class="cancel-btn" variant="outline" (click)="close.emit()" [disabled]="isLoading()">
-        {{ isPublishedSignal() ? 'Close' : 'Cancel' }}
-      </app-button>
+      <div></div>
+
       @if (!isPublishedSignal()) {
       <app-button type="submit" [disabled]="findingForm.invalid || showSuccess()" [isLoading]="isLoading()"
         [variant]="showSuccess() ? 'subtle' : 'solid'"
@@ -223,8 +219,13 @@
           {{ isEditMode() ? 'Save Changes' : 'Add Finding' }}
         }
       </app-button>
+      } @else {
+      <app-button type="button" variant="outline" (click)="close.emit()" [disabled]="isLoading()">
+        Close
+      </app-button>
       }
     </div>
+
   </form>
 </div>
 
