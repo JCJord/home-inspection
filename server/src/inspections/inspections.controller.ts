@@ -10,6 +10,7 @@ import {
   Query,
   UseInterceptors,
   UploadedFile,
+  BadRequestException,
 } from '@nestjs/common';
 import { InspectionsService } from './inspections.service';
 import { CreateInspectionDto } from './dto/create-inspection.dto';
@@ -34,7 +35,15 @@ export class InspectionsController {
   }
 
   @Post(':id/cover-photo')
-  @UseInterceptors(FileInterceptor('cover_photo'))
+  @UseInterceptors(FileInterceptor('cover_photo', {
+    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+    fileFilter: (req, file, cb) => {
+      if (!file.mimetype.match(/^image\/(jpeg|png|webp)$/)) {
+        return cb(new BadRequestException('Only JPEG, PNG and WebP images are allowed'), false);
+      }
+      cb(null, true);
+    },
+  }))
   uploadCoverPhoto(
     @GetUser('sub') inspectorId: string,
     @Param('id') id: string,

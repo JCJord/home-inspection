@@ -11,6 +11,7 @@ import {
   UploadedFile,
   UsePipes,
   ValidationPipe,
+  BadRequestException,
 } from '@nestjs/common';
 import { InspectorsService } from './inspectors.service';
 import { CreateInspectorDto } from './dto/create-inspector.dto';
@@ -42,7 +43,15 @@ export class InspectorsController {
 
   @Post('profile/logo')
   @UseGuards(AuthGuard)
-  @UseInterceptors(FileInterceptor('logo'))
+  @UseInterceptors(FileInterceptor('logo', {
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+    fileFilter: (req, file, cb) => {
+      if (!file.mimetype.match(/^image\/(jpeg|png|webp)$/)) {
+        return cb(new BadRequestException('Only JPEG, PNG and WebP images are allowed'), false);
+      }
+      cb(null, true);
+    },
+  }))
   uploadLogo(
     @GetUser('sub') userId: string,
     @UploadedFile() file: Express.Multer.File,
