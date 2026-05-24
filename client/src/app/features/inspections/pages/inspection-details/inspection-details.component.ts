@@ -7,7 +7,7 @@ import { Finding, Inspection } from '../../../../core/models/inspection.interfac
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { FindingCardComponent } from '../../components/finding-card/finding-card.component';
 import { SkeletonComponent } from '../../../../shared/components/skeleton/skeleton.component';
-import { LucideAngularModule, ArrowLeft, Send, RefreshCw, AlertCircle, Plus, X, Check, Loader2, FileText, Download, LockOpen, Edit, Camera, Image, Cloud, Thermometer, Calendar, Maximize, Home, Users, ChevronDown, Trash2, Eye } from 'lucide-angular';
+import { LucideAngularModule, ArrowLeft, Send, RefreshCw, AlertCircle, Plus, X, Check, Loader2, FileText, Download, LockOpen, Edit, Camera, Image, Cloud, Thermometer, Calendar, Maximize, Home, Users, ChevronDown, Trash2, Eye, ExternalLink } from 'lucide-angular';
 import { ReportGeneratorComponent } from '../../../reports/components/report-generator/report-generator.component';
 import { ReportPreviewComponent } from '../../../reports/components/report-preview/report-preview.component';
 import { BackButtonComponent } from '../../../../shared/components/back-button/back-button.component';
@@ -71,7 +71,7 @@ export class InspectionDetailsComponent implements OnInit, OnDestroy {
   combinedMessage = signal<string>('Initializing document engine...');
   private uploadIntervalId: any = null;
 
-  readonly icons = { ArrowLeft, Send, RefreshCw, AlertCircle, Plus, X, Check, Loader2, FileText, Download, LockOpen, Edit, Camera, Image, Cloud, Thermometer, Calendar, Maximize, Home, Users, ChevronDown, Trash2, Eye };
+  readonly icons = { ArrowLeft, Send, RefreshCw, AlertCircle, Plus, X, Check, Loader2, FileText, Download, LockOpen, Edit, Camera, Image, Cloud, Thermometer, Calendar, Maximize, Home, Users, ChevronDown, Trash2, Eye, ExternalLink };
 
   readonly apiUrl = environment.apiUrl.replace('/api', '');
 
@@ -373,7 +373,7 @@ export class InspectionDetailsComponent implements OnInit, OnDestroy {
     const inspection = this.inspection();
     if (!inspection) return;
 
-    const fullUrl = `${window.location.origin}/uploads/reports/${inspection.id}.pdf`;
+    const fullUrl = `${window.location.origin}/report/${inspection.id}`;
     this.isCopying.set(true);
     navigator.clipboard.writeText(fullUrl).then(() => {
       this.copyLinkSuccess.set(true);

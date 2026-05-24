@@ -35,11 +35,19 @@ export class ReportComplianceComponent implements OnInit {
   readonly sopOptions = ['InterNACHI', 'ASHI', 'TREC', 'Custom'];
 
   private readonly legalTemplates: Record<string, string> = {
-    'InterNACHI': 'It is a visual inspection of the property and its accessible components at the time of the inspection. The goal is to identify material defects that are both observed and deemed significant.',
-    'ASHI': 'The inspector will report on those systems and components specified by the ASHI Standards of Practice that, in the professional judgment of the inspector, are not functioning properly, are significantly deficient, or are unsafe.',
-    'TREC': 'The standard inspection report form is used, and the inspection is performed according to TREC rules and Standards of Practice.',
-    'Custom': ''
+    'InterNACHI': 'This inspection was performed in substantial compliance with the Standards of Practice of the International Association of Certified Home Inspectors (InterNACHI). It is a non-invasive, visual examination of the readily accessible installed systems and components of the home. This report contains observations of those systems and components that, in the professional judgement of the inspector, are not functioning properly, are significantly deficient, or present safety hazards. Items that are present but not inspected are identified within the limitations of this report.',
+    'ASHI': 'This inspection was performed in substantial compliance with the Standards of Practice of the American Society of Home Inspectors (ASHI). It is a non-invasive, visual examination of the readily accessible installed systems and components of the home. The inspector will report on those systems and components that, in their professional judgment, are not functioning properly, are significantly deficient, or are unsafe.',
+    'TREC': 'This inspection is performed according to the rules and Standards of Practice of the Texas Real Estate Commission (TREC). It is a non-invasive, visual examination of the readily accessible installed systems and components of the home to identify material defects that are both observed and deemed significant at the time of the inspection.',
+    'Custom': 'This inspection report is a professional opinion based on a non-invasive, visual examination of the readily accessible installed systems and components of the property at the time of the inspection. We report on those systems and components that, in our professional judgement, are not functioning properly, are significantly deficient, or present safety hazards. This service is not a warranty, insurance policy, or absolute guarantee of future system performance or longevity.'
   };
+
+  private readonly legacyTemplates: string[] = [
+    'It is a visual inspection of the property and its accessible components at the time of the inspection. The goal is to identify material defects that are both observed and deemed significant.',
+    'The inspector will report on those systems and components specified by the ASHI Standards of Practice that, in the professional judgment of the inspector, are not functioning properly, are significantly deficient, or are unsafe.',
+    'The standard inspection report form is used, and the inspection is performed according to TREC rules and Standards of Practice.',
+    'This inspection report is a professional opinion based on visual evidence at the date of the inspection. The service is visual in nature and is not a warranty, insurance policy, or absolute guarantee of system performance or future longevity.',
+    ''
+  ];
 
   complianceForm: FormGroup = this.fb.group({
     sop_name: ['InterNACHI'],
@@ -66,9 +74,10 @@ export class ReportComplianceComponent implements OnInit {
       .pipe(finalize(() => this.isLoading.set(false)))
       .subscribe({
         next: (data) => {
+          const sopName = data.sop_name || 'InterNACHI';
           this.complianceForm.patchValue({
-            sop_name: data.sop_name || 'InterNACHI',
-            custom_legal_disclaimer: data.custom_legal_disclaimer || '',
+            sop_name: sopName,
+            custom_legal_disclaimer: data.custom_legal_disclaimer || this.legalTemplates[sopName] || this.legalTemplates['Custom'],
             use_standard_definitions: data.use_standard_definitions ?? true,
             custom_safety_hazard_def: data.custom_safety_hazard_def || '',
             custom_major_defect_def: data.custom_major_defect_def || '',
@@ -119,9 +128,10 @@ export class ReportComplianceComponent implements OnInit {
       .subscribe(sopName => {
         const template = this.legalTemplates[sopName];
         if (template !== undefined) {
-          // Only overwrite if current disclaimer is empty or matches another template
-          const currentDisclaimer = this.complianceForm.get('custom_legal_disclaimer')?.value;
-          const isTemplate = Object.values(this.legalTemplates).includes(currentDisclaimer);
+          // Only overwrite if current disclaimer is empty, matches a current template, or matches a legacy template
+          const currentDisclaimer = this.complianceForm.get('custom_legal_disclaimer')?.value?.trim();
+          const isTemplate = Object.values(this.legalTemplates).some(t => t.trim() === currentDisclaimer) || 
+                             this.legacyTemplates.some(t => t.trim() === currentDisclaimer);
 
           if (!currentDisclaimer || isTemplate) {
             this.complianceForm.patchValue({ custom_legal_disclaimer: template });

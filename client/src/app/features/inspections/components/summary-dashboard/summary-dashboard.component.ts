@@ -1,7 +1,7 @@
 import { Component, Input, signal, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Inspection } from '../../../../core/models/inspection.interface';
-import { LucideAngularModule, AlertCircle, CheckCircle2, ShieldAlert, ListChecks, FileText, Loader2, Info } from 'lucide-angular';
+import { LucideAngularModule, AlertCircle, CheckCircle2, ShieldAlert, ListChecks, FileText, Loader2, Info, Share2 } from 'lucide-angular';
 
 @Component({
   selector: 'app-summary-dashboard',
@@ -15,8 +15,8 @@ export class SummaryDashboardComponent {
     this._inspection.set(val);
   }
   
-  private _inspection = signal<Inspection | null>(null);
-  readonly icons = { AlertCircle, CheckCircle2, ShieldAlert, ListChecks, FileText, Loader2, Info };
+  _inspection = signal<Inspection | null>(null);
+  readonly icons = { AlertCircle, CheckCircle2, ShieldAlert, ListChecks, FileText, Loader2, Info, Share2 };
 
   stats = computed(() => {
     const insp = this._inspection();
@@ -50,4 +50,11 @@ export class SummaryDashboardComponent {
       totalSections: sections.length
     };
   });
+
+  copyLiveLink() {
+    const id = this._inspection()?.id;
+    if (id) {
+      navigator.clipboard.writeText(`${window.location.origin}/report/${id}`);
+    }
+  }
 }

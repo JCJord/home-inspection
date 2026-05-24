@@ -116,7 +116,8 @@
                </div>
             </div>
 
-            <div style="border-top: 2px solid #eee; padding-top: 80px; display: flex; flex-direction: column; gap: 50px;">
+            <div
+               style="border-top: 2px solid #eee; padding-top: 80px; display: flex; flex-direction: column; gap: 50px;">
 
                <!-- Row 1 -->
                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 60px;">
@@ -127,18 +128,22 @@
                   </div>
                   <div class="meta-item">
                      <label
-                        style="display: block; font-size: 22px; text-transform: uppercase; color: #888; margin-bottom: 15px; font-weight: 800; letter-spacing: 0.1em;">Issue Date</label>
-                     <span style="font-size: 32px; font-weight: 800;">{{ (inspection?.created_at || today) | date:'MMMM d, yyyy' }}</span>
+                        style="display: block; font-size: 22px; text-transform: uppercase; color: #888; margin-bottom: 15px; font-weight: 800; letter-spacing: 0.1em;">Issue
+                        Date</label>
+                     <span style="font-size: 32px; font-weight: 800;">{{ (inspection?.created_at || today) | date:'MMMM
+                        d, yyyy' }}</span>
                   </div>
                   <div class="meta-item">
                      <label
                         style="display: block; font-size: 22px; text-transform: uppercase; color: #888; margin-bottom: 15px; font-weight: 800; letter-spacing: 0.1em;">Inspector</label>
-                     <span style="font-size: 32px; font-weight: 800;">{{ inspection?.inspector?.name || 'Inspectly Professional' }}</span>
+                     <span style="font-size: 32px; font-weight: 800;">{{ inspection?.inspector?.name || 'Inspectly
+                        Professional' }}</span>
                   </div>
                </div>
 
                <!-- Row 2 -->
-               <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 60px; padding-top: 40px; border-top: 1px solid #eee;">
+               <div
+                  style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 60px; padding-top: 40px; border-top: 1px solid #eee;">
                   <div class="meta-item">
                      <label
                         style="display: block; font-size: 22px; text-transform: uppercase; color: #888; margin-bottom: 15px; font-weight: 800; letter-spacing: 0.1em;">Phone</label>
@@ -146,8 +151,10 @@
                   </div>
                   <div class="meta-item">
                      <label
-                        style="display: block; font-size: 22px; text-transform: uppercase; color: #888; margin-bottom: 15px; font-weight: 800; letter-spacing: 0.1em;">License No.</label>
-                     <span style="font-size: 32px; font-weight: 800;">{{ inspection?.inspector?.license_number || '—' }}</span>
+                        style="display: block; font-size: 22px; text-transform: uppercase; color: #888; margin-bottom: 15px; font-weight: 800; letter-spacing: 0.1em;">License
+                        No.</label>
+                     <span style="font-size: 32px; font-weight: 800;">{{ inspection?.inspector?.license_number || '—'
+                        }}</span>
                   </div>
                </div>
 
@@ -299,9 +306,9 @@
             } @else {
             <div class="upperElement"
                style="padding: 100px; text-align: center; border: 4px dashed #eee; border-radius: 20px;">
-               <div style="font-size: 32px; font-weight: 800; color: #10B981; margin-bottom: 10px;">No Major Concerns
+               <div style="font-size: 32px; font-weight: 800; color: #292929; margin-bottom: 10px;">No Major Concerns
                   Found</div>
-               <p style="font-size: 22px; color: #888;">No items were flagged as Safety Hazards or Major Defects during
+               <p style="font-size: 25px; color: #888;">No items were flagged as Safety Hazards or Major Defects during
                   this assessment.</p>
             </div>
             }
@@ -374,9 +381,7 @@
                <p
                   style="font-size: 24px; color: #444; line-height: 1.6; white-space: pre-wrap; margin: 0; font-weight: 500;">
                   {{
-                  inspection?.inspector?.custom_legal_disclaimer || 'This inspection report is a professional opinion
-                  based on visual evidence at the date of the inspection. The service is visual in nature and is not a
-                  warranty, insurance policy, or absolute guarantee of system performance or future longevity.' }}</p>
+                  inspection?.inspector?.custom_legal_disclaimer || 'This inspection report is a professional opinion based on a non-invasive, visual examination of the readily accessible installed systems and components of the property at the time of the inspection. We report on those systems and components that, in our professional judgement, are not functioning properly, are significantly deficient, or present safety hazards. This service is not a warranty, insurance policy, or absolute guarantee of future system performance or longevity.' }}</p>
             </div>
 
             <!-- Card 4: Specialty Exclusions List (Grid) -->
@@ -460,8 +465,11 @@
             </div>
 
             <!-- 3. Severity Definitions -->
-            <h4 style="font-size: 32px; font-weight: 800; color: #111; margin-bottom: 25px;">Finding Severity
+            <h4 style="font-size: 32px; font-weight: 800; color: #111; margin-bottom: 15px;">Finding Severity
                Definitions</h4>
+            <p style="font-size: 26px; color: #444; line-height: 1.6; margin: 0 0 30px 0;">
+               <strong>Categories:</strong> This report divides findings into five categories: Safety Hazards (colored in red), Major Defects (in orange), Minor Defects (in yellow), Maintenance Items (in green), and Informational Items (in blue).
+            </p>
 
             <!-- Invisible structure-only table for reliable page-break behaviour when custom defs are long -->
             <table style="width: 100%; border-collapse: collapse; border: none;">

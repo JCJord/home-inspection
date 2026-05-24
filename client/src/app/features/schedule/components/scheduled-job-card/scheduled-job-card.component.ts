@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { LucideAngularModule, MapPin, User, Clock, ChevronRight, Edit2, Trash2, X, ChevronDown, Phone } from 'lucide-angular';
+import { LucideAngularModule, MapPin, User, Clock, ChevronRight, Edit2, Trash2, X, ChevronDown, Phone, Share2, ExternalLink } from 'lucide-angular';
 import { Inspection } from '../../../../core/models/inspection.interface';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { DropdownMenuComponent, DropdownItem } from '../../../../shared/components/dropdown-menu/dropdown-menu.component';
@@ -31,6 +31,8 @@ import { ConfirmPillComponent } from '../../../../shared/components/confirm-pill
         X,
         ChevronDown,
         Phone,
+        Share2,
+        ExternalLink,
       },
     },
   ],
@@ -57,32 +59,61 @@ export class ScheduledJobCardComponent {
     X,
     ChevronDown,
     Phone,
+    Share2,
+    ExternalLink,
   };
 
-  menuItems = computed<DropdownItem[]>(() => [
-    {
-      label: 'Open Inspection',
-      icon: this.icons.Clock,
-      action: () => this.open.emit(this.job),
-    },
-    {
-      label: 'Edit Schedule',
-      icon: this.icons.Edit2,
-      action: () => this.edit.emit(this.job),
-    },
-    {
-      label: 'Delete',
-      icon: this.icons.Trash2,
-      danger: true,
-      action: () => this.delete.emit(this.job),
-    },
-    {
-      label: 'Cancel Inspection',
-      icon: this.icons.X,
-      danger: true,
-      action: () => this.cancel.emit(this.job),
-    },
-  ]);
+  menuItems = computed<DropdownItem[]>(() => {
+    const items: DropdownItem[] = [];
+
+    if (this.job.status === 'published') {
+      items.push(
+        {
+          label: 'View Live Report',
+          icon: this.icons.ExternalLink,
+          action: () => window.open(`${window.location.origin}/report/${this.job.id}`, '_blank'),
+        },
+        {
+          label: 'Copy Public Link',
+          icon: this.icons.Share2,
+          action: () => this.copyToClipboard(`${window.location.origin}/report/${this.job.id}`),
+        }
+      );
+    }
+
+    items.push(
+      {
+        label: 'Open Inspection',
+        icon: this.icons.Clock,
+        action: () => this.open.emit(this.job),
+      },
+      {
+        label: 'Edit Schedule',
+        icon: this.icons.Edit2,
+        action: () => this.edit.emit(this.job),
+      },
+      {
+        label: 'Delete',
+        icon: this.icons.Trash2,
+        danger: true,
+        action: () => this.delete.emit(this.job),
+      },
+      {
+        label: 'Cancel Inspection',
+        icon: this.icons.X,
+        danger: true,
+        action: () => this.cancel.emit(this.job),
+      }
+    );
+
+    return items;
+  });
+
+  private copyToClipboard(text: string) {
+    navigator.clipboard.writeText(text).then(() => {
+      // Could show a toast here if we had a toast service injected
+    });
+  }
 
   formatDateOnly(date?: string | Date): string {
     if (!date) return '';

@@ -4,10 +4,17 @@
     <div class="header-icon-box">
       <lucide-icon [name]="icons.FileText" [size]="28" class="text-primary"></lucide-icon>
     </div>
-    <div class="header-text">
+    <div class="header-text flex-1">
       <h2>Report Summary</h2>
       <p>High-level overview of the current inspection</p>
     </div>
+    
+    @if (_inspection()?.status === 'published') {
+      <button class="flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-xl font-bold hover:bg-primary/20 transition-colors" (click)="copyLiveLink()">
+        <lucide-icon [name]="icons.Share2" [size]="16"></lucide-icon>
+        Copy Live Link
+      </button>
+    }
   </div>
 
   <div class="stats-grid">

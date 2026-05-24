@@ -9,6 +9,10 @@ export const routes: Routes = [
     loadChildren: () => import('./features/auth/auth.routes').then(m => m.AUTH_ROUTES),
   },
   {
+    path: 'report/:id',
+    loadComponent: () => import('./features/public-report/public-report.component').then(m => m.PublicReportComponent),
+  },
+  {
     path: '',
     canActivate: [authGuard],
     children: [

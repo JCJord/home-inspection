@@ -228,10 +228,10 @@
           Send to Client
         </app-button>
 
-        <a [href]="apiUrl + '/uploads/reports/' + insp.id + '.pdf'" target="_blank" style="text-decoration: none;">
+        <a [href]="'/report/' + insp.id" target="_blank" style="text-decoration: none;">
           <app-button variant="outline" size="sm">
-            <lucide-icon [name]="icons.Maximize" [size]="16"></lucide-icon>
-            View Report
+            <lucide-icon [name]="icons.ExternalLink" [size]="16"></lucide-icon>
+            View Live Report
           </app-button>
         </a>
 
