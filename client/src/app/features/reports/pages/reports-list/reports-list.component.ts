@@ -148,9 +148,9 @@ export class ReportsListComponent implements OnInit {
   }
 
   copyReportLink(report: Inspection): void {
-    if (!report.id) return;
+    if (!report.id || !report.report?.pdf_url) return;
     
-    const fullUrl = `${window.location.origin}/uploads/reports/${report.id}.pdf`;
+    const fullUrl = report.report.pdf_url;
     this.copyingId.set(report.id);
     
     navigator.clipboard.writeText(fullUrl).then(() => {
@@ -170,9 +170,9 @@ export class ReportsListComponent implements OnInit {
   }
 
   downloadPublishedReport(report: Inspection): void {
-    if (!report.id) return;
+    if (!report.id || !report.report?.pdf_url) return;
 
-    const fileUrl = `${this.apiUrl}/uploads/reports/${report.id}.pdf`;
+    const fileUrl = report.report.pdf_url;
     const safeAddress = report.address || 'Inspection';
     const filename = `Report-${safeAddress.replace(/ /g, '_')}.pdf`;
 

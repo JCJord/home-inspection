@@ -135,9 +135,14 @@ export class ReportGeneratorComponent implements OnInit {
     return this.inspection?.metadata_values?.[key] || null;
   }
 
+  getAbsoluteImageUrl(url: string | null | undefined): string {
+    if (!url) return '';
+    return url.startsWith('http') ? url : `${this.apiUrl}${url}`;
+  }
+
   getCoverPhoto(): string | null {
     if (this.inspection?.cover_photo_url) {
-      return this.apiUrl + this.inspection.cover_photo_url;
+      return this.getAbsoluteImageUrl(this.inspection.cover_photo_url);
     }
 
     if (!this.inspection?.findings) return null;
@@ -145,11 +150,11 @@ export class ReportGeneratorComponent implements OnInit {
     const exteriorFinding = this.inspection.findings.find(f => 
       f.section.toLowerCase() === 'exterior' && f.photos.length > 0
     );
-    if (exteriorFinding) return this.apiUrl + exteriorFinding.photos[0].storage_url;
+    if (exteriorFinding) return this.getAbsoluteImageUrl(exteriorFinding.photos[0].storage_url);
     
     // Otherwise just the first photo found
     const anyPhoto = this.inspection.findings.find(f => f.photos.length > 0);
-    if (anyPhoto) return this.apiUrl + anyPhoto.photos[0].storage_url;
+    if (anyPhoto) return this.getAbsoluteImageUrl(anyPhoto.photos[0].storage_url);
     
     return null;
   }

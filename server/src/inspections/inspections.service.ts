@@ -11,8 +11,8 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PdfService } from '../reports/pdf.service';
 import { MailService } from '../mail/mail.service';
 import { ConfigService } from '@nestjs/config';
-import * as fs from 'fs';
 import * as path from 'path';
+import { StorageService } from '../common/storage/storage.service';
 
 @Injectable()
 export class InspectionsService {
@@ -29,6 +29,7 @@ export class InspectionsService {
     private readonly pdfService: PdfService,
     private readonly mailService: MailService,
     private readonly configService: ConfigService,
+    private readonly storageService: StorageService,
   ) { }
 
   async create(inspectorId: string, createInspectionDto: CreateInspectionDto): Promise<Inspection> {
@@ -55,6 +56,7 @@ export class InspectionsService {
       ...createInspectionDto,
       inspector_id: inspectorId,
       template_id: template?.id,
+      template: template || undefined,
       template_snapshot: template?.structure,
       metadata_values: {},
       status
@@ -122,8 +124,22 @@ export class InspectionsService {
       .take(limit)
       .getManyAndCount();
 
+    const mappedData = await Promise.all(data.map(async (inspection) => {
+      let cover_photo_url: string | null = null;
+      if (inspection.cover_photo_key) {
+        cover_photo_url = await this.storageService.getPresignedUrl(inspection.cover_photo_key);
+      }
+
+      if (inspection.report && inspection.report.pdf_key) {
+        inspection.report.pdf_url = await this.storageService.getPresignedUrl(inspection.report.pdf_key);
+      }
+
+      inspection.cover_photo_url = cover_photo_url || undefined;
+      return inspection;
+    }));
+
     return {
-      data,
+      data: mappedData,
       meta: {
         total,
         page,
@@ -143,6 +159,28 @@ export class InspectionsService {
       throw new NotFoundException('Inspection not found');
     }
 
+    let cover_photo_url: string | null = null;
+    if (inspection.cover_photo_key) {
+      cover_photo_url = await this.storageService.getPresignedUrl(inspection.cover_photo_key);
+    }
+    
+    if (inspection.report && inspection.report.pdf_key) {
+      inspection.report.pdf_url = await this.storageService.getPresignedUrl(inspection.report.pdf_key);
+    }
+
+    if (inspection.findings) {
+      for (const finding of inspection.findings) {
+        if (finding.photos) {
+          for (const photo of finding.photos) {
+            if (photo.photo_key) {
+              photo.storage_url = await this.storageService.getPresignedUrl(photo.photo_key);
+            }
+          }
+        }
+      }
+    }
+
+    inspection.cover_photo_url = cover_photo_url || undefined;
     return inspection;
   }
 
@@ -204,18 +242,13 @@ export class InspectionsService {
       throw new BadRequestException('Cannot publish an inspection with no findings');
     }
 
-    let pdfUrl = 'mock_pdf_url.pdf';
+    let pdfKey: string | null = null;
 
     if (html) {
       try {
         const pdfBuffer = await this.pdfService.generateFromHtml(html);
-        const uploadDir = path.join(process.cwd(), 'uploads', 'reports');
-        if (!fs.existsSync(uploadDir)) {
-          fs.mkdirSync(uploadDir, { recursive: true });
-        }
-        const filePath = path.join(uploadDir, `${id}.pdf`);
-        await fs.promises.writeFile(filePath, pdfBuffer);
-        pdfUrl = `/uploads/reports/${id}.pdf`;
+        pdfKey = `users/${inspectorId}/inspections/${id}/reports/report.pdf`;
+        await this.storageService.uploadFile(pdfBuffer, pdfKey as string, 'application/pdf');
       } catch (error) {
         throw new BadRequestException(`Failed to compile PDF report: ${error.message}`);
       }
@@ -227,13 +260,13 @@ export class InspectionsService {
 
       let report = await manager.findOne(Report, { where: { inspection_id: inspection.id } });
       if (report) {
-        report.pdf_url = pdfUrl;
+        if (pdfKey) report.pdf_key = pdfKey;
         report.status = 'done';
         report.published_at = new Date();
       } else {
         report = manager.create(Report, {
           inspection_id: inspection.id,
-          pdf_url: pdfUrl,
+          pdf_key: pdfKey || undefined,
           status: 'done',
           published_at: new Date(),
         });
@@ -264,13 +297,29 @@ export class InspectionsService {
 
   async remove(inspectorId: string, id: string): Promise<void> {
     const inspection = await this.findOne(inspectorId, id);
+    const prefix = `users/${inspectorId}/inspections/${id}/`;
+    await this.storageService.deleteDirectory(prefix);
+
     await this.inspectionRepository.remove(inspection);
   }
 
-  async uploadCoverPhoto(inspectorId: string, id: string, coverPhotoUrl: string): Promise<Inspection> {
-    const inspection = await this.findOne(inspectorId, id);
-    inspection.cover_photo_url = coverPhotoUrl;
-    return await this.inspectionRepository.save(inspection);
+  async uploadCoverPhoto(inspectorId: string, id: string, file: Express.Multer.File) {
+    const ext = path.extname(file.originalname);
+    const key = `users/${inspectorId}/inspections/${id}/cover_photo${ext}`;
+    const cover_photo_key = await this.storageService.uploadFile(file.buffer, key, file.mimetype);
+    
+    let inspection = await this.inspectionRepository.findOne({
+      where: { id, inspector_id: inspectorId }
+    });
+    
+    if (!inspection) throw new NotFoundException('Inspection not found');
+
+    inspection.cover_photo_key = cover_photo_key;
+    const saved = await this.inspectionRepository.save(inspection);
+    
+    const cover_photo_url = await this.storageService.getPresignedUrl(saved.cover_photo_key || '');
+    saved.cover_photo_url = cover_photo_url;
+    return saved;
   }
 
   async startInspection(inspectorId: string, id: string): Promise<Inspection> {
@@ -332,15 +381,11 @@ export class InspectionsService {
       throw new BadRequestException('Inspection must be published before sending the report');
     }
 
-    const uploadDir = path.join(process.cwd(), 'uploads', 'reports');
-    const filePath = path.join(uploadDir, `${id}.pdf`);
-
-    if (!fs.existsSync(filePath)) {
+    if (!inspection.report || !inspection.report.pdf_key) {
       throw new NotFoundException('The report PDF file could not be found on the server. Please republish the report.');
     }
 
-    const appUrl = this.configService.get<string>('APP_URL', 'http://localhost:3000');
-    const pdfUrl = `${appUrl}/uploads/reports/${id}.pdf`;
+    const pdfUrl = await this.storageService.getPresignedUrl(inspection.report.pdf_key);
 
     await this.mailService.sendReportEmail(targetEmail, pdfUrl, inspection.address || 'Your Property');
 

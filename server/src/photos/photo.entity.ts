@@ -21,7 +21,10 @@ export class Photo {
   finding: Finding;
 
   @Column()
-  storage_url: string;
+  photo_key: string;
+
+  // Dynamically populated, not saved in DB
+  storage_url?: string;
 
   @Column({ default: 0 })
   sort_order: number;

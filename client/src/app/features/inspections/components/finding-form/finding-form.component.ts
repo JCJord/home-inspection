@@ -88,6 +88,9 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
 
       if (prev?.id === curr?.id && this.findingForm.dirty) {
         // Prevent background sync from wiping unsaved changes for the SAME finding
+        // But we must gracefully synchronize the photoCaptions FormArray with the new photos
+        // to handle temp ID swaps without losing typed data.
+        this.syncPhotoCaptions(curr?.photos || []);
         return;
       }
 
@@ -105,7 +108,11 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
   isEditMode = computed(() => !!this._finding());
 
   selectedFiles = signal<SelectedPhoto[]>([]);
-  existingPhotos = signal<Photo[]>([]);
+  
+  existingPhotos = computed(() => {
+    return this._finding()?.photos || [];
+  });
+
   photoToEdit = signal<EditTarget | null>(null);
   
   // Deletion Tracking
@@ -185,16 +192,7 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
       description: data.description,
       recommendation: data.recommendation || '',
     });
-    this.existingPhotos.set(data.photos || []);
-    
-    // Clear and rebuild FormArray
-    this.photoCaptions.clear();
-    (data.photos || []).forEach(p => {
-      this.photoCaptions.push(this.fb.group({
-        id: [p.id],
-        caption: [p.caption || '']
-      }));
-    });
+    this.syncPhotoCaptions(data.photos || []);
 
     // Restore draft if it exists (crucial for preserving unsaved changes across ID swaps)
     const draft = this.draftService.load<any>(this.draftKey);
@@ -202,6 +200,30 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
       this.findingForm.patchValue(draft, { emitEvent: false });
       this.findingForm.markAsDirty();
     }
+  }
+
+  syncPhotoCaptions(photos: Photo[]) {
+    // Gracefully update the FormArray to match the new photos array
+    // without wiping out currently typed captions in dirty controls.
+    
+    while (this.photoCaptions.length > photos.length) {
+      this.photoCaptions.removeAt(this.photoCaptions.length - 1);
+    }
+    
+    photos.forEach((p, i) => {
+      if (i < this.photoCaptions.length) {
+        const group = this.photoCaptions.at(i);
+        group.get('id')?.setValue(p.id, { emitEvent: false });
+        if (!group.get('caption')?.dirty) {
+          group.get('caption')?.setValue(p.caption || '', { emitEvent: false });
+        }
+      } else {
+        this.photoCaptions.push(this.fb.group({
+          id: [p.id],
+          caption: [p.caption || '']
+        }));
+      }
+    });
   }
 
   // Two-step Delete Flow
@@ -255,7 +277,8 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
     // Optimistic UI Update: Remove from local list immediately
     const index = this.existingPhotos().findIndex(p => p.id === photoId);
     if (index > -1) {
-      this.existingPhotos.update(photos => photos.filter(p => p.id !== photoId));
+      // computed signal will update on its own when MutationQueue modifies the state
+      // but we can proactively remove the form control
       this.photoCaptions.removeAt(index);
     }
 
@@ -302,7 +325,8 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
     this.compressionService.compressImage(rawFile).then(async file => {
       if (target.type === 'existing') {
         const oldPhoto = target.photo;
-        const caption = this.photoCaptions.at(this.existingPhotos().findIndex(p => p.id === oldPhoto.id)).get('caption')?.value || '';
+        const index = this.existingPhotos().findIndex(p => p.id === oldPhoto.id);
+        const caption = index > -1 ? this.photoCaptions.at(index).get('caption')?.value || '' : '';
 
         // OFFLINE-RESILIENT workflow: 
         // 1. Enqueue Delete for the old one

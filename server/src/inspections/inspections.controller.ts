@@ -49,8 +49,7 @@ export class InspectionsController {
     @Param('id') id: string,
     @UploadedFile() file: Express.Multer.File,
   ) {
-    const coverPhotoUrl = `/uploads/${file.filename}`;
-    return this.inspectionsService.uploadCoverPhoto(inspectorId, id, coverPhotoUrl);
+    return this.inspectionsService.uploadCoverPhoto(inspectorId, id, file);
   }
 
   @Get()

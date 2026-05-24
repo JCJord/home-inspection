@@ -109,7 +109,7 @@
 
           <!-- Quick Action Buttons -->
           <div class="flex items-center gap-2 pl-13 sm:pl-0 flex-shrink-0 self-end sm:self-auto">
-            <a [href]="apiUrl + '/uploads/reports/' + report.id + '.pdf'" target="_blank" style="text-decoration: none;">
+            <a [href]="report.report?.pdf_url" target="_blank" style="text-decoration: none;">
               <app-button variant="solid" size="sm">
                 <lucide-icon [name]="icons.Maximize" [size]="12"></lucide-icon>
                 <span>View</span>

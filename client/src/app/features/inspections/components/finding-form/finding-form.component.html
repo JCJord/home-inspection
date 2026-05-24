@@ -78,8 +78,8 @@
             <img [src]="photo.storage_url | resolveImage | async" alt="Finding photo">
             
             @if (photo.isSyncing) {
-              <div class="absolute inset-0 bg-black/40 flex flex-col items-center justify-center text-white backdrop-blur-[1px]">
-                <lucide-icon [name]="icons.Loader2" class="animate-spin mb-1" [size]="16"></lucide-icon>
+              <div class="absolute inset-0 bg-black/40 flex flex-col items-center justify-center gap-1 text-white backdrop-blur-[1px]">
+                <lucide-icon [name]="icons.Loader2" class="animate-spin" [size]="16"></lucide-icon>
                 <span class="text-[8px] font-bold uppercase tracking-widest">Syncing</span>
               </div>
             } @else if ($any(photo).hasError) {

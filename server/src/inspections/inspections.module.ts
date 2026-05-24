@@ -16,15 +16,7 @@ import { ReportsModule } from '../reports/reports.module';
 @Module({
   imports: [
     TypeOrmModule.forFeature([Inspection, Inspector, Report, Finding, Template]),
-    MulterModule.register({
-      storage: diskStorage({
-        destination: './uploads',
-        filename: (req, file, cb) => {
-          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-          cb(null, `${file.fieldname}-${uniqueSuffix}${extname(file.originalname)}`);
-        },
-      }),
-    }),
+    MulterModule.register(),
     AuthModule,
     ReportsModule,
   ],

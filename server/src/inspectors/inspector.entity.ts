@@ -48,7 +48,7 @@ export class Inspector {
   license_number: string;
 
   @Column({ nullable: true })
-  logo_url: string;
+  logo_key?: string;
 
   @Column({ type: 'text', nullable: true })
   signature: string;

@@ -52,13 +52,11 @@ export class InspectorsController {
       cb(null, true);
     },
   }))
-  uploadLogo(
+  async uploadLogo(
     @GetUser('sub') userId: string,
     @UploadedFile() file: Express.Multer.File,
   ) {
-    // For now, we store the local path. In production, this would be an R2 URL.
-    const logoUrl = `/uploads/${file.filename}`;
-    return this.inspectorsService.uploadLogo(userId, logoUrl);
+    return this.inspectorsService.uploadLogo(userId, file);
   }
 
   @Post()

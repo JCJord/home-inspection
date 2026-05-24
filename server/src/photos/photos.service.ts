@@ -1,4 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { StorageService } from '../common/storage/storage.service';
+import * as path from 'path';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Photo } from './photo.entity';
@@ -13,6 +15,7 @@ export class PhotosService {
     private readonly photoRepository: Repository<Photo>,
     @InjectRepository(Finding)
     private readonly findingRepository: Repository<Finding>,
+    private readonly storageService: StorageService,
   ) {}
 
   private async checkFindingOwnership(
@@ -43,26 +46,38 @@ export class PhotosService {
       throw new BadRequestException('Cannot add photos to a published inspection');
     }
 
-    // Build the URL path that matches the ServeStaticModule serveRoot '/uploads'
-    const storageUrl = `/uploads/${file.filename}`;
+    const ext = path.extname(file.originalname);
+    const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+    const key = `users/${inspectorId}/inspections/${inspectionId}/findings/${findingId}/${uniqueSuffix}${ext}`;
+    
+    const photo_key = await this.storageService.uploadFile(file.buffer, key, file.mimetype);
 
     // Create the photo record
     const photo = this.photoRepository.create({
       finding_id: findingId,
-      storage_url: storageUrl,
+      photo_key: photo_key,
       caption,
     });
 
-    return await this.photoRepository.save(photo);
+    const saved = await this.photoRepository.save(photo);
+    const storage_url = await this.storageService.getPresignedUrl(saved.photo_key);
+    saved.storage_url = storage_url;
+    return saved;
   }
 
   async findAll(inspectorId: string, inspectionId: string, findingId: string): Promise<Photo[]> {
     await this.checkFindingOwnership(inspectorId, inspectionId, findingId);
 
-    return await this.photoRepository.find({
+    const photos = await this.photoRepository.find({
       where: { finding_id: findingId },
       order: { sort_order: 'ASC' },
     });
+    
+    return Promise.all(photos.map(async (photo) => {
+      const storage_url = await this.storageService.getPresignedUrl(photo.photo_key);
+      photo.storage_url = storage_url;
+      return photo;
+    }));
   }
 
   async reorder(inspectorId: string, inspectionId: string, findingId: string, reorderDto: ReorderPhotosDto): Promise<void> {
@@ -105,7 +120,9 @@ export class PhotosService {
       return;
     }
 
-    // Mock R2 deletion here if storage service was injected
+    if (photo.photo_key) {
+      await this.storageService.deleteFile(photo.photo_key);
+    }
 
     await this.photoRepository.remove(photo);
   }
