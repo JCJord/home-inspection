@@ -1,15 +1,11 @@
 <header class="top-bar">
   <div class="brand">
-    <img style="width: 40px;" src="/assets/icons/inspectly-logo.png" alt="Inspectly Logo" class="brand-icon">
+    <img style="width: 40px;" src="https://i.ibb.co/VcHybzvY/inspectly-logo.png" alt="Inspectly Logo" class="brand-icon">
 
     <span class="brand-name">Inspectly</span>
   </div>
 
   <div class="user-info">
-    <div class="subscription-badge" [ngClass]="authService.currentUser()?.subscription_status || 'free'">
-      <lucide-icon [img]="icons.ShieldCheck" [size]="14"></lucide-icon>
-      <span>{{ authService.currentUser()?.subscription_status | titlecase }}</span>
-    </div>
     <span class="user-name">{{ authService.currentUser()?.name }}</span>
   </div>
 </header>

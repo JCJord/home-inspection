@@ -1,134 +1,243 @@
-<div class="profile-container">
-  @if (isLoading()) {
-  <div class="loading-state">
-    <app-spinner [size]="40" class="spinner-primary"></app-spinner>
-    <p>Loading your profile...</p>
-  </div>
-  } @else {
-  <div class="profile-header">
-    <div class="header-content">
-      <div class="title-with-status">
-        <h1>My Profile</h1>
-        <div class="auto-save-status">
-          @if (isSaving()) {
-          <div class="status-indicator saving">
-            <app-spinner [size]="14"></app-spinner>
-            <span>Saving...</span>
-          </div>
-          } @else if (lastSavedAt()) {
-          <div class="status-indicator saved">
-            <lucide-icon [img]="icons.CheckCircle2" [size]="14"></lucide-icon>
-            <span>Saved at {{ lastSavedAt() | date:'HH:mm:ss' }}</span>
-          </div>
-          } @else {
-          <div class="status-indicator idle">
-            <span>All changes saved</span>
-          </div>
-          }
-        </div>
+@if (isLoading()) {
+<div class="skeleton-stack">
+  <!-- Identity Skeleton -->
+  <div class="skeleton-card">
+    <div class="identity-skeleton">
+      <app-skeleton width="80px" height="80px" borderRadius="16px"></app-skeleton>
+      <div class="flex flex-col gap-2 flex-1">
+        <app-skeleton width="200px" height="28px" borderRadius="6px"></app-skeleton>
+        <app-skeleton width="150px" height="16px" borderRadius="4px"></app-skeleton>
+        <app-skeleton width="100px" height="24px" borderRadius="12px" class="mt-1"></app-skeleton>
       </div>
-      <p class="subtitle">Manage your account information and preferences</p>
     </div>
-
-    @if (message()) {
-    <div class="alert" [ngClass]="'alert-' + message()?.type">
-      <div class="alert-content">
-        <lucide-icon [img]="message()?.type === 'success' ? icons.BadgeCheck : icons.FileText"
-          [size]="18"></lucide-icon>
-        <span>{{ message()?.text }}</span>
-      </div>
-      <button type="button" class="close-alert" (click)="message.set(null)">
-        &times;
-      </button>
-    </div>
-    }
   </div>
 
-  <div class="profile-grid">
-    <!-- Left Column: Avatar & Subscription -->
-    <div class="side-panel">
-      <div class="card logo-card">
-        <div class="logo-preview-wrapper">
+  <!-- Personal Info Skeleton -->
+  <div class="skeleton-card">
+    <div class="flex items-center gap-3 mb-6">
+      <app-skeleton width="20px" height="20px" borderRadius="4px"></app-skeleton>
+      <app-skeleton width="180px" height="20px" borderRadius="4px"></app-skeleton>
+    </div>
+    <div class="form-skeleton-grid">
+      <div class="flex flex-col gap-2">
+        <app-skeleton width="100px" height="14px" borderRadius="4px"></app-skeleton>
+        <app-skeleton width="100%" height="42px" borderRadius="8px"></app-skeleton>
+      </div>
+      <div class="flex flex-col gap-2">
+        <app-skeleton width="100px" height="14px" borderRadius="4px"></app-skeleton>
+        <app-skeleton width="100%" height="42px" borderRadius="8px"></app-skeleton>
+      </div>
+    </div>
+  </div>
+
+  <!-- Company Details Skeleton -->
+  <div class="skeleton-card">
+    <div class="flex items-center gap-3 mb-6">
+      <app-skeleton width="20px" height="20px" borderRadius="4px"></app-skeleton>
+      <app-skeleton width="160px" height="20px" borderRadius="4px"></app-skeleton>
+    </div>
+    <div class="form-skeleton-grid">
+      <div class="flex flex-col gap-2">
+        <app-skeleton width="100px" height="14px" borderRadius="4px"></app-skeleton>
+        <app-skeleton width="100%" height="42px" borderRadius="8px"></app-skeleton>
+      </div>
+      <div class="flex flex-col gap-2">
+        <app-skeleton width="100px" height="14px" borderRadius="4px"></app-skeleton>
+        <app-skeleton width="100%" height="42px" borderRadius="8px"></app-skeleton>
+      </div>
+    </div>
+  </div>
+
+  <!-- Branding Skeleton -->
+  <div class="skeleton-card">
+    <div class="flex items-center gap-3 mb-6">
+      <app-skeleton width="20px" height="20px" borderRadius="4px"></app-skeleton>
+      <app-skeleton width="190px" height="20px" borderRadius="4px"></app-skeleton>
+    </div>
+    <div class="form-skeleton-grid">
+      <div class="branding-skeleton-group">
+        <app-skeleton width="140px" height="14px" borderRadius="4px"></app-skeleton>
+        <app-skeleton width="100%" height="42px" borderRadius="8px"></app-skeleton>
+      </div>
+      <div class="branding-skeleton-group">
+        <app-skeleton width="140px" height="14px" borderRadius="4px"></app-skeleton>
+        <app-skeleton width="100%" height="42px" borderRadius="8px"></app-skeleton>
+      </div>
+      <div class="branding-skeleton-group full-width">
+        <app-skeleton width="180px" height="14px" borderRadius="4px"></app-skeleton>
+        <app-skeleton width="100%" height="80px" borderRadius="8px"></app-skeleton>
+      </div>
+    </div>
+  </div>
+</div>
+} @else {
+<div class="profile-content-wrapper">
+
+  <div class="settings-stack">
+    <!-- Top Section: Identity & Logo -->
+    <div class="card identity-card">
+      <div class="identity-layout">
+        <div class="logo-section">
           <div class="logo-preview">
             @if (logoPreview()) {
             <img [src]="logoPreview()" alt="Logo" />
             } @else {
             <div class="logo-placeholder">
-              <lucide-icon [img]="icons.Building" [size]="48"></lucide-icon>
+              <lucide-icon [img]="icons.Building" [size]="32"></lucide-icon>
             </div>
             }
 
             <label class="upload-badge" [class.uploading]="isUploading()">
               @if (isUploading()) {
-              <app-spinner [size]="16"></app-spinner>
+              <app-spinner [size]="14"></app-spinner>
               } @else {
-              <lucide-icon [img]="icons.Camera" [size]="16"></lucide-icon>
+              <lucide-icon [img]="icons.Camera" [size]="14"></lucide-icon>
               }
               <input type="file" (change)="onFileSelected($event)" accept="image/*" hidden [disabled]="isUploading()">
             </label>
           </div>
-          <h3>{{ profile()?.name }}</h3>
-          <p class="inspector-email">{{ profile()?.email }}</p>
+        </div>
+        <div class="identity-info">
+          <h2>{{ profile()?.name }}</h2>
+          <p class="email">{{ profile()?.email }}</p>
+
+        </div>
+      </div>
+    </div>
+
+    <form [formGroup]="profileForm" class="profile-form">
+      <div class="card">
+        <div class="card-header">
+          <lucide-icon [img]="icons.User" [size]="20"></lucide-icon>
+          <h3>Personal Information</h3>
+        </div>
+
+        <div class="form-grid">
+          <app-text-input name="name" label="Full Name" placeholder="John Doe"></app-text-input>
+          <app-text-input name="phone" label="Phone Number" placeholder="+1 (555) 000-0000"></app-text-input>
         </div>
       </div>
 
-      <div class="card subscription-card">
+      <div class="card">
         <div class="card-header">
-          <lucide-icon [img]="icons.BadgeCheck" [size]="20"></lucide-icon>
-          <h3>Subscription</h3>
+          <lucide-icon [img]="icons.Building" [size]="20"></lucide-icon>
+          <h3>Company Details</h3>
         </div>
-        <div class="subscription-details">
-          <div class="tier" [attr.data-tier]="profile()?.subscription_status">
-            {{ profile()?.subscription_status | titlecase }}
-          </div>
-          <div class="usage">
-            <span class="label">Usage</span>
-            <div class="progress-bar">
-              <div class="progress" [style.width.%]="(profile()?.free_inspections_used || 0) * 10"></div>
+
+        <div class="form-grid">
+          <app-text-input name="company_name" label="Company Name" placeholder="Inspectly Services"></app-text-input>
+          <app-text-input name="license_number" label="License Number" placeholder="ABC-123456"></app-text-input>
+          <app-text-input name="certifications" label="Professional Certifications" placeholder="e.g. InterNACHI CPI #12345"></app-text-input>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <lucide-icon [img]="icons.Palette" [size]="20"></lucide-icon>
+          <h3>Branding & Report Styles</h3>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Brand Primary Color</label>
+            <div class="color-picker-wrapper">
+              <input type="color" formControlName="brand_primary_color" class="color-picker">
+              <span class="color-value">{{ profileForm.get('brand_primary_color')?.value }}</span>
             </div>
-            <p class="usage-text">{{ profile()?.free_inspections_used || 0 }} / 10 free inspections used</p>
+          </div>
+
+          <app-select-input
+            name="brand_font_family"
+            label="Report Font Family"
+            [options]="brandFontOptions">
+          </app-select-input>
+
+          <div class="form-group full-width">
+            <label class="form-label">Report Footer Text (Max 150 chars)</label>
+            <textarea formControlName="report_footer_text" class="form-textarea"
+              placeholder="Confidential Property Inspection Report" maxlength="150"></textarea>
+            <div class="char-count" [class.warning]="(profileForm.get('report_footer_text')?.value?.length || 0) >= 150">
+              {{ profileForm.get('report_footer_text')?.value?.length || 0 }} / 150
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+
+    <div class="card">
+      <div class="card-header">
+        <lucide-icon [img]="icons.Bell" [size]="20"></lucide-icon>
+        <h3>Automation & Workflow</h3>
+      </div>
+      
+      <div class="card-body p-0">
+        <form [formGroup]="profileForm">
+          <app-toggle-switch
+            formControlName="default_send_email_confirmation"
+            label="Default Email Confirmations"
+            description="Automatically enable the 'Send Confirmation' toggle when scheduling new inspections.">
+          </app-toggle-switch>
+        </form>
+      </div>
+    </div>
+
+    <!-- Document Signature Section -->
+    <div class="card signature-card">
+      <div class="card-header">
+        <lucide-icon [img]="icons.FileText" [size]="20"></lucide-icon>
+        <div class="header-info">
+          <h3>Report Signature</h3>
+          <p>Hand-draw your signature to be used in final reports</p>
+        </div>
+      </div>
+
+      <div class="signature-display-area">
+        @if (!signaturePreview() || isSigning()) {
+          <div class="pad-container">
+            <app-signature-pad 
+              [initialSignature]="signaturePreview()"
+              (signatureSaved)="onSignatureSaved($event)"
+              (cleared)="onSignatureCleared()">
+            </app-signature-pad>
+            
+            @if (signaturePreview() && isSigning()) {
+              <div class="pad-footer">
+                <app-button variant="ghost" size="sm" (click)="isSigning.set(false)">
+                  Cancel & Restore
+                </app-button>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="signature-container" (click)="isSigning.set(true)">
+            <img [src]="signaturePreview()" alt="Inspector Signature" class="signature-img">
+            <div class="re-sign-overlay">
+              <lucide-icon [img]="icons.RotateCcw" [size]="20"></lucide-icon>
+              <span>Click to Re-sign</span>
+            </div>
+          </div>
+        }
+
+        <div class="sig-specs">
+          <div class="spec-item">
+            <span class="label">Input</span>
+            <span class="value">Hand-drawn</span>
+          </div>
+          <div class="spec-item">
+            <span class="label">Usage</span>
+            <span class="value">Report Endings</span>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Right Column: Form -->
-    <div class="main-panel">
-      <form [formGroup]="profileForm" class="profile-form">
-        <div class="card">
-          <div class="card-header">
-            <lucide-icon [img]="icons.User" [size]="20"></lucide-icon>
-            <h3>Personal Information</h3>
-          </div>
 
-          <div class="form-grid">
-            <app-text-input name="name" label="Full Name" placeholder="John Doe"></app-text-input>
-
-            <app-text-input name="phone" label="Phone Number" placeholder="+1 (555) 000-0000"></app-text-input>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="card-header">
-            <lucide-icon [img]="icons.Building" [size]="20"></lucide-icon>
-            <h3>Company Details</h3>
-          </div>
-
-          <div class="form-grid">
-            <app-text-input name="company_name" label="Company Name" placeholder="Inspectly Services"></app-text-input>
-
-            <app-text-input name="license_number" label="License Number" placeholder="ABC-123456"></app-text-input>
-          </div>
-        </div>
-      </form>
-
-      <div class="logout-card mobile-only-action">
-        <button (click)="onLogout()" class="btn-logout-mobile">
-          <lucide-icon [img]="icons.LogOut" [size]="20"></lucide-icon>
-          <span>Log Out</span>
-        </button>
-      </div>
+    <div class="logout-action">
+      <app-button (click)="onLogout()" variant="danger">
+        <lucide-icon [img]="icons.LogOut" [size]="16"></lucide-icon>
+        <span>Sign Out</span>
+      </app-button>
     </div>
   </div>
-  }
 </div>
+}

@@ -1,0 +1,12 @@
+@use '/variables' as *;
+@use '../../../../shared/components/inputs/input-base' as base;
+
+.section-divider {
+  border-top: 1px solid $color-border;
+}
+
+.custom-textarea {
+  @include base.field-style;
+  resize: vertical;
+  min-height: 100px;
+}

@@ -1,26 +1,57 @@
 <div class="auth-container">
   <div class="auth-card">
-    <div class="auth-header">
-      <h1>Welcome Back</h1>
-      <p>Log in to your account to continue</p>
-    </div>
-
-    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="auth-form">
-      <app-text-input name="email" label="Email Address" placeholder="Enter your email" type="email"></app-text-input>
-
-      <app-password-input name="password" label="Password" placeholder="Enter your password"></app-password-input>
-
-      <div class="form-actions">
-        <a routerLink="/auth/forgot-password" class="forgot-password">Forgot Password?</a>
+    @if (view() === 'login') {
+      <div class="auth-header">
+        <h1>Welcome Back</h1>
+        <p>Log in to your account to continue</p>
       </div>
 
-      <app-button type="submit" variant="solid" [full]="true" [disabled]="loginForm.invalid">
-        Sign In
-      </app-button>
-    </form>
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="auth-form">
+        <app-text-input name="email" label="Email Address" placeholder="Enter your email" type="email"></app-text-input>
 
-    <div class="auth-footer">
-      <p>Don't have an account? <a routerLink="/auth/register">Create one</a></p>
-    </div>
+        <app-password-input name="password" label="Password" placeholder="Enter your password"></app-password-input>
+
+        <div class="form-actions">
+          <a (click)="toggleView('forgot-password')" class="forgot-password" style="cursor: pointer; text-decoration: none;">Forgot Password?</a>
+        </div>
+
+        <app-button type="submit" variant="solid" [full]="true" [disabled]="loginForm.invalid">
+          Sign In
+        </app-button>
+      </form>
+
+      <div class="auth-footer">
+        <p>Don't have an account? <a routerLink="/auth/register">Create one</a></p>
+      </div>
+    }
+
+    @else if (view() === 'forgot-password') {
+      <div class="auth-header">
+        <h1>Reset Password</h1>
+        <p>Enter your email and we'll send you a recovery link</p>
+      </div>
+
+      <form [formGroup]="forgotPasswordForm" (ngSubmit)="onForgotPasswordSubmit()" class="auth-form">
+        <app-text-input name="email" label="Email Address" placeholder="Enter your email" type="email"></app-text-input>
+
+        <app-button type="submit" variant="solid" [full]="true" [disabled]="forgotPasswordForm.invalid">
+          Send Recovery Link
+        </app-button>
+      </form>
+
+      <div class="auth-footer">
+        <p><a (click)="toggleView('login')" style="cursor: pointer; text-decoration: none;">&larr; Back to Login</a></p>
+      </div>
+    }
+
+    @else if (view() === 'email-sent') {
+      <div class="auth-header">
+        <h1>Check your email</h1>
+        <p>If an account exists, a recovery link has been sent to the provided email.</p>
+      </div>
+      <div class="auth-footer" style="margin-top: 2rem;">
+        <p><a (click)="toggleView('login')" style="cursor: pointer; text-decoration: none;">&larr; Back to Login</a></p>
+      </div>
+    }
   </div>
 </div>

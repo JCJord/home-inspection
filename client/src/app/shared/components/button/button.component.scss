@@ -1,3 +1,4 @@
+@use 'sass:color';
 @use 'variables' as *;
 
 :host {
@@ -54,7 +55,7 @@
     color: white;
 
     &:hover:not(:disabled) {
-      background-color: darken($color-error, 10%);
+      background-color: color.adjust($color-error, $lightness: -10%);
       box-shadow: 0 4px 12px rgba($color-error, 0.2);
     }
 

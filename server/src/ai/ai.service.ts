@@ -4,8 +4,7 @@ import { ConfigService } from '@nestjs/config';
 @Injectable()
 export class AiService {
   private readonly apiKey: string;
-  private readonly apiUrl = 'https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent';
-
+  private readonly apiUrl = 'https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent';
   constructor(private config: ConfigService) {
     this.apiKey = this.config.get<string>('GEMINI_API_KEY') || '';
   }
@@ -14,21 +13,34 @@ export class AiService {
     section: string,
     severity: string,
     location: string,
-    shortNote: string,
+    description: string,
     yearBuilt: number
-  ): Promise<string> {
+  ): Promise<{ description: string, recommendation: string }> {
     if (!this.apiKey) {
       throw new InternalServerErrorException('Gemini API key is not configured');
     }
 
-    const prompt = `You are an experienced home inspector writing a professional finding comment.
-      Property year built: ${yearBuilt}
-      Section: ${section}
-      Severity: ${severity}
-      Location: ${location || 'not specified'}
-      Inspector note: ${shortNote}
+    const prompt = `You are a Certified Master Home Inspector writing a formal inspection report. 
+    I will provide you with raw, informal field notes. Your task is to REWRITE those notes into a clinical, professional observation and provide a recommendation.
 
-      Write a professional 2-3 sentence inspection finding comment. Be specific, use industry language, recommend appropriate action. Do not use filler phrases like "it was observed" or "it was noted".`;
+    CONTEXT:
+    - Property Year Built: ${yearBuilt}
+    - Section: ${section}
+    - Severity: ${severity}
+    - Location: ${location || 'Not specified'}
+    - Raw Field Note: ${description}
+
+    STRICT RULES:
+    1. REWRITE the "Raw Field Note" into a professional, objective "description" of 2-3 sentences. Do not use personal pronouns.
+    2. NO LOCAL ENTITIES: Use generic terms like "licensed specialist" instead of specific company names.
+    3. LIABILITY PROTECTION: Use clinical terms like "safety hazard" or "requires evaluation."
+    4. NO FILLER: Start directly with the component.
+    5. LENGTH: "description" must be under 600 characters. "recommendation" must be under 300 characters.
+
+    FORMAT:
+    Return a strictly valid JSON object with:
+    - "description": The polished, professional version of the raw field notes.
+    - "recommendation": A short, formal actionable recommendation (e.g., "Recommend evaluation and repair by a licensed electrician").`;
 
     try {
       const response = await fetch(`${this.apiUrl}?key=${this.apiKey}`, {
@@ -55,13 +67,22 @@ export class AiService {
         throw new InternalServerErrorException('Received invalid response format from Gemini API');
       }
 
-      return data.candidates[0].content.parts[0].text;
+      let textContent = data.candidates[0].content.parts[0].text;
+      
+      // Strip markdown json formatting if Gemini includes it
+      if (textContent.startsWith('```json')) {
+        textContent = textContent.replace(/^```json\n/, '').replace(/\n```$/, '');
+      } else if (textContent.startsWith('```')) {
+        textContent = textContent.replace(/^```\n/, '').replace(/\n```$/, '');
+      }
+      
+      return JSON.parse(textContent.trim());
     } catch (error) {
       if (error instanceof BadRequestException || error instanceof ServiceUnavailableException || error instanceof InternalServerErrorException) {
         throw error;
       }
       console.error('AI Service Error:', error);
-      throw new InternalServerErrorException('An unexpected error occurred while generating the AI comment');
+      throw new InternalServerErrorException('An unexpected error occurred while generating the AI content');
     }
   }
 }

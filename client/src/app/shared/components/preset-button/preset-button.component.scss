@@ -1,0 +1,66 @@
+@use 'sass:color';
+@use 'variables' as *;
+
+:host {
+  display: inline-block;
+}
+
+.preset-btn {
+  background: $color-surface-light;
+  border: 1px solid $color-border;
+  color: $color-text;
+  border-radius: 12px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  backdrop-filter: blur(4px);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  white-space: nowrap;
+
+  &:hover {
+    background: color.adjust($color-surface-light, $lightness: -4%);
+    border-color: color.adjust($color-border, $lightness: -10%);
+    color: $color-text;
+    transform: translateY(-1.5px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  &.active-safety {
+    background: $color-safety;
+    color: white;
+    border-color: $color-safety;
+    box-shadow: 0 4px 12px rgba($color-safety, 0.3);
+  }
+
+  &.active-major {
+    background: $color-major;
+    color: white;
+    border-color: $color-major;
+    box-shadow: 0 4px 12px rgba($color-major, 0.3);
+  }
+
+  &.active-minor {
+    background: $color-minor;
+    color: white;
+    border-color: $color-minor;
+    box-shadow: 0 4px 12px rgba($color-minor, 0.3);
+  }
+
+  &.active-maintenance {
+    background: $color-maintenance;
+    color: white;
+    border-color: $color-maintenance;
+    box-shadow: 0 4px 12px rgba($color-maintenance, 0.3);
+  }
+
+  &.active-informational {
+    background: $color-informational;
+    color: white;
+    border-color: $color-informational;
+    box-shadow: 0 4px 12px rgba($color-informational, 0.3);
+  }
+}

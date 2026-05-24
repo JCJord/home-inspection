@@ -1,0 +1,216 @@
+@use '/variables' as *;
+
+:host {
+  display: block;
+  animation: pageFadeIn 0.35s ease-out forwards;
+}
+
+// ─── Header ──────────────────────────────────
+.form-page-header {
+  margin-bottom: 2rem;
+}
+
+// ─── Form Container ──────────────────────────
+.form-container {
+  background: $color-surface;
+  border-radius: 1.5rem;
+  border: 1px solid $color-border;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+  animation: fadeIn 0.3s ease-out forwards;
+  margin-bottom: 2rem;
+  overflow: hidden;
+
+  &.edit-mode {
+    border-color: rgba($color-primary, 0.3);
+    box-shadow: 0 10px 30px -5px rgba($color-primary, 0.08);
+  }
+}
+
+.form-body {
+  padding: 2.5rem;
+  margin: 0;
+
+  @media (max-width: 640px) {
+    padding: 1.5rem;
+  }
+
+  .form-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+
+    @media (max-width: 640px) {
+      grid-template-columns: 1fr;
+      gap: 1.25rem;
+    }
+  }
+
+  .form-section-title {
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: $color-text-muted;
+    border-bottom: 1px solid rgba($color-border, 0.5);
+    padding-bottom: 0.5rem;
+    margin-top: 0.5rem;
+  }
+
+  .form-error-banner {
+    background: rgba($color-error, 0.04);
+    border: 1px solid rgba($color-error, 0.15);
+    border-left: 4px solid $color-error;
+    color: $color-error;
+    padding: 0.875rem 1.25rem;
+    border-radius: 0.875rem;
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    font-size: 0.875rem;
+    font-weight: 600;
+    animation: slideDown 0.3s ease-out;
+
+    lucide-icon {
+      flex-shrink: 0;
+      color: $color-error;
+    }
+  }
+
+  .form-actions {
+    margin-top: 2.5rem;
+    border-top: 1px solid rgba($color-border, 0.5);
+    padding-top: 1.5rem;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+
+    @media (max-width: 640px) {
+      flex-direction: column;
+      gap: 1rem;
+
+      app-button {
+        width: 100%;
+
+        ::ng-deep .app-button {
+          width: 100%;
+        }
+      }
+    }
+  }
+}
+
+// Native datetime-local input styling
+.input-wrapper {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+
+  .input-label {
+    color: $color-text-muted;
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+
+  .input-field {
+    background-color: $color-surface;
+    border: 1px solid $color-border;
+    color: $color-text;
+    border-radius: 0.625rem;
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+    outline: none;
+    width: 100%;
+    font-family: inherit;
+
+    &:focus {
+      border-color: $color-primary;
+      box-shadow: 0 0 0 4px rgba($color-primary, 0.1);
+    }
+  }
+}
+
+// ─── Blueprint Badge Card ───
+.blueprint-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: linear-gradient(135deg, rgba($color-primary, 0.03) 0%, rgba($color-primary, 0.01) 100%);
+  border: 1px dashed rgba($color-primary, 0.2);
+  border-radius: 1rem;
+  padding: 1rem 1.25rem;
+  margin-top: 0.5rem;
+
+  .badge-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 0.75rem;
+    background: rgba($color-primary, 0.1);
+    color: $color-primary;
+  }
+
+  .badge-content {
+    display: flex;
+    flex-direction: column;
+
+    .badge-label {
+      font-size: 0.675rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: $color-text-muted;
+    }
+
+    .badge-value {
+      font-size: 0.875rem;
+      font-weight: 700;
+      color: $color-primary;
+    }
+  }
+}
+
+// ─── Page Keyframes ────────────────────────────
+@keyframes pageFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

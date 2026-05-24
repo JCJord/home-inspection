@@ -1,0 +1,99 @@
+@use 'variables' as *;
+
+:host {
+  display: block;
+  width: 100%;
+}
+
+.workbench-container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.bg-surface-standard {
+  background-color: $color-surface;
+}
+
+.bg-light-standard {
+  background-color: $color-bg;
+}
+
+.border-standard {
+  border-color: $color-border;
+}
+
+.sidebar-drawer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  top: auto;
+  z-index: 100;
+  height: 85vh;
+  width: 100%;
+  background-color: $color-surface;
+  border-top-left-radius: 1.5rem;
+  border-top-right-radius: 1.5rem;
+  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  .is-ready & {
+    transition: transform 0.5s cubic-bezier(0.32, 0.72, 0, 1);
+  }
+
+  &.closed {
+    transform: translateY(100%);
+  }
+
+  @media (min-width: 769px) {
+    position: relative;
+    top: 0;
+    bottom: 0;
+    z-index: 0;
+    height: auto;
+    width: 20rem; // Slightly wider for findings
+    border-radius: 0;
+    box-shadow: none;
+    transform: translateY(0) !important;
+    border-right: 1px solid $color-border;
+  }
+}
+
+.bottom-sheet-handle {
+  width: 40px;
+  height: 4px;
+  background-color: $color-border;
+  border-radius: 2px;
+  margin: 12px auto;
+  flex-shrink: 0;
+  cursor: pointer;
+
+  @media (min-width: 769px) {
+    display: none;
+  }
+}
+
+.backdrop-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
+  z-index: 90;
+  animation: fadeIn 0.3s ease-out;
+
+  @media (min-width: 769px) {
+    display: none !important;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.sidebar-content {
+    height: 100%;
+}

@@ -3,12 +3,27 @@
 .dropdown-container {
   position: relative;
   display: inline-block;
+  
+  &.is-open {
+    z-index: 1000;
+  }
 
   .dropdown-trigger {
     color: $color-text-muted;
     background: transparent;
     border: none;
     cursor: pointer;
+    position: relative;
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: -12px;
+      bottom: -12px;
+      left: -12px;
+      right: -12px;
+      border-radius: 50%;
+    }
 
     &:hover, &.active {
       color: $color-text;

@@ -1,0 +1,70 @@
+@use 'variables' as *;
+
+:host {
+  display: block;
+  width: 100%;
+}
+
+.section-tab {
+  position: relative;
+  min-height: 54px;
+  
+  &.active {
+    background-color: $color-surface-light;
+    border-left: 4px solid $color-primary;
+    padding-left: calc(1rem - 4px);
+
+    .text-standard {
+      color: $color-primary;
+    }
+    
+    lucide-icon {
+      color: $color-primary !important;
+    }
+  }
+}
+
+.bg-surface-standard {
+  background-color: $color-surface;
+}
+
+.border-standard {
+  border-color: $color-border;
+}
+
+.border-surface-standard {
+  border-color: $color-surface;
+}
+
+.active-editing {
+  border-color: $color-primary !important;
+  background: linear-gradient(to right, rgba($color-primary, 0.05), transparent) !important;
+  box-shadow: 0 4px 12px rgba($color-primary, 0.1) !important;
+}
+
+.badge-count {
+  background-color: $color-primary-glow;
+  color: $color-primary;
+  border: 1px solid rgba($color-primary, 0.1);
+}
+
+.status-pill {
+  color: $color-text-muted;
+  border: 1px solid transparent;
+  
+  &:hover {
+    color: $color-text;
+  }
+  
+  &.active {
+    background-color: white;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    color: $color-text;
+    
+    lucide-icon {
+      &[name="check-circle-2"] { color: #10b981; }
+      &[name="ban"] { color: #f59e0b; }
+      &[name="circle-x"] { color: #64748b; }
+    }
+  }
+}

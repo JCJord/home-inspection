@@ -7,69 +7,120 @@
       <span>{{ errorMessage() }}</span>
     </div>
     }
+
+
     <div class="form-group photo-upload">
       <label class="control-label">Photos (Optional)</label>
 
-      <div class="upload-area" (click)="fileInput.click()">
+      <div class="upload-area" [class.opacity-50]="isPublishedSignal()" [class.pointer-events-none]="isPublishedSignal()" (click)="isPublishedSignal() ? null : fileInput.click()">
         <lucide-icon [name]="icons.Upload" [size]="24"></lucide-icon>
         <span class="upload-text">Click to browse or drag and drop images</span>
         <input #fileInput type="file" multiple accept="image/*" style="display: none" (change)="onFileSelected($event)">
       </div>
 
-      <!-- Existing Photos -->
-      @if (existingPhotos().length > 0) {
-      <div class="existing-photos-grid">
-        @for (photo of existingPhotos(); track photo.id) {
+      <!-- New Selected Files -->
+      @if (selectedFiles().length > 0) {
+      <div class="existing-photos-grid" formArrayName="new_photo_captions">
+        @for (item of selectedFiles(); track item.previewUrl; let i = $index) {
         <div class="existing-photo-item">
-          <img [src]="resolveImageUrl(photo.storage_url)" alt="Finding photo">
-          <div class="photo-action-pill" [class.confirming]="activeDeleteExistingId() === photo.id">
-            @if (activeDeleteExistingId() === photo.id) {
-              <button type="button" class="action-btn cancel-delete" (click)="cancelDelete()" aria-label="Cancel">
-                <span class="action-text">Cancel</span>
-              </button>
-              <div class="divider"></div>
-              <button type="button" class="action-btn confirm-delete" (click)="confirmDeleteExistingPhoto(photo.id)" aria-label="Confirm Deletion">
-                <span class="action-text font-bold">Delete</span>
-              </button>
-            } @else {
-              <button type="button" class="action-btn edit" (click)="editExistingPhoto(photo)" aria-label="Edit photo">
-                <lucide-icon [name]="icons.Edit" [size]="14"></lucide-icon>
-              </button>
-              <div class="divider"></div>
-              <button type="button" class="action-btn delete" (click)="initDeleteExistingPhoto(photo.id)" aria-label="Delete photo">
-                <lucide-icon [name]="icons.Trash2" [size]="14"></lucide-icon>
-              </button>
+          <div class="photo-thumbnail">
+            <img [src]="item.previewUrl" alt="Selected photo preview">
+            
+            @if (item.isCompressing) {
+              <div class="compression-loader">
+                <lucide-icon [name]="icons.Loader2" class="animate-spin text-white" [size]="20"></lucide-icon>
+              </div>
             }
+
+            <div class="photo-action-pill" [class.confirming]="activeDeleteNewIndex() === i">
+              @if (!isPublishedSignal()) {
+                @if (activeDeleteNewIndex() === i) {
+                  <button type="button" class="action-btn cancel-delete" (click)="cancelDelete()" aria-label="Cancel">
+                    <span class="action-text">Cancel</span>
+                  </button>
+                  <div class="divider"></div>
+                  <button type="button" class="action-btn confirm-delete" (click)="removeFile(i)" aria-label="Confirm Deletion">
+                    <span class="action-text font-bold">Delete</span>
+                  </button>
+                } @else {
+                  <button type="button" class="action-btn edit" (click)="editNewPhoto(i, item.previewUrl)" aria-label="Edit photo">
+                    <lucide-icon [name]="icons.Edit" [size]="14"></lucide-icon>
+                  </button>
+                  <div class="divider"></div>
+                  <button type="button" class="action-btn delete" (click)="initDeleteNewPhoto(i)" aria-label="Remove photo">
+                    <lucide-icon [name]="icons.Trash2" [size]="14"></lucide-icon>
+                  </button>
+                }
+              }
+            </div>
+          </div>
+          
+          <div class="photo-caption-input">
+            <lucide-icon [name]="icons.Edit" [size]="10" class="text-standard-muted opacity-50 mr-1"></lucide-icon>
+            <input 
+              type="text" 
+              [formControlName]="i"
+              placeholder="Add caption..."
+              class="w-full text-[11px] bg-transparent outline-none text-standard italic focus:not-italic transition-all"
+            >
           </div>
         </div>
         }
       </div>
       }
 
-      <!-- New Selected Files -->
-      @if (selectedFiles().length > 0) {
-      <div class="existing-photos-grid">
-        @for (item of selectedFiles(); track item.previewUrl; let i = $index) {
-        <div class="existing-photo-item">
-          <img [src]="item.previewUrl" alt="Selected photo preview">
-          <div class="photo-action-pill" [class.confirming]="activeDeleteNewIndex() === i">
-            @if (activeDeleteNewIndex() === i) {
-              <button type="button" class="action-btn cancel-delete" (click)="cancelDelete()" aria-label="Cancel">
-                <span class="action-text">Cancel</span>
-              </button>
-              <div class="divider"></div>
-              <button type="button" class="action-btn confirm-delete" (click)="removeFile(i)" aria-label="Confirm Deletion">
-                <span class="action-text font-bold">Delete</span>
-              </button>
-            } @else {
-              <button type="button" class="action-btn edit" (click)="editNewPhoto(i, item.previewUrl)" aria-label="Edit photo">
-                <lucide-icon [name]="icons.Edit" [size]="14"></lucide-icon>
-              </button>
-              <div class="divider"></div>
-              <button type="button" class="action-btn delete" (click)="initDeleteNewPhoto(i)" aria-label="Remove photo">
-                <lucide-icon [name]="icons.Trash2" [size]="14"></lucide-icon>
-              </button>
+      <!-- Existing Photos -->
+      @if (existingPhotos().length > 0) {
+      <div class="existing-photos-grid" formArrayName="photo_captions">
+        @for (photo of existingPhotos(); track photo.id; let i = $index) {
+        <div class="existing-photo-item" [formGroupName]="i">
+          <div class="photo-thumbnail">
+            <img [src]="photo.storage_url | resolveImage | async" alt="Finding photo">
+            
+            @if (photo.isSyncing) {
+              <div class="absolute inset-0 bg-black/40 flex flex-col items-center justify-center gap-1 text-white backdrop-blur-[1px]">
+                <lucide-icon [name]="icons.Loader2" class="animate-spin" [size]="16"></lucide-icon>
+                <span class="text-[8px] font-bold uppercase tracking-widest">Syncing</span>
+              </div>
+            } @else if ($any(photo).hasError) {
+              <div class="absolute inset-0 bg-red-500/60 flex flex-col items-center justify-center text-white backdrop-blur-[1px]">
+                <lucide-icon [name]="icons.AlertCircle" class="mb-1" [size]="16"></lucide-icon>
+                <span class="text-[8px] font-bold uppercase tracking-widest">Failed</span>
+              </div>
             }
+
+            <div class="photo-action-pill" [class.confirming]="activeDeleteExistingId() === photo.id">
+              @if (!isPublishedSignal()) {
+                @if (activeDeleteExistingId() === photo.id) {
+                  <button type="button" class="action-btn cancel-delete" (click)="cancelDelete()" aria-label="Cancel">
+                    <span class="action-text">Cancel</span>
+                  </button>
+                  <div class="divider"></div>
+                  <button type="button" class="action-btn confirm-delete" (click)="confirmDeleteExistingPhoto(photo.id)" aria-label="Confirm Deletion">
+                    <span class="action-text font-bold">Delete</span>
+                  </button>
+                } @else {
+                  <button type="button" class="action-btn edit" (click)="editExistingPhoto(photo)" aria-label="Edit photo">
+                    <lucide-icon [name]="icons.Edit" [size]="14"></lucide-icon>
+                  </button>
+                  <div class="divider"></div>
+                  <button type="button" class="action-btn delete" (click)="initDeleteExistingPhoto(photo.id)" aria-label="Delete photo">
+                    <lucide-icon [name]="icons.Trash2" [size]="14"></lucide-icon>
+                  </button>
+                }
+              }
+            </div>
+          </div>
+
+          <div class="photo-caption-input">
+            <lucide-icon [name]="icons.Edit" [size]="10" class="text-standard-muted opacity-50 mr-1"></lucide-icon>
+            <input 
+              type="text" 
+              formControlName="caption"
+              placeholder="Add caption..."
+              (blur)="onCaptionBlur(i)"
+              class="w-full text-[11px] bg-transparent outline-none text-standard italic focus:not-italic transition-all"
+            >
           </div>
         </div>
         }
@@ -77,13 +128,29 @@
       }
     </div>
 
+    <!-- Presets (Quick Actions) -->
+    @if (presets && presets.length > 0 && !isPublishedSignal()) {
+    <div class="form-group presets-container mb-4">
+      <label class="control-label block text-sm font-medium text-standard-muted mb-2">Quick Presets</label>
+      <div class="flex flex-wrap gap-2">
+        @for (preset of presets; track preset.title) {
+        <app-preset-button 
+          [preset]="preset" 
+          [isActive]="isPresetActive(preset)"
+          (selected)="applyPreset(preset)"
+        ></app-preset-button>
+        }
+      </div>
+    </div>
+    }
+
     <!-- Severity Selector -->
     <div class="form-group severity-selector">
       <label class="control-label">Severity <span>*</span></label>
-      <div class="severity-options">
+      <div class="severity-options" [class.opacity-50]="isPublishedSignal()" [class.pointer-events-none]="isPublishedSignal()">
         @for (severity of severities; track severity) {
         <button type="button" class="severity-btn" [class.active]="currentSeverity === severity"
-          [attr.data-severity]="severity.toLowerCase()" (click)="setSeverity(severity)">
+          [attr.data-severity]="severity.toLowerCase()" (click)="isPublishedSignal() ? null : setSeverity(severity)">
           {{ severity }}
         </button>
         }
@@ -91,65 +158,80 @@
     </div>
 
     <!-- Location -->
-    <app-text-input name="location" label="Location (Optional)" placeholder="e.g., North wall, Master bathroom">
-    </app-text-input>
-
-    <!-- Short Note (Observation) -->
-    <app-text-input name="short_note" label="Observation Note *" placeholder="Describe the finding briefly (e.g. double tapped breaker)...">
-    </app-text-input>
-
-    <!-- AI Generated Comment -->
-    <div class="form-group ai-comment-group">
-      <div class="flex justify-between items-center mb-1">
-        <label class="control-label">AI Generated Comment (Optional)</label>
-        <button type="button" class="ai-generate-btn" (click)="generateAiComment()" [disabled]="isGeneratingAi() || !isPremium()"
-          [class.premium-lock]="!isPremium()" [title]="!isPremium() ? 'Available for users with Active subscription only' : ''">
-          @if (isGeneratingAi()) {
-            <div class="spinner-small mr-2"></div>
-            Generating...
-          } @else {
-            <lucide-icon [name]="icons.Sparkles" [size]="14" class="mr-1"></lucide-icon>
-            {{ isPremium() ? 'Generate AI Comment' : 'Upgrade for AI' }}
-          }
-        </button>
+    <app-location-combobox 
+      formControlName="location" 
+      [locationPresets]="locationPresets"
+      placeholder="e.g., Master Bathroom, North Attic">
+    </app-location-combobox>
+ 
+    <!-- Description (Observation) -->
+    <app-textarea-input name="description" label="Observation Note *" placeholder="Type 2-3 keywords (e.g., 'water stain ceiling') and tap ✨ Generate AI Content..." [rows]="5" [maxLength]="2200">
+    </app-textarea-input>
+ 
+    <!-- AI Generation Trigger Bar -->
+    <div class="ai-trigger-container" [class.opacity-50]="isPublishedSignal()">
+      <div class="ai-bar">
+         <div class="ai-text">
+           <lucide-icon [name]="icons.Sparkles" [size]="16" class="ai-icon"></lucide-icon>
+           <span><strong>AI Assistant:</strong> Tap to rewrite your keywords into a clinical report finding.</span>
+         </div>
+         <button type="button" class="ai-generate-btn" 
+           (click)="generateAiComment()" [disabled]="isGeneratingAi() || isPublishedSignal()">
+           @if (isGeneratingAi()) {
+             <div class="spinner-small mr-2"></div>
+             <span>Generating...</span>
+           } @else {
+             <span>✨ Generate AI Content</span>
+           }
+         </button>
       </div>
-      <app-textarea-input name="ai_comment" placeholder="The AI generated professional comment will appear here..." [rows]="4" [readonly]="!isPremium() && findingForm.get('ai_comment')?.value === ''">
-      </app-textarea-input>
       <div class="ai-status-container min-h-[32px] mt-2">
         @if (aiErrorMessage()) {
           <div class="flex items-center gap-2 px-3 py-1.5 rounded-md bg-red-50 border border-red-200 text-red-700 text-xs font-bold animate-pulse">
             <lucide-icon [name]="icons.AlertCircle" [size]="14" class="text-red-500"></lucide-icon>
             <span>{{ aiErrorMessage() }}</span>
           </div>
-        } @else if (!isPremium()) {
-          <div class="flex items-center gap-2 px-3 py-1.5 rounded-md bg-amber-50 border border-amber-200 text-amber-700 text-xs font-medium">
-            <span class="text-lg leading-none">✨</span>
-            <span>AI Finding generation is available for Active users.</span>
-          </div>
         } @else {
-          <div class="flex items-center gap-2 px-3 py-1.5 rounded-md bg-blue-50 border border-blue-100 text-blue-700 text-xs italic">
-            <lucide-icon [name]="icons.Sparkles" [size]="12" class="text-blue-400"></lucide-icon>
-            <span>Location and Observation Note are required for AI generation.</span>
+          <div class="flex items-center gap-2 px-3 py-1.5 rounded-md bg-blue-50/50 border border-transparent text-blue-700 text-[11px] italic">
+            <span>Pro tip: Enter 'Location' and 'Observation' keywords for best results.</span>
           </div>
         }
       </div>
     </div>
 
-    <div class="form-actions flex justify-between">
-      <app-button type="button" class="cancel-btn" variant="outline" (click)="close.emit()" [disabled]="isLoading()">
-        Cancel
+    <!-- Recommendation -->
+    <app-textarea-input name="recommendation" label="Recommendation (Optional)" placeholder="e.g., Recommend evaluation and repair by a licensed electrician." [rows]="2" [maxLength]="800">
+    </app-textarea-input>
+
+    <div class="form-actions flex" [class.justify-between]="!isPublishedSignal()" [class.justify-end]="isPublishedSignal()">
+      <div></div>
+
+      @if (!isPublishedSignal()) {
+      <app-button type="submit" [disabled]="findingForm.invalid || showSuccess()" [isLoading]="isLoading()"
+        [variant]="showSuccess() ? 'subtle' : 'solid'"
+        class="transition-all duration-300">
+        @if (showSuccess()) {
+          <div class="flex items-center gap-2 text-green-600 animate-in zoom-in-95 duration-200">
+            <lucide-icon [name]="icons.Check" [size]="18"></lucide-icon>
+            <span class="font-bold">Finding Queued!</span>
+          </div>
+        } @else {
+          {{ isEditMode() ? 'Save Changes' : 'Add Finding' }}
+        }
       </app-button>
-      <app-button type="submit" [disabled]="findingForm.invalid || isLoading()" [isLoading]="isLoading()"
-        variant="solid">
-        {{ isEditMode() ? 'Save Changes' : 'Add Finding' }}
+      } @else {
+      <app-button type="button" variant="outline" (click)="close.emit()" [disabled]="isLoading()">
+        Close
       </app-button>
+      }
     </div>
+
   </form>
 </div>
 
 @if (photoToEdit()) {
   <app-image-editor-modal
-    [imageUrl]="photoToEdit()!.type === 'existing' ? resolveImageUrl($any(photoToEdit()!).photo.storage_url) : $any(photoToEdit()!).previewUrl"
+    [imageUrl]="((photoToEdit()!.type === 'existing' ? $any(photoToEdit()!).photo.storage_url : $any(photoToEdit()!).previewUrl) | resolveImage | async) || ''"
     (close)="photoToEdit.set(null)"
     (save)="onSavePhotoEdit($event)">
   </app-image-editor-modal>

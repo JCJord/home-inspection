@@ -8,12 +8,17 @@ import {
   Delete,
   UseGuards,
   Query,
+  UseInterceptors,
+  UploadedFile,
+  BadRequestException,
 } from '@nestjs/common';
 import { InspectionsService } from './inspections.service';
 import { CreateInspectionDto } from './dto/create-inspection.dto';
 import { UpdateInspectionDto } from './dto/update-inspection.dto';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { GetUser } from '../auth/decorators/get-user.decorator';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { SendReportDto } from './dto/send-report.dto';
 
 @UseGuards(AuthGuard)
 @Controller('inspections')
@@ -25,7 +30,26 @@ export class InspectionsController {
     @GetUser('sub') inspectorId: string,
     @Body() createInspectionDto: CreateInspectionDto,
   ) {
+    console.log('--- POST /inspections PAYLOAD ---', createInspectionDto);
     return this.inspectionsService.create(inspectorId, createInspectionDto);
+  }
+
+  @Post(':id/cover-photo')
+  @UseInterceptors(FileInterceptor('cover_photo', {
+    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+    fileFilter: (req, file, cb) => {
+      if (!file.mimetype.match(/^image\/(jpeg|png|webp)$/)) {
+        return cb(new BadRequestException('Only JPEG, PNG and WebP images are allowed'), false);
+      }
+      cb(null, true);
+    },
+  }))
+  uploadCoverPhoto(
+    @GetUser('sub') inspectorId: string,
+    @Param('id') id: string,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    return this.inspectionsService.uploadCoverPhoto(inspectorId, id, file);
   }
 
   @Get()
@@ -33,10 +57,22 @@ export class InspectionsController {
     @GetUser('sub') inspectorId: string,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
+    @Query('status') status?: string,
+    @Query('search') search?: string,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
   ) {
     const pageNumber = parseInt(page || '1', 10);
     const limitNumber = parseInt(limit || '10', 10);
-    return this.inspectionsService.findAll(inspectorId, pageNumber, limitNumber);
+    return this.inspectionsService.findAll(
+      inspectorId,
+      pageNumber,
+      limitNumber,
+      status,
+      search,
+      startDate,
+      endDate,
+    );
   }
 
   @Get(':id')
@@ -54,12 +90,40 @@ export class InspectionsController {
   }
 
   @Post(':id/publish')
-  publish(@GetUser('sub') inspectorId: string, @Param('id') id: string) {
-    return this.inspectionsService.publish(inspectorId, id);
+  publish(
+    @GetUser('sub') inspectorId: string,
+    @Param('id') id: string,
+    @Body() body?: { html?: string },
+  ) {
+    return this.inspectionsService.publish(inspectorId, id, body?.html);
+  }
+
+  @Post(':id/unpublish')
+  unpublish(@GetUser('sub') inspectorId: string, @Param('id') id: string) {
+    return this.inspectionsService.unpublish(inspectorId, id);
+  }
+
+  @Post(':id/cancel')
+  cancel(@GetUser('sub') inspectorId: string, @Param('id') id: string) {
+    return this.inspectionsService.cancel(inspectorId, id);
+  }
+
+  @Patch(':id/start')
+  startInspection(@GetUser('sub') inspectorId: string, @Param('id') id: string) {
+    return this.inspectionsService.startInspection(inspectorId, id);
   }
 
   @Delete(':id')
   remove(@GetUser('sub') inspectorId: string, @Param('id') id: string) {
     return this.inspectionsService.remove(inspectorId, id);
+  }
+
+  @Post(':id/send-report')
+  sendReport(
+    @GetUser('sub') inspectorId: string,
+    @Param('id') id: string,
+    @Body() sendReportDto: SendReportDto,
+  ) {
+    return this.inspectionsService.sendReport(inspectorId, id, sendReportDto.email);
   }
 }

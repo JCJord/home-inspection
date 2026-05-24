@@ -12,6 +12,8 @@ import {
 import { Inspector } from '../inspectors/inspector.entity';
 import { Finding } from '../findings/finding.entity';
 import { Report } from '../reports/report.entity';
+import { Template } from '../templates/template.entity';
+import type { TemplateStructure } from '../templates/template.entity';
 
 @Entity('inspections')
 export class Inspection {
@@ -25,25 +27,74 @@ export class Inspection {
   @JoinColumn({ name: 'inspector_id' })
   inspector: Inspector;
 
-  @Column()
+  @Column({ nullable: true })
   address: string;
 
   @Column()
   client_name: string;
 
-  @Column()
+  @Column({ nullable: true })
   client_email: string;
 
-  @Column()
+  @Column({ nullable: true })
+  client_phone: string;
+
+  @Column({ nullable: true })
   year_built: number;
 
   @Column({ nullable: true })
   square_footage: number;
 
-  @Column({ default: 'in_progress' })
+  @Column({ default: 'scheduled' })
   status: string;
 
-  @OneToMany(() => Finding, (finding) => finding.inspection, { cascade: true, eager: true })
+  @Column({ type: 'timestamp', nullable: true })
+  scheduled_date: Date;
+
+  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+  agreed_price: number;
+
+  @Column({ nullable: true })
+  weather: string;
+
+  @Column({ type: 'float', nullable: true })
+  temperature: number;
+
+  @Column({ nullable: true })
+  occupancy: string;
+
+  @Column({ nullable: true })
+  attendees: string;
+
+  @Column({ nullable: true })
+  foundation_type: string;
+
+  @Column({ nullable: true })
+  cover_photo_key?: string;
+
+  // Dynamically populated, not saved in DB
+  cover_photo_url?: string;
+
+  @Column({ name: 'template_id', nullable: true })
+  template_id: string;
+
+  @ManyToOne(() => Template, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'template_id' })
+  template: Template;
+
+  @Column({ type: 'jsonb', nullable: true })
+  template_snapshot: TemplateStructure;
+
+  @Column({ type: 'jsonb', nullable: true })
+  metadata_values: Record<string, string>;
+
+  @Column({ type: 'jsonb', nullable: true })
+  section_statuses: Record<string, { status: string; reason?: string }>;
+
+  @Column({ type: 'timestamp', nullable: true })
+  report_sent_at: Date;
+
+  @OneToMany(() => Finding, (finding) => finding.inspection, { cascade: true })
   findings: Finding[];
 
   @OneToOne(() => Report, (report) => report.inspection, { cascade: true })

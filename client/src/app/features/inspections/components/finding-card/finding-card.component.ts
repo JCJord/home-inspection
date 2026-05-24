@@ -1,34 +1,43 @@
 import { Component, input, output, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Finding } from '../../../../core/models/inspection.interface';
-import { LucideAngularModule, MapPin, Trash2, Edit, Sparkles, ChevronDown, ChevronUp } from 'lucide-angular';
+import { LucideAngularModule, MapPin, Trash2, Edit, ChevronDown, ChevronUp, Eye, ChevronRight, Wrench } from 'lucide-angular';
 import { environment } from '../../../../../environments/environment';
 import { DropdownMenuComponent, DropdownItem } from '../../../../shared/components/dropdown-menu/dropdown-menu.component';
 import { PhotoCarouselComponent } from '../../../../shared/components/photo-carousel/photo-carousel.component';
+import { ConfirmPillComponent } from '../../../../shared/components/confirm-pill/confirm-pill.component';
+import { LightboxComponent } from '../../../../shared/components/lightbox/lightbox.component';
+import { ResolveImagePipe } from '../../../../shared/pipes/resolve-image.pipe';
 
 @Component({
   selector: 'app-finding-card',
   standalone: true,
-  imports: [CommonModule, LucideAngularModule, DropdownMenuComponent, PhotoCarouselComponent],
+  imports: [CommonModule, LucideAngularModule, DropdownMenuComponent, ConfirmPillComponent, LightboxComponent, ResolveImagePipe],
   templateUrl: './finding-card.component.html',
   styleUrl: './finding-card.component.scss',
 })
 export class FindingCardComponent {
   finding = input.required<Finding>();
+  readOnly = input<boolean>(false);
   isDeleting = input<boolean>(false);
   delete = output<void>();
   edit = output<void>();
   isConfirmingDelete = signal(false);
-  isAiExpanded = signal(false);
   isNoteExpanded = signal(false);
+  isLightboxOpen = signal(false);
+  activePhotoIndex = signal(0);
 
-  readonly icons = { MapPin, Sparkles, ChevronDown, ChevronUp };
+  readonly icons = { MapPin, ChevronDown, ChevronUp, Eye, ChevronRight, Wrench };
 
-  shouldShowAiExpand = computed(() => (this.finding().ai_comment?.length || 0) > 140);
-  shouldShowNoteExpand = computed(() => (this.finding().short_note?.length || 0) > 140);
+  openLightbox(index: number) {
+    this.activePhotoIndex.set(index);
+    this.isLightboxOpen.set(true);
+  }
+
+  shouldShowNoteExpand = computed(() => (this.finding().description?.length || 0) > 140);
 
   resolvedImages = computed<string[]>(() => {
-    return (this.finding().photos || []).map(p => this.resolveImageUrl(p.storage_url));
+    return (this.finding().photos || []).map(p => p.storage_url);
   });
 
   menuItems = computed<DropdownItem[]>(() => [
@@ -45,10 +54,10 @@ export class FindingCardComponent {
     },
   ]);
 
-  resolveImageUrl(url: string | undefined): string {
-    if (!url) return '';
-    if (url.startsWith('http')) return url;
-    const path = url.startsWith('/') ? url : `/${url}`;
-    return `${environment.apiUrl}${path}`;
+  toggleNoteExpansion(event: Event) {
+    event.stopPropagation();
+    if (this.shouldShowNoteExpand()) {
+      this.isNoteExpanded.set(!this.isNoteExpanded());
+    }
   }
 }

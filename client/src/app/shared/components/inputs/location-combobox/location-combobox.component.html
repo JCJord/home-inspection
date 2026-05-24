@@ -1,0 +1,25 @@
+<div class="input-container" [class.disabled]="disabled()">
+  <label class="input-label">Location (Optional)</label>
+  <div class="input-wrapper" [class.opacity-60]="disabled()">
+    <input 
+      type="text" 
+      [value]="value()"
+      (input)="onInput($event)"
+      (focus)="onFocus()"
+      [placeholder]="placeholder()"
+      [disabled]="disabled()"
+      class="input-field"
+    >
+    <span class="input-suffix flex items-center">
+      <lucide-icon [name]="icons.ChevronDown" [size]="16" class="cursor-pointer text-slate-900" style="color: #0f172a;" (click)="onFocus()"></lucide-icon>
+    </span>
+  </div>
+  
+  @if (isOpen() && filteredPresets().length > 0) {
+    <ul class="dropdown-list">
+      @for (preset of filteredPresets(); track preset) {
+        <li (click)="selectPreset(preset)">{{ preset }}</li>
+      }
+    </ul>
+  }
+</div>

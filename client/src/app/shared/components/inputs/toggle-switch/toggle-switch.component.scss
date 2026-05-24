@@ -1,0 +1,111 @@
+@use '/variables' as *;
+
+:host {
+  display: block;
+  width: 100%;
+}
+
+.toggle-container {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1.25rem;
+  background-color: $color-surface;
+  border-radius: 0.75rem;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+
+  &--disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .toggle-label {
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+
+    .title {
+      font-weight: 600;
+      color: $color-text;
+      margin-bottom: 0.25rem;
+      font-size: 1rem;
+    }
+
+    .desc {
+      font-size: 0.875rem;
+      color: $color-text-muted;
+      line-height: 1.5;
+    }
+  }
+
+  .switch {
+    justify-self: end;
+    
+    @media (max-width: 600px) {
+      justify-self: start;
+    }
+  }
+}
+
+/* Switch styles */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 26px;
+
+  input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+
+    &:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: .4s;
+    }
+  }
+
+  input:checked + .slider {
+    background-color: $color-primary;
+  }
+
+  input:focus + .slider {
+    box-shadow: 0 0 1px $color-primary;
+  }
+
+  input:checked + .slider:before {
+    transform: translateX(24px);
+  }
+
+  .slider.round {
+    border-radius: 34px;
+    &:before {
+      border-radius: 50%;
+    }
+  }
+}

@@ -1,0 +1,75 @@
+<div class="job-card"
+  [class.job-card--today]="isToday(job.scheduled_date)"
+  [class.job-card--past]="isPast(job.scheduled_date)"
+  [class.job-card--cancelled]="job.status === 'cancelled'">
+
+  <!-- Header: badge + menu -->
+  <div class="card-head">
+    @if (isToday(job.scheduled_date)) {
+      <span class="status-badge status-badge--today">
+        <span class="dot"></span>Today
+      </span>
+    } @else if (job.status === 'cancelled') {
+      <span class="status-badge status-badge--cancelled">
+        <span class="dot"></span>Cancelled
+      </span>
+    } @else {
+      <span></span> <!-- spacer to keep menu right-aligned -->
+    }
+    <div (click)="$event.stopPropagation()">
+      @if (confirmingJobId === job.id) {
+        <app-confirm-pill 
+          [confirmText]="confirmationType === 'delete' ? 'Delete' : 'Cancel'"
+          (confirm)="confirm.emit(job)" 
+          (cancel)="cancelConfirmation.emit()">
+        </app-confirm-pill>
+      } @else {
+        <app-dropdown-menu [items]="menuItems()"></app-dropdown-menu>
+      }
+    </div>
+  </div>
+
+  <!-- Address -->
+  <div class="card-address" (click)="open.emit(job)">
+    <lucide-icon [name]="icons.MapPin" [size]="16"></lucide-icon>
+    <span class="addr-text">{{ job.address }}</span>
+  </div>
+
+  <!-- Date & time -->
+  <div class="card-when">
+    <lucide-icon [name]="icons.Clock" [size]="13"></lucide-icon>
+    <span class="when-date" [class.when-date--today]="isToday(job.scheduled_date)">
+      {{ isToday(job.scheduled_date) ? 'Today' : formatDateOnly(job.scheduled_date) }}
+    </span>
+    <span class="when-sep">·</span>
+    <span class="when-time">{{ formatTimeOnly(job.scheduled_date) }}</span>
+  </div>
+
+  <!-- Client chips -->
+  <div class="card-meta">
+    <span class="meta-chip">
+      <lucide-icon [name]="icons.User" [size]="12"></lucide-icon>
+      {{ job.client_name }}
+    </span>
+    @if (job.client_phone) {
+      <span class="meta-chip">
+        <lucide-icon [name]="icons.Phone" [size]="12"></lucide-icon>
+        {{ job.client_phone }}
+      </span>
+    }
+  </div>
+
+  <!-- Footer -->
+  <div class="card-footer">
+    @if (job.agreed_price) {
+      <span class="price-tag">${{ job.agreed_price }}</span>
+    }
+    <app-button
+      [variant]="isToday(job.scheduled_date) ? 'solid' : 'outline'"
+      size="sm"
+      (click)="open.emit(job)">
+      {{ isToday(job.scheduled_date) ? 'Start job' : 'View details' }}
+      <lucide-icon [name]="icons.ChevronRight" [size]="14"></lucide-icon>
+    </app-button>
+  </div>
+</div>

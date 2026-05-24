@@ -1,0 +1,22 @@
+@use 'variables' as *;
+
+.back-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.5rem;
+  min-height: 2.5rem;
+  border-radius: 0.75rem;
+  border: 1px solid $color-border;
+  background: $color-surface;
+  color: $color-text-muted;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.2s;
+
+  &:hover {
+    background: $color-surface-light;
+    color: $color-text;
+    border-color: $color-primary;
+  }
+}

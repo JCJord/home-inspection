@@ -2,16 +2,22 @@ import { Component, OnInit, inject, signal, DestroyRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { debounceTime, distinctUntilChanged, finalize, switchMap, filter, tap } from 'rxjs';
+import { debounceTime, distinctUntilChanged, finalize, switchMap, filter, tap, of, catchError } from 'rxjs';
 import { InspectorsService } from '../../../../core/services/inspectors.service';
 import { Inspector } from '../../../../core/models/inspector.interface';
 import { TextInputComponent } from '../../../../shared/components/inputs/text-input/text-input.component';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
+import { SelectInputComponent } from '../../../../shared/components/inputs/select-input/select-input.component';
+import { SkeletonComponent } from '../../../../shared/components/skeleton/skeleton.component';
+import { SignaturePadComponent } from '../../../../shared/components/signature-pad/signature-pad.component';
 import { AuthService } from '../../../../core/services/auth.service';
 import { Router } from '@angular/router';
-import { LucideAngularModule, Camera, User, BadgeCheck, Phone, Mail, Building, FileText, CheckCircle2, LogOut } from 'lucide-angular';
+import { LucideAngularModule, Camera, User, BadgeCheck, Phone, Mail, Building, FileText, CheckCircle2, LogOut, RotateCcw, Loader2 } from 'lucide-angular';
 import { environment } from '../../../../../environments/environment';
+import { ImageCompressionService } from '../../../../core/services/image-compression.service';
+import { Palette, Type, FileText as FileTextIcon, Zap, Check, TrendingUp, Trash2, X, Bell } from 'lucide-angular';
+import { ToggleSwitchComponent } from '../../../../shared/components/inputs/toggle-switch/toggle-switch.component';
 
 @Component({
   selector: 'app-profile',
@@ -20,35 +26,53 @@ import { environment } from '../../../../../environments/environment';
     CommonModule,
     ReactiveFormsModule,
     TextInputComponent,
+    SelectInputComponent,
+    ButtonComponent,
     SpinnerComponent,
-    LucideAngularModule
+    SkeletonComponent,
+    SignaturePadComponent,
+    LucideAngularModule,
+    ToggleSwitchComponent
   ],
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.scss'
 })
 export class ProfileComponent implements OnInit {
   private fb = inject(FormBuilder);
-  private inspectorsService = inject(InspectorsService);
+  public inspectorsService = inject(InspectorsService);
   private authService = inject(AuthService);
   private router = inject(Router);
   private destroyRef = inject(DestroyRef);
+  private compressionService = inject(ImageCompressionService);
 
-  readonly icons = { Camera, User, BadgeCheck, Phone, Mail, Building, FileText, CheckCircle2, LogOut };
+  readonly icons = { Camera, User, BadgeCheck, Phone, Mail, Building, FileText, CheckCircle2, LogOut, Palette, Type, FileTextIcon, Zap, Check, TrendingUp, Trash2, X, RotateCcw, Bell, Loader2 };
+
+  readonly brandFontOptions = [
+    { value: 'modern', label: 'Modern (Sans-serif)' },
+    { value: 'classic', label: 'Classic (Serif)' },
+    { value: 'technical', label: 'Technical (Monospace)' }
+  ];
 
   profileForm: FormGroup = this.fb.group({
     name: ['', [Validators.required]],
     company_name: [''],
     phone: [''],
     license_number: [''],
+    certifications: [''],
+    brand_primary_color: ['#1E40AF'],
+    brand_font_family: ['modern'],
+    report_footer_text: ['', [Validators.maxLength(150)]],
+    signature: [''],
+    default_send_email_confirmation: [true]
   });
 
   profile = signal<Inspector | null>(null);
   isLoading = signal<boolean>(true);
-  isSaving = signal<boolean>(false);
   isUploading = signal<boolean>(false);
   message = signal<{ type: 'success' | 'error', text: string } | null>(null);
   logoPreview = signal<string | null>(null);
-  lastSavedAt = signal<Date | null>(null);
+  signaturePreview = signal<string | null>(null);
+  isSigning = signal<boolean>(false);
 
   private messageTimeout: any;
 
@@ -71,6 +95,9 @@ export class ProfileComponent implements OnInit {
               : `${environment.apiUrl}${data.logo_url}`;
             this.logoPreview.set(logoUrl);
           }
+          if (data.signature) {
+            this.signaturePreview.set(data.signature);
+          }
           this.setupAutoSave();
         },
         error: (err) => {
@@ -87,22 +114,28 @@ export class ProfileComponent implements OnInit {
         debounceTime(environment.defaultDebounceTime),
         distinctUntilChanged((prev, curr) => JSON.stringify(prev) === JSON.stringify(curr)),
         tap(() => {
-          this.isSaving.set(true);
+          this.inspectorsService.isSaving.set(true);
           this.message.set(null);
         }),
         switchMap(values => this.inspectorsService.updateProfile(values).pipe(
-          finalize(() => this.isSaving.set(false))
+          catchError(err => {
+            this.showMessage('error', 'Auto-save failed. Your changes might not be saved.');
+            console.error(err);
+            return of(null);
+          }),
+          finalize(() => this.inspectorsService.isSaving.set(false))
         )),
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe({
         next: (updated) => {
-          this.profile.set(updated);
-          this.lastSavedAt.set(new Date());
+          if (updated) {
+            this.profile.set(updated);
+            this.inspectorsService.lastSavedAt.set(new Date());
+          }
         },
         error: (err) => {
-          this.showMessage('error', 'Auto-save failed. Your changes might not be saved.');
-          console.error(err);
+          console.error('Outer profile auto-save stream encountered an error', err);
         }
       });
   }
@@ -130,9 +163,27 @@ export class ProfileComponent implements OnInit {
     }
   }
 
-  private uploadLogo(file: File): void {
+  onSignatureSaved(base64: string): void {
+    this.profileForm.patchValue({ signature: base64 });
+    this.signaturePreview.set(base64);
+  }
+
+  onSignatureCleared(): void {
+    this.profileForm.patchValue({ signature: '' });
+    this.signaturePreview.set(null);
+  }
+
+  private async uploadLogo(file: File): Promise<void> {
     this.isUploading.set(true);
-    this.inspectorsService.uploadLogo(file)
+
+    // Compress logo
+    const compressedFile = await this.compressionService.compressImage(file, {
+      maxSizeMB: 0.2, // Smaller for logos
+      maxWidthOrHeight: 800,
+      useWebWorker: true
+    });
+
+    this.inspectorsService.uploadLogo(compressedFile)
       .pipe(finalize(() => this.isUploading.set(false)))
       .subscribe({
         next: (updated) => {

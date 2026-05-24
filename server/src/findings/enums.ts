@@ -18,4 +18,5 @@ export enum Severity {
   MAJOR = 'Major',
   MINOR = 'Minor',
   MAINTENANCE = 'Maintenance',
+  INFORMATIONAL = 'Informational',
 }

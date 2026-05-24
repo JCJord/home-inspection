@@ -1,0 +1,25 @@
+@use 'variables' as *;
+@use '../input-base' as base;
+
+.search-container {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+
+  .search-icon-wrapper {
+    position: absolute;
+    left: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: $color-text-muted;
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  .search-field {
+    @include base.field-style;
+    padding-left: 2.75rem !important; // Room for icon
+  }
+}

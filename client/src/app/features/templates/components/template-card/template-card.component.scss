@@ -1,0 +1,26 @@
+@use '/variables' as *;
+@use '/cards' as *;
+
+.template-card {
+  @include card-premium(true);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.official-ribbon-badge {
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-dark 100%);
+  color: #ffffff;
+  border: 1px solid rgba(#ffffff, 0.2);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.badge-system {
+  background-color: rgba($color-primary, 0.1);
+  color: $color-primary-dark;
+}
+
+.border-standard {
+  border-color: $color-border;
+}

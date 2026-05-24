@@ -16,6 +16,7 @@ import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { PhotosService } from './photos.service';
 import { ReorderPhotosDto } from './dto/reorder-photos.dto';
+import { UpdatePhotoDto } from './dto/update-photo.dto';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { GetUser } from '../auth/decorators/get-user.decorator';
 
@@ -26,13 +27,6 @@ export class PhotosController {
 
   @Post()
   @UseInterceptors(FileInterceptor('photo', {
-    storage: diskStorage({
-      destination: './uploads',
-      filename: (req, file, cb) => {
-        const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-        cb(null, `${uniqueSuffix}${extname(file.originalname)}`);
-      },
-    }),
     limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
     fileFilter: (req, file, cb) => {
       if (!file.mimetype.match(/^image\/(jpeg|png|webp)$/)) {
@@ -46,8 +40,9 @@ export class PhotosController {
     @Param('inspectionId') inspectionId: string,
     @Param('findingId') findingId: string,
     @UploadedFile() file: Express.Multer.File,
+    @Body('caption') caption?: string,
   ) {
-    return this.photosService.upload(inspectorId, inspectionId, findingId, file);
+    return this.photosService.upload(inspectorId, inspectionId, findingId, file, caption);
   }
 
   @Get()
@@ -77,5 +72,16 @@ export class PhotosController {
     @Param('photoId') photoId: string,
   ) {
     return this.photosService.remove(inspectorId, inspectionId, findingId, photoId);
+  }
+
+  @Patch(':photoId')
+  update(
+    @GetUser('sub') inspectorId: string,
+    @Param('inspectionId') inspectionId: string,
+    @Param('findingId') findingId: string,
+    @Param('photoId') photoId: string,
+    @Body() dto: UpdatePhotoDto,
+  ) {
+    return this.photosService.update(inspectorId, inspectionId, findingId, photoId, dto);
   }
 }

@@ -1,52 +1,76 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { debounceTime, distinctUntilChanged } from 'rxjs';
 import { InspectionsService } from '../../../../core/services/inspections.service';
 import { Inspection } from '../../../../core/models/inspection.interface';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { SkeletonComponent } from '../../../../shared/components/skeleton/skeleton.component';
 import { ClipboardList, LucideAngularModule, Plus } from 'lucide-angular';
-import { InspectionFormComponent } from '../../components/inspection-form/inspection-form.component';
 import { InspectionCardComponent } from '../../components/inspection-card/inspection-card.component';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
+import { SearchInputComponent } from '../../../../shared/components/inputs/search-input/search-input.component';
 
 @Component({
   selector: 'app-inspections',
   standalone: true,
-  imports: [CommonModule, ButtonComponent, LucideAngularModule, InspectionFormComponent, InspectionCardComponent, PaginationComponent, SkeletonComponent],
+  imports: [
+    CommonModule,
+    ButtonComponent,
+    LucideAngularModule,
+    InspectionCardComponent,
+    PaginationComponent,
+    SkeletonComponent,
+    SearchInputComponent,
+    ReactiveFormsModule
+  ],
   templateUrl: './inspections.component.html',
   styleUrl: './inspections.component.scss',
 })
 export class InspectionsComponent implements OnInit {
   private inspectionsService = inject(InspectionsService);
+  private router = inject(Router);
 
-  inspections = signal<Inspection[]>([]);
-  isLoading = signal<boolean>(true);
-  isFormOpen = signal<boolean>(false);
-  editingInspection = signal<Inspection | null>(null);
-  
+  inspections = this.inspectionsService.inspections;
+  isLoading = this.inspectionsService.isLoading;
+  totalItems = this.inspectionsService.totalCount;
+
   currentPage = signal<number>(1);
-  totalItems = signal<number>(0);
   itemsPerPage = signal<number>(10);
+
+  searchQuery = signal<string>('');
+  public searchControl = new FormControl<string>('', { nonNullable: true });
+  statusFilter = signal<'all' | 'in_progress' | 'published' | 'cancelled'>('all');
 
   readonly icons = { Plus, ClipboardList };
 
   ngOnInit(): void {
     this.loadInspections();
+    this.setupSearch();
+  }
+
+  setupSearch(): void {
+    this.searchControl.valueChanges.pipe(
+      debounceTime(300),
+      distinctUntilChanged()
+    ).subscribe(value => {
+      this.searchQuery.set(value);
+      this.currentPage.set(1);
+      this.loadInspections();
+    });
+  }
+
+  setStatusFilter(filter: 'all' | 'in_progress' | 'published' | 'cancelled'): void {
+    this.statusFilter.set(filter);
+    this.currentPage.set(1);
+    this.loadInspections();
   }
 
   loadInspections(): void {
-    this.isLoading.set(true);
-    this.inspectionsService.getInspections(this.currentPage(), this.itemsPerPage()).subscribe({
-      next: (res) => {
-        this.inspections.set(res.data);
-        this.totalItems.set(res.meta.total);
-        this.isLoading.set(false);
-      },
-      error: (err) => {
-        console.error('Failed to load inspections', err);
-        this.isLoading.set(false);
-      },
-    });
+    const status = this.statusFilter() === 'all' ? undefined : this.statusFilter();
+    const search = this.searchQuery().trim() || undefined;
+    this.inspectionsService.getInspections(this.currentPage(), this.itemsPerPage(), true, status, search).subscribe();
   }
 
   onPageChange(page: number): void {
@@ -54,39 +78,21 @@ export class InspectionsComponent implements OnInit {
     this.loadInspections();
   }
 
-  toggleForm(): void {
-    if (!this.isFormOpen()) {
-      this.editingInspection.set(null);
-    }
-    this.isFormOpen.update((val) => !val);
+  addInspection(): void {
+    this.router.navigate(['/inspections/new']);
   }
 
   editInspection(inspection: Inspection): void {
-    this.editingInspection.set(inspection);
-    this.isFormOpen.set(true);
-  }
-
-  closeForm(): void {
-    this.isFormOpen.set(false);
-    this.editingInspection.set(null);
-  }
-
-  onSaved(data: Inspection): void {
-    this.closeForm();
-    this.loadInspections();
+    this.router.navigate(['/inspections', inspection.id, 'edit']);
   }
 
   deleteInspection(inspection: Inspection): void {
     this.inspectionsService.deleteInspection(inspection.id).subscribe({
-      next: () => {
-        // Optimistically remove from UI
-        this.inspections.update(list => list.filter(i => i.id !== inspection.id));
-        this.totalItems.update(t => t - 1);
-      },
       error: (err) => {
         console.error('Failed to delete inspection', err);
-        // We could show a toast notification here in the future
-      }
+        // Refresh to rollback cache if needed
+        this.loadInspections();
+      },
     });
   }
 }

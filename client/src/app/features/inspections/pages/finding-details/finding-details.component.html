@@ -1,0 +1,237 @@
+<app-workbench-layout #workbench>
+  <!-- Header Left -->
+  <div header-left class="flex items-center gap-3 md:gap-4">
+    <app-back-button (clicked)="goBack()"></app-back-button>
+    <div class="h-8 w-px bg-standard hidden md:block"></div>
+  </div>
+  <!-- Header Center -->
+  <div header-center class="flex flex-col items-center justify-center min-w-0 w-full flex-1 overflow-hidden px-1">
+    <span
+      class="text-[10px] uppercase font-bold text-standard-muted tracking-wide block truncate w-full text-center opacity-70 mb-0.5">
+      {{ inspection()?.address }}
+    </span>
+
+    <button type="button" (click)="workbench.toggleSidebar()"
+      class="flex items-center justify-between w-full max-w-[280px] md:max-w-none px-3 py-1.5 rounded-xl border border-standard bg-surface-standard shadow-sm active:scale-95 transition-all md:pointer-events-none md:border-none md:hover:border-none md:bg-transparent md:shadow-none md:px-0 group hover:border-primary/50">
+      
+      <!-- Text Container (flex-1 and min-w-0 are the magic for button truncation) -->
+      <div class="flex-1 flex flex-col justify-center min-w-0 text-center md:text-center">
+        <span class="truncate w-full text-base md:text-lg font-bold text-standard leading-tight">
+          {{ activeSection() || 'Select Section' }}
+        </span>
+      </div>
+
+      <!-- Icon Container -->
+      <div class="md:hidden shrink-0 flex items-center justify-center relative ml-2 group-active:translate-y-px transition-transform">
+        <lucide-icon [name]="icons.ChevronDown" [size]="16" class="text-primary"></lucide-icon>
+        @if (sectionFindings().length) {
+        <span
+          class="absolute -top-1.5 -right-2 flex items-center justify-center min-w-[14px] h-3.5 px-0.5 rounded-full badge-count text-[8px] font-bold border border-white">
+          {{ sectionFindings().length }}
+        </span>
+        }
+      </div>
+    </button>
+  </div>
+
+  <!-- Header Right -->
+  <div header-right class="hidden md:flex items-center justify-end gap-2">
+    <div
+      class="flex items-center gap-2 px-2 sm:px-3 py-1 bg-primary/10 text-primary rounded-full border border-primary/20">
+      <lucide-icon [name]="icons.CheckCircle2" [size]="14" class="hidden xs:block"></lucide-icon>
+      <span class="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider whitespace-nowrap">
+        <span class="hidden xs:inline">Workbench •</span> {{ sectionFindings().length }} <span
+          class="hidden sm:inline">Findings</span><span class="sm:hidden">Items</span>
+      </span>
+    </div>
+  </div>
+
+  <!-- Sidebar Content -->
+  <div sidebar class="flex-1 flex flex-col overflow-hidden">
+    <div class="p-4 border-b border-standard bg-surface-standard">
+      <h2 class="text-xs font-bold text-standard-muted tracking-wider uppercase">Inspection Sections</h2>
+    </div>
+
+    <div class="flex-1 overflow-y-auto p-2 pb-5 md:pb-4 space-y-1">
+      <div (click)="selectSection('summary', -1)" [class.active]="activeSectionIndex() === -1"
+        class="section-tab flex items-center justify-between px-4 py-3 rounded-xl cursor-pointer hover:bg-light-standard transition mb-2 bg-primary/5">
+        <div class="flex items-center gap-3 min-w-0">
+          <lucide-icon [name]="icons.PieChart" class="text-primary flex-shrink-0" [size]="20"></lucide-icon>
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="text-sm font-bold text-primary truncate">Report Summary</span>
+          </div>
+        </div>
+      </div>
+
+      @for (sec of sections(); track $index; let i = $index) {
+      <div (click)="selectSection(sec.name, i)" [class.active]="activeSectionIndex() === i"
+        class="section-tab flex items-center justify-between px-4 py-3 rounded-xl cursor-pointer hover:bg-light-standard transition">
+        <div class="flex items-center gap-3 min-w-0">
+          <lucide-icon [name]="getIconForSection(sec.icon_key)" class="text-standard-muted flex-shrink-0"
+            [size]="20"></lucide-icon>
+
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="text-sm font-medium text-standard truncate">{{ sec.name }}</span>
+            <div class="flex items-center gap-1.5 ml-auto">
+              @if (inspection()?.section_statuses?.[sec.name]?.status === 'not_inspected') {
+              <lucide-icon [name]="icons.Ban" [size]="14" class="text-amber-500"></lucide-icon>
+              }
+              @if (inspection()?.section_statuses?.[sec.name]?.status === 'not_present') {
+              <lucide-icon [name]="icons.CircleX" [size]="14" class="text-slate-400"></lucide-icon>
+              }
+              @if (sectionCounts()[sec.name]) {
+              <span class="flex-shrink-0 badge-count text-[10px] font-bold px-1.5 py-0.5 rounded-md">
+                {{ sectionCounts()[sec.name] }}
+              </span>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+      }
+    </div>
+  </div>
+
+  <!-- Main Content Projection -->
+  <div class="p-4 pb-24 md:p-8 md:pb-20 relative min-h-full">
+    <div class="max-w-4xl mx-auto">
+      <div class="flex flex-col mb-6">
+        @if (activeSection() === 'summary') {
+        <app-summary-dashboard [inspection]="inspection()"></app-summary-dashboard>
+        } @else {
+
+        <!-- Dropdown Trigger & Popover (Moved Above Card) -->
+        <div class="relative w-full mb-6 z-[60]">
+          <!-- Trigger -->
+          <button type="button"
+            class="w-full flex items-center justify-between px-4 py-3 rounded-xl border border-standard bg-surface-standard shadow-sm hover:shadow-md transition-all focus:outline-none focus:ring-0 active:scale-[0.99]"
+            style="outline: none;"
+            (click)="isFindingsDropdownOpen.set(!isFindingsDropdownOpen())">
+            <div class="flex items-center gap-3 truncate">
+              @if (finding()) {
+              <div class="indicator-dot shrink-0" [attr.data-severity]="finding()!.severity.toLowerCase()"></div>
+              <span class="truncate text-sm font-bold text-standard flex-1 text-left">
+                {{ finding()!.severity | uppercase }}: {{ finding()!.description || 'New Finding' | slice:0:30 }}{{
+                finding()!.description.length > 30 ? '...' : '' }}
+              </span>
+              } @else {
+              <div class="w-2.5 h-2.5 rounded-full bg-standard-muted opacity-50 shrink-0"></div>
+              <span class="text-sm font-medium text-standard-muted flex-1 text-left">Select a finding or add
+                new</span>
+              }
+            </div>
+            <lucide-icon [name]="icons.ChevronDown" [size]="18"
+              class="text-standard-muted transition-transform duration-200"
+              [class.rotate-180]="isFindingsDropdownOpen()"></lucide-icon>
+          </button>
+
+          <!-- Backdrop -->
+          @if (isFindingsDropdownOpen()) {
+          <div class="fixed inset-0 z-40" (click)="isFindingsDropdownOpen.set(false)"></div>
+          }
+
+          <!-- Dropdown Menu -->
+          @if (isFindingsDropdownOpen()) {
+          <div
+            class="absolute z-50 min-w-full md:max-w-[400px] mt-2 shadow-2xl rounded-xl border border-standard bg-light-standard overflow-hidden top-full left-0 origin-top-left flex flex-col max-h-[400px]">
+            <app-finding-list class="flex-1 min-h-0" [findings]="sectionFindings()"
+              [selectedFindingId]="findingId()" [disabled]="inspection()?.status === 'published'"
+              (findingSelected)="onFindingSelected($event)" (addFindingTriggered)="onAddFindingTriggered()"
+              (deleteFindingTriggered)="onDeleteFinding($event)">
+            </app-finding-list>
+          </div>
+          }
+        </div>
+
+        <div class="relative bg-surface-standard rounded-3xl border border-standard shadow-sm min-h-[600px]">
+          @if (isLoading()) {
+          <div class="flex justify-center items-center py-24">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          </div>
+          } @else {
+          @if (currentSection(); as section) {
+          @if (inspection()?.status === 'published') {
+          <!-- Global Read-Only Alert -->
+          <div
+            class="mx-4 mt-4 md:mx-8 md:mt-8 p-4 rounded-lg bg-blue-50 border border-blue-200 text-blue-800 flex items-start gap-3">
+            <lucide-icon [name]="icons.AlertCircle" [size]="20"
+              class="text-blue-500 mt-0.5 flex-shrink-0"></lucide-icon>
+            <div>
+              <h4 class="font-bold text-sm m-0 leading-none">Inspection is Published</h4>
+              <p class="text-xs mt-1.5 m-0 opacity-80">This inspection has been published. All findings, narratives, and
+                section statuses are in read-only mode and cannot be modified.</p>
+            </div>
+          </div>
+          }
+
+          <!-- COMPONENTIZED SECTION STATUS -->
+          <app-section-status-toggle [status]="currentSectionStatus().status"
+            [reason]="currentSectionStatus().reason || ''" (statusChange)="updateSectionStatus($event)"
+            [disabled]="inspection()?.status === 'published'" (reasonChange)="updateSectionReasonDirect($event)">
+          </app-section-status-toggle>
+
+          <div class="p-4 md:p-8">
+            @if (currentSectionStatus().status === 'inspected') {
+            @if (section.fields && section.fields.length > 0) {
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-6 pb-12 border-b border-[#E2E8F0]">
+              @for (field of section.fields; track field.key) {
+              @if (field.type === 'select') {
+              <app-select-input [name]="field.key" [label]="field.label" [options]="field.options || []"
+                [value]="inspection()?.metadata_values?.[field.key] || ''"
+                (valueChanged)="updateMetadataValueDirect(field.key, $event)"
+                [disabled]="inspection()?.status === 'published'"></app-select-input>
+              } @else {
+              <app-text-input [label]="field.label" [value]="inspection()?.metadata_values?.[field.key] || ''"
+                (valueChanged)="updateMetadataValueDirect(field.key, $event)"
+                [disabled]="inspection()?.status === 'published'" [placeholder]="'Set ' + field.label + '...'"
+                [suffixIcon]="icons.Edit2">
+              </app-text-input>
+              }
+              }
+            </div>
+            }
+
+            <!-- Main Form Area -->
+            <div class="w-full relative pb-5">
+              @if (finding()) {
+              <app-finding-form [inspectionId]="inspectionId()!" [section]="activeSection()!"
+                [presets]="currentSectionPresets()" [locationPresets]="currentSectionLocationPresets()" [finding]="finding()" [year_built]="inspection()?.year_built || 0"
+                [isPublished]="inspection()?.status === 'published'" (close)="goBack()" (saved)="onSaved($event)"
+                (deleted)="onDeleteFinding($event)">
+              </app-finding-form>
+              } @else {
+              <div class="card-static flex flex-col items-center justify-center p-8 text-center min-h-[300px]">
+                <div class="w-16 h-16 rounded-full bg-surface-standard flex items-center justify-center mb-4 border border-standard shadow-sm">
+                  <lucide-icon [name]="icons.LayoutList" [size]="28" class="text-standard-muted"></lucide-icon>
+                </div>
+                <h3 class="text-lg font-bold text-standard mb-2">No Finding Selected</h3>
+                <p class="text-standard-muted max-w-[250px] mx-auto">
+                  Select a finding from the dropdown above or add a new one to get started.
+                </p>
+              </div>
+              }
+            </div>
+
+            } @else {
+            <div class="py-4 text-center">
+              <div class="relative inline-block mb-6">
+                <lucide-icon [name]="currentSectionStatus().status === 'not_inspected' ? icons.Ban : icons.CircleX"
+                  [size]="60" class="text-standard-muted/20"></lucide-icon>
+              </div>
+              <h4 class="text-lg font-bold text-standard mb-2">Section Not Included</h4>
+              <p class="text-sm text-standard-muted max-w-sm mx-auto opacity-70 leading-relaxed">
+                This system is marked as <strong>{{ currentSectionStatus().status === 'not_inspected' ? 'Not Inspected'
+                  : 'Not Present' }}</strong>.
+                Edit the limitation narrative above if needed.
+              </p>
+            </div>
+            }
+          </div>
+          }
+          }
+        </div>
+        }
+      </div>
+    </div>
+  </div>
+</app-workbench-layout>

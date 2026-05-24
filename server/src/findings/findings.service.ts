@@ -7,6 +7,8 @@ import { UpdateFindingDto } from './dto/update-finding.dto';
 import { ReorderFindingsDto } from './dto/reorder-findings.dto';
 import { Inspection } from '../inspections/inspection.entity';
 
+import { StorageService } from '../common/storage/storage.service';
+
 @Injectable()
 export class FindingsService {
   constructor(
@@ -14,6 +16,7 @@ export class FindingsService {
     private readonly findingRepository: Repository<Finding>,
     @InjectRepository(Inspection)
     private readonly inspectionRepository: Repository<Inspection>,
+    private readonly storageService: StorageService,
   ) {}
 
   private async checkInspectionOwnership(inspectorId: string, inspectionId: string): Promise<Inspection> {
@@ -49,11 +52,23 @@ export class FindingsService {
       match.section = section;
     }
 
-    return await this.findingRepository.find({
+    const findings = await this.findingRepository.find({
       where: match,
       relations: ['photos'],
       order: { sort_order: 'ASC' },
     });
+
+    for (const finding of findings) {
+      if (finding.photos) {
+        for (const photo of finding.photos) {
+          if (photo.photo_key) {
+            photo.storage_url = await this.storageService.getPresignedUrl(photo.photo_key);
+          }
+        }
+      }
+    }
+
+    return findings;
   }
 
   async update(
@@ -96,25 +111,7 @@ export class FindingsService {
     });
   }
 
-  async generateAiComment(
-    inspectorId: string,
-    inspectionId: string,
-    findingId: string,
-  ): Promise<{ comment: string }> {
-    await this.checkInspectionOwnership(inspectorId, inspectionId);
 
-    const finding = await this.findingRepository.findOne({
-      where: { id: findingId, inspection_id: inspectionId },
-    });
-    if (!finding) {
-      throw new NotFoundException('Finding not found');
-    }
-
-    // Mock AI service logic
-    const generatedComment = `Mock comment for ${finding.section} - ${finding.severity}`;
-    
-    return { comment: generatedComment };
-  }
 
   async remove(inspectorId: string, inspectionId: string, findingId: string): Promise<void> {
     const inspection = await this.checkInspectionOwnership(inspectorId, inspectionId);
@@ -130,6 +127,9 @@ export class FindingsService {
       throw new NotFoundException('Finding not found');
     }
 
+    const prefix = `users/${inspectorId}/inspections/${inspectionId}/findings/${findingId}/`;
+    await this.storageService.deleteDirectory(prefix);
+    
     await this.findingRepository.remove(finding);
   }
 }

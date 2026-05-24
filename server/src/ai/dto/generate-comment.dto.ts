@@ -12,7 +12,7 @@ export class GenerateCommentRequestDto {
   location?: string;
 
   @IsString()
-  short_note!: string;
+  description!: string;
 
   @IsNumber()
   year_built!: number;

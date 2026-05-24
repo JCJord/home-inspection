@@ -1,0 +1,50 @@
+<div class="py-6 px-4 md:px-8 border-b border-[#E2E8F0] block bg-light-standard/10">
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-2">
+    <div class="flex flex-col gap-1">
+      <h3 class="text-xs font-bold text-standard tracking-wider uppercase">Section Assessment</h3>
+      <p class="text-[11px] text-standard-muted opacity-60">Is this system present and fully inspected?</p>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-2">
+      <app-button [variant]="status === 'inspected' ? 'solid' : 'ghost'" size="sm" [disabled]="disabled"
+        (click)="onStatusChange('inspected')">
+        <div class="flex items-center gap-2">
+          <lucide-icon [name]="icons.CheckCircle2" [size]="16"
+            [class.text-green-500]="status !== 'inspected'"></lucide-icon>
+          <span>Inspected</span>
+        </div>
+      </app-button>
+      <app-button [variant]="status === 'not_inspected' ? 'solid' : 'ghost'" size="sm" [disabled]="disabled"
+        (click)="onStatusChange('not_inspected')">
+        <div class="flex items-center gap-2">
+          <lucide-icon [name]="icons.Ban" [size]="16" [class.text-amber-500]="status !== 'not_inspected'"></lucide-icon>
+          <span>Not Inspected</span>
+        </div>
+      </app-button>
+      <app-button [variant]="status === 'not_present' ? 'solid' : 'ghost'" size="sm" [disabled]="disabled"
+        (click)="onStatusChange('not_present')">
+        <div class="flex items-center gap-2">
+          <lucide-icon [name]="icons.CircleX" [size]="16"
+            [class.text-slate-400]="status !== 'not_present'"></lucide-icon>
+          <span>Not Present</span>
+        </div>
+      </app-button>
+    </div>
+  </div>
+</div>
+
+@if (status !== 'inspected') {
+<div class="animate-in fade-in slide-in-from-top-2 duration-300 mt-6 pt-6 mx-6">
+  <div class="flex flex-col gap-3">
+    <div class="flex items-center gap-2">
+      <lucide-icon [name]="icons.Info" [size]="14" class="text-primary"></lucide-icon>
+      <label class="text-[10px] uppercase font-bold text-standard-muted tracking-wider">Required Limitation
+        Narrative</label>
+    </div>
+    <textarea [value]="reason || ''" (blur)="onReasonBlur($event)" class="custom-textarea" [disabled]="disabled"
+      placeholder="Example: Attic not inspected due to unsafe access (blown insulation depth)..."></textarea>
+    <p class="text-[10px] text-standard-muted italic opacity-50">This text will appear in the final report as a legal
+      limitation.</p>
+  </div>
+</div>
+}

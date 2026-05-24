@@ -1,0 +1,67 @@
+@use 'variables' as *;
+
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.bg-surface-standard {
+  background-color: $color-surface;
+}
+
+.bg-light-standard {
+  background-color: $color-bg;
+}
+
+.border-standard {
+  border-color: $color-border;
+}
+
+.text-standard {
+  color: $color-text;
+}
+
+.text-standard-muted {
+  color: $color-text-muted;
+}
+
+.indicator-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 9999px;
+
+  &[data-severity="safety"] { background-color: $color-safety; }
+  &[data-severity="major"] { background-color: $color-major; }
+  &[data-severity="minor"] { background-color: $color-minor; }
+  &[data-severity="maintenance"] { background-color: $color-maintenance; }
+}
+
+.custom-scrollbar {
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: $color-border;
+    border-radius: 3px;
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background: $color-text-muted;
+  }
+}
+
+.finding-item {
+  &.active {
+    background-color: $color-surface-light;
+    border-left: 4px solid $color-primary;
+    padding-left: calc(0.75rem - 4px);
+
+    .text-standard {
+      color: $color-primary;
+    }
+  }
+}

@@ -1,7 +1,7 @@
 import { Component, Input, Output, EventEmitter, ViewChild, ElementRef, AfterViewInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { LucideAngularModule, Home, ChevronUp, ChevronDown, Hammer, Zap, Droplets, Wind, Flame, Box, Grid, Monitor, Car, ChevronLeft, ChevronRight } from 'lucide-angular';
-import { Section } from '../../../../core/enums/inspection.enums';
+import { LucideAngularModule, Home, ChevronUp, ChevronDown, Hammer, Zap, Droplets, Wind, Flame, Box, Grid, Monitor, Car, ChevronLeft, ChevronRight, Shield, Search, Info, AlertTriangle, Copy, Edit2, Trash2, Plus, Save, Lock, Unlock, ArrowLeft, Wrench, Thermometer, Lightbulb, Paintbrush, Sun, Key, Eye, Power, FileCheck, HardHat, Construction, Ruler, ShieldCheck, ShieldAlert, BrickWall, Trees, Fan, Sparkles, Wifi, WifiOff, Trash, Settings, Check, X, Users, FileText, Image, Cloud, CloudRain, CloudLightning, Snowflake, Umbrella, Compass, MapPin, Clock, Calendar, Activity, Scissors, Heart, AlertCircle, HelpCircle, Ban, LockOpen, Send, Download, Loader2, CheckCircle2, Layers } from 'lucide-angular';
+import { TemplateSection } from '../../../../core/models/inspection.interface';
 
 @Component({
   selector: 'app-section-tabs',
@@ -11,26 +11,13 @@ import { Section } from '../../../../core/enums/inspection.enums';
   styleUrl: './section-tabs.component.scss'
 })
 export class SectionTabsComponent implements AfterViewInit {
-  @Input({ required: true }) selectedSection!: Section;
-  @Output() sectionChange = new EventEmitter<Section>();
+  @Input({ required: true }) selectedSection!: string;
+  @Input() sections: TemplateSection[] = [];
+  @Output() sectionChange = new EventEmitter<string>();
 
-  readonly sections = Object.values(Section);
-  
   readonly icons: Record<string, any> = {
-    [Section.EXTERIOR]: Home,
-    [Section.ROOF]: ChevronUp,
-    [Section.BASEMENT]: ChevronDown,
-    [Section.STRUCTURE]: Hammer,
-    [Section.ELECTRICAL]: Zap,
-    [Section.PLUMBING]: Droplets,
-    [Section.HVAC]: Wind,
-    [Section.FIREPLACE]: Flame,
-    [Section.ATTIC]: Box,
-    [Section.INTERIOR]: Grid,
-    [Section.APPLIANCES]: Monitor,
-    [Section.GARAGE]: Car,
-    ChevronLeft,
-    ChevronRight
+    Home, ChevronUp, ChevronDown, Hammer, Zap, Droplets, Wind, Flame, Box, Grid, Monitor, Car, ChevronLeft, ChevronRight,
+    Shield, Search, Info, AlertTriangle, Copy, Edit2, Trash2, Plus, Save, Lock, Unlock, ArrowLeft, Wrench, Thermometer, Lightbulb, Paintbrush, Sun, Key, Eye, Power, FileCheck, HardHat, Construction, Ruler, ShieldCheck, ShieldAlert, BrickWall, Trees, Fan, Sparkles, Wifi, WifiOff, Trash, Settings, Check, X, Users, FileText, Image, Cloud, CloudRain, CloudLightning, Snowflake, Umbrella, Compass, MapPin, Clock, Calendar, Activity, Scissors, Heart, AlertCircle, HelpCircle, Ban, LockOpen, Send, Download, Loader2, CheckCircle2, Layers
   };
 
   @ViewChild('scrollArea') scrollArea!: ElementRef<HTMLDivElement>;
@@ -61,7 +48,7 @@ export class SectionTabsComponent implements AfterViewInit {
     this.isScrollEnd = el.scrollWidth <= el.clientWidth || Math.abs(el.scrollWidth - el.scrollLeft - el.clientWidth) <= 5;
   }
 
-  selectSection(section: Section) {
+  selectSection(section: string) {
     if (this.isDragging) return; // Prevent tab switch if we were actively dragging
     if (this.selectedSection !== section) {
       this.sectionChange.emit(section);

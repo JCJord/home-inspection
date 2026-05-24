@@ -9,6 +9,10 @@ export const routes: Routes = [
     loadChildren: () => import('./features/auth/auth.routes').then(m => m.AUTH_ROUTES),
   },
   {
+    path: 'report/:id',
+    loadComponent: () => import('./features/public-report/public-report.component').then(m => m.PublicReportComponent),
+  },
+  {
     path: '',
     canActivate: [authGuard],
     children: [
@@ -29,11 +33,23 @@ export const routes: Routes = [
         ]
       },
       {
+        path: 'schedule',
+        loadComponent: () => import('./features/schedule/schedule.component').then(m => m.ScheduleComponent),
+      },
+      {
         path: 'inspections',
         loadChildren: () => import('./features/inspections/inspections.routes').then(m => m.INSPECTIONS_ROUTES),
       },
       {
-        path: 'profile',
+        path: 'templates',
+        loadChildren: () => import('./features/templates/templates.routes').then(m => m.TEMPLATES_ROUTES),
+      },
+      {
+        path: 'reports',
+        loadComponent: () => import('./features/reports/pages/reports-list/reports-list.component').then(m => m.ReportsListComponent),
+      },
+      {
+        path: 'settings',
         loadChildren: () => import('./features/profile/profile.routes').then(m => m.PROFILE_ROUTES),
       },
     ],

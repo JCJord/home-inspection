@@ -27,6 +27,7 @@ export class LoginComponent {
   private router = inject(Router);
 
   isLoading = signal(false);
+  view = signal<'login' | 'forgot-password' | 'email-sent'>('login');
 
   loginForm = new FormGroup({
     email: new FormControl('', {
@@ -36,6 +37,13 @@ export class LoginComponent {
     password: new FormControl('', {
       nonNullable: true,
       validators: [Validators.required, Validators.minLength(6)],
+    }),
+  });
+
+  forgotPasswordForm = new FormGroup({
+    email: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required, Validators.email],
     }),
   });
 
@@ -66,6 +74,39 @@ export class LoginComponent {
         });
     } else {
       this.loginForm.markAllAsTouched();
+    }
+  }
+
+  onForgotPasswordSubmit() {
+    if (this.forgotPasswordForm.valid) {
+      this.isLoading.set(true);
+      const email = this.forgotPasswordForm.getRawValue().email;
+
+      this.authService.forgotPassword(email)
+        .pipe(finalize(() => this.isLoading.set(false)))
+        .subscribe({
+          next: () => {
+            this.view.set('email-sent');
+          },
+          error: (error) => {
+            console.error('Forgot password error:', error);
+            // Even on error, we might want to just show 'email-sent' to prevent enumeration,
+            // but our backend already returns 200 OK for not found.
+            // If it's a real 500 error, we can still show a generic error or the same view.
+            this.view.set('email-sent');
+          }
+        });
+    } else {
+      this.forgotPasswordForm.markAllAsTouched();
+    }
+  }
+
+  toggleView(newView: 'login' | 'forgot-password') {
+    this.view.set(newView);
+    if (newView === 'login') {
+      this.forgotPasswordForm.reset();
+    } else {
+      this.loginForm.reset();
     }
   }
 }
