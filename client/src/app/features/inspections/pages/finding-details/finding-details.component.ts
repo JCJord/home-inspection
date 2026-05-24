@@ -94,6 +94,11 @@ export class FindingDetailsComponent implements OnInit {
     return section?.presets || [];
   });
 
+  currentSectionLocationPresets = computed(() => {
+    const section = this.currentSection();
+    return section?.location_presets || [];
+  });
+
   sectionFindings = computed(() => {
     const section = this.activeSection();
     const findings = this.inspection()?.findings || [];
@@ -326,7 +331,7 @@ export class FindingDetailsComponent implements OnInit {
         section: section,
         severity: Severity.MAINTENANCE,
         description: 'New Finding',
-        location: 'Not Specified',
+        location: '',
         recommendation: 'Evaluate and repair as necessary.'
       }
     });

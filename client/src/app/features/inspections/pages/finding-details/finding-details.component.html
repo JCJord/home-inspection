@@ -195,7 +195,7 @@
             <div class="w-full relative pb-5">
               @if (finding()) {
               <app-finding-form [inspectionId]="inspectionId()!" [section]="activeSection()!"
-                [presets]="currentSectionPresets()" [finding]="finding()" [year_built]="inspection()?.year_built || 0"
+                [presets]="currentSectionPresets()" [locationPresets]="currentSectionLocationPresets()" [finding]="finding()" [year_built]="inspection()?.year_built || 0"
                 [isPublished]="inspection()?.status === 'published'" (close)="goBack()" (saved)="onSaved($event)"
                 (deleted)="onDeleteFinding($event)">
               </app-finding-form>

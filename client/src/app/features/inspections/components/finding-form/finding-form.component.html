@@ -158,8 +158,11 @@
     </div>
 
     <!-- Location -->
-    <app-text-input name="location" label="Location (Optional)" placeholder="e.g., Master Bathroom, North Attic">
-    </app-text-input>
+    <app-location-combobox 
+      formControlName="location" 
+      [locationPresets]="locationPresets"
+      placeholder="e.g., Master Bathroom, North Attic">
+    </app-location-combobox>
  
     <!-- Description (Observation) -->
     <app-textarea-input name="description" label="Observation Note *" placeholder="Type 2-3 keywords (e.g., 'water stain ceiling') and tap ✨ Generate AI Content..." [rows]="5" [maxLength]="2200">

@@ -143,9 +143,13 @@
                 </div>
 
                 <!-- Section Name Section -->
-                <div class="flex-1">
+                <div class="flex-1 flex flex-col gap-4">
                   <app-text-input [name]="'structure.sections.' + selectedSectionIndex() + '.name'" label="Section Name"
                     placeholder="e.g., Exterior, Roofing">
+                  </app-text-input>
+                  
+                  <app-text-input [name]="'structure.sections.' + selectedSectionIndex() + '.location_presets_raw'" label="Location Presets (Comma-Separated)"
+                    placeholder="e.g., Master Bath, Kitchen, Hallway">
                   </app-text-input>
                 </div>
               </div>

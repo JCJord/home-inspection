@@ -28,6 +28,7 @@ export interface TemplateSection {
   icon_key: string;
   fields: TemplateField[];
   presets: TemplatePreset[];
+  location_presets?: string[];
 }
 
 export interface TemplateStructure {

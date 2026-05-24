@@ -5,7 +5,6 @@ import { InspectionsService } from '../../../../core/services/inspections.servic
 import { Section, Severity } from '../../../../core/enums/inspection.enums';
 import { Finding, Photo } from '../../../../core/models/inspection.interface';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
-import { TextInputComponent } from '../../../../shared/components/inputs/text-input/text-input.component';
 import { TextareaInputComponent } from '../../../../shared/components/inputs/textarea-input/textarea-input.component';
 import { LucideAngularModule, AlertCircle, FileImage, Upload, Trash2, Edit, X, Check, Sparkles, Loader2 } from 'lucide-angular';
 import { CreateFindingDto } from '../../../../core/dtos/create-finding.dto';
@@ -16,6 +15,7 @@ import { ImageCompressionService } from '../../../../core/services/image-compres
 import { environment } from '../../../../../environments/environment';
 import { ImageEditorModalComponent } from '../../../../shared/components/image-editor-modal/image-editor-modal.component';
 import { PresetButtonComponent } from '../../../../shared/components/preset-button/preset-button.component';
+import { LocationComboboxComponent } from '../../../../shared/components/inputs/location-combobox/location-combobox.component';
 import { DraftService } from '../../../../core/services/draft.service';
 import { MutationQueueService, MutationType } from '../../../../core/services/mutation-queue.service';
 import { ResolveImagePipe } from '../../../../shared/pipes/resolve-image.pipe';
@@ -37,7 +37,7 @@ import { TemplatePreset } from '../../../../core/models/inspection.interface';
 @Component({
   selector: 'app-finding-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ButtonComponent, TextInputComponent, TextareaInputComponent, LucideAngularModule, ImageEditorModalComponent, PresetButtonComponent, ResolveImagePipe],
+  imports: [CommonModule, ReactiveFormsModule, ButtonComponent, TextareaInputComponent, LocationComboboxComponent, LucideAngularModule, ImageEditorModalComponent, PresetButtonComponent, ResolveImagePipe],
   templateUrl: './finding-form.component.html',
   styleUrl: './finding-form.component.scss',
 })
@@ -56,6 +56,7 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
   @Input({ required: true }) year_built!: number;
   @Input({ required: true }) section!: string;
   @Input() presets: TemplatePreset[] = [];
+  @Input() locationPresets: string[] = [];
   @Input() finding: Finding | null = null;
   @Input() isPublished: boolean = false;
 

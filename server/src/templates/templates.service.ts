@@ -48,6 +48,7 @@ export class TemplatesService implements OnApplicationBootstrap {
             { key: 'roof_age', label: 'Approximate Age', type: 'select', options: ['0-5 Years', '5-10 Years', '10-15 Years', '15-20 Years', '20+ Years / End of Life'] },
             { key: 'roof_method', label: 'Inspection Method', type: 'select', options: ['Walked / Traversed Surface', 'Viewed from Ladder at Eave', 'Drone Photography', 'Binoculars from Ground', 'Limited Access - Visual Only'] },
           ],
+          location_presets: ['North Slope', 'South Slope', 'Ridge', 'Eaves', 'Flashing', 'Chimney', 'Entire Roof'],
           presets: [
             {
               title: 'Limitation of Scope: Inaccessible Areas',
@@ -85,6 +86,7 @@ export class TemplatesService implements OnApplicationBootstrap {
             { key: 'exterior_gutters', label: 'Gutters & Downspouts', type: 'select', options: ['Aluminum', 'Galvanized', 'Copper', 'Vinyl / Plastic', 'None Installed'] },
             { key: 'exterior_grade', label: 'Site Grading / Drainage', type: 'select', options: ['Adequate Slope', 'Negative Grading', 'Flat / Poor Drainage'] },
           ],
+          location_presets: ['Front Elevation', 'Rear Elevation', 'Left Elevation', 'Right Elevation', 'Deck', 'Patio', 'Driveway'],
           presets: [
             {
               title: 'Limitation of Scope: Dense Vegetation',
@@ -138,6 +140,7 @@ export class TemplatesService implements OnApplicationBootstrap {
             { key: 'foundation_material', label: 'Foundation Material', type: 'select', options: ['Poured Concrete', 'Concrete Block (CMU)', 'Brick', 'Stone', 'Wood'] },
             { key: 'structure_framing', label: 'Visible Framing Type', type: 'select', options: ['Dimensional Wood', 'Engineered Wood (I-Joists)', 'Steel / Metal', 'Not Visible'] },
           ],
+          location_presets: ['Basement', 'Crawlspace', 'Slab', 'Exterior Perimeter', 'Interior Wall'],
           presets: [
             {
               title: 'Limitation of Scope: Concealed Foundation & Future Moisture',
@@ -180,6 +183,7 @@ export class TemplatesService implements OnApplicationBootstrap {
             { key: 'attic_ventilation', label: 'Ventilation Type', type: 'select', options: ['Soffit & Ridge Vents', 'Gable Vents', 'Roof/Turtle Vents', 'Power Ventilator', 'Inadequate / None Visible'] },
             { key: 'attic_method', label: 'Inspection Method', type: 'select', options: ['Entered & Walked', 'Viewed from Hatch Only', 'Limited Access due to Low Clearance'] },
           ],
+          location_presets: ['Main Attic', 'Garage Attic', 'North Crawl Space', 'South Crawl Space', 'Ridge Vent', 'Soffit'],
           presets: [
             {
               title: 'Limitation of Scope: Insulation & Safe Access',
@@ -217,6 +221,7 @@ export class TemplatesService implements OnApplicationBootstrap {
             { key: 'interior_doors', label: 'Interior Doors', type: 'select', options: ['Hollow Core', 'Solid Wood', 'Glass / French', 'Mixed'] },
             { key: 'interior_fireplace', label: 'Fireplace Type', type: 'select', options: ['Wood Burning (Masonry)', 'Gas Log Insert', 'Pellet Stove', 'None / N/A'] },
           ],
+          location_presets: ['Living Room', 'Dining Room', 'Master Bedroom', 'Bedroom 2', 'Bedroom 3', 'Hallway', 'Entryway', 'Family Room', 'Fireplace', 'Staircase'],
           presets: [
             {
               title: 'Limitation of Scope: Furnished Home',
@@ -278,6 +283,7 @@ export class TemplatesService implements OnApplicationBootstrap {
             { key: 'electrical_wiring_type', label: 'Branch Wiring Type', type: 'select', options: ['Copper (Non-Metallic Sheathed)', 'Aluminum', 'Knob and Tube', 'BX / Armored Cable'] },
             { key: 'electrical_panel_brand', label: 'Panel Manufacturer', type: 'select', options: ['Square D', 'Siemens', 'Eaton / Cutler-Hammer', 'GE', 'Federal Pacific (FPE)', 'Zinsco', 'Other'] },
           ],
+          location_presets: ['Main Panel', 'Sub Panel', 'Kitchen', 'Master Bathroom', 'Guest Bathroom', 'Half Bath', 'Garage', 'Exterior'],
           presets: [
             {
               title: 'Limitation of Scope: Inoperable Lights',
@@ -333,6 +339,7 @@ export class TemplatesService implements OnApplicationBootstrap {
             { key: 'plumbing_sump', label: 'Sump Pump Present', type: 'select', options: ['Yes - Functional', 'Yes - Not Functional / Disconnected', 'No Sump Pump'] },
             { key: 'plumbing_fuel', label: 'Main Fuel Shut-off', type: 'select', options: ['At Gas Meter (Exterior)', 'Propane Tank', 'None / All Electric'] },
           ],
+          location_presets: ['Master Bathroom', 'Guest Bathroom', 'Half Bath', 'Kitchen', 'Laundry Room', 'Water Heater'],
           presets: [
             {
               title: 'Limitation of Scope: Concealed Plumbing & Buried Tanks',
@@ -394,6 +401,7 @@ export class TemplatesService implements OnApplicationBootstrap {
             { key: 'hvac_age', label: 'Approximate System Age', type: 'select', options: ['0-5 Years', '5-10 Years', '10-15 Years', '15-20 Years (Near End of Life)', '20+ Years'] },
             { key: 'hvac_thermostat', label: 'Thermostat Operation', type: 'select', options: ['Functional / Responded', 'Did Not Respond', 'Not Tested (Utilities Off)'] },
           ],
+          location_presets: ['Basement', 'Attic', 'Utility Room', 'Exterior', 'Living Room', 'Crawlspace'],
           presets: [
             {
               title: 'Limitation of Scope: Not a Warranty',
@@ -436,6 +444,7 @@ export class TemplatesService implements OnApplicationBootstrap {
             { key: 'appliance_washer', label: 'Washer Drain Type', type: 'select', options: ['Standpipe', 'Laundry Tub / Sink', 'Not Visible', 'Not Present'] },
             { key: 'appliance_tested', label: 'Appliances Tested', type: 'select', options: ['Basic Operational Test Conducted', 'Not Tested - Utilities Off'] },
           ],
+          location_presets: ['Kitchen', 'Laundry Room', 'Utility Room'],
           presets: [
             {
               title: 'Limitation of Scope: Concealed Appliance Leaks',
@@ -484,6 +493,7 @@ export class TemplatesService implements OnApplicationBootstrap {
             { key: 'garage_opener', label: 'Automatic Opener', type: 'select', options: ['Functional', 'Not Functional', 'Manual Operation Only (No Opener)'] },
             { key: 'garage_floor', label: 'Floor Material', type: 'select', options: ['Poured Concrete', 'Asphalt', 'Dirt / Gravel', 'Epoxy Coated'] }
           ],
+          location_presets: ['Attached Garage', 'Detached Garage', 'Carport'],
           presets: [
             {
               title: 'Limitation of Scope: Stored Items / Clutter',
@@ -539,6 +549,7 @@ export class TemplatesService implements OnApplicationBootstrap {
             { key: 'roof_covering', label: 'Roof Covering Material', type: 'text' },
             { key: 'roof_age', label: 'Approximate Age (years)', type: 'text' },
           ],
+          location_presets: ['Entire Roof'],
           presets: [
             { title: 'Severe Granule Loss', description: 'Observed significant granule loss on asphalt shingles, exposing the underlying fiberglass mat to solar damage.', recommendation: 'Recommend a licensed roofing contractor evaluate the remaining service life of the shingles.', severity: 'Major' },
           ],
@@ -550,6 +561,7 @@ export class TemplatesService implements OnApplicationBootstrap {
             { key: 'electrical_panel_brand', label: 'Panel Manufacturer / Brand', type: 'select', options: ['Square D', 'Siemens', 'Cutler-Hammer / Eaton', 'GE (General Electric)', 'Federal Pacific (FPE) Stab-Lok', 'Zinsco', 'Challenger', 'Other / Obsolete'] },
             { key: 'electrical_amps', label: 'Service Amperage (Amps)', type: 'text' },
           ],
+          location_presets: ['Main Panel'],
           presets: [
             { title: 'Hazardous Panel Brand', description: 'Observed a Federal Pacific (FPE) Stab-Lok main electrical panel. These panels have a high rate of breaker failure.', recommendation: 'Recommend immediate replacement of the electrical panel by a licensed electrician for fire safety.', severity: 'Safety' },
           ],
@@ -562,6 +574,7 @@ export class TemplatesService implements OnApplicationBootstrap {
             { key: 'plumbing_waste', label: 'Waste Piping Material', type: 'select', options: ['PVC', 'ABS', 'Cast Iron', 'Galvanized', 'Clay', 'Orangeburg', 'Unknown'] },
             { key: 'plumbing_heater_age', label: 'Water Heater Age (years)', type: 'text' },
           ],
+          location_presets: ['Kitchen', 'Master Bath', 'Guest Bath', 'Water Heater'],
           presets: [
             { title: 'Active Plumbing Leak', description: 'Observed active dripping/leaking at the hot water supply inlet on the water heater tank.', recommendation: 'Recommend repair by a licensed plumber.', severity: 'Major' },
           ],
@@ -573,6 +586,7 @@ export class TemplatesService implements OnApplicationBootstrap {
             { key: 'hvac_type', label: 'Heating System Type', type: 'select', options: ['Forced Air Gas Furnace', 'Heat Pump', 'Electric Baseboard / Strip', 'Boiler / Hydronic', 'No Permanent Heat Source'] },
             { key: 'hvac_age', label: 'Approximate Age (years)', type: 'text' },
           ],
+          location_presets: ['Main Unit', 'Air Handler', 'Exterior'],
           presets: [
             { title: 'Inadequate Heating Source', description: 'The heating unit failed to activate when tested using the thermostat control.', recommendation: 'Recommend a licensed HVAC technician service or repair the heating system.', severity: 'Major' },
           ],
@@ -600,6 +614,7 @@ export class TemplatesService implements OnApplicationBootstrap {
             { key: 'roof_covering_material', label: 'Roof Covering Material', type: 'select', options: ['Asphalt / Fiberglass Shingles', 'Concrete / Clay Tile', 'Metal', 'Built-up / Flat'] },
             { key: 'roof_documentation', label: 'Documentation Method', type: 'select', options: ['Permit Record Verified', 'Product Approval Form Verified', 'No Documentation Available'] },
           ],
+          location_presets: ['Entire Structure', 'Entire Roof'],
           presets: [
             {
               title: 'A. FBC Compliant Roof Covering',
@@ -622,6 +637,7 @@ export class TemplatesService implements OnApplicationBootstrap {
             { key: 'deck_nail_type', label: 'Nail Size / Type', type: 'select', options: ['Staples / 6d Nails', '8d Common Nails', 'Dimensional Lumber (No Plywood)', 'Reinforced Concrete'] },
             { key: 'deck_nail_spacing', label: 'Nail Spacing', type: 'select', options: ['6" along edge / 12" in field', '6" along edge / 6" in field', 'Not Applicable'] },
           ],
+          location_presets: ['Attic'],
           presets: [
             {
               title: 'Category A (Weakest): 6d Nails or Staples',
@@ -650,6 +666,7 @@ export class TemplatesService implements OnApplicationBootstrap {
             { key: 'rtw_connection', label: 'Weakest Connection Type Found', type: 'select', options: ['Toenails', 'Clips', 'Single Wraps', 'Double Wraps', 'Structural / Anchored'] },
             { key: 'rtw_nails', label: 'Minimum Nails per Strap', type: 'select', options: ['Less than 3 Nails', '3 Nails Verified', '4 or More Nails Verified'] },
           ],
+          location_presets: ['Attic', 'Exterior'],
           presets: [
             {
               title: 'Category A: Toenails',
@@ -677,6 +694,7 @@ export class TemplatesService implements OnApplicationBootstrap {
           fields: [
             { key: 'geometry_type', label: 'Qualifying Roof Shape', type: 'select', options: ['Hip Roof', 'Non-Hip (Gable, Flat, Mansard)', 'Flat Roof (> 5 levels)'] },
           ],
+          location_presets: ['Exterior'],
           presets: [
             {
               title: 'Hip Roof Verified',
@@ -698,6 +716,7 @@ export class TemplatesService implements OnApplicationBootstrap {
           fields: [
             { key: 'swr_present', label: 'SWR (Peel & Stick) Present?', type: 'select', options: ['Yes - Verified in Attic or via Photos', 'No / Cannot Verify'] },
           ],
+          location_presets: ['Attic', 'Roof'],
           presets: [
             {
               title: 'SWR Verified',
@@ -720,6 +739,7 @@ export class TemplatesService implements OnApplicationBootstrap {
             { key: 'opening_glazed', label: 'Glazed (Windows/Glass Doors)', type: 'select', options: ['Category A (Hurricane Impact Rated)', 'Category X (No Protection)'] },
             { key: 'opening_unglazed', label: 'Unglazed (Solid Doors/Garage)', type: 'select', options: ['Category A (Hurricane Impact Rated)', 'Category X (No Protection)'] },
           ],
+          location_presets: ['All Openings', 'Front Elevation', 'Rear Elevation'],
           presets: [
             {
               title: 'Category X: No Opening Protection',
