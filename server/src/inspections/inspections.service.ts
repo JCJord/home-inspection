@@ -6,7 +6,6 @@ import { CreateInspectionDto } from './dto/create-inspection.dto';
 import { UpdateInspectionDto } from './dto/update-inspection.dto';
 import { Inspector } from '../inspectors/inspector.entity';
 import { Report } from '../reports/report.entity';
-import { SubscriptionStatus } from '../common/enums/subscription-status.enum';
 import { Template } from '../templates/template.entity';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PdfService } from '../reports/pdf.service';
@@ -38,12 +37,6 @@ export class InspectionsService {
       throw new NotFoundException('Inspector not found');
     }
 
-    if (
-      inspector.subscription_status !== SubscriptionStatus.ACTIVE &&
-      inspector.free_inspections_used >= 3
-    ) {
-      throw new ForbiddenException('Free inspection limit reached. Please upgrade.');
-    }
 
     // Load template
     let template: Template | null = null;
@@ -69,9 +62,7 @@ export class InspectionsService {
 
     const savedInspection = await this.inspectionRepository.save(inspection);
 
-    // Increment used inspections
-    inspector.free_inspections_used += 1;
-    await this.inspectorRepository.save(inspector);
+
 
     // Add relation back for event (only for scheduled bookings)
     if (savedInspection.status === 'scheduled') {

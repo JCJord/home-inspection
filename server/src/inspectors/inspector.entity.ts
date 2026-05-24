@@ -7,7 +7,6 @@ import {
   OneToMany,
 } from 'typeorm';
 import { Inspection } from '../inspections/inspection.entity';
-import { SubscriptionStatus } from '../common/enums/subscription-status.enum';
 import { SOPType } from '../common/enums/sop.enum';
 
 @Entity('inspectors')
@@ -56,15 +55,6 @@ export class Inspector {
 
   @Column({ nullable: true })
   certifications: string;
-
-  @Column({
-    type: 'varchar',
-    default: SubscriptionStatus.FREE,
-  })
-  subscription_status: SubscriptionStatus;
-
-  @Column({ default: 0 })
-  free_inspections_used: number;
 
   @Column({ type: 'varchar', default: '#1E40AF' })
   brand_primary_color: string;

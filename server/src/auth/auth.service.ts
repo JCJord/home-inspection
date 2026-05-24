@@ -114,7 +114,6 @@ export class AuthService {
         id: inspector.id,
         email: inspector.email,
         name: inspector.name,
-        subscription_status: inspector.subscription_status,
       },
       ...tokens,
     };
@@ -138,7 +137,6 @@ export class AuthService {
           id: inspector.id,
           email: inspector.email,
           name: inspector.name,
-          subscription_status: inspector.subscription_status,
         },
         ...tokens,
       };
@@ -160,7 +158,6 @@ export class AuthService {
         id: inspector.id,
         email: inspector.email,
         name: inspector.name,
-        subscription_status: inspector.subscription_status,
       },
       ...tokens,
     };
@@ -263,7 +260,6 @@ export class AuthService {
           id: user.id,
           email: user.email,
           name: user.name,
-          subscription_status: user.subscription_status,
         },
         ...tokens,
       };

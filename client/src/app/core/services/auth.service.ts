@@ -8,7 +8,7 @@ import { RegisterRequestDto } from '../dtos/register-request.dto';
 import { LoginRequestDto } from '../dtos/login-request.dto';
 import { AuthResponse } from '../models/auth-response.interface';
 import { Inspector } from '../models/inspector.interface';
-import { SubscriptionStatus } from '../enums/subscription-status.enum';
+
 import { isPlatformBrowser } from '@angular/common';
 
 @Injectable({
@@ -23,7 +23,7 @@ export class AuthService {
   // --- State ---
   token = signal<string | null>(localStorage.getItem('access_token'));
   refreshTokenSignal = signal<string | null>(localStorage.getItem('refresh_token'));
-  currentUser = signal<Pick<Inspector, 'id' | 'email' | 'name' | 'subscription_status'> | null>(
+  currentUser = signal<Pick<Inspector, 'id' | 'email' | 'name'> | null>(
     (() => {
       try {
         const saved = localStorage.getItem('current_user');
@@ -56,28 +56,13 @@ export class AuthService {
 
   // --- Computed ---
   isAuthenticated = computed(() => !!this.token());
-  isPremium = computed(() => {
-    // In development, always allow premium features for testing
-    if (!environment.production) return true;
 
-    const user = this.currentUser();
-    if (!user) return false;
-
-    const status = user.subscription_status;
-    if (!status) return false;
-
-    // Flexible check for 'active' status
-    return (
-      status === SubscriptionStatus.ACTIVE ||
-      status.toString().toLowerCase() === 'active'
-    );
-  });
 
   /**
    * Fetches the current user's profile data.
    */
-  loadCurrentUser(): Observable<Pick<Inspector, 'id' | 'email' | 'name' | 'subscription_status'>> {
-    return this.http.get<Pick<Inspector, 'id' | 'email' | 'name' | 'subscription_status'>>(`${this.apiUrl}/me`).pipe(
+  loadCurrentUser(): Observable<Pick<Inspector, 'id' | 'email' | 'name'>> {
+    return this.http.get<Pick<Inspector, 'id' | 'email' | 'name'>>(`${this.apiUrl}/me`).pipe(
       tap((user) => {
         localStorage.setItem('current_user', JSON.stringify(user));
         this.currentUser.set(user);

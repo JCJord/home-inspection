@@ -176,13 +176,12 @@
            <span><strong>AI Assistant:</strong> Tap to rewrite your keywords into a clinical report finding.</span>
          </div>
          <button type="button" class="ai-generate-btn" 
-           (click)="generateAiComment()" [disabled]="isGeneratingAi() || !isPremium() || isPublishedSignal()"
-           [class.premium-lock]="!isPremium()" [title]="!isPremium() ? 'Available for users with Active subscription only' : ''">
+           (click)="generateAiComment()" [disabled]="isGeneratingAi() || isPublishedSignal()">
            @if (isGeneratingAi()) {
              <div class="spinner-small mr-2"></div>
              <span>Generating...</span>
            } @else {
-             <span>{{ isPremium() ? '✨ Generate AI Content' : 'Upgrade for AI' }}</span>
+             <span>✨ Generate AI Content</span>
            }
          </button>
       </div>
@@ -191,11 +190,6 @@
           <div class="flex items-center gap-2 px-3 py-1.5 rounded-md bg-red-50 border border-red-200 text-red-700 text-xs font-bold animate-pulse">
             <lucide-icon [name]="icons.AlertCircle" [size]="14" class="text-red-500"></lucide-icon>
             <span>{{ aiErrorMessage() }}</span>
-          </div>
-        } @else if (!isPremium()) {
-          <div class="flex items-center gap-2 px-3 py-1.5 rounded-md bg-amber-50 border border-amber-200 text-amber-700 text-xs font-medium">
-            <span class="text-lg leading-none">✨</span>
-            <span>AI Finding generation is available for Active users.</span>
           </div>
         } @else {
           <div class="flex items-center gap-2 px-3 py-1.5 rounded-md bg-blue-50/50 border border-transparent text-blue-700 text-[11px] italic">

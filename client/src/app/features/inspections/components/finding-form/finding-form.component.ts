@@ -50,7 +50,6 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
   private draftService = inject(DraftService);
   private mutationQueueService = inject(MutationQueueService);
 
-  isPremium = this.authService.isPremium;
 
   @Input({ required: true }) inspectionId!: string;
   @Input({ required: true }) year_built!: number;
