@@ -50,26 +50,31 @@ export class AuthService {
         // Validate and consume code inside transaction
         await this.inviteCodeService.validateAndConsumeCode(invite_code, manager);
         
+        const rawToken = crypto.randomBytes(32).toString('hex');
+        const hashedToken = crypto.createHash('sha256').update(rawToken).digest('hex');
+        const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
         // Create the user manually via manager to participate in the transaction
         const newInspector = this.inspectorRepository.create({
           email,
           name,
           password_hash: hashedPassword,
+          is_email_verified: false,
+          email_verification_token: hashedToken,
+          email_verification_expires: expiresAt,
         });
         
-        return await manager.save(newInspector);
+        const saved = await manager.save(newInspector);
+
+        const frontendUrl = this.configService.get<string>('FRONTEND_URL', 'http://localhost:4200');
+        const verifyLink = `${frontendUrl}/auth/confirm-email?token=${rawToken}&email=${encodeURIComponent(email)}`;
+        await this.mailService.sendEmailVerification(email, verifyLink, name);
+
+        return saved;
       });
 
-      const tokens = await this.generateTokens(inspector);
-
       return {
-        user: {
-          id: inspector.id,
-          email: inspector.email,
-          name: inspector.name,
-          subscription_status: inspector.subscription_status,
-        },
-        ...tokens,
+        message: 'Registration successful. Please check your email to verify your account.',
       };
     } catch (error) {
       if (error instanceof BadRequestException) {
@@ -98,6 +103,10 @@ export class AuthService {
       throw new UnauthorizedException(errorMessage);
     }
 
+    if (!inspector.is_email_verified) {
+      throw new UnauthorizedException('Email not verified. Please check your inbox.');
+    }
+
     const tokens = await this.generateTokens(inspector);
 
     return {
@@ -109,6 +118,85 @@ export class AuthService {
       },
       ...tokens,
     };
+  }
+
+  async verifyEmail(token: string) {
+    const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+
+    const inspector = await this.inspectorRepository.findOne({
+      where: { email_verification_token: hashedToken },
+    });
+
+    if (!inspector) {
+      throw new UnauthorizedException('Invalid or expired verification token');
+    }
+
+    if (inspector.is_email_verified) {
+      const tokens = await this.generateTokens(inspector);
+      return {
+        user: {
+          id: inspector.id,
+          email: inspector.email,
+          name: inspector.name,
+          subscription_status: inspector.subscription_status,
+        },
+        ...tokens,
+      };
+    }
+
+    if (inspector.email_verification_expires && inspector.email_verification_expires < new Date()) {
+      throw new UnauthorizedException('Invalid or expired verification token');
+    }
+
+    inspector.is_email_verified = true;
+    inspector.email_verification_token = null as any;
+    inspector.email_verification_expires = null as any;
+    await this.inspectorRepository.save(inspector);
+
+    const tokens = await this.generateTokens(inspector);
+
+    return {
+      user: {
+        id: inspector.id,
+        email: inspector.email,
+        name: inspector.name,
+        subscription_status: inspector.subscription_status,
+      },
+      ...tokens,
+    };
+  }
+
+  async resendVerificationEmail(email: string) {
+    const inspector = await this.inspectorsService.findByEmail(email);
+    if (!inspector) {
+      // Prevent email enumeration
+      return { message: 'If the account exists, a verification email has been sent.' };
+    }
+
+    if (inspector.is_email_verified) {
+      throw new BadRequestException('Email is already verified.');
+    }
+
+    if (inspector.email_verification_expires) {
+      const twoMinutesAgo = new Date(Date.now() - 2 * 60 * 1000);
+      if (inspector.email_verification_expires > twoMinutesAgo) {
+        throw new BadRequestException('Please wait before requesting another email');
+      }
+    }
+
+    const rawToken = crypto.randomBytes(32).toString('hex');
+    const hashedToken = crypto.createHash('sha256').update(rawToken).digest('hex');
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+    inspector.email_verification_token = hashedToken;
+    inspector.email_verification_expires = expiresAt;
+    await this.inspectorRepository.save(inspector);
+
+    const frontendUrl = this.configService.get<string>('FRONTEND_URL', 'http://localhost:4200');
+    const verifyLink = `${frontendUrl}/auth/confirm-email?token=${rawToken}&email=${encodeURIComponent(email)}`;
+    await this.mailService.sendEmailVerification(email, verifyLink, inspector.name);
+
+    return { message: 'Verification email sent.' };
   }
 
   async me(userId: string) {

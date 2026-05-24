@@ -88,10 +88,24 @@ export class AuthService {
   /**
    * Registers a new inspector.
    */
-  register(dto: RegisterRequestDto): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/register`, dto).pipe(
+  register(dto: RegisterRequestDto): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.apiUrl}/register`, dto);
+  }
+
+  /**
+   * Verifies an email address using a token.
+   */
+  verifyEmail(token: string): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.apiUrl}/verify-email`, { token }).pipe(
       tap((response) => this.setSession(response))
     );
+  }
+
+  /**
+   * Resends the verification email.
+   */
+  resendVerificationEmail(email: string): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.apiUrl}/resend-verification`, { email });
   }
 
   /**

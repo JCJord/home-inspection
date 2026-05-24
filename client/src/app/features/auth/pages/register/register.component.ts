@@ -7,6 +7,7 @@ import { TextInputComponent, PasswordInputComponent } from '../../../../shared';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { AuthService } from '../../../../core/services/auth.service';
 import { RegisterRequestDto } from '../../../../core/dtos/register-request.dto';
+import { LucideAngularModule, MailCheck } from 'lucide-angular';
 
 /**
  * Custom validator to check if password and confirmPassword fields match.
@@ -40,6 +41,7 @@ export const passwordMatchValidator: ValidatorFn = (control: AbstractControl): V
     TextInputComponent,
     PasswordInputComponent,
     ButtonComponent,
+    LucideAngularModule,
   ],
   templateUrl: './register.component.html',
   styleUrl: './register.component.scss',
@@ -48,7 +50,14 @@ export class RegisterComponent {
   private authService = inject(AuthService);
   private router = inject(Router);
 
+  readonly MailCheckIcon = MailCheck;
+
   isLoading = signal(false);
+  isRegistrationSuccess = signal(false);
+  registeredEmail = signal('');
+  resendCooldown = signal(120);
+  resendTimer: any;
+  isResending = signal(false);
 
   registerForm = new FormGroup({
     fullName: new FormControl('', {
@@ -90,7 +99,9 @@ export class RegisterComponent {
         .subscribe({
           next: (response) => {
             console.log('Registration successful:', response);
-            this.router.navigate(['/home']); 
+            this.registeredEmail.set(formValue.email);
+            this.isRegistrationSuccess.set(true);
+            this.startResendCooldown();
           },
           error: (error) => {
             console.error('Registration error:', error);
@@ -104,6 +115,48 @@ export class RegisterComponent {
         });
     } else {
       this.registerForm.markAllAsTouched();
+    }
+  }
+
+  startResendCooldown() {
+    this.resendCooldown.set(120);
+    clearInterval(this.resendTimer);
+    this.resendTimer = setInterval(() => {
+      const current = this.resendCooldown();
+      if (current > 0) {
+        this.resendCooldown.set(current - 1);
+      } else {
+        clearInterval(this.resendTimer);
+      }
+    }, 1000);
+  }
+
+  get formattedCooldown(): string {
+    const totalSeconds = this.resendCooldown();
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  }
+
+  resendEmail() {
+    if (this.resendCooldown() > 0 || this.isResending()) return;
+    
+    this.isResending.set(true);
+    this.authService.resendVerificationEmail(this.registeredEmail())
+      .pipe(finalize(() => this.isResending.set(false)))
+      .subscribe({
+        next: () => {
+          this.startResendCooldown();
+        },
+        error: (err) => {
+          console.error('Failed to resend verification email', err);
+        }
+      });
+  }
+
+  ngOnDestroy() {
+    if (this.resendTimer) {
+      clearInterval(this.resendTimer);
     }
   }
 }

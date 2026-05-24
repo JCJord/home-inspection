@@ -14,6 +14,10 @@ export const AUTH_ROUTES: Routes = [
     loadComponent: () => import('./pages/reset-password/reset-password.component').then(m => m.ResetPasswordComponent),
   },
   {
+    path: 'confirm-email',
+    loadComponent: () => import('./pages/confirm-email/confirm-email.component').then(m => m.ConfirmEmailComponent),
+  },
+  {
     path: '',
     redirectTo: 'login',
     pathMatch: 'full',

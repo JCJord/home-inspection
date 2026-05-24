@@ -143,6 +143,45 @@ export class MailService {
     }
   }
 
+  async sendEmailVerification(email: string, verifyLink: string, name: string) {
+    this.logger.log(`Processing email verification for ${email}`);
+    
+    try {
+      const templatePath = path.join(process.cwd(), 'dist', 'mail', 'templates', 'email-verification.hbs');
+      const finalPath = fs.existsSync(templatePath) 
+        ? templatePath 
+        : path.join(process.cwd(), 'src', 'mail', 'templates', 'email-verification.hbs');
+
+      if (!fs.existsSync(finalPath)) {
+        this.logger.error(`Email template not found at ${finalPath}`);
+        return;
+      }
+
+      const source = fs.readFileSync(finalPath, 'utf8');
+      const template = handlebars.compile(source);
+
+      const html = template({
+        verify_link: verifyLink,
+        name: name || 'there',
+      });
+
+      const { data, error } = await this.resend.emails.send({
+        from: 'Home Inspection <onboarding@resend.dev>',
+        to: email,
+        subject: 'Verify your email address',
+        html: html,
+      });
+
+      if (error) {
+        this.logger.error(`Resend error sending to ${email}: ${JSON.stringify(error)}`);
+      } else {
+        this.logger.log(`Verification email successfully queued for ${email}. ID: ${data?.id}`);
+      }
+    } catch (error: any) {
+      this.logger.error(`Failed to process verification email for ${email}`, error.stack);
+    }
+  }
+
   private formatDate(date: Date | string): string {
     const d = new Date(date);
     return d.toLocaleDateString('en-US', {

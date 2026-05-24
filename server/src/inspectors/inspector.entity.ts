@@ -21,6 +21,15 @@ export class Inspector {
   @Column()
   password_hash: string;
 
+  @Column({ type: 'boolean', default: false })
+  is_email_verified: boolean;
+
+  @Column({ nullable: true })
+  email_verification_token: string;
+
+  @Column({ type: 'timestamp', nullable: true })
+  email_verification_expires: Date;
+
   @Column({ nullable: true })
   reset_password_token: string;
 

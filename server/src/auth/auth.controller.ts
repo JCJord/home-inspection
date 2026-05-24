@@ -67,5 +67,17 @@ export class AuthController {
   async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
     return await this.authService.resetPassword(resetPasswordDto.token, resetPasswordDto.password);
   }
+
+  @Post('verify-email')
+  @HttpCode(HttpStatus.OK)
+  async verifyEmail(@Body() dto: { token: string }) {
+    return await this.authService.verifyEmail(dto.token);
+  }
+
+  @Post('resend-verification')
+  @HttpCode(HttpStatus.OK)
+  async resendVerification(@Body() dto: { email: string }) {
+    return await this.authService.resendVerificationEmail(dto.email);
+  }
 }
 
