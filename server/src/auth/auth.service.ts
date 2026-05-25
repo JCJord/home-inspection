@@ -7,7 +7,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, LessThan } from 'typeorm';
 import { Session } from './session.entity';
 import { Inspector } from '../inspectors/inspector.entity';
 import { JwtService } from '@nestjs/jwt';
@@ -211,9 +211,16 @@ export class AuthService {
       this.jwtService.signAsync(payload, { expiresIn: '7d' }),
     ]);
 
-    const hashedRefreshToken = await bcrypt.hash(refresh_token, 10);
+    // Use SHA-256 to avoid bcrypt's 72-byte string limit which silently truncates JWTs!
+    const hashedRefreshToken = crypto.createHash('sha256').update(refresh_token).digest('hex');
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 7);
+
+    // Clean up old expired sessions for this user to prevent DB bloat
+    await this.sessionRepository.delete({
+      inspector_id: user.id,
+      expires_at: LessThan(new Date()),
+    });
 
     const session = this.sessionRepository.create({
       inspector_id: user.id,
@@ -231,13 +238,27 @@ export class AuthService {
       const payload = await this.jwtService.verifyAsync(refreshToken);
       const userId = payload.sub;
 
+      // Clean up old expired sessions to prevent matching them
+      await this.sessionRepository.delete({
+        inspector_id: userId,
+        expires_at: LessThan(new Date()),
+      });
+
       const sessions = await this.sessionRepository.find({
         where: { inspector_id: userId },
+        order: { expires_at: 'DESC' },
       });
 
       let currentSession: Session | null = null;
       for (const session of sessions) {
-        const isMatch = await bcrypt.compare(refreshToken, session.hashed_refresh_token);
+        let isMatch = false;
+        if (session.hashed_refresh_token.startsWith('$2b$') || session.hashed_refresh_token.startsWith('$2a$')) {
+          isMatch = await bcrypt.compare(refreshToken, session.hashed_refresh_token);
+        } else {
+          const hashedInput = crypto.createHash('sha256').update(refreshToken).digest('hex');
+          isMatch = (hashedInput === session.hashed_refresh_token);
+        }
+
         if (isMatch) {
           currentSession = session;
           break;
@@ -273,12 +294,27 @@ export class AuthService {
       const payload = this.jwtService.decode(refreshToken) as any;
       if (!payload || !payload.sub) return;
 
+      const userId = payload.sub;
+
+      await this.sessionRepository.delete({
+        inspector_id: userId,
+        expires_at: LessThan(new Date()),
+      });
+
       const sessions = await this.sessionRepository.find({
-        where: { inspector_id: payload.sub },
+        where: { inspector_id: userId },
+        order: { expires_at: 'DESC' },
       });
 
       for (const session of sessions) {
-        const isMatch = await bcrypt.compare(refreshToken, session.hashed_refresh_token);
+        let isMatch = false;
+        if (session.hashed_refresh_token.startsWith('$2b$') || session.hashed_refresh_token.startsWith('$2a$')) {
+          isMatch = await bcrypt.compare(refreshToken, session.hashed_refresh_token);
+        } else {
+          const hashedInput = crypto.createHash('sha256').update(refreshToken).digest('hex');
+          isMatch = (hashedInput === session.hashed_refresh_token);
+        }
+        
         if (isMatch) {
           await this.sessionRepository.delete(session.id);
           break;
