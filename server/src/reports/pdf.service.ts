@@ -3,19 +3,6 @@ import puppeteer, { Browser, Page } from 'puppeteer';
 
 const BROWSER_LAUNCH_OPTIONS = {
   headless: true as const,
-  args: [
-    '--no-sandbox',
-    '--disable-setuid-sandbox',
-    '--disable-dev-shm-usage',
-    '--disable-gpu',
-    '--disable-extensions',
-    '--disable-background-networking',
-    '--disable-default-apps',
-    '--disable-sync',
-    '--disable-translate',
-    '--no-first-run',
-  ],
-  executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
 };
 
 // Recycle the browser after this many PDF generations to prevent memory accumulation
