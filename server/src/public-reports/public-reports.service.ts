@@ -40,6 +40,10 @@ export class PublicReportsService {
       }
     }
 
+    if (inspection.report?.pdf_key) {
+      inspection.report.pdf_url = await this.storageService.getPresignedUrl(inspection.report.pdf_key);
+    }
+
     return inspection;
   }
 }

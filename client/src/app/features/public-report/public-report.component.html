@@ -33,7 +33,7 @@
         [class.active]="activeSection() === 'executive-summary' || activeSection() === ''">
         <span>Executive Summary</span>
         @if (activeSection() === 'executive-summary' || activeSection() === '') {
-        <div class="active-dot w-2 h-2 rounded-full flex-shrink-0"></div>
+        <div class="active-dot w-2 h-2 rounded-full flex-shrink-0 ms-4"></div>
         }
       </button>
 
@@ -85,10 +85,11 @@
           inspection()?.inspector?.name }}</span>
       </div>
 
-      @if (inspection()?.report?.pdf_url) {
-      <a [href]="getAbsoluteImageUrl(inspection()?.report?.pdf_url)" target="_blank"
-        class="download-btn flex items-center gap-2 px-5 py-2.5 text-white font-bold rounded-xl transition-transform hover:scale-105 active:scale-95 no-underline shadow-md bg-text-primary">
-        <lucide-icon [name]="icons.Download" [size]="18"></lucide-icon>
+      @if (getPdfUrl()) {
+      <a [href]="getPdfUrl()" target="_blank"
+        class="flex items-center gap-2 px-5 py-2.5 md:px-6 md:py-3 text-white font-black rounded-xl transition-transform hover:scale-105 active:scale-95 no-underline shadow-lg"
+        style="background-color: var(--color-primary, #00A3FF);">
+        <lucide-icon [name]="icons.Download" [size]="20"></lucide-icon>
         <span class="hidden sm:inline">Download PDF</span>
         <span class="sm:hidden">PDF</span>
       </a>
@@ -157,59 +158,70 @@
       <div class="section-group finding-section-container scroll-mt-28 mt-20" id="section-executive-summary">
         <h2 class="section-header text-4xl font-black mb-6 text-text-primary">Executive Summary</h2>
         <p class="text-lg text-text-muted mb-8 leading-relaxed max-w-4xl">
-          This section summarizes the most significant findings from the inspection, specifically focusing on Safety Hazards and Major Defects that require immediate attention or specialized evaluation. 
+          This section summarizes the most significant findings from the inspection, specifically focusing on Safety
+          Hazards and Major Defects that require immediate attention or specialized evaluation.
           <br><br>
-          <strong>Categories:</strong> This report divides findings into five categories: Safety Hazards (colored in red), Major Defects (in orange), Minor Defects (in yellow), Maintenance Items (in green), and Informational Items (in blue).
+          <strong>Categories:</strong> This report divides findings into five categories: Safety Hazards (colored in
+          red), Major Defects (in orange), Minor Defects (in yellow), Maintenance Items (in green), and Informational
+          Items (in blue).
         </p>
 
         <!-- Severity Definitions Key -->
-        <div class="severity-definitions p-6 md:p-8 rounded-3xl mb-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 bg-surface shadow-md border border-border/50">
+        <div
+          class="severity-definitions p-6 md:p-8 rounded-3xl mb-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 bg-surface shadow-md border border-border/50">
           <div class="flex flex-col">
             <div class="flex items-center gap-3 mb-3">
               <span class="w-4 h-4 rounded-full flex-shrink-0" style="background-color: #EF4444;"></span>
               <strong class="text-sm font-black uppercase tracking-wider text-text-primary">Safety Hazard</strong>
             </div>
-            <p class="text-sm text-text-muted m-0 leading-relaxed font-medium">A condition that poses a significant risk of personal injury during normal use of the property.</p>
+            <p class="text-sm text-text-muted m-0 leading-relaxed font-medium">A condition that poses a significant risk
+              of personal injury during normal use of the property.</p>
           </div>
           <div class="flex flex-col">
             <div class="flex items-center gap-3 mb-3">
               <span class="w-4 h-4 rounded-full flex-shrink-0" style="background-color: #F97316;"></span>
               <strong class="text-sm font-black uppercase tracking-wider text-text-primary">Major Defect</strong>
             </div>
-            <p class="text-sm text-text-muted m-0 leading-relaxed font-medium">A condition that significantly affects the habitability, safety, or primary function of a critical system.</p>
+            <p class="text-sm text-text-muted m-0 leading-relaxed font-medium">A condition that significantly affects
+              the habitability, safety, or primary function of a critical system.</p>
           </div>
           <div class="flex flex-col">
             <div class="flex items-center gap-3 mb-3">
               <span class="w-4 h-4 rounded-full flex-shrink-0" style="background-color: #EAB308;"></span>
               <strong class="text-sm font-black uppercase tracking-wider text-text-primary">Minor Defect</strong>
             </div>
-            <p class="text-sm text-text-muted m-0 leading-relaxed font-medium">A condition that is not functioning as intended or needs repair, but does not pose a significant risk.</p>
+            <p class="text-sm text-text-muted m-0 leading-relaxed font-medium">A condition that is not functioning as
+              intended or needs repair, but does not pose a significant risk.</p>
           </div>
           <div class="flex flex-col">
             <div class="flex items-center gap-3 mb-3">
               <span class="w-4 h-4 rounded-full flex-shrink-0" style="background-color: #22C55E;"></span>
               <strong class="text-sm font-black uppercase tracking-wider text-text-primary">Maintenance Item</strong>
             </div>
-            <p class="text-sm text-text-muted m-0 leading-relaxed font-medium">A routine maintenance task recommended to preserve the condition of the property or prevent future issues.</p>
+            <p class="text-sm text-text-muted m-0 leading-relaxed font-medium">A routine maintenance task recommended to
+              preserve the condition of the property or prevent future issues.</p>
           </div>
           <div class="flex flex-col">
             <div class="flex items-center gap-3 mb-3">
               <span class="w-4 h-4 rounded-full flex-shrink-0" style="background-color: #3B82F6;"></span>
               <strong class="text-sm font-black uppercase tracking-wider text-text-primary">Informational</strong>
             </div>
-            <p class="text-sm text-text-muted m-0 leading-relaxed font-medium">General information or observations about the property that do not require any action.</p>
+            <p class="text-sm text-text-muted m-0 leading-relaxed font-medium">General information or observations about
+              the property that do not require any action.</p>
           </div>
         </div>
 
         <div class="grid grid-cols-1 gap-4">
           @for (finding of getSevereFindings(); track finding.id; let fIdx = $index) {
           <div
-            class="finding-card card-static p-6 flex flex-col md:flex-row items-start gap-5 cursor-pointer hover:bg-surface-light transition-colors"
+            class="finding-card card-static p-6 flex flex-col md:flex-row items-start gap-5 cursor-pointer hover:bg-surface-light transition-colors border-l-[6px]"
+            [style.border-left-color]="getSeverityStyles(finding.severity).border"
             (click)="scrollToSection(finding.section)">
             <span class="font-black text-2xl text-text-muted opacity-30 w-8">0{{ fIdx + 1 }}</span>
             <span
               class="severity-badge px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest flex-shrink-0"
-              [ngClass]="getSeverityColor(finding.severity)">
+              [style.background-color]="getSeverityStyles(finding.severity).bg"
+              [style.color]="getSeverityStyles(finding.severity).text">
               {{ finding.severity }}
             </span>
             <div class="flex-1">
@@ -280,7 +292,8 @@
           <!-- Findings Cards -->
           @for (finding of group.findings; track finding.id; let fIdx = $index) {
           <div
-            class="finding-card card-static overflow-hidden transition-all hover:shadow-xl duration-300 border border-border/50">
+            class="finding-card card-static overflow-hidden transition-all hover:shadow-xl duration-300 border border-border/50 border-l-[6px]"
+            [style.border-left-color]="getSeverityStyles(finding.severity).border">
             <div class="finding-header p-6 md:p-8 flex flex-col md:flex-row items-start gap-6">
               <!-- Explicit 4.X numbering -->
               <div
@@ -292,7 +305,8 @@
                 <div class="flex items-center gap-3 flex-wrap">
                   <span
                     class="severity-badge px-4 py-1.5 rounded-full text-[11px] font-black uppercase tracking-widest shadow-sm"
-                    [ngClass]="getSeverityColor(finding.severity)">
+                    [style.background-color]="getSeverityStyles(finding.severity).bg"
+                    [style.color]="getSeverityStyles(finding.severity).text">
                     {{ finding.severity }}
                   </span>
                   @if (finding.location) {
@@ -376,11 +390,17 @@
       }
 
       <div class="report-footer mt-32 pt-16 border-t border-border/50 text-center flex flex-col items-center">
-        
-        <div class="legal-disclaimer max-w-4xl mx-auto mb-16 p-8 md:p-10 bg-surface-light rounded-3xl border border-border/50 text-left w-full">
+
+        <div
+          class="legal-disclaimer max-w-4xl mx-auto mb-16 p-8 md:p-10 bg-surface-light rounded-3xl border border-border/50 text-left w-full">
           <h4 class="text-sm font-black uppercase tracking-widest text-text-primary mb-3">Legal Notice & Disclaimer</h4>
           <p class="text-sm md:text-base text-text-muted leading-relaxed m-0 font-medium">
-            {{ inspection()?.inspector?.custom_legal_disclaimer || 'This inspection report is a professional opinion based on a non-invasive, visual examination of the readily accessible installed systems and components of the property at the time of the inspection. We report on those systems and components that, in our professional judgement, are not functioning properly, are significantly deficient, or present safety hazards. This service is not a warranty, insurance policy, or absolute guarantee of future system performance or longevity.' }}
+            {{ inspection()?.inspector?.custom_legal_disclaimer || 'This inspection report is a professional opinion
+            based on a non-invasive, visual examination of the readily accessible installed systems and components of
+            the property at the time of the inspection. We report on those systems and components that, in our
+            professional judgement, are not functioning properly, are significantly deficient, or present safety
+            hazards. This service is not a warranty, insurance policy, or absolute guarantee of future system
+            performance or longevity.' }}
           </p>
         </div>
 

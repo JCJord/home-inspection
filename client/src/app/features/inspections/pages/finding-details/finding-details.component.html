@@ -13,7 +13,7 @@
 
     <button type="button" (click)="workbench.toggleSidebar()"
       class="flex items-center justify-between w-full max-w-[280px] md:max-w-none px-3 py-1.5 rounded-xl border border-standard bg-surface-standard shadow-sm active:scale-95 transition-all md:pointer-events-none md:border-none md:hover:border-none md:bg-transparent md:shadow-none md:px-0 group hover:border-primary/50">
-      
+
       <!-- Text Container (flex-1 and min-w-0 are the magic for button truncation) -->
       <div class="flex-1 flex flex-col justify-center min-w-0 text-center md:text-center">
         <span class="truncate w-full text-base md:text-lg font-bold text-standard leading-tight">
@@ -22,7 +22,8 @@
       </div>
 
       <!-- Icon Container -->
-      <div class="md:hidden shrink-0 flex items-center justify-center relative ml-2 group-active:translate-y-px transition-transform">
+      <div
+        class="md:hidden shrink-0 flex items-center justify-center relative ml-2 group-active:translate-y-px transition-transform">
         <lucide-icon [name]="icons.ChevronDown" [size]="16" class="text-primary"></lucide-icon>
         @if (sectionFindings().length) {
         <span
@@ -105,8 +106,7 @@
           <!-- Trigger -->
           <button type="button"
             class="w-full flex items-center justify-between px-4 py-3 rounded-xl border border-standard bg-surface-standard shadow-sm hover:shadow-md transition-all focus:outline-none focus:ring-0 active:scale-[0.99]"
-            style="outline: none;"
-            (click)="isFindingsDropdownOpen.set(!isFindingsDropdownOpen())">
+            style="outline: none;" (click)="isFindingsDropdownOpen.set(!isFindingsDropdownOpen())">
             <div class="flex items-center gap-3 truncate">
               @if (finding()) {
               <div class="indicator-dot shrink-0" [attr.data-severity]="finding()!.severity.toLowerCase()"></div>
@@ -134,10 +134,9 @@
           @if (isFindingsDropdownOpen()) {
           <div
             class="absolute z-50 min-w-full md:max-w-[400px] mt-2 shadow-2xl rounded-xl border border-standard bg-light-standard overflow-hidden top-full left-0 origin-top-left flex flex-col max-h-[400px]">
-            <app-finding-list class="flex-1 min-h-0" [findings]="sectionFindings()"
-              [selectedFindingId]="findingId()" [disabled]="inspection()?.status === 'published'"
-              (findingSelected)="onFindingSelected($event)" (addFindingTriggered)="onAddFindingTriggered()"
-              (deleteFindingTriggered)="onDeleteFinding($event)">
+            <app-finding-list class="flex-1 min-h-0" [findings]="sectionFindings()" [selectedFindingId]="findingId()"
+              [disabled]="inspection()?.status === 'published'" (findingSelected)="onFindingSelected($event)"
+              (addFindingTriggered)="onAddFindingTriggered()" (deleteFindingTriggered)="onDeleteFinding($event)">
             </app-finding-list>
           </div>
           }
@@ -195,13 +194,15 @@
             <div class="w-full relative pb-5">
               @if (finding()) {
               <app-finding-form [inspectionId]="inspectionId()!" [section]="activeSection()!"
-                [presets]="currentSectionPresets()" [locationPresets]="currentSectionLocationPresets()" [finding]="finding()" [year_built]="inspection()?.year_built || 0"
+                [presets]="currentSectionPresets()" [locationPresets]="currentSectionLocationPresets()"
+                [finding]="finding()" [year_built]="inspection()?.year_built || 0"
                 [isPublished]="inspection()?.status === 'published'" (close)="goBack()" (saved)="onSaved($event)"
                 (deleted)="onDeleteFinding($event)">
               </app-finding-form>
               } @else {
               <div class="card-static flex flex-col items-center justify-center p-8 text-center min-h-[300px]">
-                <div class="w-16 h-16 rounded-full bg-surface-standard flex items-center justify-center mb-4 border border-standard shadow-sm">
+                <div
+                  class="w-16 h-16 rounded-full bg-surface-standard flex items-center justify-center mb-4 border border-standard shadow-sm">
                   <lucide-icon [name]="icons.LayoutList" [size]="28" class="text-standard-muted"></lucide-icon>
                 </div>
                 <h3 class="text-lg font-bold text-standard mb-2">No Finding Selected</h3>

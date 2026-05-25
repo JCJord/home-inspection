@@ -477,7 +477,11 @@
 
         <div class="findings-grid flex flex-col gap-4">
           @for (finding of group.items; track finding.id) {
-          <app-finding-card [finding]="finding" [readOnly]="true" (edit)="editFinding(finding)"></app-finding-card>
+          <app-finding-card 
+            [finding]="finding" 
+            [readOnly]="true" 
+            [isExcluded]="insp.section_statuses?.[finding.section]?.status === 'not_inspected' || insp.section_statuses?.[finding.section]?.status === 'not_present'"
+            (edit)="editFinding(finding)"></app-finding-card>
           }
         </div>
       </div>

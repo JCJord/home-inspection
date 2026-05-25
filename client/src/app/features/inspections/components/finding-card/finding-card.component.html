@@ -1,4 +1,4 @@
-<div class="finding-card group" [class.is-deleting]="isDeleting()" [class.read-only]="readOnly()" (click)="readOnly() && edit.emit()">
+<div class="finding-card group transition-opacity duration-300" [class.is-deleting]="isDeleting()" [class.read-only]="readOnly()" [style.opacity]="isExcluded() ? '0.5' : '1'" (click)="readOnly() && edit.emit()">
   <div
     class="finding-severity-indicator"
     [attr.data-severity]="finding().severity.toLowerCase()"
@@ -14,10 +14,17 @@
           {{ finding().severity }}
         </span>
 
-        <div class="finding-metadata-row">
+        <div class="finding-metadata-row" style="display: flex; flex-wrap: wrap; gap: 8px;">
           @if (finding().section) {
             <span class="finding-section flex items-center gap-1 px-2 py-0.5 rounded bg-surface-standard border border-standard text-[10px] font-bold uppercase tracking-wider text-standard-muted">
               {{ finding().section }}
+            </span>
+          }
+
+          @if (isExcluded()) {
+            <span class="flex items-center gap-1 px-2 py-0.5 rounded bg-standard/10 border border-standard/20 text-[10px] font-bold uppercase tracking-wider text-standard-muted" title="This finding will not appear in the report because the section is not inspected.">
+              <lucide-icon [name]="icons.Ban" [size]="10"></lucide-icon>
+              Excluded
             </span>
           }
 

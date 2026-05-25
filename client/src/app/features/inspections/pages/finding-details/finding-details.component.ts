@@ -189,6 +189,19 @@ export class FindingDetailsComponent implements OnInit {
           replaceUrl: true 
         });
       }
+
+      // BACKGROUND HYDRATION: Quietly refetch the true server state.
+      // Why? The MutationQueueService holds the optimistic state for 30 seconds after completion,
+      // and then deletes it. If we don't refresh rawInspection with the true server data by then,
+      // the finding (or photo) will abruptly disappear from the UI!
+      const currentId = this.inspectionId();
+      if (currentId) {
+        this.inspectionsService.getInspectionById(currentId).subscribe({
+          next: (insp) => {
+            this.rawInspection.set(insp);
+          }
+        });
+      }
     });
 
     // Debounced Metadata Updates (Shortened to 500ms for responsiveness)

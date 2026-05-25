@@ -94,6 +94,17 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
         return;
       }
 
+      // HARD RESET: If we are switching to a completely different finding,
+      // we MUST clear any unsaved local photo selections from the previous finding
+      // so they don't accidentally get attached to the new one!
+      if (prev?.id !== curr?.id) {
+        this.selectedFiles().forEach(item => {
+          URL.revokeObjectURL(item.previewUrl);
+        });
+        this.selectedFiles.set([]);
+        this.newPhotoCaptions.clear();
+      }
+
       this.populateForm();
     }
     if (changes['isPublished']) this._isPublished.set(this.isPublished);

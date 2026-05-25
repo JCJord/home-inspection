@@ -242,17 +242,19 @@ export class PublicReportComponent implements OnInit, OnDestroy, AfterViewInit {
     }
 
     const groups: SectionGroup[] = [];
+    const getSeverityScore = (sev: string): number => {
+      const s = sev?.toLowerCase() || '';
+      if (s.includes('safety')) return 1;
+      if (s.includes('major')) return 2;
+      if (s.includes('minor')) return 3;
+      if (s.includes('maintenance')) return 4;
+      if (s.includes('informational') || s.includes('information')) return 5;
+      return 99;
+    };
+
     groupsMap.forEach((items, name) => {
-      // Sort findings inside the group by severity (Safety > Major > Minor > Maintenance > Informational)
-      const severityOrder: Record<string, number> = {
-        'Safety Hazard': 1,
-        'Major Defect': 2,
-        'Minor Defect': 3,
-        'Maintenance Item': 4,
-        'Informational Item': 5
-      };
-      
-      items.sort((a, b) => (severityOrder[a.severity] || 99) - (severityOrder[b.severity] || 99));
+      // Sort findings inside the group by severity
+      items.sort((a, b) => getSeverityScore(a.severity) - getSeverityScore(b.severity));
       groups.push({ name, findings: items });
     });
 
@@ -272,14 +274,25 @@ export class PublicReportComponent implements OnInit, OnDestroy, AfterViewInit {
     return url.startsWith('http') ? url : `${environment.apiUrl}${url}`;
   }
 
-  getSeverityColor(severity: string): string {
-    switch (severity?.toLowerCase()) {
-      case 'safety hazard': return 'bg-red-100 text-red-800';
-      case 'major defect': return 'bg-orange-100 text-orange-800';
-      case 'minor defect': return 'bg-yellow-100 text-yellow-800';
-      case 'maintenance item': return 'bg-green-100 text-green-800';
-      case 'informational item': return 'bg-blue-100 text-blue-800';
-      default: return 'bg-gray-100 text-gray-800';
+  getSeverityStyles(severity: string) {
+    const s = severity?.toLowerCase().trim() || '';
+    if (s.includes('safety')) return { bg: '#FEE2E2', text: '#991B1B', border: '#EF4444' };
+    if (s.includes('major')) return { bg: '#FFEDD5', text: '#9A3412', border: '#F97316' };
+    if (s.includes('minor')) return { bg: '#FEF9C3', text: '#854D0E', border: '#EAB308' };
+    if (s.includes('maintenance')) return { bg: '#DCFCE7', text: '#166534', border: '#22C55E' };
+    if (s.includes('informational') || s.includes('information')) return { bg: '#DBEAFE', text: '#1E40AF', border: '#3B82F6' };
+    return { bg: '#F3F4F6', text: '#1F2937', border: '#9CA3AF' };
+  }
+
+  getPdfUrl(): string | null {
+    const insp = this.inspection();
+    if (!insp) return null;
+    
+    if (insp.report?.pdf_url) {
+      return this.getAbsoluteImageUrl(insp.report.pdf_url);
     }
+    
+    // Fallback for locally generated PDFs if report.pdf_url is missing
+    return this.getAbsoluteImageUrl(`/uploads/reports/${insp.id}.pdf`);
   }
 }

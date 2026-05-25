@@ -4,10 +4,16 @@ export class AddReportSentAtToInspection1779650000000 implements MigrationInterf
     name = 'AddReportSentAtToInspection1779650000000'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`ALTER TABLE "inspections" ADD "report_sent_at" TIMESTAMP`);
+        const hasColumn = await queryRunner.hasColumn("inspections", "report_sent_at");
+        if (!hasColumn) {
+            await queryRunner.query(`ALTER TABLE "inspections" ADD "report_sent_at" TIMESTAMP`);
+        }
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`ALTER TABLE "inspections" DROP COLUMN "report_sent_at"`);
+        const hasColumn = await queryRunner.hasColumn("inspections", "report_sent_at");
+        if (hasColumn) {
+            await queryRunner.query(`ALTER TABLE "inspections" DROP COLUMN "report_sent_at"`);
+        }
     }
 }
