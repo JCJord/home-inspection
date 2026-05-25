@@ -5,7 +5,7 @@ import { Component, input } from '@angular/core';
   standalone: true,
   template: '',
   host: {
-    'class': 'animate-spin rounded-full border-2 border-white border-t-transparent block',
+    'class': 'animate-spin rounded-full border-2 border-white border-t-transparent inline-block box-border',
     '[style.width.px]': 'size()',
     '[style.height.px]': 'size()'
   }

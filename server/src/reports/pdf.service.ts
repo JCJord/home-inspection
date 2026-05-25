@@ -3,6 +3,7 @@ import puppeteer, { Browser, Page } from 'puppeteer';
 
 const BROWSER_LAUNCH_OPTIONS = {
   headless: true as const,
+  args: ['--no-sandbox', '--disable-setuid-sandbox'],
 };
 
 // Recycle the browser after this many PDF generations to prevent memory accumulation

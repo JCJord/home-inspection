@@ -1,4 +1,4 @@
-import { Component, signal, inject } from '@angular/core';
+import { Component, signal, inject, effect } from '@angular/core';
 import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from './core/services/auth.service';
@@ -26,6 +26,18 @@ export class App {
     this.router.events.subscribe(event => {
       if (event instanceof NavigationEnd) {
         this.isPublicRoute.set(event.urlAfterRedirects.includes('/report/'));
+      }
+    });
+
+    // Reactively ensure authenticated users cannot stay on auth routes.
+    // This handles edge cases like cross-tab logins or state changes where 
+    // the user is already on the page and the route guard wouldn't re-trigger.
+    effect(() => {
+      const isAuth = this.authService.isAuthenticated();
+      const isAuthRoute = this.router.url.includes('/auth');
+      
+      if (isAuth && isAuthRoute) {
+        this.router.navigate(['/home'], { replaceUrl: true });
       }
     });
   }

@@ -7,6 +7,7 @@ import { InspectionsService } from '../../core/services/inspections.service';
 import { Inspection } from '../../core/models/inspection.interface';
 import { ButtonComponent } from '../../shared/components/button/button.component';
 import { SearchInputComponent } from '../../shared/components/inputs/search-input/search-input.component';
+import { SkeletonComponent } from '../../shared/components/skeleton/skeleton.component';
 import { ScheduledJobCardComponent } from './components/scheduled-job-card/scheduled-job-card.component';
 import {
   Calendar,
@@ -40,6 +41,7 @@ import { TemplatesService } from '../templates/services/templates.service';
     LucideAngularModule,
     ButtonComponent,
     SearchInputComponent,
+    SkeletonComponent,
     ScheduledJobCardComponent,
   ],
   templateUrl: './schedule.component.html',
