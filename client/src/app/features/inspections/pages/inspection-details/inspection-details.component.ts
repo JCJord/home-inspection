@@ -391,12 +391,15 @@ export class InspectionDetailsComponent implements OnInit, OnDestroy {
     const inspection = this.inspection();
     if (!inspection) return;
 
-    const fileUrl = `${this.apiUrl}/uploads/reports/${inspection.id}.pdf`;
+    const fileUrl = inspection.report?.pdf_url || `${this.apiUrl}/uploads/reports/${inspection.id}.pdf`;
     const safeAddress = inspection.address || 'Inspection';
     const filename = `Report-${safeAddress.replace(/ /g, '_')}.pdf`;
 
     fetch(fileUrl)
-      .then(res => res.blob())
+      .then(res => {
+        if (!res.ok) throw new Error('Network response was not ok');
+        return res.blob();
+      })
       .then(blob => {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -406,7 +409,7 @@ export class InspectionDetailsComponent implements OnInit, OnDestroy {
         window.URL.revokeObjectURL(url);
       })
       .catch(err => {
-        console.error('Failed to download report', err);
+        console.error('Failed to download report via fetch, opening in new tab', err);
         window.open(fileUrl, '_blank');
       });
   }
