@@ -71,12 +71,23 @@ export class ImageEditorModalComponent implements OnInit, OnDestroy {
     if (!ctx) return;
     this.ctx = ctx;
 
-    this.imageElement.crossOrigin = 'anonymous';
-    this.imageElement.onload = () => {
-      this.resizeCanvas();
-      this.calculateBaseDisplaySize();
-    };
-    this.imageElement.src = this.imageUrl();
+    fetch(this.imageUrl(), { cache: 'no-cache' })
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
+        return res.blob();
+      })
+      .then((blob) => {
+        const objectUrl = URL.createObjectURL(blob);
+        this.imageElement.onload = () => {
+          this.resizeCanvas();
+          this.calculateBaseDisplaySize();
+          URL.revokeObjectURL(objectUrl);
+        };
+        this.imageElement.src = objectUrl;
+      })
+      .catch((err) => {
+        console.error('Failed to load image in canvas editor:', err);
+      });
   }
 
   @HostListener('window:resize')
