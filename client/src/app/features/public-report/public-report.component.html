@@ -100,17 +100,13 @@
     <div class="report-container w-full px-6 lg:px-12 xl:px-16 py-8 pb-24">
 
       <!-- Hero Section -->
-      <div class="hero-section rounded-3xl overflow-hidden shadow-lg bg-surface relative flex items-center justify-center h-[350px] lg:h-[500px]">
+      <div class="hero-section rounded-3xl overflow-hidden shadow-lg bg-surface">
         @if (inspection()?.cover_photo_url) {
-          <!-- Ambient blurred backdrop -->
-          <img [src]="getAbsoluteImageUrl(inspection()?.cover_photo_url)" alt="Blurred Cover Background"
-            class="absolute inset-0 w-full h-full object-cover blur-2xl brightness-75 scale-105 opacity-60">
-          <!-- Clean uncropped foreground -->
-          <img [src]="getAbsoluteImageUrl(inspection()?.cover_photo_url)" alt="Property Cover"
-            class="relative z-10 w-full h-full object-contain">
+        <img [src]="getAbsoluteImageUrl(inspection()?.cover_photo_url)" alt="Property Cover"
+          class="cover-photo w-full h-[350px] lg:h-[500px] object-cover">
         } @else {
         <div
-          class="cover-photo-placeholder flex items-center justify-center w-full h-[350px] lg:h-[500px] bg-surface-light relative z-10">
+          class="cover-photo-placeholder flex items-center justify-center w-full h-[350px] lg:h-[500px] bg-surface-light">
           <lucide-icon [name]="icons.Image" [size]="64" class="opacity-20 text-text-muted"></lucide-icon>
         </div>
         }
