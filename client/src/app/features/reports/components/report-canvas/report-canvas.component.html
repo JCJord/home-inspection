@@ -624,57 +624,70 @@
                      @else {
                         @for (finding of group.findings; track finding.id; let i = $index) {
                            <tr [attr.data-group]="finding.id" class="content-row">
-                              <td class="info-column" style="padding: 40px 30px; border: 2px solid #111; width: 55%; vertical-align: top;">
-                                 <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 30px;">
-                                    <div class="detail-block" style="margin-bottom: 0; flex: 1;">
-                                       <label style="font-size: 14px; font-weight: 800; text-transform: uppercase; color: #888; display: block; margin-bottom: 10px;">Observation</label>
-                                       <div class="note-text" style="font-size: 20px; line-height: 1.4; font-weight: 500; color: #111;">{{ finding.description }}</div>
-                                    </div>
+                              <td colspan="2" class="info-column" style="padding: 40px 40px; border: 2px solid #111; vertical-align: top;">
+                                 <!-- Single-column flex layout: text info on top, images below -->
+                                 <div style="display: flex; flex-direction: column; gap: 30px;">
+                                    
+                                    <!-- TOP: Severity badge + Observation + Location + Recommendation -->
+                                    <div style="display: flex; flex-direction: column; gap: 0;">
+                                       <!-- Severity badge row -->
+                                       <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 24px;">
+                                          <span class="severity-tag" [attr.data-severity]="finding.severity"
+                                             [style.background-color]="getSeverityColor(finding.severity)"
+                                             [style.color]="getSeverityTextColor(finding.severity)"
+                                             style="font-size: 24px; font-weight: 900; padding: 8px 24px; border-radius: 4px; white-space: nowrap; display: inline-block;">
+                                             {{ finding.severity | titlecase }}
+                                          </span>
+                                          @if (finding.location) {
+                                             <span style="font-size: 20px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.05em;">
+                                                {{ finding.location }}
+                                             </span>
+                                          }
+                                       </div>
 
-                                    <span class="severity-tag" [attr.data-severity]="finding.severity"
-                                       [style.background-color]="getSeverityColor(finding.severity)"
-                                       [style.color]="getSeverityTextColor(finding.severity)"
-                                       style="font-size: 22px; font-weight: 900; padding: 8px 20px; border-radius: 4px; margin-left: 20px; white-space: nowrap;">
-                                       {{ finding.severity | titlecase }}
-                                    </span>
-                                 </div>
-
-                                 @if (finding.location) {
-                                    <div class="detail-block" style="margin-bottom: 30px;">
-                                       <label style="font-size: 14px; font-weight: 800; text-transform: uppercase; color: #888; display: block; margin-bottom: 10px;">Specific Location</label>
-                                       <div class="location-text" style="font-size: 20px; line-height: 1.4; font-weight: 500; color: #111;">{{ finding.location }}</div>
-                                    </div>
-                                 }
-                                 @if (finding.recommendation) {
-                                    <div class="recommendation-block" style="margin-top: 30px; padding: 25px; background-color: #f9f9f8; border-left: 6px solid #111; border-radius: 6px;">
-                                       <label style="font-size: 16px; font-weight: 800; text-transform: uppercase; color: #111; display: block; margin-bottom: 10px; letter-spacing: 0.05em;">Recommendation</label>
-                                       <p style="margin: 0; font-size: 20px; font-weight: 600; line-height: 1.5; color: #1e293b;">
-                                          {{ finding.recommendation }}
-                                       </p>
-                                    </div>
-                                 }
-                              </td>
-                              <td class="visual-column" style="padding: 40px 30px; border: 2px solid #111; width: 45%; vertical-align: top;">
-                                 <div class="photo-grid" [style.display]="'grid'"
-                                    [style.grid-template-columns]="finding.photos.length === 1 ? '1fr' : 'repeat(2, 1fr)'"
-                                    style="gap: 15px;">
-                                    @for (photo of finding.photos; track photo.id) {
-                                       <div class="photo-wrapper-container" style="display: flex; flex-direction: column; gap: 8px;">
-                                          <div class="photo-wrapper" style="aspect-ratio: 4/3; border-radius: 8px; overflow: hidden; background: #eee;">
-                                             <img [src]="getAbsoluteImageUrl(photo.storage_url)" alt="Inspection Photo" style="width: 100%; height: 100%; object-fit: cover;">
+                                       <!-- Observation -->
+                                       <div class="detail-block" style="margin-bottom: 24px;">
+                                          <label style="font-size: 22px; font-weight: 800; text-transform: uppercase; color: #888; display: block; margin-bottom: 10px; letter-spacing: 0.06em;">Observation</label>
+                                          <div class="note-text" style="font-size: 26px; line-height: 1.5; font-weight: 500; color: #111;">
+                                             {{ finding.description }}
                                           </div>
-                                          @if (photo.caption) {
-                                             <div style="font-size: 14px; font-weight: 700; color: #666; font-style: italic; line-height: 1.2; padding: 0 4px;">
-                                                {{ photo.caption }}
+                                       </div>
+
+                                       <!-- Recommendation -->
+                                       @if (finding.recommendation) {
+                                          <div class="recommendation-block" style="padding: 28px 30px; background-color: #f9f9f8; border-left: 6px solid #111; border-radius: 6px;">
+                                             <label style="font-size: 22px; font-weight: 800; text-transform: uppercase; color: #111; display: block; margin-bottom: 10px; letter-spacing: 0.05em;">Recommendation</label>
+                                             <p style="margin: 0; font-size: 25px; font-weight: 600; line-height: 1.5; color: #1e293b;">
+                                                {{ finding.recommendation }}
+                                             </p>
+                                          </div>
+                                       }
+                                    </div>
+
+                                    <!-- BOTTOM: Photos -->
+                                    @if (finding.photos.length > 0) {
+                                       <div class="photo-grid" [style.display]="'grid'"
+                                          [style.grid-template-columns]="finding.photos.length === 1 ? '1fr' : finding.photos.length === 2 ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)'"
+                                          style="gap: 20px; margin-top: 10px;">
+                                          @for (photo of finding.photos; track photo.id) {
+                                             <div class="photo-wrapper-container" style="display: flex; flex-direction: column; gap: 10px;">
+                                                <div class="photo-wrapper" style="aspect-ratio: 4/3; border-radius: 10px; overflow: hidden; background: #eee; box-shadow: 0 2px 12px rgba(0,0,0,0.10);">
+                                                   <img [src]="getAbsoluteImageUrl(photo.storage_url)" alt="Inspection Photo" style="width: 100%; height: 100%; object-fit: cover;">
+                                                </div>
+                                                @if (photo.caption) {
+                                                   <div style="font-size: 18px; font-weight: 700; color: #555; font-style: italic; line-height: 1.3; padding: 0 4px;">
+                                                      {{ photo.caption }}
+                                                   </div>
+                                                }
                                              </div>
                                           }
                                        </div>
-                                    }
-                                    @if (finding.photos.length === 0) {
-                                       <div class="no-photo" style="grid-column: span 2; padding: 40px; background: #f9f9f9; border: 2px dashed #ddd; text-align: center; font-size: 16px; color: #999; border-radius: 8px;">
+                                    } @else {
+                                       <div class="no-photo" style="padding: 50px 40px; background: #f9f9f9; border: 2px dashed #ddd; text-align: center; font-size: 25px; color: #999; border-radius: 10px;">
                                           No visual documentation provided
                                        </div>
                                     }
+
                                  </div>
                               </td>
                            </tr>

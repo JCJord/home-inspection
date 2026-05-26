@@ -43,10 +43,13 @@ export class ImageEditorModalComponent implements OnInit, OnDestroy {
 
   constructor() {
     afterNextRender(() => {
-      this.initCanvas();
       if (this.dialogRef) {
         this.dialogRef.nativeElement.showModal();
       }
+      // Delay canvas initialization to ensure dialog layout is complete and container has non-zero dimensions
+      setTimeout(() => {
+        this.initCanvas();
+      }, 100);
     });
   }
 
@@ -86,7 +89,13 @@ export class ImageEditorModalComponent implements OnInit, OnDestroy {
         this.imageElement.src = objectUrl;
       })
       .catch((err) => {
-        console.error('Failed to load image in canvas editor:', err);
+        console.warn('CORS fetch failed, trying direct image load fallback:', err);
+        this.imageElement.crossOrigin = 'anonymous';
+        this.imageElement.onload = () => {
+          this.resizeCanvas();
+          this.calculateBaseDisplaySize();
+        };
+        this.imageElement.src = this.imageUrl();
       });
   }
 
