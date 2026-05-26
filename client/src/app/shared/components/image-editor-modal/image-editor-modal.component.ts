@@ -74,7 +74,23 @@ export class ImageEditorModalComponent implements OnInit, OnDestroy {
     if (!ctx) return;
     this.ctx = ctx;
 
-    fetch(this.imageUrl(), { cache: 'no-cache' })
+    const url = this.imageUrl();
+
+    // If it's already a local Blob or Data URL, load it directly without CORS/Fetch to avoid browser blocks!
+    if (url.startsWith('blob:') || url.startsWith('data:')) {
+      this.imageElement.onload = () => {
+        this.resizeCanvas();
+        this.calculateBaseDisplaySize();
+      };
+      this.imageElement.onerror = (e) => {
+        console.error('Failed to load local image blob in editor:', e);
+      };
+      this.imageElement.src = url;
+      return;
+    }
+
+    // Otherwise, use the CORS-safe fetch method for remote URLs
+    fetch(url, { cache: 'no-cache' })
       .then((res) => {
         if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
         return res.blob();
@@ -90,12 +106,15 @@ export class ImageEditorModalComponent implements OnInit, OnDestroy {
       })
       .catch((err) => {
         console.warn('CORS fetch failed, trying direct image load fallback:', err);
-        this.imageElement.crossOrigin = 'anonymous';
+        // Fallback: load directly. We omit crossOrigin to prevent canvas failures if the browser has strict CORS caches
         this.imageElement.onload = () => {
           this.resizeCanvas();
           this.calculateBaseDisplaySize();
         };
-        this.imageElement.src = this.imageUrl();
+        this.imageElement.onerror = (e) => {
+          console.error('Failed to load image in fallback:', e);
+        };
+        this.imageElement.src = url;
       });
   }
 
