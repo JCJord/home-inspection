@@ -658,7 +658,7 @@
                                     @for (photo of finding.photos; track photo.id) {
                                        <div class="photo-wrapper-container" style="display: flex; flex-direction: column; gap: 8px;">
                                           <div class="photo-wrapper" style="aspect-ratio: 4/3; border-radius: 8px; overflow: hidden; background: #eee;">
-                                             <img [src]="getAbsoluteImageUrl(photo.storage_url)" alt="Inspection Photo" style="width: 100%; height: 100%; object-fit: cover;">
+                                             <img [src]="getAbsoluteImageUrl(photo.storage_url)" alt="Inspection Photo" style="width: 100%; height: 100%; object-fit: contain;">
                                           </div>
                                           @if (photo.caption) {
                                              <div style="font-size: 14px; font-weight: 700; color: #666; font-style: italic; line-height: 1.2; padding: 0 4px;">

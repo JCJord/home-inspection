@@ -37,8 +37,18 @@ export class AuthService {
 
   private refreshTimer?: any;
   private refreshTokenInProgress$?: Observable<AuthResponse>;
+  private clockSkew = 0;
 
   constructor() {
+    // Initialize clock skew on boot if a token exists
+    const token = this.token();
+    if (token) {
+      const payload = decodeJwt(token);
+      if (payload && payload.iat) {
+        this.clockSkew = Date.now() - (payload.iat * 1000);
+      }
+    }
+
     this.scheduleRefresh();
     this.listenToStorageEvents();
     
@@ -52,6 +62,10 @@ export class AuthService {
         }
       });
     }
+  }
+
+  private getAdjustedNow(): number {
+    return Date.now() - this.clockSkew;
   }
 
   // --- Computed ---
@@ -199,7 +213,7 @@ export class AuthService {
     if (!payload || !payload.exp) return true;
 
     const expirationTime = payload.exp * 1000;
-    return Date.now() >= expirationTime;
+    return this.getAdjustedNow() >= expirationTime;
   }
 
   /**
@@ -214,13 +228,16 @@ export class AuthService {
     if (!token) return;
 
     const payload = decodeJwt(token);
-    if (!payload || !payload.exp) return;
+    if (!payload || !payload.exp || !payload.iat) return;
+
+    // Update clock skew on every refresh
+    this.clockSkew = Date.now() - (payload.iat * 1000);
 
     const expirationTime = payload.exp * 1000;
-    const now = Date.now();
+    const adjustedNow = this.getAdjustedNow();
     
     // Refresh 1 minute before expiration, or immediately if already close/expired
-    const timeout = expirationTime - now - (60 * 1000);
+    const timeout = expirationTime - adjustedNow - (60 * 1000);
 
     if (timeout > 0) {
       this.refreshTimer = setTimeout(() => {
