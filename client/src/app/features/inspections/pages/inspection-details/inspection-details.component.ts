@@ -15,6 +15,7 @@ import { BackButtonComponent } from '../../../../shared/components/back-button/b
 import { ImageCompressionService } from '../../../../core/services/image-compression.service';
 import { environment } from '../../../../../environments/environment';
 import { ResolveImagePipe } from '../../../../shared/pipes/resolve-image.pipe';
+import { ImageCacheService } from '../../../../core/services/image-cache.service';
 
 @Component({
   selector: 'app-inspection-details',
@@ -44,8 +45,10 @@ export class InspectionDetailsComponent implements OnInit, OnDestroy {
   private reportsService = inject(ReportsService);
   private compressionService = inject(ImageCompressionService);
   private elementRef = inject(ElementRef);
+  private imageCache = inject(ImageCacheService);
 
   inspection = signal<Inspection | null>(null);
+  resolvedCoverPhoto = signal<string>('');
   isLoading = signal<boolean>(true);
   isPublishing = signal<boolean>(false);
   isUploadingCover = signal<boolean>(false);
@@ -162,8 +165,20 @@ export class InspectionDetailsComponent implements OnInit, OnDestroy {
     this.isLoading.set(true);
     this.errorMessage.set(null);
     this.inspectionsService.getInspectionById(id).subscribe({
-      next: (data) => {
+      next: async (data) => {
         console.log('=== LOADED INSPECTION FROM SWR/DB ===', data);
+        
+        if (data.cover_photo_url) {
+          try {
+            const cached = await this.imageCache.getImageUrl(data.cover_photo_url);
+            this.resolvedCoverPhoto.set(cached);
+          } catch (e) {
+            this.resolvedCoverPhoto.set(data.cover_photo_url);
+          }
+        } else {
+          this.resolvedCoverPhoto.set('');
+        }
+
         this.inspection.set(data);
         this.isLoading.set(false);
         if (data.template_snapshot?.sections?.length && !this.selectedSection()) {
@@ -292,7 +307,10 @@ export class InspectionDetailsComponent implements OnInit, OnDestroy {
     this.inspectionsService.unpublishInspection(inspection.id).subscribe({
       next: (updated) => {
         this.inspection.set(updated);
-        this.isLoading.set(false);
+        // Ensure IndexedDB cache is fully synchronized and written to disk before unlocking the UI
+        setTimeout(() => {
+          this.isLoading.set(false);
+        }, 200);
       },
       error: (err) => {
         console.error('Failed to unpublish inspection', err);
@@ -309,8 +327,19 @@ export class InspectionDetailsComponent implements OnInit, OnDestroy {
     this.isLoading.set(true);
     this.inspectionsService.startInspection(inspection.id).subscribe({
       next: () => {
-        // Trigger a fresh fetch so UI reactively shows everything
-        this.loadInspection(inspection.id);
+        // Fetch the fresh inspection details and immediately redirect to the workbench
+        this.inspectionsService.getInspectionById(inspection.id).subscribe({
+          next: (fresh) => {
+            this.inspection.set(fresh);
+            this.isLoading.set(false);
+            this.routeToWorkbench();
+          },
+          error: (err) => {
+            console.warn('Failed to fetch fresh details, routing with existing cache', err);
+            this.isLoading.set(false);
+            this.routeToWorkbench();
+          }
+        });
       },
       error: (err) => {
         console.error('Failed to start inspection', err);
@@ -512,7 +541,17 @@ export class InspectionDetailsComponent implements OnInit, OnDestroy {
       });
 
       this.inspectionsService.uploadCoverPhoto(inspectionId, compressedFile).subscribe({
-        next: (updated) => {
+        next: async (updated) => {
+          if (updated.cover_photo_url) {
+            try {
+              const cached = await this.imageCache.getImageUrl(updated.cover_photo_url);
+              this.resolvedCoverPhoto.set(cached);
+            } catch (e) {
+              this.resolvedCoverPhoto.set(updated.cover_photo_url);
+            }
+          } else {
+            this.resolvedCoverPhoto.set('');
+          }
           this.inspection.set(updated);
           this.isUploadingCover.set(false);
         },

@@ -63,16 +63,28 @@ export class ReportCanvasComponent implements OnInit, AfterViewInit {
       const status = statuses[section.name] || { status: 'inspected' };
 
       sectionFindings.forEach(finding => {
-        if (finding.photos && finding.photos.length > 12) {
+        if (finding.photos && finding.photos.length > 4) {
           const photos = finding.photos;
-          for (let i = 0; i < photos.length; i += 12) {
-            const chunk = photos.slice(i, i + 12);
-            const chunkIndex = Math.floor(i / 12);
-            processedFindings.push({
-              ...finding,
-              id: `${finding.id}_chunk_${chunkIndex}`,
-              photos: chunk
-            });
+          for (let i = 0; i < photos.length; i += 4) {
+            const chunk = photos.slice(i, i + 4);
+            const chunkIndex = Math.floor(i / 4);
+            
+            if (chunkIndex === 0) {
+              processedFindings.push({
+                ...finding,
+                id: `${finding.id}_chunk_${chunkIndex}`,
+                photos: chunk
+              });
+            } else {
+              // Continuation chunk: minimal info to avoid repeating long descriptions/recommendations
+              processedFindings.push({
+                ...finding,
+                id: `${finding.id}_chunk_${chunkIndex}`,
+                description: '',
+                recommendation: '',
+                photos: chunk
+              });
+            }
           }
         } else {
           processedFindings.push(finding);

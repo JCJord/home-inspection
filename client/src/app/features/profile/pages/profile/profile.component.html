@@ -73,6 +73,16 @@
 } @else {
 <div class="profile-content-wrapper">
 
+  @if (message()) {
+    <div class="alert-message" [attr.data-type]="message()?.type">
+      <lucide-icon [img]="message()?.type === 'success' ? icons.CheckCircle2 : icons.X" [size]="18"></lucide-icon>
+      <span>{{ message()?.text }}</span>
+      <button class="alert-close" (click)="message.set(null)">
+        <lucide-icon [img]="icons.X" [size]="14"></lucide-icon>
+      </button>
+    </div>
+  }
+
   <div class="settings-stack">
     <!-- Top Section: Identity & Logo -->
     <div class="card identity-card">
@@ -114,7 +124,7 @@
 
         <div class="form-grid">
           <app-text-input name="name" label="Full Name" placeholder="John Doe"></app-text-input>
-          <app-text-input name="phone" label="Phone Number" placeholder="+1 (555) 000-0000"></app-text-input>
+          <app-text-input name="phone" label="Phone Number" placeholder="(555) 000-0000" [isPhone]="true"></app-text-input>
         </div>
       </div>
 

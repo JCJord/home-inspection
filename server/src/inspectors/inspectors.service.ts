@@ -48,7 +48,7 @@ export class InspectorsService {
     return inspector;
   }
 
-  async getProfile(id: string) {
+  async getProfile(id: string): Promise<Omit<Inspector, 'password_hash'> & { logo_url: string | null }> {
     const inspector = await this.findOne(id);
     const { password_hash, ...result } = inspector;
     
@@ -63,13 +63,22 @@ export class InspectorsService {
   async updateProfile(
     id: string,
     updateProfileDto: UpdateProfileDto,
-  ): Promise<Inspector> {
+  ): Promise<Omit<Inspector, 'password_hash'> & { logo_url: string | null }> {
     const inspector = await this.update(id, updateProfileDto as UpdateInspectorDto);
     const { password_hash, ...result } = inspector;
-    return result as Inspector;
+    
+    let logo_url: string | null = null;
+    if (result.logo_key) {
+      logo_url = await this.storageService.getPresignedUrl(result.logo_key);
+    }
+    
+    return { ...result, logo_url };
   }
 
-  async uploadLogo(id: string, file: Express.Multer.File) {
+  async uploadLogo(
+    id: string,
+    file: Express.Multer.File,
+  ): Promise<Omit<Inspector, 'password_hash'> & { logo_url: string | null }> {
     const ext = path.extname(file.originalname);
     const key = `users/${id}/profile/logo${ext}`;
     const logo_key = await this.storageService.uploadFile(file.buffer, key, file.mimetype);

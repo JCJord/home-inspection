@@ -638,6 +638,11 @@
                                              style="font-size: 24px; font-weight: 900; padding: 8px 24px; border-radius: 4px; white-space: nowrap; display: inline-block;">
                                              {{ finding.severity | titlecase }}
                                           </span>
+                                          @if (finding.id.includes('_chunk_') && !finding.id.endsWith('_chunk_0')) {
+                                             <span style="font-size: 20px; font-weight: 800; color: #ef4444; text-transform: uppercase; letter-spacing: 0.05em; border: 2px solid #ef4444; padding: 4px 12px; border-radius: 4px; line-height: 1.2;">
+                                                Continued
+                                             </span>
+                                          }
                                           @if (finding.location) {
                                              <span style="font-size: 20px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.05em;">
                                                 {{ finding.location }}
@@ -646,12 +651,14 @@
                                        </div>
 
                                        <!-- Observation -->
-                                       <div class="detail-block" style="margin-bottom: 24px;">
-                                          <label style="font-size: 22px; font-weight: 800; text-transform: uppercase; color: #888; display: block; margin-bottom: 10px; letter-spacing: 0.06em;">Observation</label>
-                                          <div class="note-text" style="font-size: 26px; line-height: 1.5; font-weight: 500; color: #111;">
-                                             {{ finding.description }}
+                                       @if (finding.description) {
+                                          <div class="detail-block" style="margin-bottom: 24px;">
+                                             <label style="font-size: 22px; font-weight: 800; text-transform: uppercase; color: #888; display: block; margin-bottom: 10px; letter-spacing: 0.06em;">Observation</label>
+                                             <div class="note-text" style="font-size: 26px; line-height: 1.5; font-weight: 500; color: #111;">
+                                                {{ finding.description }}
+                                             </div>
                                           </div>
-                                       </div>
+                                       }
 
                                        <!-- Recommendation -->
                                        @if (finding.recommendation) {
@@ -667,7 +674,7 @@
                                     <!-- BOTTOM: Photos -->
                                     @if (finding.photos.length > 0) {
                                        <div class="photo-grid" [style.display]="'grid'"
-                                          [style.grid-template-columns]="finding.photos.length === 1 ? '1fr' : finding.photos.length === 2 ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)'"
+                                          [style.grid-template-columns]="finding.photos.length === 1 ? '1fr' : 'repeat(2, 1fr)'"
                                           style="gap: 20px; margin-top: 10px;">
                                           @for (photo of finding.photos; track photo.id) {
                                              <div class="photo-wrapper-container" style="display: flex; flex-direction: column; gap: 10px;">

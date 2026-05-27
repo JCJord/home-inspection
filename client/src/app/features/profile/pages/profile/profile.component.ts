@@ -59,7 +59,7 @@ export class ProfileComponent implements OnInit {
     phone: [''],
     license_number: [''],
     certifications: [''],
-    brand_primary_color: ['#1E40AF'],
+    brand_primary_color: ['#000000'],
     brand_font_family: ['modern'],
     report_footer_text: ['', [Validators.maxLength(150)]],
     signature: [''],
@@ -197,7 +197,8 @@ export class ProfileComponent implements OnInit {
           this.showMessage('success', 'Logo uploaded successfully');
         },
         error: (err) => {
-          this.showMessage('error', 'Failed to upload logo');
+          const errMsg = err.error?.message || 'Failed to upload logo';
+          this.showMessage('error', errMsg);
           console.error(err);
         }
       });

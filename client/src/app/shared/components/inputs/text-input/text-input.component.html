@@ -11,30 +11,82 @@
     }
     
     @if (control) {
-      <input
-        [id]="name()"
-        [name]="name()"
-        [type]="inputType()"
-        [formControl]="$any(control)"
-        [placeholder]="placeholder()"
-        [disabled]="disabled()"
-        [attr.maxlength]="maxLength()"
-        [appCurrencyMask]="isCurrency()"
-        class="input-field"
-      />
+      @if (isCurrency()) {
+        <input
+          [id]="name()"
+          [name]="name()"
+          [type]="inputType()"
+          [formControl]="$any(control)"
+          [placeholder]="placeholder()"
+          [disabled]="disabled()"
+          [attr.maxlength]="maxLength()"
+          [appCurrencyMask]="true"
+          class="input-field"
+        />
+      } @else if (isPhone()) {
+        <input
+          [id]="name()"
+          [name]="name()"
+          [type]="inputType()"
+          [formControl]="$any(control)"
+          [placeholder]="placeholder()"
+          [disabled]="disabled()"
+          [attr.maxlength]="maxLength()"
+          [appPhoneMask]="true"
+          class="input-field"
+        />
+      } @else {
+        <input
+          [id]="name()"
+          [name]="name()"
+          [type]="inputType()"
+          [formControl]="$any(control)"
+          [placeholder]="placeholder()"
+          [disabled]="disabled()"
+          [attr.maxlength]="maxLength()"
+          class="input-field"
+        />
+      }
     } @else {
-      <input
-        [id]="name()"
-        [name]="name()"
-        [type]="inputType()"
-        [value]="value()"
-        (input)="onInputChange($event)"
-        [placeholder]="placeholder()"
-        [disabled]="disabled()"
-        [attr.maxlength]="maxLength()"
-        [appCurrencyMask]="isCurrency()"
-        class="input-field"
-      />
+      @if (isCurrency()) {
+        <input
+          [id]="name()"
+          [name]="name()"
+          [type]="inputType()"
+          [value]="value()"
+          (input)="onInputChange($event)"
+          [placeholder]="placeholder()"
+          [disabled]="disabled()"
+          [attr.maxlength]="maxLength()"
+          [appCurrencyMask]="true"
+          class="input-field"
+        />
+      } @else if (isPhone()) {
+        <input
+          [id]="name()"
+          [name]="name()"
+          [type]="inputType()"
+          [value]="value()"
+          (input)="onInputChange($event)"
+          [placeholder]="placeholder()"
+          [disabled]="disabled()"
+          [attr.maxlength]="maxLength()"
+          [appPhoneMask]="true"
+          class="input-field"
+        />
+      } @else {
+        <input
+          [id]="name()"
+          [name]="name()"
+          [type]="inputType()"
+          [value]="value()"
+          (input)="onInputChange($event)"
+          [placeholder]="placeholder()"
+          [disabled]="disabled()"
+          [attr.maxlength]="maxLength()"
+          class="input-field"
+        />
+      }
     }
 
     @if (suffix() || suffixIcon()) {

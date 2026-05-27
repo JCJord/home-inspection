@@ -70,12 +70,12 @@
       }
 
       <!-- Existing Photos -->
-      @if (existingPhotos().length > 0) {
+      @if (resolvedExistingPhotos().length > 0) {
       <div class="existing-photos-grid" formArrayName="photo_captions">
-        @for (photo of existingPhotos(); track photo.id; let i = $index) {
+        @for (photo of resolvedExistingPhotos(); track photo.id; let i = $index) {
         <div class="existing-photo-item" [formGroupName]="i">
           <div class="photo-thumbnail">
-            <img [src]="photo.storage_url | resolveImage | async" alt="Finding photo">
+            <img [src]="photo.resolvedUrl" alt="Finding photo" crossorigin="anonymous">
             
             @if (photo.isSyncing) {
               <div class="absolute inset-0 bg-black/40 flex flex-col items-center justify-center gap-1 text-white backdrop-blur-[1px]">

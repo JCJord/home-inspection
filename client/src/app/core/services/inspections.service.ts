@@ -350,6 +350,9 @@ export class InspectionsService {
         this._inspections.update(list => list.map(i => i.id === id ? updatedIns : i));
         this.saveToCache(this._inspections(), this._totalCount());
         this._needsRefresh.set(true);
+        this.persistenceService.saveInspection(updatedIns).catch(err =>
+          console.warn('Failed to sync cache on unpublish', err)
+        );
       })
     );
   }
@@ -370,6 +373,9 @@ export class InspectionsService {
         this._inspections.update(list => list.map(i => i.id === id ? updatedIns : i));
         this.saveToCache(this._inspections(), this._totalCount());
         this._needsRefresh.set(true);
+        this.persistenceService.saveInspection(updatedIns).catch(err =>
+          console.warn('Failed to sync cache on start', err)
+        );
       })
     );
   }

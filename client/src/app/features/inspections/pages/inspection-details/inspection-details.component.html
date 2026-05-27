@@ -295,9 +295,9 @@
       <!-- Cover Photo Section -->
       <div class="cover-photo-section bg-surface-standard border border-standard rounded-[2rem] overflow-hidden">
         <div class="relative group min-h-[260px] flex items-center justify-center bg-light-standard overflow-hidden">
-          @if (insp.cover_photo_url) {
-          <img [src]="insp.cover_photo_url | resolveImage | async" alt="Cover Photo"
-            class="w-full h-full object-cover absolute inset-0">
+          @if (insp.cover_photo_url && resolvedCoverPhoto()) {
+          <img [src]="resolvedCoverPhoto()" alt="Cover Photo"
+            class="w-full h-full object-cover absolute inset-0" crossorigin="anonymous">
           <div class="absolute inset-0 bg-black/40 opacity-0 transition-opacity flex items-center justify-center gap-3">
             <button
               class="bg-white text-standard px-4 py-2 rounded-xl font-bold flex items-center gap-2 hover:bg-white/90 transition-all transform hover:scale-105"
@@ -440,11 +440,11 @@
           </p>
         </div>
         <div class="card-actions">
-          <app-button variant="outline" size="lg" (click)="editInspection()">
+          <app-button variant="outline" size="md" (click)="editInspection()">
             <lucide-icon [name]="icons.Edit" [size]="18"></lucide-icon>
             Edit Details
           </app-button>
-          <app-button variant="solid" size="lg" (click)="onStartInspection()" [isLoading]="isLoading()">
+          <app-button variant="solid" size="md" (click)="onStartInspection()" [isLoading]="isLoading()">
             <lucide-icon [name]="icons.Plus" [size]="18"></lucide-icon>
             Start Inspection
           </app-button>

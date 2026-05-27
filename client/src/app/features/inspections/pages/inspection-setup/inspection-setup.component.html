@@ -47,7 +47,7 @@
 
           <div class="form-row">
             <app-text-input name="client_email" label="Client Email (Optional)" type="email" placeholder="john@example.com"></app-text-input>
-            <app-text-input name="client_phone" label="Client Phone (Optional)" type="tel" placeholder="e.g. 555-0123"></app-text-input>
+            <app-text-input name="client_phone" label="Client Phone (Optional)" type="tel" placeholder="(555) 555-5555" [isPhone]="true"></app-text-input>
           </div>
 
           <app-text-input name="address" label="Property Address" placeholder="123 Main St, City, State"></app-text-input>

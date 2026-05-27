@@ -86,7 +86,7 @@
       <div class="finding-photos-grid grid grid-cols-4 gap-2 mt-2">
         @for (img of resolvedImages().slice(0, 4); track $index) {
           <div class="relative aspect-square rounded-lg overflow-hidden bg-surface-standard shadow-sm group cursor-pointer" (click)="$event.stopPropagation(); openLightbox($index)">
-            <img [src]="img | resolveImage | async" alt="Finding photo" class="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-110" />
+            <img [src]="img | resolveImage | async" alt="Finding photo" class="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-110" crossorigin="anonymous" />
             
             @if ($index < 3 || resolvedImages().length === 4) {
               <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">

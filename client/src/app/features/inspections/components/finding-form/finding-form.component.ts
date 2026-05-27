@@ -20,6 +20,7 @@ import { DraftService } from '../../../../core/services/draft.service';
 import { MutationQueueService, MutationType } from '../../../../core/services/mutation-queue.service';
 import { ResolveImagePipe } from '../../../../shared/pipes/resolve-image.pipe';
 import { debounceTime } from 'rxjs';
+import { ImageCacheService } from '../../../../core/services/image-cache.service';
 
 interface SelectedPhoto {
   file: File;
@@ -49,6 +50,7 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
   private compressionService = inject(ImageCompressionService);
   private draftService = inject(DraftService);
   private mutationQueueService = inject(MutationQueueService);
+  private imageCache = inject(ImageCacheService);
 
 
   @Input({ required: true }) inspectionId!: string;
@@ -76,6 +78,8 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
   saved = output<Finding>();
   deleted = output<Finding>();
   
+  private idSwaps = new Map<string, string>();
+
   ngOnChanges(changes: SimpleChanges) {
     if (changes['inspectionId']) this._inspectionId.set(this.inspectionId);
     if (changes['year_built']) this._yearBuilt.set(this.year_built);
@@ -86,11 +90,28 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
       
       this._finding.set(this.finding);
 
+      const prevId = prev?.id;
+      const currId = curr?.id;
+      
+      const isIdSwap = prevId && currId && (
+        this.idSwaps.has(prevId) && this.idSwaps.get(prevId) === currId ||
+        (prev.section === curr.section && prevId.includes('-') && prevId.length === 36)
+      );
+
+      if (isIdSwap) {
+        this.idSwaps.delete(prevId);
+        // Sync photos and resolve URLs without wiping input values, focus, or active file selections
+        this.syncPhotoCaptions(curr?.photos || []);
+        this.resolveExistingPhotos(curr?.photos || []);
+        return;
+      }
+
       if (prev?.id === curr?.id && this.findingForm.dirty) {
         // Prevent background sync from wiping unsaved changes for the SAME finding
         // But we must gracefully synchronize the photoCaptions FormArray with the new photos
         // to handle temp ID swaps without losing typed data.
         this.syncPhotoCaptions(curr?.photos || []);
+        this.resolveExistingPhotos(curr?.photos || []);
         return;
       }
 
@@ -106,6 +127,7 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
       }
 
       this.populateForm();
+      this.resolveExistingPhotos(this.finding?.photos || []);
     }
     if (changes['isPublished']) this._isPublished.set(this.isPublished);
   }
@@ -119,6 +141,7 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
   isEditMode = computed(() => !!this._finding());
 
   selectedFiles = signal<SelectedPhoto[]>([]);
+  resolvedExistingPhotos = signal<(Photo & { resolvedUrl?: string })[]>([]);
   
   existingPhotos = computed(() => {
     return this._finding()?.photos || [];
@@ -156,6 +179,12 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
   }
 
   constructor() {
+    this.mutationQueueService.taskCompleted$.subscribe(completion => {
+      if (completion.clientFindingId && completion.result?.id) {
+        this.idSwaps.set(completion.clientFindingId, completion.result.id.toString());
+      }
+    });
+
     effect(() => {
       this._finding();
       this._section();
@@ -211,6 +240,21 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
       this.findingForm.patchValue(draft, { emitEvent: false });
       this.findingForm.markAsDirty();
     }
+  }
+
+  async resolveExistingPhotos(photos: Photo[]) {
+    const resolved = await Promise.all(photos.map(async p => {
+      let resolvedUrl = p.storage_url;
+      if (p.storage_url) {
+        try {
+          resolvedUrl = await this.imageCache.getImageUrl(p.storage_url);
+        } catch (e) {
+          resolvedUrl = p.storage_url;
+        }
+      }
+      return { ...p, resolvedUrl };
+    }));
+    this.resolvedExistingPhotos.set(resolved);
   }
 
   syncPhotoCaptions(photos: Photo[]) {

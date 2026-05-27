@@ -90,7 +90,7 @@ export class ImageEditorModalComponent implements OnInit, OnDestroy {
     }
 
     // Otherwise, use the CORS-safe fetch method for remote URLs
-    fetch(url, { cache: 'no-cache' })
+    fetch(url, { cache: 'no-store' })
       .then((res) => {
         if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
         return res.blob();
@@ -105,8 +105,9 @@ export class ImageEditorModalComponent implements OnInit, OnDestroy {
         this.imageElement.src = objectUrl;
       })
       .catch((err) => {
-        console.warn('CORS fetch failed, trying direct image load fallback:', err);
-        // Fallback: load directly. We omit crossOrigin to prevent canvas failures if the browser has strict CORS caches
+        console.warn('CORS fetch failed, trying direct image load fallback with CORS:', err);
+        // Fallback: load directly with CORS to prevent taining the canvas and causing SecurityErrors
+        this.imageElement.crossOrigin = 'anonymous';
         this.imageElement.onload = () => {
           this.resizeCanvas();
           this.calculateBaseDisplaySize();

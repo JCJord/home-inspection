@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { ControlContainer, FormGroupDirective, ReactiveFormsModule } from '@angular/forms';
 import { LucideAngularModule, Edit2 } from 'lucide-angular';
 import { CurrencyMaskDirective } from '../../../directives/currency-mask.directive';
+import { PhoneMaskDirective } from '../../../directives/phone-mask.directive';
 
 @Component({
   selector: 'app-text-input',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, LucideAngularModule, CurrencyMaskDirective],
+  imports: [CommonModule, ReactiveFormsModule, LucideAngularModule, CurrencyMaskDirective, PhoneMaskDirective],
   templateUrl: './text-input.component.html',
   styleUrl: './text-input.component.scss',
   providers: [{ provide: 'lucideIcons', useValue: { Edit2 } }],
@@ -49,9 +50,14 @@ export class TextInputComponent {
   isCurrency = input<boolean>(false);
 
   /**
+   * Whether to apply phone masking.
+   */
+  isPhone = input<boolean>(false);
+
+  /**
    * Computed input type (forces text if currency mask is active)
    */
-  inputType = computed(() => this.isCurrency() ? 'text' : this.type());
+  inputType = computed(() => (this.isCurrency() || this.isPhone()) ? 'text' : this.type());
 
   /**
    * Optional prefix text displayed before the input value.
