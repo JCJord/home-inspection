@@ -1,9 +1,14 @@
 <div class="auth-container">
   <div class="auth-card">
+    <div style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; margin-bottom: 1.5rem;">
+      <img src="https://i.ibb.co/VcHybzvY/inspectly-logo.png" alt="Inspectly Logo" style="width: 32px; height: 32px; object-fit: contain;">
+      <span style="font-size: 1.5rem; font-weight: 800; letter-spacing: -0.04em; background: linear-gradient(135deg, #00A3FF, #0082CC); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-family: 'Inter', system-ui, sans-serif;">Inspectly</span>
+    </div>
+
     @if (view() === 'login') {
-      <div class="auth-header">
-        <h1>Welcome Back</h1>
-        <p>Log in to your account to continue</p>
+      <div class="auth-header" style="margin-bottom: 1.5rem;">
+        <h1 style="font-size: 1.5rem; margin-bottom: 0.25rem; font-weight: 700;">Welcome Back</h1>
+        <p style="font-size: 0.875rem; color: #64748b;">Log in to your account to continue</p>
       </div>
 
       <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="auth-form">
