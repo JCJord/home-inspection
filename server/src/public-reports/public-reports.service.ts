@@ -24,10 +24,13 @@ export class PublicReportsService {
     }
 
     if (inspection.inspector) {
-      const safeInspector = inspection.inspector as Partial<Inspector>;
+      const safeInspector = inspection.inspector as Omit<Inspector, 'password_hash' | 'reset_password_token' | 'email'> & Partial<Inspector>;
       delete safeInspector.password_hash;
       delete safeInspector.reset_password_token;
       delete safeInspector.email;
+      if (safeInspector.logo_key) {
+        safeInspector.logo_url = await this.storageService.getPresignedUrl(safeInspector.logo_key);
+      }
     }
 
     if (inspection.cover_photo_key) {

@@ -50,6 +50,9 @@ export class Inspector {
   @Column({ nullable: true })
   logo_key?: string;
 
+  // Dynamically populated, not saved in DB
+  logo_url?: string | null;
+
   @Column({ type: 'text', nullable: true })
   signature: string;
 

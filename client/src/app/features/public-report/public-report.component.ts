@@ -228,13 +228,16 @@ export class PublicReportComponent implements OnInit, OnDestroy, AfterViewInit {
   private groupFindings(findings: Finding[]) {
     const groupsMap = new Map<string, Finding[]>();
     
-    // Seed with template sections to ensure empty states render
-    const templateSections = this.inspection()?.template_snapshot?.sections || [];
+    // Seed with template sections to ensure empty states render (excluding Building Specifications)
+    const templateSections = (this.inspection()?.template_snapshot?.sections || [])
+      .filter((s: any) => s.name !== 'Building Specifications');
+      
     for (const section of templateSections) {
       groupsMap.set(section.name, []);
     }
 
     for (const finding of findings) {
+      if (finding.section === 'Building Specifications') continue;
       if (!groupsMap.has(finding.section)) {
         groupsMap.set(finding.section, []);
       }

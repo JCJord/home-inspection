@@ -111,8 +111,7 @@
               @if (finding()) {
               <div class="indicator-dot shrink-0" [attr.data-severity]="finding()!.severity.toLowerCase()"></div>
               <span class="truncate text-sm font-bold text-standard flex-1 text-left">
-                {{ finding()!.severity | uppercase }}: {{ finding()!.description || 'New Finding' | slice:0:30 }}{{
-                finding()!.description.length > 30 ? '...' : '' }}
+                {{ finding()!.severity | uppercase }}: {{ finding()!.description || 'New Finding' }}
               </span>
               } @else {
               <div class="w-2.5 h-2.5 rounded-full bg-standard-muted opacity-50 shrink-0"></div>
@@ -206,9 +205,19 @@
                   <lucide-icon [name]="icons.LayoutList" [size]="28" class="text-standard-muted"></lucide-icon>
                 </div>
                 <h3 class="text-lg font-bold text-standard mb-2">No Finding Selected</h3>
-                <p class="text-standard-muted max-w-[250px] mx-auto">
+                <p class="text-standard-muted max-w-[250px] mx-auto mb-6">
                   Select a finding from the dropdown above or add a new one to get started.
                 </p>
+                <app-button 
+                  [disabled]="inspection()?.status === 'published'"
+                  (click)="onAddFindingTriggered()" 
+                  variant="solid" 
+                  size="md">
+                  <span class="flex items-center gap-2">
+                    <lucide-icon [name]="icons.Plus" [size]="16"></lucide-icon>
+                    Add Finding
+                  </span>
+                </app-button>
               </div>
               }
             </div>

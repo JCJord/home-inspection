@@ -57,7 +57,9 @@ export class ReportCanvasComponent implements OnInit, AfterViewInit {
     const sections = this.inspection.template_snapshot.sections;
     const statuses = this.inspection.section_statuses || {};
 
-    return sections.map(section => {
+    return sections
+      .filter(section => section.name !== 'Building Specifications')
+      .map(section => {
       const sectionFindings = findings.filter(f => f.section === section.name);
       const processedFindings: any[] = [];
       const status = statuses[section.name] || { status: 'inspected' };

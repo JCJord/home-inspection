@@ -39,6 +39,9 @@ export class PhotosService {
     if (!file) {
       throw new BadRequestException('Photo file is required');
     }
+    if (caption && caption.length > 100) {
+      throw new BadRequestException('Caption must not exceed 100 characters');
+    }
 
     const finding = await this.checkFindingOwnership(inspectorId, inspectionId, findingId);
 

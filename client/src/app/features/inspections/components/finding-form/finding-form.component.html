@@ -61,6 +61,7 @@
               type="text" 
               [formControlName]="i"
               placeholder="Add caption..."
+              maxlength="100"
               class="w-full text-[11px] bg-transparent outline-none text-standard italic focus:not-italic transition-all"
             >
           </div>
@@ -68,7 +69,7 @@
         }
       </div>
       }
-
+ 
       <!-- Existing Photos -->
       @if (resolvedExistingPhotos().length > 0) {
       <div class="existing-photos-grid" formArrayName="photo_captions">
@@ -88,7 +89,7 @@
                 <span class="text-[8px] font-bold uppercase tracking-widest">Failed</span>
               </div>
             }
-
+ 
             <div class="photo-action-pill" [class.confirming]="activeDeleteExistingId() === photo.id">
               @if (!isPublishedSignal()) {
                 @if (activeDeleteExistingId() === photo.id) {
@@ -111,13 +112,14 @@
               }
             </div>
           </div>
-
+ 
           <div class="photo-caption-input">
             <lucide-icon [name]="icons.Edit" [size]="10" class="text-standard-muted opacity-50 mr-1"></lucide-icon>
             <input 
               type="text" 
               formControlName="caption"
               placeholder="Add caption..."
+              maxlength="100"
               (blur)="onCaptionBlur(i)"
               class="w-full text-[11px] bg-transparent outline-none text-standard italic focus:not-italic transition-all"
             >

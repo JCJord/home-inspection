@@ -99,9 +99,15 @@
 
 .off-screen-render {
   background: white;
+  width: 1750px !important;
+  min-width: 1750px !important;
+  overflow: visible !important;
 
   .main-content {
     background: white;
+    width: 1750px !important;
+    min-width: 1750px !important;
+    overflow: visible !important;
 
     &[data-font="modern"] {
       font-family: 'Inter', 'Roboto', 'Helvetica Neue', sans-serif;

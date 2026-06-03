@@ -52,10 +52,7 @@
             <!-- Large Property Photo Header -->
             <div style="width: 100%; height: 950px; background: #111; overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center;">
                @if (getCoverPhoto()) {
-                  <!-- Ambient blurred backdrop -->
-                  <img [src]="getCoverPhoto()" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; filter: blur(30px) brightness(0.8); transform: scale(1.15); opacity: 0.7;">
-                  <!-- Clean uncropped foreground -->
-                  <img [src]="getCoverPhoto()" style="position: relative; z-index: 10; width: 100%; height: 100%; object-fit: contain;">
+                  <img [src]="getCoverPhoto()" style="width: 100%; height: 100%; object-fit: cover;">
                } @else {
                   <div style="width: 100%; height: 100%; background: #111; display: flex; align-items: center; justify-content: center; color: #444; position: relative; z-index: 10;">
                      <span style="font-size: 30px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em;">Property Analysis</span>
@@ -721,8 +718,7 @@
                <div style="max-width: 1000px; width: 100%;">
                   <!-- Legal Binding Notice -->
                   <div style="margin-bottom: 60px; padding: 40px; border: 2px solid #F59E0B; background: #FFFBEB; border-radius: 12px; text-align: left; box-sizing: border-box;">
-                     <div style="display: flex; gap: 15px; align-items: center; margin-bottom: 15px;">
-                        <span style="font-size: 24px; font-weight: 900; color: #D97706;">⚠</span>
+                     <div style="margin-bottom: 15px;">
                         <h4 style="font-size: 20px; font-weight: 800; color: #B45309; text-transform: uppercase; margin: 0; letter-spacing: 0.05em;">Binding Pre-Inspection Agreement Reference</h4>
                      </div>
                      <p style="font-size: 18px; color: #78350F; line-height: 1.5; margin: 0; font-weight: 500;">

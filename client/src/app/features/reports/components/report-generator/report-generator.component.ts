@@ -5,6 +5,7 @@ import { BehaviorSubject, firstValueFrom } from 'rxjs';
 import { LucideAngularModule, Loader2, FileText, CheckCircle } from 'lucide-angular';
 import { Inspection } from '../../../../core/models/inspection.interface';
 import { ReportsService } from '../../../../core/services/reports.service';
+import { ImageCacheService } from '../../../../core/services/image-cache.service';
 import { PdfPaginationHelper } from '../../../../core/helpers/pdf-pagination.helper';
 import { environment } from '../../../../../environments/environment';
 
@@ -19,6 +20,7 @@ import { environment } from '../../../../../environments/environment';
 export class ReportGeneratorComponent implements OnInit {
   private http = inject(HttpClient);
   private reportsService = inject(ReportsService);
+  private imageCacheService = inject(ImageCacheService);
 
   @Input() inspection: Inspection | null = null;
   @Input() mode: 'download' | 'publish' = 'download';
@@ -75,7 +77,9 @@ export class ReportGeneratorComponent implements OnInit {
     const sections = this.inspection.template_snapshot.sections;
     const statuses = this.inspection.section_statuses || {};
 
-    return sections.map(section => {
+    return sections
+      .filter(section => section.name !== 'Building Specifications')
+      .map(section => {
       const sectionFindings = findings.filter(f => f.section === section.name);
       const processedFindings: any[] = [];
       const status = statuses[section.name] || { status: 'inspected' };
@@ -264,6 +268,11 @@ export class ReportGeneratorComponent implements OnInit {
 
       // Allow Angular render cycle and embed images
       await new Promise<void>(resolve => setTimeout(resolve, 600));
+      try {
+        await (document as any).fonts?.ready;
+      } catch (e) {
+        console.warn('Font loading check skipped/failed', e);
+      }
       
       const tableElement = document.querySelector('.main-content') as HTMLElement;
       if (!tableElement) continue;
@@ -330,6 +339,9 @@ export class ReportGeneratorComponent implements OnInit {
       if (img.src.startsWith('data:')) continue;
 
       try {
+        // Resolve URL using the ImageCacheService (returns local blob URL if cached in IndexedDB)
+        const resolvedUrl = await this.imageCacheService.getImageUrl(img.src);
+
         const fetchWithTimeout = (url: string, ms = 10000) =>
           Promise.race([
             fetch(url),
@@ -338,7 +350,7 @@ export class ReportGeneratorComponent implements OnInit {
             )
           ]);
 
-        const response = await fetchWithTimeout(img.src);
+        const response = await fetchWithTimeout(resolvedUrl);
         const blob = await response.blob();
         const reader = new FileReader();
         await new Promise((resolve, reject) => {

@@ -14,7 +14,6 @@ import { BackButtonComponent } from '../../../../shared/components/back-button/b
 
 import { ImageCompressionService } from '../../../../core/services/image-compression.service';
 import { environment } from '../../../../../environments/environment';
-import { ResolveImagePipe } from '../../../../shared/pipes/resolve-image.pipe';
 import { ImageCacheService } from '../../../../core/services/image-cache.service';
 
 @Component({
@@ -28,9 +27,7 @@ import { ImageCacheService } from '../../../../core/services/image-cache.service
     SkeletonComponent,
     ReportGeneratorComponent,
     ReportPreviewComponent,
-    BackButtonComponent,
-
-    ResolveImagePipe
+    BackButtonComponent
   ],
   templateUrl: './inspection-details.component.html',
   styleUrl: './inspection-details.component.scss',

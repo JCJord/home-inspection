@@ -16,8 +16,8 @@ export class ImageCompressionService {
 
   async compressImage(file: File, options: any = this.defaultOptions): Promise<File> {
     try {
-      // If it's not an image, just return the original file
-      if (!file.type.startsWith('image/')) {
+      // If it's not an image or it is an SVG, just return the original file
+      if (!file.type.startsWith('image/') || file.type === 'image/svg+xml') {
         return file;
       }
 

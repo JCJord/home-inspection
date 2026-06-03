@@ -1,6 +1,7 @@
-import { Component, OnInit, inject, signal, computed, ViewChild } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, ViewChild, DestroyRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { combineLatest } from 'rxjs';
 import { InspectionsService } from '../../../../core/services/inspections.service';
 import { Inspection, Finding, SectionStatus } from '../../../../core/models/inspection.interface';
@@ -11,6 +12,7 @@ import { FindingListComponent } from '../../components/finding-list/finding-list
 import { LucideAngularModule, Home, ChevronUp, ChevronDown, Hammer, Zap, Droplets, Wind, Flame, Box, Grid, Monitor, Car, Shield, Search, Info, AlertTriangle, Copy, Edit2, Trash2, Plus, Save, Lock, Unlock, ArrowLeft, Wrench, Thermometer, Lightbulb, Paintbrush, Sun, Key, Power, FileCheck, HardHat, Construction, Ruler, ShieldCheck, ShieldAlert, BrickWall, Trees, Fan, Sparkles, Wifi, WifiOff, Trash, Settings, Check, X, Users, FileText, Image, Cloud, CloudRain, CloudLightning, Snowflake, Umbrella, Compass, MapPin, Clock, Calendar, Activity, Scissors, Heart, AlertCircle, HelpCircle, Ban, LockOpen, Send, Download, Loader2, CheckCircle2, Layers, Menu, ChevronLeft, LayoutGrid, CircleX, PieChart, Eye, LayoutList } from 'lucide-angular';
 
 import { BackButtonComponent } from '../../../../shared/components/back-button/back-button.component';
+import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { SectionStatusToggleComponent } from '../../components/section-status-toggle/section-status-toggle';
 import { TextInputComponent } from '../../../../shared/components/inputs/text-input/text-input.component';
 import { SelectInputComponent } from '../../../../shared/components/inputs/select-input/select-input.component';
@@ -22,7 +24,7 @@ import { debounceTime, Subject } from 'rxjs';
 @Component({
   selector: 'app-finding-details',
   standalone: true,
-  imports: [CommonModule, WorkbenchLayoutComponent, FindingFormComponent, FindingListComponent, LucideAngularModule, BackButtonComponent, SectionStatusToggleComponent, TextInputComponent, SelectInputComponent, SummaryDashboardComponent],
+  imports: [CommonModule, WorkbenchLayoutComponent, FindingFormComponent, FindingListComponent, LucideAngularModule, BackButtonComponent, ButtonComponent, SectionStatusToggleComponent, TextInputComponent, SelectInputComponent, SummaryDashboardComponent],
   providers: [{ provide: 'lucideIcons', useValue: { Home, ChevronUp, ChevronDown, Hammer, Zap, Droplets, Wind, Flame, Box, Grid, Monitor, Car, Shield, Search, Info, AlertTriangle, Copy, Edit2, Trash2, Plus, Save, Lock, Unlock, ArrowLeft, Wrench, Thermometer, Lightbulb, Paintbrush, Sun, Key, Eye, Power, FileCheck, HardHat, Construction, Ruler, ShieldCheck, ShieldAlert, BrickWall, Trees, Fan, Sparkles, Wifi, WifiOff, Trash, Settings, Check, X, Users, FileText, Image, Cloud, CloudRain, CloudLightning, Snowflake, Umbrella, Compass, MapPin, Clock, Calendar, Activity, Scissors, Heart, AlertCircle, HelpCircle, Ban, LockOpen, Send, Download, Loader2, CheckCircle2, Layers, Menu, ChevronLeft, LayoutGrid, CircleX, PieChart, LayoutList } }],
   templateUrl: './finding-details.component.html',
   styleUrl: './finding-details.component.scss'
@@ -33,6 +35,7 @@ export class FindingDetailsComponent implements OnInit {
   private inspectionsService = inject(InspectionsService);
   private mutationQueueService = inject(MutationQueueService);
   private draftService = inject(DraftService);
+  private destroyRef = inject(DestroyRef);
 
   rawInspection = signal<Inspection | null>(null);
   inspection = computed(() => {
@@ -174,7 +177,9 @@ export class FindingDetailsComponent implements OnInit {
     });
 
     // Listen for background task completions to swap temporary IDs
-    this.mutationQueueService.taskCompleted$.subscribe((completion: TaskCompletion) => {
+    this.mutationQueueService.taskCompleted$.pipe(
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe((completion: TaskCompletion) => {
       if (completion.clientFindingId && completion.clientFindingId === this.findingId()) {
         const section = this.activeSection();
         if (section) {

@@ -15,6 +15,38 @@ export class MailService {
     this.resend = new Resend(process.env.RESEND_API_KEY);
   }
 
+  private getTemplatePath(templateName: string): string {
+    // 1. Try production path relative to compiled dist/src/mail/mail.service.js
+    const prodPath = path.join(__dirname, '..', '..', 'mail', 'templates', templateName);
+    if (fs.existsSync(prodPath)) {
+      return prodPath;
+    }
+
+    // 2. Try development path relative to src/mail/mail.service.ts
+    const devPath = path.join(__dirname, 'templates', templateName);
+    if (fs.existsSync(devPath)) {
+      return devPath;
+    }
+
+    // 3. Fallback to process.cwd() / dist
+    const cwdDistPath = path.join(process.cwd(), 'dist', 'mail', 'templates', templateName);
+    if (fs.existsSync(cwdDistPath)) {
+      return cwdDistPath;
+    }
+
+    // 4. Fallback to process.cwd() / src
+    const cwdSrcPath = path.join(process.cwd(), 'src', 'mail', 'templates', templateName);
+    if (fs.existsSync(cwdSrcPath)) {
+      return cwdSrcPath;
+    }
+
+    return devPath;
+  }
+
+  private getFromEmail(): string {
+    return process.env.MAIL_FROM || 'Home Inspection <onboarding@resend.dev>';
+  }
+
   @OnEvent('inspection.scheduled')
   async handleInspectionScheduled(inspection: Inspection) {
     if (!inspection.client_email) {
@@ -25,11 +57,7 @@ export class MailService {
     this.logger.log(`Processing scheduled confirmation event for ${inspection.client_email}`);
 
     try {
-      // Resolve template path (handles both dev and prod/dist locations)
-      const templatePath = path.join(process.cwd(), 'dist', 'mail', 'templates', 'inspection-scheduled.hbs');
-      const finalPath = fs.existsSync(templatePath) 
-        ? templatePath 
-        : path.join(process.cwd(), 'src', 'mail', 'templates', 'inspection-scheduled.hbs');
+      const finalPath = this.getTemplatePath('inspection-scheduled.hbs');
 
       if (!fs.existsSync(finalPath)) {
         this.logger.error(`Email template not found at ${finalPath}`);
@@ -48,7 +76,7 @@ export class MailService {
       });
 
       const { data, error } = await this.resend.emails.send({
-        from: 'Home Inspection <onboarding@resend.dev>',
+        from: this.getFromEmail(),
         to: inspection.client_email,
         subject: `Confirmation: Inspection Scheduled for ${inspection.address}`,
         html: html,
@@ -68,10 +96,7 @@ export class MailService {
     this.logger.log(`Processing password reset email for ${email}`);
     
     try {
-      const templatePath = path.join(process.cwd(), 'dist', 'mail', 'templates', 'password-reset.hbs');
-      const finalPath = fs.existsSync(templatePath) 
-        ? templatePath 
-        : path.join(process.cwd(), 'src', 'mail', 'templates', 'password-reset.hbs');
+      const finalPath = this.getTemplatePath('password-reset.hbs');
 
       if (!fs.existsSync(finalPath)) {
         this.logger.error(`Email template not found at ${finalPath}`);
@@ -87,7 +112,7 @@ export class MailService {
       });
 
       const { data, error } = await this.resend.emails.send({
-        from: 'Home Inspection <onboarding@resend.dev>',
+        from: this.getFromEmail(),
         to: email,
         subject: 'Reset Your Password',
         html: html,
@@ -107,10 +132,7 @@ export class MailService {
     this.logger.log(`Processing report ready email for ${targetEmail}`);
     
     try {
-      const templatePath = path.join(process.cwd(), 'dist', 'mail', 'templates', 'report-ready.hbs');
-      const finalPath = fs.existsSync(templatePath) 
-        ? templatePath 
-        : path.join(process.cwd(), 'src', 'mail', 'templates', 'report-ready.hbs');
+      const finalPath = this.getTemplatePath('report-ready.hbs');
 
       if (!fs.existsSync(finalPath)) {
         this.logger.error(`Email template not found at ${finalPath}`);
@@ -127,7 +149,7 @@ export class MailService {
       });
 
       const { data, error } = await this.resend.emails.send({
-        from: 'Home Inspection <onboarding@resend.dev>',
+        from: this.getFromEmail(),
         to: targetEmail,
         subject: `Your Inspection Report for ${address} is Ready`,
         html: html,
@@ -147,10 +169,7 @@ export class MailService {
     this.logger.log(`Processing email verification for ${email}`);
     
     try {
-      const templatePath = path.join(process.cwd(), 'dist', 'mail', 'templates', 'email-verification.hbs');
-      const finalPath = fs.existsSync(templatePath) 
-        ? templatePath 
-        : path.join(process.cwd(), 'src', 'mail', 'templates', 'email-verification.hbs');
+      const finalPath = this.getTemplatePath('email-verification.hbs');
 
       if (!fs.existsSync(finalPath)) {
         this.logger.error(`Email template not found at ${finalPath}`);
@@ -166,7 +185,7 @@ export class MailService {
       });
 
       const { data, error } = await this.resend.emails.send({
-        from: 'Home Inspection <onboarding@resend.dev>',
+        from: this.getFromEmail(),
         to: email,
         subject: 'Verify your email address',
         html: html,

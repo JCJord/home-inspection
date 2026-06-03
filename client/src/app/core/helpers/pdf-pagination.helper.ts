@@ -196,7 +196,13 @@ export class PdfPaginationHelper {
     const style = getComputedStyle(element);
     const marginTop = parseFloat(style.marginTop) || 0;
     const marginBottom = parseFloat(style.marginBottom) || 0;
-    const rectHeight = element.getBoundingClientRect().height;
+    let rectHeight = element.getBoundingClientRect().height;
+
+    // Safety buffer for table rows containing dynamic flex/grid items and text captions
+    if (element.tagName.toLowerCase() === 'tr' && element.querySelector('.photo-wrapper-container')) {
+      rectHeight += 24; // Extra padding buffer to account for dynamic captions and grid layout
+    }
+
     return rectHeight + marginTop + marginBottom;
   }
 

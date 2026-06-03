@@ -3,11 +3,15 @@ import puppeteer, { Browser, Page } from 'puppeteer';
 
 const BROWSER_LAUNCH_OPTIONS = {
   headless: true as const,
-  args: ['--no-sandbox', '--disable-setuid-sandbox'],
+  args: [
+    '--no-sandbox',
+    '--disable-setuid-sandbox',
+    '--disable-dev-shm-usage', // prevents shared memory issues in containerized envs
+    '--disable-gpu',           // disables GPU hardware acceleration to save RAM
+    '--no-zygote',             // disables zygote process fork structure to save memory
+    '--disable-extensions',    // disables browser extensions
+  ],
 };
-
-// Recycle the browser after this many PDF generations to prevent memory accumulation
-export const BROWSER_RECYCLE_AFTER = 20;
 
 export class Semaphore {
   private queue: Array<() => void> = [];
@@ -42,32 +46,10 @@ export class Semaphore {
 @Injectable()
 export class PdfService implements OnModuleDestroy {
   private readonly logger = new Logger(PdfService.name);
-  private sharedBrowser: Browser | null = null;
-  private browserUseCount = 0;
   private readonly pdfSemaphore = new Semaphore(1);
 
   async onModuleDestroy() {
-    if (this.sharedBrowser) {
-      await this.sharedBrowser.close().catch(() => { });
-    }
-  }
-
-  private async getOrCreateBrowser(): Promise<Browser> {
-    if (this.sharedBrowser?.connected && this.browserUseCount < BROWSER_RECYCLE_AFTER) {
-      this.browserUseCount++;
-      return this.sharedBrowser;
-    }
-
-    if (this.sharedBrowser) {
-      await this.sharedBrowser.close().catch(() => { });
-      this.sharedBrowser = null;
-      this.logger.log('Browser recycled after use limit');
-    }
-
-    this.browserUseCount = 1;
-    this.sharedBrowser = await puppeteer.launch(BROWSER_LAUNCH_OPTIONS);
-    this.logger.log('Browser launched');
-    return this.sharedBrowser;
+    // Cleanup hooks if needed
   }
 
   public async generateFromHtml(html: string): Promise<Buffer> {
@@ -82,17 +64,28 @@ export class PdfService implements OnModuleDestroy {
     await this.pdfSemaphore.acquire();
     this.logger.log('Acquired — proceeding with PDF generation');
 
+    let browser: Browser | null = null;
     let page: Page | null = null;
 
     try {
-      const browser = await this.getOrCreateBrowser();
-      page = await browser.newPage();
+      this.logger.log('Launching browser instance');
+      browser = await puppeteer.launch(BROWSER_LAUNCH_OPTIONS);
+      
+      // Close default blank page that is automatically opened on launch to save memory
+      const pages = await browser.pages();
+      if (pages.length > 0) {
+        page = pages[0];
+      } else {
+        page = await browser.newPage();
+      }
 
       await page.setViewport({ width: 1725, height: 1080 });
       await page.emulateMediaType('screen');
+      
+      // Disable caching on the page level to prevent memory caching leaks
+      await page.setCacheEnabled(false);
+
       await page.setContent(html, { waitUntil: 'networkidle0', timeout: 120000 });
-
-
 
       const pdfBuffer = await page.pdf({
         format: 'A4',
@@ -140,6 +133,10 @@ export class PdfService implements OnModuleDestroy {
     } finally {
       if (page) {
         await page.close().catch(() => { });
+      }
+      if (browser) {
+        this.logger.log('Closing browser instance');
+        await browser.close().catch(() => { });
       }
       this.pdfSemaphore.release();
     }

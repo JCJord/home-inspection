@@ -46,8 +46,8 @@ export class InspectorsController {
   @UseInterceptors(FileInterceptor('logo', {
     limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
     fileFilter: (req, file, cb) => {
-      if (!file.mimetype.match(/^image\/(jpeg|png|webp)$/)) {
-        return cb(new BadRequestException('Only JPEG, PNG and WebP images are allowed'), false);
+      if (!file.mimetype.match(/^image\/(jpeg|png|webp|svg\+xml)$/)) {
+        return cb(new BadRequestException('Only JPEG, PNG, WebP and SVG images are allowed'), false);
       }
       cb(null, true);
     },

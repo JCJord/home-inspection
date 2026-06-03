@@ -1,5 +1,6 @@
-import { Component, inject, output, signal, effect, computed, OnDestroy, Input, OnChanges, SimpleChanges, afterNextRender } from '@angular/core';
+import { Component, inject, output, signal, effect, computed, OnDestroy, Input, OnChanges, SimpleChanges, afterNextRender, DestroyRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { InspectionsService } from '../../../../core/services/inspections.service';
 import { Section, Severity } from '../../../../core/enums/inspection.enums';
@@ -51,6 +52,7 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
   private draftService = inject(DraftService);
   private mutationQueueService = inject(MutationQueueService);
   private imageCache = inject(ImageCacheService);
+  private destroyRef = inject(DestroyRef);
 
 
   @Input({ required: true }) inspectionId!: string;
@@ -179,7 +181,9 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
   }
 
   constructor() {
-    this.mutationQueueService.taskCompleted$.subscribe(completion => {
+    this.mutationQueueService.taskCompleted$.pipe(
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe(completion => {
       if (completion.clientFindingId && completion.result?.id) {
         this.idSwaps.set(completion.clientFindingId, completion.result.id.toString());
       }
@@ -275,7 +279,7 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
       } else {
         this.photoCaptions.push(this.fb.group({
           id: [p.id],
-          caption: [p.caption || '']
+          caption: [p.caption || '', [Validators.maxLength(100)]]
         }));
       }
     });
@@ -443,7 +447,7 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
         const newItems = filesArray.map((file, i) => {
           initialIndices.push(currentCount + i);
           // Also add a form control for each new file
-          this.newPhotoCaptions.push(this.fb.control(''));
+          this.newPhotoCaptions.push(this.fb.control('', [Validators.maxLength(100)]));
           return {
             file,
             previewUrl: URL.createObjectURL(file),

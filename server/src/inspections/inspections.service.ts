@@ -180,6 +180,10 @@ export class InspectionsService {
       }
     }
 
+    if (inspection.inspector && inspection.inspector.logo_key) {
+      inspection.inspector.logo_url = await this.storageService.getPresignedUrl(inspection.inspector.logo_key);
+    }
+
     inspection.cover_photo_url = cover_photo_url || undefined;
     return inspection;
   }
