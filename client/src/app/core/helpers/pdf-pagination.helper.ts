@@ -37,6 +37,8 @@ export class PdfPaginationHelper {
       pages.push(currentPageWrapper);
 
       let availableSpace = this.A4_HEIGHT - (headerHeight + footerHeight + upperElementsTotalHeight + margin);
+    let placedOnPreviousPages = new Set<string>();
+    let currentPageBaseIds = new Set<string>();
 
       tables.forEach((originalTable: HTMLTableElement) => {
         const tableHeaders = Array.from(originalTable.querySelectorAll('.table-header')) as HTMLElement[];
@@ -81,6 +83,8 @@ export class PdfPaginationHelper {
             const rowHeight = this.calculateRowHeight(row, dataRows, groupsProcessed);
 
             if (rowHeight > availableSpace && rowIndex < dataRows.length) {
+              currentPageBaseIds.forEach(id => placedOnPreviousPages.add(id));
+              currentPageBaseIds = new Set<string>();
               this.addFooterToPage(currentPageWrapper, footerElement as HTMLElement);
               currentPageWrapper = this.createNewPage(headerElement as HTMLElement, [], false);
               pages.push(currentPageWrapper);
@@ -100,13 +104,24 @@ export class PdfPaginationHelper {
             }
 
             if (rowHeight > 0) {
-                currentTable.appendChild(row.cloneNode(true));
+                const clonedRow = row.cloneNode(true) as HTMLElement;
+                const group = row.dataset['group'];
+                if (group) {
+                  const baseId = this.getBaseFindingId(group);
+                  if (placedOnPreviousPages.has(baseId) && !currentPageBaseIds.has(baseId) && row.classList.contains('content-row')) {
+                    this.injectContinuedBadge(clonedRow);
+                  }
+                  currentPageBaseIds.add(baseId);
+                }
+                currentTable.appendChild(clonedRow);
                 availableSpace -= rowHeight;
             }
             rowIndex++;
           }
         } else {
           // Table doesn't fit at all, start on a new page
+          currentPageBaseIds.forEach(id => placedOnPreviousPages.add(id));
+          currentPageBaseIds = new Set<string>();
           this.addFooterToPage(currentPageWrapper, footerElement as HTMLElement);
           currentPageWrapper = this.createNewPage(headerElement as HTMLElement, [], false);
           pages.push(currentPageWrapper);
@@ -129,6 +144,8 @@ export class PdfPaginationHelper {
             const rowHeight = this.calculateRowHeight(row, dataRows, groupsProcessed);
 
             if (rowHeight > availableSpace) {
+              currentPageBaseIds.forEach(id => placedOnPreviousPages.add(id));
+              currentPageBaseIds = new Set<string>();
               this.addFooterToPage(currentPageWrapper, footerElement as HTMLElement);
               currentPageWrapper = this.createNewPage(headerElement as HTMLElement, [], false);
               pages.push(currentPageWrapper);
@@ -148,7 +165,16 @@ export class PdfPaginationHelper {
             }
 
             if (rowHeight > 0) {
-                currentTable.appendChild(row.cloneNode(true));
+                const clonedRow = row.cloneNode(true) as HTMLElement;
+                const group = row.dataset['group'];
+                if (group) {
+                  const baseId = this.getBaseFindingId(group);
+                  if (placedOnPreviousPages.has(baseId) && !currentPageBaseIds.has(baseId) && row.classList.contains('content-row')) {
+                    this.injectContinuedBadge(clonedRow);
+                  }
+                  currentPageBaseIds.add(baseId);
+                }
+                currentTable.appendChild(clonedRow);
                 availableSpace -= rowHeight;
             }
             rowIndex++;
@@ -158,6 +184,9 @@ export class PdfPaginationHelper {
 
       // Add footer to the last page
       this.addFooterToPage(currentPageWrapper, footerElement as HTMLElement);
+
+      // Dynamically adjust borders based on actual pagination layout
+      this.adjustTableBorders(pages);
 
       // Clear original content and replace with pages
       (snippet as HTMLElement).innerHTML = '';
@@ -206,6 +235,22 @@ export class PdfPaginationHelper {
     return rectHeight + marginTop + marginBottom;
   }
 
+  private getBaseFindingId(dataGroup: string): string {
+    return dataGroup.replace(/_chunk_\d+$/, '');
+  }
+
+  private injectContinuedBadge(clonedRow: HTMLElement): void {
+    const td = clonedRow.querySelector('td.info-column') || clonedRow.querySelector('td');
+    if (!td) return;
+    const flexContainer = td.firstElementChild as HTMLElement;
+    if (!flexContainer) return;
+
+    const badge = document.createElement('div');
+    badge.style.cssText = 'display: flex; justify-content: center; align-items: center; padding-bottom: 6px;';
+    badge.innerHTML = '<span style="font-size: 22px; font-weight: 800; color: #888; text-transform: uppercase; letter-spacing: 0.05em; border: 2px solid #ccc; padding: 4px 12px; border-radius: 4px; line-height: 1.2;">Continued</span>';
+    flexContainer.insertBefore(badge, flexContainer.firstChild);
+  }
+
   private createNewPage(
     headerElement: HTMLElement,
     upperElements: Element[],
@@ -241,5 +286,35 @@ export class PdfPaginationHelper {
     clonedFooter.style.margin = '0';
 
     pageWrapper.appendChild(clonedFooter);
+  }
+
+  private adjustTableBorders(pages: HTMLElement[]): void {
+    pages.forEach(page => {
+      const tables = Array.from(page.querySelectorAll('table'));
+      tables.forEach(table => {
+        const contentRows = Array.from(table.querySelectorAll('tr.content-row'))
+          .filter(tr => tr.querySelector('td.info-column')) as HTMLElement[];
+        
+        contentRows.forEach((row, index) => {
+          const td = row.querySelector('td.info-column') as HTMLElement;
+          if (td) {
+            td.style.borderLeft = '2px solid #111';
+            td.style.borderRight = '2px solid #111';
+            
+            if (index === 0) {
+              td.style.borderTop = '2px solid #111';
+            } else {
+              td.style.borderTop = 'none';
+            }
+            
+            if (index === contentRows.length - 1) {
+              td.style.borderBottom = '2px solid #111';
+            } else {
+              td.style.borderBottom = 'none';
+            }
+          }
+        });
+      });
+    });
   }
 }

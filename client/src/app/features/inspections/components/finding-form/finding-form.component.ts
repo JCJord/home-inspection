@@ -20,7 +20,7 @@ import { LocationComboboxComponent } from '../../../../shared/components/inputs/
 import { DraftService } from '../../../../core/services/draft.service';
 import { MutationQueueService, MutationType } from '../../../../core/services/mutation-queue.service';
 import { ResolveImagePipe } from '../../../../shared/pipes/resolve-image.pipe';
-import { debounceTime } from 'rxjs';
+import { debounceTime, map } from 'rxjs';
 import { ImageCacheService } from '../../../../core/services/image-cache.service';
 
 interface SelectedPhoto {
@@ -95,10 +95,7 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
       const prevId = prev?.id;
       const currId = curr?.id;
       
-      const isIdSwap = prevId && currId && (
-        this.idSwaps.has(prevId) && this.idSwaps.get(prevId) === currId ||
-        (prev.section === curr.section && prevId.includes('-') && prevId.length === 36)
-      );
+      const isIdSwap = prevId && currId && this.idSwaps.has(prevId) && this.idSwaps.get(prevId) === currId;
 
       if (isIdSwap) {
         this.idSwaps.delete(prevId);
@@ -121,11 +118,17 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
       // we MUST clear any unsaved local photo selections from the previous finding
       // so they don't accidentally get attached to the new one!
       if (prev?.id !== curr?.id) {
+        // Flush any unsaved dirty changes for the previous finding ID immediately!
+        if (prevId && this.findingForm.dirty && prev?.section) {
+          this.autoSaveFinding(prevId, prev.section, this.findingForm.value);
+        }
+
         this.selectedFiles().forEach(item => {
           URL.revokeObjectURL(item.previewUrl);
         });
         this.selectedFiles.set([]);
         this.newPhotoCaptions.clear();
+        this.photoCaptions.clear();
       }
 
       this.populateForm();
@@ -135,6 +138,8 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
   }
 
   isLoading = signal<boolean>(false);
+  isSaving = signal<boolean>(false);
+  isSaved = signal<boolean>(true);
   isGeneratingAi = signal<boolean>(false);
   aiErrorMessage = signal<string | null>(null);
   showSuccess = signal<boolean>(false);
@@ -169,7 +174,7 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
   });
 
   private get draftKey(): string {
-    return `finding:${this.inspectionId}:${this.section}:${this.finding?.id || 'new'}`;
+    return `finding:${this.inspectionId}:${this.section}:${this._finding()?.id || 'new'}`;
   }
 
   get photoCaptions(): FormArray {
@@ -201,21 +206,32 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
       }
     });
 
-    // Auto-save to DraftService on value changes
+    // Auto-save changes to the database and DraftService
     this.findingForm.valueChanges.pipe(
-      debounceTime(500)
-    ).subscribe(value => {
-      if (!this._isPublished()) {
-        this.draftService.save(this.draftKey, value);
+      map(value => ({ value, key: this.draftKey, findingId: this._finding()?.id, section: this._section() })),
+      debounceTime(1000),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe(({ value, key, findingId, section }) => {
+      if (this._isPublished()) return;
+
+      // Save to drafts locally
+      this.draftService.save(key, value);
+
+      // Only auto-save if the form is valid, dirty, and the active finding has not changed
+      if (this.findingForm.valid && this.findingForm.dirty && findingId && findingId === this._finding()?.id && section === this._section()) {
+        this.autoSaveFinding(findingId, section, value);
       }
     });
 
     // Check for and restore drafts
     afterNextRender(() => {
-      const draft = this.draftService.load<any>(this.draftKey);
-      if (draft) {
-        this.findingForm.patchValue(draft, { emitEvent: false });
-        this.findingForm.markAsDirty();
+      const currentFinding = this._finding();
+      if (currentFinding) {
+        const draft = this.draftService.load<any>(this.draftKey);
+        if (draft) {
+          this.findingForm.patchValue(draft, { emitEvent: false });
+          this.findingForm.markAsDirty();
+        }
       }
     });
   }
@@ -228,19 +244,36 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
 
   populateForm() {
     const data = this._finding();
-    if (!data) return;
+    if (!data) {
+      // If we have no finding (e.g., adding a new finding or summary), reset form to empty defaults
+      this.findingForm.reset({
+        severity: Severity.MINOR,
+        location: '',
+        description: '',
+        recommendation: '',
+      }, { emitEvent: false });
+      this.photoCaptions.clear({ emitEvent: false });
+      this.newPhotoCaptions.clear({ emitEvent: false });
+      this.findingForm.markAsPristine();
+      return;
+    }
     
+    // Prevent triggering valueChanges subscription when resetting form values from server model
     this.findingForm.patchValue({
       severity: data.severity,
       location: data.location || '',
       description: data.description,
       recommendation: data.recommendation || '',
-    });
+    }, { emitEvent: false });
     this.syncPhotoCaptions(data.photos || []);
+
+    // Mark as pristine now that fresh model data has been applied
+    this.findingForm.markAsPristine();
 
     // Restore draft if it exists (crucial for preserving unsaved changes across ID swaps)
     const draft = this.draftService.load<any>(this.draftKey);
     if (draft) {
+      // Confirm target finding draft matches the active finding ID
       this.findingForm.patchValue(draft, { emitEvent: false });
       this.findingForm.markAsDirty();
     }
@@ -262,20 +295,45 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
   }
 
   syncPhotoCaptions(photos: Photo[]) {
-    // Gracefully update the FormArray to match the new photos array
-    // without wiping out currently typed captions in dirty controls.
-    
-    while (this.photoCaptions.length > photos.length) {
-      this.photoCaptions.removeAt(this.photoCaptions.length - 1);
+    // Map current FormArray groups by their photo ID
+    const currentGroups = new Map<string, FormGroup>();
+    for (let i = 0; i < this.photoCaptions.length; i++) {
+      const group = this.photoCaptions.at(i) as FormGroup;
+      const id = group.get('id')?.value;
+      if (id) {
+        currentGroups.set(id.toString(), group);
+      }
     }
-    
-    photos.forEach((p, i) => {
-      if (i < this.photoCaptions.length) {
-        const group = this.photoCaptions.at(i);
-        group.get('id')?.setValue(p.id, { emitEvent: false });
-        if (!group.get('caption')?.dirty) {
-          group.get('caption')?.setValue(p.caption || '', { emitEvent: false });
+
+    // Clear the FormArray
+    this.photoCaptions.clear({ emitEvent: false });
+
+    // Re-populate in the exact order of the incoming photos
+    photos.forEach(p => {
+      const idStr = p.id?.toString();
+      let existingGroup = idStr ? currentGroups.get(idStr) : null;
+
+      // Fallback: If a temp ID transitioned to a server ID, find the group by matching UPLOAD_PHOTO task
+      if (!existingGroup && idStr) {
+        const completedTask = this.mutationQueueService.allTasks().find(t => 
+          t.type === MutationType.UPLOAD_PHOTO && 
+          t.status === 'COMPLETED' && 
+          (t as any).result?.id?.toString() === idStr
+        );
+        if (completedTask) {
+          existingGroup = currentGroups.get(`temp-${completedTask.id}`);
         }
+      }
+
+      if (existingGroup) {
+        // Update the ID control value to the new server ID if it swap-transitioned
+        existingGroup.get('id')?.setValue(p.id, { emitEvent: false });
+        
+        // Only update the value from the incoming model if the user hasn't modified it locally
+        if (!existingGroup.get('caption')?.dirty) {
+          existingGroup.get('caption')?.setValue(p.caption || '', { emitEvent: false });
+        }
+        this.photoCaptions.push(existingGroup);
       } else {
         this.photoCaptions.push(this.fb.group({
           id: [p.id],
@@ -307,7 +365,27 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
     const caption = photoGroup.get('caption')?.value;
 
     if (!photoId || !this._inspectionId() || !this._finding()) return;
+
+    // If the photo is still pending server confirmation (temp ID),
+    // update the task payload in the background queue.
+    if (photoId.startsWith('temp-')) {
+      const taskId = photoId.replace('temp-', '');
+      this.mutationQueueService.updateTaskPayload(taskId, { caption: caption || '' });
+      return;
+    }
     
+    // Update local cache immediately
+    const currentFinding = this._finding();
+    if (currentFinding) {
+      const updatedFinding = {
+        ...currentFinding,
+        photos: currentFinding.photos.map(p => p.id === photoId ? { ...p, caption: caption || '' } : p)
+      };
+      this.inspectionsService.updateLocalFinding(this._inspectionId(), updatedFinding).catch(err => {
+        console.warn('Failed to update local finding cache on caption change:', err);
+      });
+    }
+
     // OFFLINE-RESILIENT: Push to background queue instead of direct call
     this.mutationQueueService.enqueue({
       type: MutationType.UPDATE_PHOTO,
@@ -324,7 +402,18 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
     
     if (!inspectionId) return;
 
-    // LOCAL CANCEL: If this is a temporary photo, just cancel the upload task
+    // Find photo before removing it from the signal, so we can clean up cache
+    const photoToDelete = this.resolvedExistingPhotos().find(p => p.id === photoId);
+    if (photoToDelete && photoToDelete.storage_url) {
+      this.imageCache.removeCachedImage(photoToDelete.storage_url).catch(err => {
+        console.warn('Failed to remove image from cache:', err);
+      });
+    }
+
+    // Optimistic UI Update: Remove from local list immediately
+    this.resolvedExistingPhotos.update(photos => photos.filter(p => p.id !== photoId));
+
+    // LOCAL CANCEL: If this is a temporary photo, cancel the upload task
     if (photoId.startsWith('temp-')) {
       const taskId = photoId.replace('temp-', '');
       this.mutationQueueService.cancelTask(taskId);
@@ -333,12 +422,21 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
 
     if (!findingId) return;
 
-    // Optimistic UI Update: Remove from local list immediately
     const index = this.existingPhotos().findIndex(p => p.id === photoId);
     if (index > -1) {
-      // computed signal will update on its own when MutationQueue modifies the state
-      // but we can proactively remove the form control
       this.photoCaptions.removeAt(index);
+    }
+
+    // Update local IndexedDB cache of the finding immediately to remove the photo record
+    const currentFinding = this._finding();
+    if (currentFinding) {
+      const updatedFinding = {
+        ...currentFinding,
+        photos: currentFinding.photos.filter(p => p.id !== photoId)
+      };
+      this.inspectionsService.updateLocalFinding(inspectionId, updatedFinding).catch(err => {
+        console.warn('Failed to update local finding cache on delete photo:', err);
+      });
     }
 
     // Push to Background Queue
@@ -433,20 +531,81 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
 
   setSeverity(severity: Severity): void {
     this.findingForm.patchValue({ severity });
+    this.findingForm.markAsDirty();
   }
 
+  isDragging = signal<boolean>(false);
+
+  onDragOver(event: DragEvent): void {
+    if (this.isPublishedSignal()) return;
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragging.set(true);
+  }
+
+  onDragLeave(event: DragEvent): void {
+    if (this.isPublishedSignal()) return;
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragging.set(false);
+  }
+
+  async onDrop(event: DragEvent): Promise<void> {
+    if (this.isPublishedSignal()) return;
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragging.set(false);
+
+    if (event.dataTransfer?.files) {
+      const filesArray = Array.from(event.dataTransfer.files).filter(file => file.type.startsWith('image/'));
+      if (filesArray.length > 0) {
+        await this.processFiles(filesArray);
+      }
+    }
+  }
   async onFileSelected(event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
     if (input.files) {
       const filesArray = Array.from(input.files);
-      
-      // 1. Add all files with a loading state first
+      await this.processFiles(filesArray);
+      // Reset input
+      input.value = '';
+    }
+  }
+
+  private async processFiles(filesArray: File[]): Promise<void> {
+    const inspectionId = this._inspectionId();
+    const findingId = this.isEditMode() ? this._finding()!.id : undefined;
+
+    if (findingId) {
+      // 1. If we have an existing finding, compress and immediately enqueue UPLOAD_PHOTO tasks (auto-save!)
+      filesArray.forEach(async (file) => {
+        const compressedFile = await this.compressionService.compressImage(file);
+        const taskId = crypto.randomUUID();
+        const previewUrl = URL.createObjectURL(compressedFile);
+
+        // Enqueue IMMEDIATELY for instant UI addition
+        this.mutationQueueService.enqueue({
+          id: taskId,
+          type: MutationType.UPLOAD_PHOTO,
+          inspectionId,
+          findingId,
+          file: compressedFile,
+          payload: { caption: '', previewData: previewUrl }
+        });
+
+        // Upgrade task with base64 for persistent storage in background
+        this.mutationQueueService.fileToBase64(compressedFile).then(base64 => {
+          this.mutationQueueService.updateTaskPayload(taskId, { previewData: base64 });
+        });
+      });
+    } else {
+      // 2. If it's a brand new finding not saved yet, buffer them in selectedFiles as before
       const initialIndices: number[] = [];
-        this.selectedFiles.update(files => {
+      this.selectedFiles.update(files => {
         const currentCount = files.length;
         const newItems = filesArray.map((file, i) => {
           initialIndices.push(currentCount + i);
-          // Also add a form control for each new file
           this.newPhotoCaptions.push(this.fb.control('', [Validators.maxLength(100)]));
           return {
             file,
@@ -457,18 +616,11 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
         return [...newItems, ...files];
       });
 
-      // 2. Compress each file and update individually
-      // We process them in parallel but update the signal for each
       filesArray.forEach(async (file, index) => {
         const compressedFile = await this.compressionService.compressImage(file);
-        
         this.selectedFiles.update(files => {
           const newFiles = [...files];
-          // Note: Since we prepend, we need to find the correct index if it shifted.
-          // But since we are doing this immediately, the index should be stable for this batch
-          // relative to the start of the array.
           if (newFiles[index]) {
-            // Revoke old preview and create new one for compressed file
             URL.revokeObjectURL(newFiles[index].previewUrl);
             newFiles[index] = {
               file: compressedFile,
@@ -479,12 +631,8 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
           return newFiles;
         });
       });
-
-      // Reset input
-      input.value = '';
     }
   }
-
   get currentSeverity(): Severity {
     return this.findingForm.get('severity')?.value;
   }
@@ -546,78 +694,57 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
     return formValue.severity === preset.severity && formValue.description === expectedDescription;
   }
 
+  autoSaveFinding(targetFindingId: string, targetSection: string, formValue: any): void {
+    const inspectionId = this._inspectionId();
+    if (!inspectionId || !targetFindingId || !targetSection) return;
+
+    this.isSaving.set(true);
+    this.isSaved.set(false);
+
+    // Clear draft locally since it is now enqueued in the persistent background queue
+    const targetDraftKey = `finding:${inspectionId}:${targetSection}:${targetFindingId}`;
+    this.draftService.clear(targetDraftKey);
+
+    this.mutationQueueService.enqueue({
+      type: MutationType.UPDATE_FINDING,
+      inspectionId,
+      findingId: targetFindingId,
+      payload: {
+        section: targetSection,
+        severity: formValue.severity,
+        description: formValue.description,
+        recommendation: formValue.recommendation || undefined,
+        location: formValue.location || undefined,
+      }
+    });
+
+    // Mark as pristine so we don't trigger redundant updates until next change
+    this.findingForm.markAsPristine();
+
+    // Show saved micro-interaction
+    setTimeout(() => {
+      this.isSaving.set(false);
+      this.isSaved.set(true);
+    }, 800);
+  }
+
   onSubmit(): void {
     if (this.findingForm.valid) {
       const formValue = this.findingForm.value;
       const inspectionId = this._inspectionId();
-      const clientFindingId = crypto.randomUUID();
+      const findingId = this._finding()?.id;
+      const section = this._section();
       
       // Clear draft immediately
       this.draftService.clear(this.draftKey);
 
-      if (this.isEditMode()) {
-        const findingId = this._finding()!.id;
-        this.mutationQueueService.enqueue({
-          type: MutationType.UPDATE_FINDING,
-          inspectionId,
-          findingId,
-          payload: {
-            section: this._section(),
-            severity: formValue.severity,
-            description: formValue.description,
-            recommendation: formValue.recommendation || undefined,
-            location: formValue.location || undefined,
-          }
-        });
-      } else {
-        this.mutationQueueService.enqueue({
-          type: MutationType.CREATE_FINDING,
-          inspectionId,
-          clientFindingId,
-          payload: {
-            section: this._section(),
-            severity: formValue.severity,
-            description: formValue.description,
-            recommendation: formValue.recommendation || undefined,
-            location: formValue.location || undefined,
-          }
-        });
+      if (this.findingForm.dirty && findingId) {
+        this.autoSaveFinding(findingId, section, formValue);
       }
 
-      // 2. Upload Photos (Instant enqueuing to prevent UI flicker)
-      this.selectedFiles().forEach((item, index) => {
-        const caption = this.newPhotoCaptions.at(index).value;
-        const taskId = crypto.randomUUID();
-        
-        // Enqueue IMMEDIATELY with the synchronous blob URL for instant UI response
-        this.mutationQueueService.enqueue({
-          id: taskId,
-          type: MutationType.UPLOAD_PHOTO,
-          inspectionId,
-          findingId: this.isEditMode() ? this._finding()!.id : undefined,
-          clientFindingId: this.isEditMode() ? undefined : clientFindingId,
-          file: item.file,
-          payload: { caption, previewData: (item as any).previewUrl } 
-        });
-
-        // "Upgrade" the task with persistent Base64 in the background
-        this.mutationQueueService.fileToBase64(item.file).then(base64 => {
-          this.mutationQueueService.updateTaskPayload(taskId, { previewData: base64 });
-        });
-      });
-
-      // 3. Clear local selection (Handoff complete)
-      this.selectedFiles.set([]);
-      this.newPhotoCaptions.clear();
-
-      // Mark the form as pristine so that ngOnChanges allows the newly merged 
-      // optimistic finding (with the new photo tasks) to repopulate existingPhotos
-      this.findingForm.markAsPristine();
-
-      // Optimistic Success: Emit saved immediately
-      // Create a "Temporary Finding" for the UI to display
+      // Optimistic Success: Emit saved immediately to close or navigate back
       const tempFinding: Finding = {
-        id: this.isEditMode() ? this._finding()!.id : clientFindingId,
+        id: this._finding()!.id,
         inspection_id: inspectionId,
         section: this._section(),
         severity: formValue.severity,
@@ -625,11 +752,9 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
         recommendation: formValue.recommendation,
         location: formValue.location,
         photos: [
-          ...(this._finding()?.photos || []), // Existing
-          // We don't add the new ones here because mergePendingMutations 
-          // will pick them up from the MutationQueueService immediately
+          ...(this._finding()?.photos || []),
         ] as any,
-        isSyncing: true // Visual indicator
+        isSyncing: true
       } as any;
 
       this.saved.emit(tempFinding);
@@ -638,7 +763,6 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
       this.showSuccess.set(true);
       setTimeout(() => this.showSuccess.set(false), 2500);
       
-      // Clear selection state
       this.selectedFiles.set([]);
       this.newPhotoCaptions.clear();
     } else {

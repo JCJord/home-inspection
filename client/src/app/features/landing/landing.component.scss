@@ -1,0 +1,50 @@
+@use '/variables' as *;
+@use '/cards' as *;
+
+.landing-page {
+  background-color: $color-bg;
+  color: $color-text;
+
+  h1, h2, h3, h4 {
+    color: $color-text;
+  }
+
+  p {
+    color: $color-text-muted;
+  }
+
+  // Bind key highlight features to design tokens
+  .logo-box {
+    background-color: $color-primary !important;
+  }
+
+  .text-blue-600 {
+    color: $color-primary !important;
+  }
+
+  .bg-blue-500 {
+    background-color: $color-primary !important;
+  }
+
+  // Feature premium card implementations using our design variables
+  .card-premium {
+    @include card-premium(true);
+  }
+
+  .card-static {
+    @include card-premium(false);
+  }
+
+  // Style for feature border color highlights based on severity tokens
+  .border-t-rose-500 {
+    border-top-color: $color-safety !important;
+  }
+
+  .border-t-blue-500 {
+    border-top-color: $color-informational !important;
+  }
+
+  .border-t-amber-500 {
+    border-top-color: $color-minor !important;
+  }
+}

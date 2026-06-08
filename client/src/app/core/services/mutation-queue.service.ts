@@ -25,6 +25,7 @@ export interface MutationTask {
   retries: number;
   lastError?: string;
   createdAt: number;
+  pendingDelete?: boolean;
 }
 
 export interface TaskCompletion {
@@ -353,6 +354,32 @@ export class MutationQueueService {
     await this.saveTaskToDB(updatedTask);
 
     if (status === 'COMPLETED') {
+      // If it's an UPDATE_INSPECTION task, remove it immediately instead of waiting 30 seconds
+      if (updatedTask.type === MutationType.UPDATE_INSPECTION) {
+        this.tasks.update(ts => ts.filter(t => t.id !== id));
+        this.updateCounts();
+        await this.deleteTaskFromDB(id);
+        return;
+      }
+
+      // If marked for deletion while syncing, queue the delete task now that we have the server photo ID
+      if (updatedTask.type === MutationType.UPLOAD_PHOTO && updatedTask.pendingDelete) {
+        const serverPhotoId = (result || (updatedTask as any).result)?.id;
+        if (serverPhotoId) {
+          this.enqueue({
+            type: MutationType.DELETE_PHOTO,
+            inspectionId: updatedTask.inspectionId,
+            findingId: updatedTask.findingId || updatedTask.clientFindingId,
+            payload: { photoId: serverPhotoId.toString() }
+          });
+        }
+        // Remove task immediately, no need for the 30s buffer
+        this.tasks.update(ts => ts.filter(t => t.id !== id));
+        this.updateCounts();
+        await this.deleteTaskFromDB(id);
+        return;
+      }
+
       // BUFFER PERIOD: Keep the task in the signal for 30 seconds after completion
       // This ensures mergePendingMutations continues to apply the change while SWR refreshes.
       // Smart Deduplication will hide the duplicate once the server actually confirms it.
@@ -382,6 +409,32 @@ export class MutationQueueService {
     const taskToCancel = this.tasks().find(t => t.id === id);
     if (!taskToCancel) return;
 
+    // Special handling for photo uploads that have already reached the server or are on their way
+    if (taskToCancel.type === MutationType.UPLOAD_PHOTO) {
+      if (taskToCancel.status === 'COMPLETED' && (taskToCancel as any).result?.id) {
+        // Enqueue delete task immediately for the server photo ID
+        this.enqueue({
+          type: MutationType.DELETE_PHOTO,
+          inspectionId: taskToCancel.inspectionId,
+          findingId: taskToCancel.findingId || taskToCancel.clientFindingId,
+          payload: { photoId: (taskToCancel as any).result.id.toString() }
+        });
+        
+        // Remove the upload task from the signal and database
+        this.tasks.update(ts => ts.filter(t => t.id !== id));
+        this.updateCounts();
+        await this.deleteTaskFromDB(id);
+        return;
+      } else if (taskToCancel.status === 'SYNCING') {
+        // Mark for deletion upon completion so we can fetch its server ID and delete it then
+        const updatedTask = { ...taskToCancel, pendingDelete: true };
+        this.tasks.update(ts => ts.map(t => t.id === id ? updatedTask : t));
+        await this.saveTaskToDB(updatedTask);
+        return;
+      }
+    }
+
+    // Default cancel behavior:
     // 1. Remove from signal immediately
     this.tasks.update(ts => ts.filter(t => t.id !== id));
     this.updateCounts();

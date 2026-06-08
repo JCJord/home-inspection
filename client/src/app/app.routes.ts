@@ -13,14 +13,23 @@ export const routes: Routes = [
     loadComponent: () => import('./features/public-report/public-report.component').then(m => m.PublicReportComponent),
   },
   {
+    path: 'terms',
+    loadComponent: () => import('./features/legal/terms/terms.component').then(m => m.TermsComponent),
+  },
+  {
+    path: 'privacy',
+    loadComponent: () => import('./features/legal/privacy/privacy.component').then(m => m.PrivacyComponent),
+  },
+  {
+    path: '',
+    pathMatch: 'full',
+    canActivate: [guestGuard],
+    loadComponent: () => import('./features/landing/landing.component').then(m => m.LandingComponent),
+  },
+  {
     path: '',
     canActivate: [authGuard],
     children: [
-      {
-        path: '',
-        redirectTo: 'home',
-        pathMatch: 'full',
-      },
       {
         // Wrap the home component with the dashboard header
         path: 'home',

@@ -51,10 +51,7 @@ export class FindingListComponent {
   }
 
   getFindingLabel(finding: Finding): string {
-    let snippet = finding.description || 'New Finding';
-    if (snippet.length > 35) {
-      snippet = snippet.substring(0, 32) + '...';
-    }
+    const snippet = finding.description || 'New Finding';
     return finding.location ? `${finding.location} - ${snippet}` : snippet;
   }
 

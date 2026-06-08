@@ -68,3 +68,17 @@
     }
   }
 }
+
+.indicator-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 9999px;
+  background-color: $color-border;
+
+  &[data-severity*="safety"] { background-color: $color-safety; }
+  &[data-severity*="major"] { background-color: $color-major; }
+  &[data-severity*="minor"] { background-color: $color-minor; }
+  &[data-severity*="maintenance"] { background-color: $color-maintenance; }
+  &[data-severity*="information"] { background-color: $color-informational; }
+  &[data-severity*="info"] { background-color: $color-informational; }
+}

@@ -114,4 +114,15 @@ export class PersistenceService {
       request.onerror = () => reject(request.error);
     });
   }
+
+  async deletePhoto(url: string): Promise<void> {
+    await this.dbReady;
+    return new Promise((resolve, reject) => {
+      const transaction = this.db.transaction(this.PHOTO_STORE, 'readwrite');
+      const store = transaction.objectStore(this.PHOTO_STORE);
+      const request = store.delete(url);
+      request.onsuccess = () => resolve();
+      request.onerror = () => reject(request.error);
+    });
+  }
 }

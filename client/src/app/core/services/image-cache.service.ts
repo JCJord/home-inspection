@@ -41,15 +41,16 @@ export class ImageCacheService {
     if (url.startsWith('blob:') || url.startsWith('data:')) return;
 
     const fullUrl = this.getFullUrl(url);
+    const cacheKey = this.getCacheKey(url);
     
-    // Check if already in DB
-    const cached = await this.persistence.getPhoto(fullUrl);
+    // Check if already in DB using clean cache key
+    const cached = await this.persistence.getPhoto(cacheKey);
     if (cached) return;
 
     try {
-      // Download as blob
+      // Download as blob using full presigned authenticated URL
       const blob = await firstValueFrom(this.http.get(fullUrl, { responseType: 'blob' }));
-      await this.persistence.savePhoto(fullUrl, blob);
+      await this.persistence.savePhoto(cacheKey, blob);
     } catch (err) {
       console.warn(`[ImageCache] Failed to cache: ${fullUrl}`, err);
     }
@@ -66,17 +67,18 @@ export class ImageCacheService {
     if (url.startsWith('blob:') || url.startsWith('data:')) return url;
 
     const fullUrl = this.getFullUrl(url);
+    const cacheKey = this.getCacheKey(url);
 
-    // Check memory map first
-    if (this.urlMap.has(fullUrl)) {
-      return this.urlMap.get(fullUrl)!;
+    // Check memory map first using clean cache key
+    if (this.urlMap.has(cacheKey)) {
+      return this.urlMap.get(cacheKey)!;
     }
 
     // Check IndexedDB
-    const blob = await this.persistence.getPhoto(fullUrl);
+    const blob = await this.persistence.getPhoto(cacheKey);
     if (blob) {
       const localUrl = URL.createObjectURL(blob);
-      this.urlMap.set(fullUrl, localUrl);
+      this.urlMap.set(cacheKey, localUrl);
       return localUrl;
     }
 
@@ -91,10 +93,41 @@ export class ImageCacheService {
   }
 
   /**
+   * Cleans a URL to use as a stable cache key by stripping presigned query parameters.
+   */
+  private getCacheKey(url: string): string {
+    const fullUrl = this.getFullUrl(url);
+    try {
+      const parsed = new URL(fullUrl);
+      return parsed.origin + parsed.pathname;
+    } catch (e) {
+      return fullUrl;
+    }
+  }
+
+  /**
    * Clean up memory-mapped URLs
    */
   clearMemoryCache(): void {
     this.urlMap.forEach(url => URL.revokeObjectURL(url));
     this.urlMap.clear();
+  }
+
+  /**
+   * Removes cached image from both memory cache and IndexedDB persistence.
+   */
+  async removeCachedImage(url: string): Promise<void> {
+    if (!url) return;
+    const cacheKey = this.getCacheKey(url);
+
+    // Revoke memory ObjectURL if it exists
+    if (this.urlMap.has(cacheKey)) {
+      const localUrl = this.urlMap.get(cacheKey)!;
+      URL.revokeObjectURL(localUrl);
+      this.urlMap.delete(cacheKey);
+    }
+
+    // Delete from IndexedDB
+    await this.persistence.deletePhoto(cacheKey);
   }
 }

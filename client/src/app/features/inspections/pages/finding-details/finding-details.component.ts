@@ -19,7 +19,7 @@ import { SelectInputComponent } from '../../../../shared/components/inputs/selec
 import { SummaryDashboardComponent } from '../../components/summary-dashboard/summary-dashboard.component';
 import { MutationQueueService, MutationType, TaskCompletion } from '../../../../core/services/mutation-queue.service';
 import { DraftService } from '../../../../core/services/draft.service';
-import { debounceTime, Subject } from 'rxjs';
+import { debounceTime, Subject, switchMap, catchError, of } from 'rxjs';
 
 @Component({
   selector: 'app-finding-details',
@@ -46,9 +46,20 @@ export class FindingDetailsComponent implements OnInit {
   
   finding = computed(() => {
     const insp = this.inspection();
-    const fId = this.findingId();
+    let fId = this.findingId();
     if (!insp || !fId || fId === 'new' || fId === 'summary') return null;
-    return insp.findings?.find(f => f.id === fId) || null;
+
+    // Resolve client-side temporary ID to server-generated ID if completed
+    const completedTask = this.mutationQueueService.allTasks().find(t => 
+      t.type === MutationType.CREATE_FINDING && 
+      t.status === 'COMPLETED' && 
+      (t.clientFindingId === fId || t.id === fId)
+    ) as any;
+    if (completedTask && completedTask.result?.id) {
+      fId = completedTask.result.id.toString();
+    }
+
+    return insp.findings?.find(f => f.id?.toString() === fId?.toString()) || null;
   });
 
   isLoading = signal(true);
@@ -194,18 +205,28 @@ export class FindingDetailsComponent implements OnInit {
           replaceUrl: true 
         });
       }
+    });
 
-      // BACKGROUND HYDRATION: Quietly refetch the true server state.
-      // Why? The MutationQueueService holds the optimistic state for 30 seconds after completion,
-      // and then deletes it. If we don't refresh rawInspection with the true server data by then,
-      // the finding (or photo) will abruptly disappear from the UI!
-      const currentId = this.inspectionId();
-      if (currentId) {
-        this.inspectionsService.getInspectionById(currentId).subscribe({
-          next: (insp) => {
-            this.rawInspection.set(insp);
-          }
-        });
+    // BACKGROUND HYDRATION: Quietly refetch the true server state using switchMap.
+    // We use forceNetworkOnly = true to skip the cached-first emission (which causes textbox resets).
+    // switchMap automatically cancels any pending requests if a new completion fires in the meantime.
+    this.mutationQueueService.taskCompleted$.pipe(
+      switchMap(() => {
+        const currentId = this.inspectionId();
+        if (currentId) {
+          return this.inspectionsService.getInspectionById(currentId, true).pipe(
+            catchError(err => {
+              console.warn('Background hydration failed:', err);
+              return of(null);
+            })
+          );
+        }
+        return of(null);
+      }),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe((insp) => {
+      if (insp) {
+        this.rawInspection.set(insp);
       }
     });
 
@@ -350,7 +371,7 @@ export class FindingDetailsComponent implements OnInit {
         severity: Severity.MAINTENANCE,
         description: 'New Finding',
         location: '',
-        recommendation: 'Evaluate and repair as necessary.'
+        recommendation: ''
       }
     });
     
@@ -369,13 +390,20 @@ export class FindingDetailsComponent implements OnInit {
   }
 
   updateMetadataValueDirect(key: string, value: string): void {
-    const insp = this.inspection();
+    const insp = this.rawInspection();
     if (!insp) return;
 
-    // We only update the raw state if we want it to persist across navigation
-    // but the computed 'inspection' signal handles the visual update via the queue
+    // Update rawInspection immediately so the UI binding reflects the changes instantly
+    const updated = {
+      ...insp,
+      metadata_values: {
+        ...(insp.metadata_values || {}),
+        [key]: value
+      }
+    };
+    this.rawInspection.set(updated);
 
-    // Queue the change
+    // Queue the change (debounced for network sync)
     this.metadataUpdate$.next({ key, value });
   }
 

@@ -131,6 +131,12 @@ export class PhotosService {
   }
 
   async update(inspectorId: string, inspectionId: string, findingId: string, photoId: string, dto: UpdatePhotoDto): Promise<Photo> {
+    // Safety check: If ID is not a valid UUID format (e.g. starts with 'temp-'), return 404 early
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(photoId)) {
+      throw new NotFoundException('Photo not found (Invalid ID format)');
+    }
+
     const finding = await this.checkFindingOwnership(inspectorId, inspectionId, findingId);
 
     if (finding.inspection.status === 'published') {

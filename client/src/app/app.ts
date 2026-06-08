@@ -25,7 +25,12 @@ export class App {
   constructor() {
     this.router.events.subscribe(event => {
       if (event instanceof NavigationEnd) {
-        this.isPublicRoute.set(event.urlAfterRedirects.includes('/report/'));
+        const url = event.urlAfterRedirects;
+        const isPublic = url.includes('/report/') || 
+                         url === '/' || 
+                         url.startsWith('/terms') || 
+                         url.startsWith('/privacy');
+        this.isPublicRoute.set(isPublic);
       }
     });
 

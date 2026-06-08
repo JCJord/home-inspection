@@ -21,15 +21,14 @@
     <select
       [id]="name()"
       [name]="name()"
-      [value]="value()"
       (change)="onSelectChange($event)"
       [disabled]="disabled()"
       class="input-field"
       [class.input-field--error]="isInvalid"
     >
-      <option value="" disabled hidden>Select an option...</option>
+      <option value="" [selected]="!value()" disabled hidden>Select an option...</option>
       @for (opt of mappedOptions(); track opt.value) {
-        <option [value]="opt.value">{{ opt.label }}</option>
+        <option [value]="opt.value" [selected]="opt.value === value()">{{ opt.label }}</option>
       }
     </select>
   }

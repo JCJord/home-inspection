@@ -5,8 +5,8 @@ import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.use(json({ limit: '50mb' }));
-  app.use(urlencoded({ limit: '50mb', extended: true }));
+  app.use(json({ limit: '200mb' }));
+  app.use(urlencoded({ limit: '200mb', extended: true }));
   app.enableCors({
     origin: process.env.CORS_ORIGIN,
     credentials: true,
@@ -18,7 +18,8 @@ async function bootstrap() {
       transform: true,
     }),
   );
-  await app.listen(process.env.PORT ?? 3000);
+  const server = await app.listen(process.env.PORT ?? 3000);
+  server.setTimeout(300000); // 5 minutes
 }
 bootstrap();
 

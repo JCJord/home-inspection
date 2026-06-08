@@ -85,11 +85,11 @@ export class PdfService implements OnModuleDestroy {
       // Disable caching on the page level to prevent memory caching leaks
       await page.setCacheEnabled(false);
 
-      await page.setContent(html, { waitUntil: 'networkidle0', timeout: 120000 });
+      await page.setContent(html, { waitUntil: 'networkidle2', timeout: 300000 });
 
       const pdfBuffer = await page.pdf({
         format: 'A4',
-        timeout: 120000,
+        timeout: 300000,
         printBackground: true,
         margin: {
           top: '20px',

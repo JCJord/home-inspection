@@ -85,11 +85,11 @@ export class ReportGeneratorComponent implements OnInit {
       const status = statuses[section.name] || { status: 'inspected' };
 
       sectionFindings.forEach(finding => {
-        if (finding.photos && finding.photos.length > 4) {
+        if (finding.photos && finding.photos.length > 2) {
           const photos = finding.photos;
-          for (let i = 0; i < photos.length; i += 4) {
-            const chunk = photos.slice(i, i + 4);
-            const chunkIndex = Math.floor(i / 4);
+          for (let i = 0; i < photos.length; i += 2) {
+            const chunk = photos.slice(i, i + 2);
+            const chunkIndex = Math.floor(i / 2);
             
             if (chunkIndex === 0) {
               processedFindings.push({
@@ -139,6 +139,23 @@ export class ReportGeneratorComponent implements OnInit {
       f.severity.toLowerCase() === 'safety' || 
       f.severity.toLowerCase() === 'major'
     );
+  }
+
+  getGroupedSevereFindings() {
+    const severeFindings = this.getSevereFindings();
+    const grouped = new Map<string, any[]>();
+    
+    severeFindings.forEach(finding => {
+      if (!grouped.has(finding.section)) {
+        grouped.set(finding.section, []);
+      }
+      grouped.get(finding.section)?.push(finding);
+    });
+
+    return Array.from(grouped.entries()).map(([section, findings]) => ({
+      section,
+      findings
+    }));
   }
 
   getSectionFields(sectionName: string): any[] {
@@ -200,7 +217,9 @@ export class ReportGeneratorComponent implements OnInit {
     this.progress.emit({ progress: 0, message: 'Initializing document engine...' });
 
     try {
+      console.log('[DEBUG] Starting prepareContentToExport');
       const finalHtml = await this.prepareContentToExport();
+      console.log('[DEBUG] Finished prepareContentToExport, length:', finalHtml.length);
 
       if (this.mode === 'publish') {
         this.generationProgress.set(100);
@@ -215,6 +234,7 @@ export class ReportGeneratorComponent implements OnInit {
 
       this.currentStatus.set('Finalizing PDF...');
       this.progress.emit({ progress: 95, message: 'Finalizing PDF on cloud...' });
+      console.log('[DEBUG] Calling reportsService.generatePdfFromHtml');
 
       this.reportsService.generatePdfFromHtml(finalHtml, this.inspection?.id).subscribe({
 
@@ -251,6 +271,7 @@ export class ReportGeneratorComponent implements OnInit {
     }
 
     for (const [index, part] of this.allContentParts.entries()) {
+      console.log(`[DEBUG] Processing part: ${part} (${index + 1}/${totalParts})`);
       this.contentPartBeingRendered.set(part);
 
       const partMessages: Record<string, string> = {
@@ -275,9 +296,14 @@ export class ReportGeneratorComponent implements OnInit {
       }
       
       const tableElement = document.querySelector('.main-content') as HTMLElement;
-      if (!tableElement) continue;
+      if (!tableElement) {
+        console.log(`[DEBUG] No .main-content found for part: ${part}`);
+        continue;
+      }
 
+      console.log(`[DEBUG] Embedding images for part: ${part}`);
       await this.embedImages(tableElement);
+      console.log(`[DEBUG] Finished embedding images for part: ${part}`);
 
       if (document.querySelector('.snippet')) {
         const helper = new PdfPaginationHelper();
@@ -294,9 +320,10 @@ export class ReportGeneratorComponent implements OnInit {
     }
 
     this.currentStatus.set('Finalizing PDF styles...');
+    console.log('[DEBUG] Starting getAllStyles()');
     const fontCss = await this.loadFonts();
     const styles = (await this.getAllStyles()) + fontCss;
-    console.log(`Captured ${styles.length} characters of CSS for report.`);
+    console.log(`[DEBUG] Finished getAllStyles(). Captured ${styles.length} characters of CSS for report.`);
 
     return `
       <!DOCTYPE html>
@@ -337,19 +364,23 @@ export class ReportGeneratorComponent implements OnInit {
 
     for (const img of images) {
       if (img.src.startsWith('data:')) continue;
+      if (img.src.startsWith('http://') || img.src.startsWith('https://')) continue;
 
       try {
         // Resolve URL using the ImageCacheService (returns local blob URL if cached in IndexedDB)
         const resolvedUrl = await this.imageCacheService.getImageUrl(img.src);
 
-        const fetchWithTimeout = (url: string, ms = 10000) =>
-          Promise.race([
-            fetch(url),
+        const fetchWithTimeout = (url: string, ms = 10000) => {
+          let timeoutId: any;
+          return Promise.race([
+            fetch(url).then(res => { clearTimeout(timeoutId); return res; }).catch(err => { clearTimeout(timeoutId); throw err; }),
             new Promise<never>((_, reject) =>
-              setTimeout(() => reject(new Error('timeout')), ms)
+              timeoutId = setTimeout(() => reject(new Error('timeout')), ms)
             )
           ]);
+        };
 
+        console.log(`[DEBUG] Fetching image: ${resolvedUrl}`);
         const response = await fetchWithTimeout(resolvedUrl);
         const blob = await response.blob();
         const reader = new FileReader();
@@ -383,6 +414,7 @@ export class ReportGeneratorComponent implements OnInit {
       } catch (e) {
         if (sheet.href) {
           try {
+            console.log(`[DEBUG] Fetching stylesheet: ${sheet.href}`);
             const response = await fetch(sheet.href);
             const cssText = await response.text();
             styles += cssText + '\n';

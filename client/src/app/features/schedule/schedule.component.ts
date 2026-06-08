@@ -167,7 +167,7 @@ export class ScheduleComponent implements OnInit {
 
     let startDate: string | undefined = undefined;
     let endDate: string | undefined = undefined;
-    let statusQuery: string | undefined = 'scheduled';
+    let statusQuery: string | undefined = undefined;
 
     const filter = this.dateFilter();
     const today = new Date();
@@ -183,10 +183,14 @@ export class ScheduleComponent implements OnInit {
       endDate = end.toISOString();
     } else if (filter === 'week') {
       const start = new Date(today);
+      const day = start.getDay();
+      start.setDate(start.getDate() - day);
       start.setHours(0, 0, 0, 0);
-      const end = new Date(today);
-      end.setDate(today.getDate() + 7);
+      
+      const end = new Date(start);
+      end.setDate(start.getDate() + 6);
       end.setHours(23, 59, 59, 999);
+      
       startDate = start.toISOString();
       endDate = end.toISOString();
     } else if (filter === 'month') {

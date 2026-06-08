@@ -12,120 +12,130 @@
     <div class="form-group photo-upload">
       <label class="control-label">Photos (Optional)</label>
 
-      <div class="upload-area" [class.opacity-50]="isPublishedSignal()" [class.pointer-events-none]="isPublishedSignal()" (click)="isPublishedSignal() ? null : fileInput.click()">
+      <div class="upload-area" 
+           [class.opacity-50]="isPublishedSignal()" 
+           [class.pointer-events-none]="isPublishedSignal()" 
+           [class.drag-over]="isDragging()"
+           (click)="isPublishedSignal() ? null : fileInput.click()"
+           (dragover)="onDragOver($event)"
+           (dragleave)="onDragLeave($event)"
+           (drop)="onDrop($event)">
         <lucide-icon [name]="icons.Upload" [size]="24"></lucide-icon>
         <span class="upload-text">Click to browse or drag and drop images</span>
         <input #fileInput type="file" multiple accept="image/*" style="display: none" (change)="onFileSelected($event)">
       </div>
 
-      <!-- New Selected Files -->
-      @if (selectedFiles().length > 0) {
-      <div class="existing-photos-grid" formArrayName="new_photo_captions">
-        @for (item of selectedFiles(); track item.previewUrl; let i = $index) {
-        <div class="existing-photo-item">
-          <div class="photo-thumbnail">
-            <img [src]="item.previewUrl" alt="Selected photo preview">
-            
-            @if (item.isCompressing) {
-              <div class="compression-loader">
-                <lucide-icon [name]="icons.Loader2" class="animate-spin text-white" [size]="20"></lucide-icon>
+      <!-- Single Unified Photos Grid -->
+      @if (resolvedExistingPhotos().length > 0 || selectedFiles().length > 0) {
+      <div class="existing-photos-grid">
+        
+        <!-- Unified Existing Photos (Server & Pending Syncing, bound to FormArray photo_captions) -->
+        <ng-container formArrayName="photo_captions">
+          @for (photo of resolvedExistingPhotos(); track photo.id; let i = $index) {
+          <div class="existing-photo-item" [formGroupName]="i">
+            <div class="photo-thumbnail">
+              <img [src]="photo.resolvedUrl" alt="Finding photo" crossorigin="anonymous">
+              
+              @if (photo.isSyncing) {
+                <div class="absolute inset-0 bg-black/40 flex flex-col items-center justify-center gap-1 text-white backdrop-blur-[1px]">
+                  <lucide-icon [name]="icons.Loader2" class="animate-spin" [size]="16"></lucide-icon>
+                  <span class="text-[8px] font-bold uppercase tracking-widest">Syncing</span>
+                </div>
+              } @else if ($any(photo).hasError) {
+                <div class="absolute inset-0 bg-red-500/60 flex flex-col items-center justify-center text-white backdrop-blur-[1px]">
+                  <lucide-icon [name]="icons.AlertCircle" class="mb-1" [size]="16"></lucide-icon>
+                  <span class="text-[8px] font-bold uppercase tracking-widest">Failed</span>
+                </div>
+              }
+   
+              <div class="photo-action-pill" [class.confirming]="activeDeleteExistingId() === photo.id">
+                @if (!isPublishedSignal()) {
+                  @if (activeDeleteExistingId() === photo.id) {
+                    <button type="button" class="action-btn cancel-delete" (click)="cancelDelete()" aria-label="Cancel">
+                      <span class="action-text">Cancel</span>
+                    </button>
+                    <div class="divider"></div>
+                    <button type="button" class="action-btn confirm-delete" (click)="confirmDeleteExistingPhoto(photo.id)" aria-label="Confirm Deletion">
+                      <span class="action-text font-bold">Delete</span>
+                    </button>
+                  } @else {
+                    <button type="button" class="action-btn edit" (click)="editExistingPhoto(photo)" aria-label="Edit photo">
+                      <lucide-icon [name]="icons.Edit" [size]="14"></lucide-icon>
+                    </button>
+                    <div class="divider"></div>
+                    <button type="button" class="action-btn delete" (click)="initDeleteExistingPhoto(photo.id)" aria-label="Delete photo">
+                      <lucide-icon [name]="icons.Trash2" [size]="14"></lucide-icon>
+                    </button>
+                  }
+                }
               </div>
-            }
+            </div>
+   
+            <div class="photo-caption-input">
+              <lucide-icon [name]="icons.Edit" [size]="10" class="text-standard-muted opacity-50 mr-1"></lucide-icon>
+              <input 
+                type="text" 
+                formControlName="caption"
+                placeholder="Add caption..."
+                maxlength="100"
+                (blur)="onCaptionBlur(i)"
+                class="w-full text-[11px] bg-transparent outline-none text-standard italic focus:not-italic transition-all"
+              >
+            </div>
+          </div>
+          }
+        </ng-container>
 
-            <div class="photo-action-pill" [class.confirming]="activeDeleteNewIndex() === i">
-              @if (!isPublishedSignal()) {
-                @if (activeDeleteNewIndex() === i) {
-                  <button type="button" class="action-btn cancel-delete" (click)="cancelDelete()" aria-label="Cancel">
-                    <span class="action-text">Cancel</span>
-                  </button>
-                  <div class="divider"></div>
-                  <button type="button" class="action-btn confirm-delete" (click)="removeFile(i)" aria-label="Confirm Deletion">
-                    <span class="action-text font-bold">Delete</span>
-                  </button>
-                } @else {
-                  <button type="button" class="action-btn edit" (click)="editNewPhoto(i, item.previewUrl)" aria-label="Edit photo">
-                    <lucide-icon [name]="icons.Edit" [size]="14"></lucide-icon>
-                  </button>
-                  <div class="divider"></div>
-                  <button type="button" class="action-btn delete" (click)="initDeleteNewPhoto(i)" aria-label="Remove photo">
-                    <lucide-icon [name]="icons.Trash2" [size]="14"></lucide-icon>
-                  </button>
-                }
+        <!-- New Selected Files (not yet submitted) -->
+        <ng-container formArrayName="new_photo_captions">
+          @for (item of selectedFiles(); track item.previewUrl; let i = $index) {
+          <div class="existing-photo-item">
+            <div class="photo-thumbnail">
+              <img [src]="item.previewUrl" alt="Selected photo preview">
+              
+              @if (item.isCompressing) {
+                <div class="compression-loader">
+                  <lucide-icon [name]="icons.Loader2" class="animate-spin text-white" [size]="20"></lucide-icon>
+                </div>
               }
+
+              <div class="photo-action-pill" [class.confirming]="activeDeleteNewIndex() === i">
+                @if (!isPublishedSignal()) {
+                  @if (activeDeleteNewIndex() === i) {
+                    <button type="button" class="action-btn cancel-delete" (click)="cancelDelete()" aria-label="Cancel">
+                      <span class="action-text">Cancel</span>
+                    </button>
+                    <div class="divider"></div>
+                    <button type="button" class="action-btn confirm-delete" (click)="removeFile(i)" aria-label="Confirm Deletion">
+                      <span class="action-text font-bold">Delete</span>
+                    </button>
+                  } @else {
+                    <button type="button" class="action-btn edit" (click)="editNewPhoto(i, item.previewUrl)" aria-label="Edit photo">
+                      <lucide-icon [name]="icons.Edit" [size]="14"></lucide-icon>
+                    </button>
+                    <div class="divider"></div>
+                    <button type="button" class="action-btn delete" (click)="initDeleteNewPhoto(i)" aria-label="Remove photo">
+                      <lucide-icon [name]="icons.Trash2" [size]="14"></lucide-icon>
+                    </button>
+                  }
+                }
+              </div>
             </div>
-          </div>
-          
-          <div class="photo-caption-input">
-            <lucide-icon [name]="icons.Edit" [size]="10" class="text-standard-muted opacity-50 mr-1"></lucide-icon>
-            <input 
-              type="text" 
-              [formControlName]="i"
-              placeholder="Add caption..."
-              maxlength="100"
-              class="w-full text-[11px] bg-transparent outline-none text-standard italic focus:not-italic transition-all"
-            >
-          </div>
-        </div>
-        }
-      </div>
-      }
- 
-      <!-- Existing Photos -->
-      @if (resolvedExistingPhotos().length > 0) {
-      <div class="existing-photos-grid" formArrayName="photo_captions">
-        @for (photo of resolvedExistingPhotos(); track photo.id; let i = $index) {
-        <div class="existing-photo-item" [formGroupName]="i">
-          <div class="photo-thumbnail">
-            <img [src]="photo.resolvedUrl" alt="Finding photo" crossorigin="anonymous">
             
-            @if (photo.isSyncing) {
-              <div class="absolute inset-0 bg-black/40 flex flex-col items-center justify-center gap-1 text-white backdrop-blur-[1px]">
-                <lucide-icon [name]="icons.Loader2" class="animate-spin" [size]="16"></lucide-icon>
-                <span class="text-[8px] font-bold uppercase tracking-widest">Syncing</span>
-              </div>
-            } @else if ($any(photo).hasError) {
-              <div class="absolute inset-0 bg-red-500/60 flex flex-col items-center justify-center text-white backdrop-blur-[1px]">
-                <lucide-icon [name]="icons.AlertCircle" class="mb-1" [size]="16"></lucide-icon>
-                <span class="text-[8px] font-bold uppercase tracking-widest">Failed</span>
-              </div>
-            }
- 
-            <div class="photo-action-pill" [class.confirming]="activeDeleteExistingId() === photo.id">
-              @if (!isPublishedSignal()) {
-                @if (activeDeleteExistingId() === photo.id) {
-                  <button type="button" class="action-btn cancel-delete" (click)="cancelDelete()" aria-label="Cancel">
-                    <span class="action-text">Cancel</span>
-                  </button>
-                  <div class="divider"></div>
-                  <button type="button" class="action-btn confirm-delete" (click)="confirmDeleteExistingPhoto(photo.id)" aria-label="Confirm Deletion">
-                    <span class="action-text font-bold">Delete</span>
-                  </button>
-                } @else {
-                  <button type="button" class="action-btn edit" (click)="editExistingPhoto(photo)" aria-label="Edit photo">
-                    <lucide-icon [name]="icons.Edit" [size]="14"></lucide-icon>
-                  </button>
-                  <div class="divider"></div>
-                  <button type="button" class="action-btn delete" (click)="initDeleteExistingPhoto(photo.id)" aria-label="Delete photo">
-                    <lucide-icon [name]="icons.Trash2" [size]="14"></lucide-icon>
-                  </button>
-                }
-              }
+            <div class="photo-caption-input">
+              <lucide-icon [name]="icons.Edit" [size]="10" class="text-standard-muted opacity-50 mr-1"></lucide-icon>
+              <input 
+                type="text" 
+                [formControlName]="i"
+                placeholder="Add caption..."
+                maxlength="100"
+                class="w-full text-[11px] bg-transparent outline-none text-standard italic focus:not-italic transition-all"
+              >
             </div>
           </div>
- 
-          <div class="photo-caption-input">
-            <lucide-icon [name]="icons.Edit" [size]="10" class="text-standard-muted opacity-50 mr-1"></lucide-icon>
-            <input 
-              type="text" 
-              formControlName="caption"
-              placeholder="Add caption..."
-              maxlength="100"
-              (blur)="onCaptionBlur(i)"
-              class="w-full text-[11px] bg-transparent outline-none text-standard italic focus:not-italic transition-all"
-            >
-          </div>
-        </div>
-        }
+          }
+        </ng-container>
+
       </div>
       }
     </div>
@@ -205,27 +215,28 @@
     <app-textarea-input name="recommendation" label="Recommendation (Optional)" placeholder="e.g., Recommend evaluation and repair by a licensed electrician." [rows]="2" [maxLength]="800">
     </app-textarea-input>
 
-    <div class="form-actions flex" [class.justify-between]="!isPublishedSignal()" [class.justify-end]="isPublishedSignal()">
-      <div></div>
-
-      @if (!isPublishedSignal()) {
-      <app-button type="submit" [disabled]="findingForm.invalid || showSuccess()" [isLoading]="isLoading()"
-        [variant]="showSuccess() ? 'subtle' : 'solid'"
-        class="transition-all duration-300">
-        @if (showSuccess()) {
-          <div class="flex items-center gap-2 text-green-600 animate-in zoom-in-95 duration-200">
-            <lucide-icon [name]="icons.Check" [size]="18"></lucide-icon>
-            <span class="font-bold">Finding Queued!</span>
+    <div class="form-actions flex items-center justify-between gap-4 mt-6">
+      <div>
+        @if (!isPublishedSignal()) {
+          <div class="flex items-center gap-2 text-xs font-semibold select-none">
+            @if (isSaving()) {
+              <lucide-icon [name]="icons.Loader2" [size]="14" class="animate-spin text-primary"></lucide-icon>
+              <span class="text-standard-muted">Saving changes...</span>
+            } @else if (isSaved() && findingForm.pristine) {
+              <lucide-icon [name]="icons.Check" [size]="14" class="text-green-500"></lucide-icon>
+              <span class="text-green-600">All changes saved</span>
+            } @else if (findingForm.dirty) {
+              <span class="text-amber-500">Unsaved edits...</span>
+            }
           </div>
-        } @else {
-          {{ isEditMode() ? 'Save Changes' : 'Add Finding' }}
         }
-      </app-button>
-      } @else {
-      <app-button type="button" variant="outline" (click)="close.emit()" [disabled]="isLoading()">
-        Close
-      </app-button>
-      }
+      </div>
+
+      <div class="flex items-center gap-2">
+        <app-button type="submit" variant="solid" size="md" [disabled]="findingForm.invalid || isLoading()">
+          {{ isPublishedSignal() ? 'Close' : 'Done' }}
+        </app-button>
+      </div>
     </div>
 
   </form>

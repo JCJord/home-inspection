@@ -131,35 +131,40 @@ export class InspectionsService {
     );
   }
 
-  getInspectionById(id: string): Observable<Inspection> {
+  getInspectionById(id: string, forceNetworkOnly = false): Observable<Inspection> {
+    const network$ = this.http.get<Inspection>(`${this.apiUrl}/${id}`).pipe(
+      tap(fresh => {
+        // Save clean server-response to persistent IndexedDB cache (avoid temp local IDs pollution)
+        this.persistenceService.saveInspection(fresh);
+        this.imageCacheService.prefetchInspection(fresh);
+      }),
+      map(fresh => this.mergePendingMutations(fresh))
+    );
+
+    if (forceNetworkOnly) {
+      return network$;
+    }
+
     // Try to get from cache first, then fetch from network and update cache (SWR)
     return from(this.persistenceService.getInspection(id)).pipe(
       mergeMap(cached => {
-        const network$ = this.http.get<Inspection>(`${this.apiUrl}/${id}`).pipe(
-          map(fresh => this.mergePendingMutations(fresh)), // <--- IMPORTANT: Inject pending items
-          tap(fresh => {
-            this.persistenceService.saveInspection(fresh);
-            this.imageCacheService.prefetchInspection(fresh); // <--- BACKGROUND PREFETCH
-          }),
+        const net$ = network$.pipe(
           catchError(err => {
-            // If network fails, and we already have cached, return it.
             if (cached) return of(this.mergePendingMutations(cached));
             throw err;
           })
         );
 
         if (cached) {
-          // Prefetch cached one too just in case some photos are missing
           this.imageCacheService.prefetchInspection(cached);
-          // Emit cached immediately, then the network response
-          return concat(of(this.mergePendingMutations(cached)), network$);
+          // Emit cached with merged mutations immediately, then network response with merged mutations
+          return concat(of(this.mergePendingMutations(cached)), net$);
         }
 
-        return network$;
+        return net$;
       })
     );
-  }
-
+  }  
   public mergePendingMutations(inspection: Inspection): Inspection {
     const pendingTasks = this.mutationQueueService.allTasks()
       .filter(t => t.inspectionId === inspection.id);
@@ -174,9 +179,17 @@ export class InspectionsService {
       findings: (inspection.findings || []).map(f => ({ ...f, photos: [...(f.photos || [])] }))
     };
 
+    // Track photo IDs that are deleted in any active task
+    const deletedPhotoIds = new Set<string>();
+    pendingTasks.forEach(task => {
+      if (task.type === MutationType.DELETE_PHOTO && task.payload?.photoId) {
+        deletedPhotoIds.add(task.payload.photoId);
+      }
+    });
+
     pendingTasks.forEach(task => {
       // 1. Handle Inspection Updates
-      if (task.type === MutationType.UPDATE_INSPECTION) {
+      if (task.type === MutationType.UPDATE_INSPECTION && task.status !== 'COMPLETED') {
         const payload = task.payload;
         if (payload.metadata_values) {
           merged.metadata_values = { ...merged.metadata_values, ...payload.metadata_values };
@@ -189,9 +202,8 @@ export class InspectionsService {
       // 2. Handle Finding Creation
       if (task.type === MutationType.CREATE_FINDING) {
         const payload = task.payload;
-        // Use findingId (set by mapClientFindingIdToServerId), fallback to clientFindingId, then task.id
         const targetId = task.findingId || task.clientFindingId || task.id;
-        const exists = merged.findings?.some(f => f.id === targetId);
+        const exists = merged.findings?.some(f => f.id?.toString() === targetId?.toString());
         if (!exists) {
           merged.findings?.push({
             id: targetId,
@@ -209,7 +221,7 @@ export class InspectionsService {
 
       // 3. Handle Finding Updates
       if (task.type === MutationType.UPDATE_FINDING) {
-        const idx = merged.findings?.findIndex(f => f.id === task.findingId);
+        const idx = merged.findings?.findIndex(f => f.id?.toString() === task.findingId?.toString());
         if (idx !== undefined && idx > -1) {
           const f = merged.findings![idx];
           merged.findings![idx] = {
@@ -222,20 +234,29 @@ export class InspectionsService {
 
       // 4. Handle Photo Uploads
       if (task.type === MutationType.UPLOAD_PHOTO) {
+        if (task.pendingDelete) {
+          return;
+        }
         const targetId = task.findingId || task.clientFindingId;
-        const finding = merged.findings?.find(f => f.id === targetId);
+        const finding = merged.findings?.find(f => f.id?.toString() === targetId?.toString());
 
         if (finding) {
           const tempId = `temp-${task.id}`;
           const serverPhotoId = (task as any).result?.id;
-          const isConfirmedByServer = serverPhotoId && (finding.photos || []).some(p => p.id === serverPhotoId);
+          
+          // Skip if this upload task has been deleted optimistically
+          if (deletedPhotoIds.has(tempId) || (serverPhotoId && deletedPhotoIds.has(serverPhotoId.toString()))) {
+            return;
+          }
+
+          const isConfirmedByServer = serverPhotoId && (finding.photos || []).some(p => p.id?.toString() === serverPhotoId.toString());
           const isRedundant = task.status === 'COMPLETED' && isConfirmedByServer;
 
           if (!isRedundant) {
             const photos = finding.photos || [];
             const existingIndex = photos.findIndex(p => p.id === tempId);
             const tempPhoto = {
-              id: tempId,
+              id: task.status === 'COMPLETED' && serverPhotoId ? serverPhotoId.toString() : tempId,
               storage_url: (task as any).tempPreviewUrl || '',
               caption: task.payload.caption,
               isSyncing: task.status === 'PENDING' || task.status === 'SYNCING',
@@ -254,9 +275,9 @@ export class InspectionsService {
 
       // 5. Handle Photo Caption Updates
       if (task.type === MutationType.UPDATE_PHOTO) {
-        const finding = merged.findings?.find(f => f.id === task.findingId);
+        const finding = merged.findings?.find(f => f.id?.toString() === task.findingId?.toString());
         if (finding) {
-          const photo = finding.photos.find(p => p.id === task.payload.photoId);
+          const photo = finding.photos.find(p => p.id?.toString() === task.payload.photoId?.toString());
           if (photo) {
             photo.caption = task.payload.caption;
             photo.isSyncing = task.status === 'PENDING' || task.status === 'SYNCING';
@@ -267,17 +288,24 @@ export class InspectionsService {
 
       // 6. Handle Photo Deletion
       if (task.type === MutationType.DELETE_PHOTO) {
-        const finding = merged.findings?.find(f => f.id === task.findingId);
+        const finding = merged.findings?.find(f => f.id?.toString() === task.findingId?.toString());
         if (finding) {
-          finding.photos = finding.photos.filter(p => p.id !== task.payload.photoId);
+          finding.photos = finding.photos.filter(p => p.id?.toString() !== task.payload.photoId?.toString());
         }
       }
 
       // 7. Handle Finding Deletion
       if (task.type === MutationType.DELETE_FINDING) {
         if (merged.findings) {
-          merged.findings = merged.findings.filter(f => f.id !== task.findingId);
+          merged.findings = merged.findings.filter(f => f.id?.toString() !== task.findingId?.toString());
         }
+      }
+    });
+
+    // Final safety filter: clean up any finding photos that match deletedPhotoIds
+    merged.findings?.forEach(f => {
+      if (f.photos) {
+        f.photos = f.photos.filter(p => !deletedPhotoIds.has(p.id));
       }
     });
 
@@ -301,6 +329,9 @@ export class InspectionsService {
         this._inspections.update(list => list.map(i => i.id === id ? updatedIns : i));
         this.saveToCache(this._inspections(), this._totalCount());
         this._needsRefresh.set(true); // Mark as stale
+        this.persistenceService.saveInspection(updatedIns).catch(err =>
+          console.warn('Failed to sync cache on updateInspection', err)
+        );
       })
     );
   }
