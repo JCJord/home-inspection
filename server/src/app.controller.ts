@@ -1,10 +1,14 @@
 import { Controller, Get, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import { AppService } from './app.service';
+import { MailService } from './mail/mail.service';
 
 @Controller()
 export class AppController {
-  constructor(private readonly appService: AppService) { }
+  constructor(
+    private readonly appService: AppService,
+    private readonly mailService: MailService,
+  ) { }
 
   @Get()
   getHello(): string {
@@ -19,8 +23,15 @@ export class AppController {
       return { success: false, message: 'Email is required' };
     }
 
-    // TODO: When domain is set, implement real mail sender here using Resend or Nodemailer
-    // e.g. await resend.emails.send({ from: '...', to: 'juliojc.jord@gmail.com', subject: 'New Beta Request', html: `Email: ${email}` })
+    try {
+      await this.mailService.sendGenericEmail(
+        'juliojc.jord@gmail.com',
+        'New Beta Request',
+        `<p>A new beta request was submitted:</p><p><strong>Email:</strong> ${email}</p>`
+      );
+    } catch (e) {
+      console.error('Failed to send beta request email', e);
+    }
 
     return { success: true, message: 'Beta request received.' };
   }

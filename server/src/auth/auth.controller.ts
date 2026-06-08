@@ -76,6 +76,7 @@ export class AuthController {
 
   @Post('resend-verification')
   @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 3, ttl: 60000 } })
   async resendVerification(@Body() dto: { email: string }) {
     return await this.authService.resendVerificationEmail(dto.email);
   }

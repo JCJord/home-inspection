@@ -212,4 +212,28 @@ export class MailService {
       minute: '2-digit',
     });
   }
+
+  async sendGenericEmail(to: string, subject: string, html: string, fromOverride?: string) {
+    this.logger.log(`Processing generic email for ${to}`);
+    try {
+      const from = fromOverride || this.getFromEmail();
+      const { data, error } = await this.resend.emails.send({
+        from,
+        to,
+        subject,
+        html,
+      });
+
+      if (error) {
+        this.logger.error(`Resend error sending to ${to}: ${JSON.stringify(error)}`);
+        throw new Error(error.message);
+      } else {
+        this.logger.log(`Generic email successfully queued for ${to}. ID: ${data?.id}`);
+        return data;
+      }
+    } catch (error: any) {
+      this.logger.error(`Failed to process generic email for ${to}`, error.stack);
+      throw error;
+    }
+  }
 }
