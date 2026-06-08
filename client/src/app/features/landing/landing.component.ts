@@ -24,6 +24,7 @@ import {
   FileText,
   DollarSign
 } from 'lucide-angular';
+import { environment } from '../../../environments/environment';
 
 interface Testimonial {
   quote: string;
@@ -125,7 +126,7 @@ export class LandingComponent implements OnInit {
 
     this.isSubmitting.set(true);
     try {
-      const response = await fetch('http://localhost:3000/public/beta-request', {
+      const response = await fetch(`${environment.apiUrl}/public/beta-request`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -149,7 +150,7 @@ export class LandingComponent implements OnInit {
 
     this.isFooterSubmitting.set(true);
     try {
-      const response = await fetch('http://localhost:3000/public/beta-request', {
+      const response = await fetch(`${environment.apiUrl}/public/beta-request`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

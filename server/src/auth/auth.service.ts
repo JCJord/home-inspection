@@ -38,7 +38,7 @@ export class AuthService {
     const { email, password, name, invite_code } = authRegisterDto;
 
     const existingUser = await this.inspectorsService.findByEmail(email);
-    if (existingUser) {
+    if (existingUser && existingUser.is_email_verified) {
       throw new ConflictException('Email already exists');
     }
 
@@ -54,17 +54,26 @@ export class AuthService {
         const hashedToken = crypto.createHash('sha256').update(rawToken).digest('hex');
         const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
-        // Create the user manually via manager to participate in the transaction
-        const newInspector = this.inspectorRepository.create({
-          email,
-          name,
-          password_hash: hashedPassword,
-          is_email_verified: false,
-          email_verification_token: hashedToken,
-          email_verification_expires: expiresAt,
-        });
-        
-        const saved = await manager.save(newInspector);
+        let saved;
+        if (existingUser && !existingUser.is_email_verified) {
+          // Overwrite the unverified user
+          existingUser.name = name;
+          existingUser.password_hash = hashedPassword;
+          existingUser.email_verification_token = hashedToken;
+          existingUser.email_verification_expires = expiresAt;
+          saved = await manager.save(existingUser);
+        } else {
+          // Create the user manually via manager to participate in the transaction
+          const newInspector = this.inspectorRepository.create({
+            email,
+            name,
+            password_hash: hashedPassword,
+            is_email_verified: false,
+            email_verification_token: hashedToken,
+            email_verification_expires: expiresAt,
+          });
+          saved = await manager.save(newInspector);
+        }
 
         const frontendUrl = this.configService.get<string>('FRONTEND_URL', 'http://localhost:4200');
         const verifyLink = `${frontendUrl}/auth/confirm-email?token=${rawToken}&email=${encodeURIComponent(email)}`;
@@ -175,8 +184,8 @@ export class AuthService {
     }
 
     if (inspector.email_verification_expires) {
-      const twoMinutesAgo = new Date(Date.now() - 2 * 60 * 1000);
-      if (inspector.email_verification_expires > twoMinutesAgo) {
+      const twoMinutesAgoExpiration = new Date(Date.now() + 24 * 60 * 60 * 1000 - 2 * 60 * 1000);
+      if (inspector.email_verification_expires > twoMinutesAgoExpiration) {
         throw new BadRequestException('Please wait before requesting another email');
       }
     }
