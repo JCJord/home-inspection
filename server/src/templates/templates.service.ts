@@ -74,6 +74,12 @@ export class TemplatesService implements OnApplicationBootstrap {
               recommendation: 'Recommend budgeting for roof replacement and having a licensed roofer evaluate the remaining service life.',
               severity: 'Maintenance'
             },
+            {
+              title: 'Exposed Fasteners (Nail Pops)',
+              description: 'Unsealed roofing nails are exposed or backing out on the ridge caps or flashing junctions. These exposed penetrations allow water to bypass the shingle layer and cause slow, hidden structural rot over time.',
+              recommendation: 'Recommend a qualified roofer seal all exposed fasteners with professional-grade roofing cement or replace damaged shingle tabs.',
+              severity: 'Maintenance'
+            },
           ],
         },
         {
@@ -209,6 +215,12 @@ export class TemplatesService implements OnApplicationBootstrap {
               recommendation: 'Recommend a qualified contractor reroute the exhaust ducting to vent directly through the roof or exterior wall.',
               severity: 'Major'
             },
+            {
+              title: 'Structural Truss Modifications',
+              description: 'One or more engineered wood roof trusses in the attic have been cut, notched, or modified (likely to clear HVAC equipment or create storage space). Modifications weaken the engineered load paths and compromise roof structural integrity.',
+              recommendation: 'Recommend immediate engineering evaluation and structural remediation by a licensed contractor to restore truss integrity.',
+              severity: 'Major'
+            },
           ]
         },
         {
@@ -283,7 +295,7 @@ export class TemplatesService implements OnApplicationBootstrap {
             { key: 'electrical_wiring_type', label: 'Branch Wiring Type', type: 'select', options: ['Copper (Non-Metallic Sheathed)', 'Aluminum', 'Knob and Tube', 'BX / Armored Cable'] },
             { key: 'electrical_panel_brand', label: 'Panel Manufacturer', type: 'select', options: ['Square D', 'Siemens', 'Eaton / Cutler-Hammer', 'GE', 'Federal Pacific (FPE)', 'Zinsco', 'Other'] },
           ],
-          location_presets: ['Main Panel', 'Sub Panel', 'Kitchen', 'Master Bathroom', 'Guest Bathroom', 'Half Bath', 'Garage', 'Exterior'],
+          location_presets: ['Main Service Panel', 'Sub-Panel', 'Kitchen', 'Master Bathroom', 'Hallway/Guest Bathroom', 'Garage', 'Exterior Perimeter', 'Attic Space', 'Crawlspace'],
           presets: [
             {
               title: 'Limitation of Scope: Inoperable Lights',
@@ -327,6 +339,24 @@ export class TemplatesService implements OnApplicationBootstrap {
               recommendation: 'Recommend installing proper cover plates on all exposed electrical boxes.',
               severity: 'Safety'
             },
+            {
+              title: 'Open Junction Boxes',
+              description: 'Unspliced or spliced electrical wires are exposed outside of a protective junction box in the attic/crawlspace. This leaves live connections vulnerable to physical damage and increases the risk of fire from arcing.',
+              recommendation: 'Recommend a licensed electrician secure all loose wiring inside approved junction boxes fitted with proper cover plates.',
+              severity: 'Major'
+            },
+            {
+              title: 'Reverse Polarity at Outlets',
+              description: 'One or more interior receptacles were found to have reverse polarity (hot and neutral wires are switched). While devices will still function, this bypasses internal safety mechanisms and creates an immediate shock hazard when plugging in appliances.',
+              recommendation: 'Recommend a licensed electrician correct the wiring polarity at all affected outlets.',
+              severity: 'Safety'
+            },
+            {
+              title: 'Open Ground Outlets',
+              description: 'Three-prong outlets were tested and found to lack a functional ground connection. This prevents surge protectors from working and presents a shock hazard for sensitive electronics and major appliances.',
+              recommendation: 'Recommend evaluation and correction by a licensed electrician (e.g., grounding the circuit or protecting it with a GFCI breaker).',
+              severity: 'Major'
+            },
           ],
         },
         {
@@ -339,7 +369,7 @@ export class TemplatesService implements OnApplicationBootstrap {
             { key: 'plumbing_sump', label: 'Sump Pump Present', type: 'select', options: ['Yes - Functional', 'Yes - Not Functional / Disconnected', 'No Sump Pump'] },
             { key: 'plumbing_fuel', label: 'Main Fuel Shut-off', type: 'select', options: ['At Gas Meter (Exterior)', 'Propane Tank', 'None / All Electric'] },
           ],
-          location_presets: ['Master Bathroom', 'Guest Bathroom', 'Half Bath', 'Kitchen', 'Laundry Room', 'Water Heater'],
+          location_presets: ['Water Heater Location', 'Main Water Shut-Off Valve', 'Under Kitchen Sink', 'Under Bathroom Vanity', 'Exterior Hose Bibbs', 'Crawlspace/Basement Utility Area'],
           presets: [
             {
               title: 'Limitation of Scope: Concealed Plumbing & Buried Tanks',
@@ -389,6 +419,24 @@ export class TemplatesService implements OnApplicationBootstrap {
               recommendation: 'Recommend applying a waterproof silicone caulk to seal these areas immediately.',
               severity: 'Maintenance'
             },
+            {
+              title: 'TPR Valve Discharge Pipe Inadequate / Missing',
+              description: 'The Temperature and Pressure Relief (TPR) safety valve on the water heater lacks a proper discharge pipe, or the pipe terminates too high above the floor. If the valve blows, boiling water and steam can discharge directly into someone\'s face or cause catastrophic damage.',
+              recommendation: 'Recommend a qualified plumber install a dedicated discharge pipe that terminates straight down, within 6 inches of the floor.',
+              severity: 'Safety'
+            },
+            {
+              title: 'Galvanic Corrosion (Dissimilar Metals)',
+              description: 'Copper piping is connected directly to galvanized steel components without a dielectric union. This causes accelerated galvanic corrosion at the joint, which will eventually restrict water flow and cause a pinhole leak.',
+              recommendation: 'Recommend a licensed plumber install a proper dielectric union or brass spacer to isolate the dissimilar metals.',
+              severity: 'Maintenance'
+            },
+            {
+              title: 'Garbage Disposal Leak / Inoperative',
+              description: 'The kitchen garbage disposal unit was found to be leaking from the bottom housing or failed to activate when the switch was operated.',
+              recommendation: 'Recommend repair or replacement of the disposal unit by a qualified professional.',
+              severity: 'Minor'
+            },
           ],
         },
         {
@@ -401,7 +449,7 @@ export class TemplatesService implements OnApplicationBootstrap {
             { key: 'hvac_age', label: 'Approximate System Age', type: 'select', options: ['0-5 Years', '5-10 Years', '10-15 Years', '15-20 Years (Near End of Life)', '20+ Years'] },
             { key: 'hvac_thermostat', label: 'Thermostat Operation', type: 'select', options: ['Functional / Responded', 'Did Not Respond', 'Not Tested (Utilities Off)'] },
           ],
-          location_presets: ['Basement', 'Attic', 'Utility Room', 'Exterior', 'Living Room', 'Crawlspace'],
+          location_presets: ['Exterior Condenser Unit', 'Interior Air Handler / Furnace', 'Attic Plenum / Ductwork', 'Crawlspace Ductwork', 'Main Thermostat Location'],
           presets: [
             {
               title: 'Limitation of Scope: Not a Warranty',
@@ -432,6 +480,18 @@ export class TemplatesService implements OnApplicationBootstrap {
               description: 'A condensate leak or active moisture was observed near the indoor HVAC air handler. This is commonly caused by a clogged drain line or a loose fitting, and can lead to significant water damage to the surrounding structure.',
               recommendation: 'Recommend a licensed HVAC technician clear the condensate line and verify the safety float switch is operational.',
               severity: 'Major'
+            },
+            {
+              title: 'Dirty / Clogged Air Filter',
+              description: 'The system air filter is heavily loaded with dust and debris. This severely restricts airflow, reducing the system\'s efficiency, stressing the blower motor, and potentially causing the evaporator coils to freeze over.',
+              recommendation: 'Replace the HVAC air filter immediately and establish a monthly inspection/replacement routine.',
+              severity: 'Maintenance'
+            },
+            {
+              title: 'Missing Evaporator Condensate Insulation',
+              description: 'The primary refrigerant suction line running from the exterior condenser to the interior air handler lacks proper foam insulation. The bare cold pipe will sweat, causing condensation to drip onto ceilings or framing below.',
+              recommendation: 'Recommend installing standard foam pipe insulation along the entire exposed length of the line.',
+              severity: 'Minor'
             },
           ],
         },
@@ -549,9 +609,21 @@ export class TemplatesService implements OnApplicationBootstrap {
             { key: 'roof_covering', label: 'Roof Covering Material', type: 'text' },
             { key: 'roof_age', label: 'Approximate Age (years)', type: 'text' },
           ],
-          location_presets: ['Entire Roof'],
+          location_presets: ['Entire Roof', 'Valleys', 'Flashing Penetrations', 'Attic Sheathing / Framing'],
           presets: [
             { title: 'Severe Granule Loss', description: 'Observed significant granule loss on asphalt shingles, exposing the underlying fiberglass mat to solar damage.', recommendation: 'Recommend a licensed roofing contractor evaluate the remaining service life of the shingles.', severity: 'Major' },
+            {
+              title: 'Active Roof Leak Detected',
+              description: 'Active water staining or elevated moisture readings were observed on the attic decking/framing beneath the roof covering, indicating a failure in the weatherproofing layer.',
+              recommendation: 'Recommend a licensed roofing contractor locate the source and repair the roof system immediately.',
+              severity: 'Major'
+            },
+            {
+              title: 'Roof Nearing End of Useful Life (Insurance Alert)',
+              description: 'The roof covering appears structurally sound but is approaching or past its typical insurance eligibility age ceiling (often 15-20 years for shingles in coastal markets). Underwriters may require replacement for policy renewal.',
+              recommendation: 'Recommend evaluating budget for complete roof replacement in the near future.',
+              severity: 'Maintenance'
+            }
           ],
         },
         {
@@ -561,9 +633,27 @@ export class TemplatesService implements OnApplicationBootstrap {
             { key: 'electrical_panel_brand', label: 'Panel Manufacturer / Brand', type: 'select', options: ['Square D', 'Siemens', 'Cutler-Hammer / Eaton', 'GE (General Electric)', 'Federal Pacific (FPE) Stab-Lok', 'Zinsco', 'Challenger', 'Other / Obsolete'] },
             { key: 'electrical_amps', label: 'Service Amperage (Amps)', type: 'text' },
           ],
-          location_presets: ['Main Panel'],
+          location_presets: ['Main Panel', 'Sub-Panel', 'Branch Wiring'],
           presets: [
             { title: 'Hazardous Panel Brand', description: 'Observed a Federal Pacific (FPE) Stab-Lok main electrical panel. These panels have a high rate of breaker failure.', recommendation: 'Recommend immediate replacement of the electrical panel by a licensed electrician for fire safety.', severity: 'Safety' },
+            {
+              title: 'Solid-Conductor Aluminum Branch Wiring Present',
+              description: 'Solid aluminum branch circuit wiring was observed feeding standard 15/20 amp outlets. Aluminum wiring poses a severe fire hazard due to over-heating at termination points.',
+              recommendation: 'Recommend a licensed electrician evaluate the system and perform proper copper-clad remediation (AlumiConn/Copalum).',
+              severity: 'Safety'
+            },
+            {
+              title: 'Challenger / Zinsco Panel Present',
+              description: 'A hazardous/obsolete Challenger or Zinsco electrical panel was observed. These brands are widely documented to have overheating issues and failure to trip, and are automatic denials for most insurance carriers.',
+              recommendation: 'Recommend complete replacement of the electrical panel by a licensed electrician.',
+              severity: 'Safety'
+            },
+            {
+              title: 'Double-Tapped Breakers in Panel',
+              description: 'Multiple conductors are connected to a single circuit breaker terminal not explicitly rated for two wires. This creates loose connections and arcing risks.',
+              recommendation: 'Recommend a licensed electrician properly separate the circuits.',
+              severity: 'Safety'
+            }
           ],
         },
         {
@@ -574,9 +664,27 @@ export class TemplatesService implements OnApplicationBootstrap {
             { key: 'plumbing_waste', label: 'Waste Piping Material', type: 'select', options: ['PVC', 'ABS', 'Cast Iron', 'Galvanized', 'Clay', 'Orangeburg', 'Unknown'] },
             { key: 'plumbing_heater_age', label: 'Water Heater Age (years)', type: 'text' },
           ],
-          location_presets: ['Kitchen', 'Master Bath', 'Guest Bath', 'Water Heater'],
+          location_presets: ['Kitchen', 'Master Bath', 'Guest Bath', 'Water Heater', 'Main Shut-Off Valve', 'Laundry Connection'],
           presets: [
             { title: 'Active Plumbing Leak', description: 'Observed active dripping/leaking at the hot water supply inlet on the water heater tank.', recommendation: 'Recommend repair by a licensed plumber.', severity: 'Major' },
+            {
+              title: 'Polybutylene (PB) Supply Piping Present',
+              description: 'Flexible polybutylene water supply piping was observed. PB piping is highly prone to sudden, catastrophic failure at the joints due to chemical degradation from municipal water systems. Most insurance companies will deny coverage.',
+              recommendation: 'Recommend complete replumb of the structural water supply line by a licensed plumber.',
+              severity: 'Major'
+            },
+            {
+              title: 'Water Heater Past Service Life Expectancy',
+              description: 'The water heater is functional but its chronological age exceeds 12-15 years. Carriers frequently require replacement of older water heating units to prevent sudden internal tank bursts.',
+              recommendation: 'Recommend replacing the water heater to maintain insurance policy eligibility.',
+              severity: 'Maintenance'
+            },
+            {
+              title: 'Missing TPR Valve Discharge Pipe',
+              description: 'The Temperature & Pressure Relief valve lacks a proper extension pipe terminating safely near the floor line, presenting a severe scalding safety hazard.',
+              recommendation: 'Recommend a licensed plumber install an approved discharge line immediately.',
+              severity: 'Safety'
+            }
           ],
         },
         {
@@ -586,9 +694,15 @@ export class TemplatesService implements OnApplicationBootstrap {
             { key: 'hvac_type', label: 'Heating System Type', type: 'select', options: ['Forced Air Gas Furnace', 'Heat Pump', 'Electric Baseboard / Strip', 'Boiler / Hydronic', 'No Permanent Heat Source'] },
             { key: 'hvac_age', label: 'Approximate Age (years)', type: 'text' },
           ],
-          location_presets: ['Main Unit', 'Air Handler', 'Exterior'],
+          location_presets: ['Main Unit', 'Air Handler', 'Exterior', 'Exterior Condenser'],
           presets: [
             { title: 'Inadequate Heating Source', description: 'The heating unit failed to activate when tested using the thermostat control.', recommendation: 'Recommend a licensed HVAC technician service or repair the heating system.', severity: 'Major' },
+            {
+              title: 'No Permanent Heat Source Present',
+              description: 'The property lacks a safely installed, permanently piped/wired heating system. Space heaters or window units do not qualify as permanent heat under underwriting guidelines.',
+              recommendation: 'Recommend installing a permanent heating system that complies with regional building codes.',
+              severity: 'Major'
+            }
           ],
         },
       ],
@@ -634,10 +748,10 @@ export class TemplatesService implements OnApplicationBootstrap {
           name: 'Roof Deck Attachment',
           icon_key: 'Layers',
           fields: [
-            { key: 'deck_nail_type', label: 'Nail Size / Type', type: 'select', options: ['Staples / 6d Nails', '8d Common Nails', 'Dimensional Lumber (No Plywood)', 'Reinforced Concrete'] },
+            { key: 'deck_nail_type', label: 'Nail Size / Type', type: 'select', options: ['Staples / 6d Nails', '6d Common Nails', '8d Common Nails', 'Dimensional Lumber (No Plywood)', 'Reinforced Concrete', 'Other / Structural Deck'] },
             { key: 'deck_nail_spacing', label: 'Nail Spacing', type: 'select', options: ['6" along edge / 12" in field', '6" along edge / 6" in field', 'Not Applicable'] },
           ],
-          location_presets: ['Attic'],
+          location_presets: ['Attic', 'Attic Truss/Rafter Connections', 'Truss Overlap Sections', 'Roof Decking Joint Lines'],
           presets: [
             {
               title: 'Category A (Weakest): 6d Nails or Staples',
@@ -657,6 +771,18 @@ export class TemplatesService implements OnApplicationBootstrap {
               recommendation: 'Submit as Category C attachment (Maximum Credit).',
               severity: 'Informational'
             },
+            {
+              title: 'Nail Shiners / Missed Trusses',
+              description: 'Observed multiple structural deck fasteners that completely missed the roof trusses (shiners). Overdriven or missed fasteners compromise the wind uplift rating calculation.',
+              recommendation: 'Submit under the weakest verified fastening pattern found.',
+              severity: 'Informational'
+            },
+            {
+              title: 'Category A (Weakest): Ply Less Than 7/16 or Unknown Spacing',
+              description: 'Roof deck attachment consists of plywood/OSB sheathing less than 7/16-inch thick, structural wood shakes, or nail spacing that exceeds the 6-inch/12-inch state requirement.',
+              recommendation: 'Submit as Category A (No enhanced uplift credit available).',
+              severity: 'Informational'
+            }
           ],
         },
         {
@@ -666,7 +792,7 @@ export class TemplatesService implements OnApplicationBootstrap {
             { key: 'rtw_connection', label: 'Weakest Connection Type Found', type: 'select', options: ['Toenails', 'Clips', 'Single Wraps', 'Double Wraps', 'Structural / Anchored'] },
             { key: 'rtw_nails', label: 'Minimum Nails per Strap', type: 'select', options: ['Less than 3 Nails', '3 Nails Verified', '4 or More Nails Verified'] },
           ],
-          location_presets: ['Attic', 'Exterior'],
+          location_presets: ['Attic', 'Exterior', 'Truss/Rafter Junctions', 'Truss Overhangs'],
           presets: [
             {
               title: 'Category A: Toenails',
@@ -686,13 +812,31 @@ export class TemplatesService implements OnApplicationBootstrap {
               recommendation: 'Submit as Single Wrap connection.',
               severity: 'Informational'
             },
+            {
+              title: 'Category D: Double Wraps',
+              description: 'Metal connectors wrap over the top of the truss/rafter on both sides, or use two separate straps per truss. Each strap is secured with a minimum of 3 nails on each side.',
+              recommendation: 'Submit as Category D connection (High uplift credit available).',
+              severity: 'Informational'
+            },
+            {
+              title: 'Strap Deficiency: Structural Gap > 1/2 Inch',
+              description: 'Metal clips or wraps are physically present, but the structural gap between the truss/rafter and the wall framing exceeds 1/2 inch. Under Florida wind mitigation rules, this downgrades the connection type.',
+              recommendation: 'Downgrade rating to Category A (Toenails) due to gap installation tolerance deficiency.',
+              severity: 'Informational'
+            },
+            {
+              title: 'Strap Structural Deficiencies (Missing Nails / Gaps)',
+              description: 'Observed anchoring metal clips or wraps with fewer than 3 required nails securely driven into the structural truss chord, or a structural gap exceeding 1/2 inch between the clip and the rafter truss.',
+              recommendation: 'Must flag connection as Category A (Toenails) due to failing modern fastening count rules.',
+              severity: 'Informational'
+            }
           ],
         },
         {
           name: 'Roof Geometry',
           icon_key: 'Triangle',
           fields: [
-            { key: 'geometry_type', label: 'Qualifying Roof Shape', type: 'select', options: ['Hip Roof', 'Non-Hip (Gable, Flat, Mansard)', 'Flat Roof (> 5 levels)'] },
+            { key: 'geometry_type', label: 'Qualifying Roof Shape', type: 'select', options: ['Hip Roof', 'Non-Hip (Gable, Flat, Mansard)', 'Other / Flat Roof (>10% of total perimeter)'] },
           ],
           location_presets: ['Exterior'],
           presets: [
@@ -736,10 +880,10 @@ export class TemplatesService implements OnApplicationBootstrap {
           name: 'Opening Protection',
           icon_key: 'Shield',
           fields: [
-            { key: 'opening_glazed', label: 'Glazed (Windows/Glass Doors)', type: 'select', options: ['Category A (Hurricane Impact Rated)', 'Category X (No Protection)'] },
-            { key: 'opening_unglazed', label: 'Unglazed (Solid Doors/Garage)', type: 'select', options: ['Category A (Hurricane Impact Rated)', 'Category X (No Protection)'] },
+            { key: 'opening_glazed', label: 'Glazed (Windows/Glass Doors)', type: 'select', options: ['Category A (Hurricane Impact Rated)', 'Category B (Basic Missile Impact)', 'Category C (Non-Glazed Protection Only)', 'Category X (No Protection)'] },
+            { key: 'opening_unglazed', label: 'Unglazed (Solid Doors/Garage)', type: 'select', options: ['Category A (Hurricane Impact Rated)', 'Category B (Basic Missile Impact)', 'Category C (Non-Glazed Protection Only)', 'Category X (No Protection)'] },
           ],
-          location_presets: ['All Openings', 'Front Elevation', 'Rear Elevation'],
+          location_presets: ['All Openings', 'Front Elevation', 'Rear Elevation', 'Garage Door', 'Skylights', 'Main Entry Door', 'Sliding Glass Doors'],
           presets: [
             {
               title: 'Category X: No Opening Protection',
@@ -753,6 +897,18 @@ export class TemplatesService implements OnApplicationBootstrap {
               recommendation: 'Submit as Category A (Maximum Credit).',
               severity: 'Informational'
             },
+            {
+              title: 'Unrated Openings / Missing Labels',
+              description: 'One or more glazed or unglazed openings lack visible impact rating stickers or etched stamps, and no product approval paperwork could be verified.',
+              recommendation: 'Forced downgrade of entire opening protection credit score to Category X.',
+              severity: 'Informational'
+            },
+            {
+              title: 'Category N: Non-Glazed Openings Unprotected',
+              description: 'All exterior glass windows and glass doors are impact-rated or protected by code-compliant shutters. However, one or more solid wood/metal entry doors or garage doors lack verified impact-resistant testing criteria.',
+              recommendation: 'Submit as Category N (Downgrades opening protection status; multi-opening credit restricted).',
+              severity: 'Informational'
+            }
           ],
         },
       ],
