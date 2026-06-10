@@ -8,6 +8,7 @@ import { ButtonComponent } from '../../../../shared/components/button/button.com
 import { AuthService } from '../../../../core/services/auth.service';
 import { RegisterRequestDto } from '../../../../core/dtos/register-request.dto';
 import { LucideAngularModule, MailCheck } from 'lucide-angular';
+import { inject as injectAnalytics } from '@vercel/analytics';
 
 /**
  * Custom validator to check if password and confirmPassword fields match.
@@ -47,6 +48,10 @@ export const passwordMatchValidator: ValidatorFn = (control: AbstractControl): V
   styleUrl: './register.component.scss',
 })
 export class RegisterComponent {
+  constructor() {
+    injectAnalytics();
+  }
+
   private authService = inject(AuthService);
   private router = inject(Router);
 

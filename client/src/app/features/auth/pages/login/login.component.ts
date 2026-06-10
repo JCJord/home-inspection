@@ -7,6 +7,7 @@ import { TextInputComponent, PasswordInputComponent } from '../../../../shared';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { AuthService } from '../../../../core/services/auth.service';
 import { LoginRequestDto } from '../../../../core/dtos/login-request.dto';
+import { inject as injectAnalytics } from '@vercel/analytics';
 
 @Component({
   selector: 'app-login',
@@ -23,6 +24,10 @@ import { LoginRequestDto } from '../../../../core/dtos/login-request.dto';
   styleUrl: './login.component.scss',
 })
 export class LoginComponent {
+  constructor() {
+    injectAnalytics();
+  }
+
   private authService = inject(AuthService);
   private router = inject(Router);
 

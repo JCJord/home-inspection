@@ -25,6 +25,7 @@ import {
   DollarSign
 } from 'lucide-angular';
 import { environment } from '../../../environments/environment';
+import { inject as injectAnalytics } from '@vercel/analytics';
 
 interface Testimonial {
   quote: string;
@@ -65,6 +66,10 @@ interface Testimonial {
   ]
 })
 export class LandingComponent implements OnInit {
+  constructor() {
+    injectAnalytics();
+  }
+
   private titleService = inject(Title);
   private metaService = inject(Meta);
   private router = inject(Router);

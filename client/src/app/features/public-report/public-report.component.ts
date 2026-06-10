@@ -6,6 +6,7 @@ import { Title, Meta } from '@angular/platform-browser';
 import { PublicReportService } from '../../core/services/public-report.service';
 import { Inspection, Finding } from '../../core/models/inspection.interface';
 import { environment } from '../../../environments/environment';
+import { inject as injectAnalytics } from '@vercel/analytics';
 
 interface SectionGroup {
   name: string;
@@ -20,6 +21,10 @@ interface SectionGroup {
   styleUrls: ['./public-report.component.scss']
 })
 export class PublicReportComponent implements OnInit, OnDestroy, AfterViewInit {
+  constructor() {
+    injectAnalytics();
+  }
+
   private route = inject(ActivatedRoute);
   private publicReportService = inject(PublicReportService);
   private title = inject(Title);
