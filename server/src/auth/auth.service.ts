@@ -35,7 +35,7 @@ export class AuthService {
   ) {}
 
   async register(authRegisterDto: AuthRegisterDto) {
-    const { email, password, name, invite_code } = authRegisterDto;
+    const { email, password, name } = authRegisterDto;
 
     const existingUser = await this.inspectorsService.findByEmail(email);
     if (existingUser && existingUser.is_email_verified) {
@@ -47,9 +47,7 @@ export class AuthService {
 
     try {
       const inspector = await this.inspectorRepository.manager.transaction(async (manager) => {
-        // Validate and consume code inside transaction
-        await this.inviteCodeService.validateAndConsumeCode(invite_code, manager);
-        
+
         const rawToken = crypto.randomBytes(32).toString('hex');
         const hashedToken = crypto.createHash('sha256').update(rawToken).digest('hex');
         const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);

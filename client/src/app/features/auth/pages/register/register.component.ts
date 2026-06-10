@@ -81,10 +81,6 @@ export class RegisterComponent {
       nonNullable: true,
       validators: [Validators.required],
     }),
-    inviteCode: new FormControl('', {
-      nonNullable: true,
-      validators: [Validators.required],
-    }),
   }, { validators: passwordMatchValidator });
 
   onSubmit() {
@@ -95,8 +91,7 @@ export class RegisterComponent {
       const registerDto: RegisterRequestDto = {
         name: formValue.fullName,
         email: formValue.email,
-        password: formValue.password,
-        invite_code: formValue.inviteCode
+        password: formValue.password
       };
 
       this.authService.register(registerDto)
@@ -113,8 +108,6 @@ export class RegisterComponent {
             
             if (error.status === 409) {
               this.registerForm.get('email')?.setErrors({ emailExists: true });
-            } else if (error.status === 400 && error.error?.message?.toLowerCase().includes('invite code')) {
-              this.registerForm.get('inviteCode')?.setErrors({ invalidCode: true });
             }
           }
         });
