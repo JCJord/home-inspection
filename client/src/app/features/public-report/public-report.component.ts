@@ -6,7 +6,7 @@ import { Title, Meta } from '@angular/platform-browser';
 import { PublicReportService } from '../../core/services/public-report.service';
 import { Inspection, Finding } from '../../core/models/inspection.interface';
 import { environment } from '../../../environments/environment';
-import { inject as injectAnalytics } from '@vercel/analytics';
+import { inject as injectAnalytics, track } from '@vercel/analytics';
 
 interface SectionGroup {
   name: string;
@@ -29,6 +29,11 @@ export class PublicReportComponent implements OnInit, OnDestroy, AfterViewInit {
   private publicReportService = inject(PublicReportService);
   private title = inject(Title);
   private meta = inject(Meta);
+
+  // Analytics
+  private pageEnteredAt = Date.now();
+  private maxScrollDepth = 0;
+  private scrollTracked = new Set<number>();
 
   inspection = signal<Inspection | null>(null);
   isLoading = signal<boolean>(true);
@@ -77,6 +82,34 @@ export class PublicReportComponent implements OnInit, OnDestroy, AfterViewInit {
     if (this.observer) {
       this.observer.disconnect();
     }
+
+    // Track total time spent on page
+    const timeSpent = Math.round((Date.now() - this.pageEnteredAt) / 1000);
+    track('live_report_session', {
+      duration_seconds: timeSpent,
+      max_scroll_depth: this.maxScrollDepth,
+      report_id: this.route.snapshot.paramMap.get('id') || 'unknown'
+    });
+  }
+
+  @HostListener('window:scroll')
+  onScroll() {
+    const scrollTop = window.scrollY;
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    if (docHeight <= 0) return;
+    const depth = Math.round((scrollTop / docHeight) * 100);
+    this.maxScrollDepth = Math.max(this.maxScrollDepth, depth);
+
+    // Track scroll milestones: 25%, 50%, 75%, 100%
+    for (const milestone of [25, 50, 75, 100]) {
+      if (depth >= milestone && !this.scrollTracked.has(milestone)) {
+        this.scrollTracked.add(milestone);
+        track('live_report_scroll', {
+          depth_percent: milestone,
+          report_id: this.route.snapshot.paramMap.get('id') || 'unknown'
+        });
+      }
+    }
   }
 
   private setupIntersectionObserver() {
@@ -110,6 +143,11 @@ export class PublicReportComponent implements OnInit, OnDestroy, AfterViewInit {
   scrollToSection(sectionName: string) {
     this.isMobileMenuOpen.set(false);
     this.activeSection.set(sectionName);
+
+    track('live_report_section_click', {
+      section: sectionName,
+      report_id: this.route.snapshot.paramMap.get('id') || 'unknown'
+    });
     
     setTimeout(() => {
       const element = document.getElementById(`section-${sectionName}`);
@@ -169,6 +207,12 @@ export class PublicReportComponent implements OnInit, OnDestroy, AfterViewInit {
 
   openLightbox(photos: any[], startIndex: number) {
     if (!photos || photos.length === 0) return;
+
+    track('live_report_lightbox_open', {
+      photo_count: photos.length,
+      report_id: this.route.snapshot.paramMap.get('id') || 'unknown'
+    });
+
     this.lightboxPhotos.set(photos.map(p => ({ 
       url: this.getAbsoluteImageUrl(p.storage_url),
       caption: p.caption
@@ -302,5 +346,12 @@ export class PublicReportComponent implements OnInit, OnDestroy, AfterViewInit {
     
     // Fallback for locally generated PDFs if report.pdf_url is missing
     return this.getAbsoluteImageUrl(`/uploads/reports/${insp.id}.pdf`);
+  }
+
+  onDownloadPdfClick() {
+    track('live_report_download_pdf', {
+      report_id: this.route.snapshot.paramMap.get('id') || 'unknown',
+      address: this.inspection()?.address || 'unknown'
+    });
   }
 }

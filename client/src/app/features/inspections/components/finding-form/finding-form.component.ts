@@ -127,8 +127,12 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
           URL.revokeObjectURL(item.previewUrl);
         });
         this.selectedFiles.set([]);
-        this.newPhotoCaptions.clear();
-        this.photoCaptions.clear();
+        this.newPhotoCaptions.clear({ emitEvent: false });
+        this.photoCaptions.clear({ emitEvent: false });
+
+        // Reset UI signals so the new finding doesn't inherit the old one's save status
+        this.isSaving.set(false);
+        this.isSaved.set(false);
       }
 
       this.populateForm();
@@ -195,10 +199,9 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
     });
 
     effect(() => {
-      this._finding();
-      this._section();
-      
-      // Handle publish state
+      // Handle publish state — only track _isPublished, nothing else.
+      // Previously this tracked _finding() and _section() which caused
+      // enable() to fire on every finding/section switch, risking phantom events.
       if (this._isPublished()) {
         this.findingForm.disable({ emitEvent: false });
       } else {
@@ -214,11 +217,18 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
     ).subscribe(({ value, key, findingId, section }) => {
       if (this._isPublished()) return;
 
-      // Save to drafts locally
+      // BUG FIX #3: Abort COMPLETELY if the finding has changed since the keystroke.
+      // Without this, the old finding's data gets saved as a ghost draft under the old key,
+      // which then marks the form dirty on next visit and triggers a phantom PATCH.
+      if (!findingId || findingId !== this._finding()?.id || section !== this._section()) {
+        return;
+      }
+
+      // Save to drafts locally (only reached if finding hasn't changed)
       this.draftService.save(key, value);
 
-      // Only auto-save if the form is valid, dirty, and the active finding has not changed
-      if (this.findingForm.valid && this.findingForm.dirty && findingId && findingId === this._finding()?.id && section === this._section()) {
+      // Only auto-save if the form is valid and dirty
+      if (this.findingForm.valid && this.findingForm.dirty) {
         this.autoSaveFinding(findingId, section, value);
       }
     });
@@ -273,9 +283,31 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
     // Restore draft if it exists (crucial for preserving unsaved changes across ID swaps)
     const draft = this.draftService.load<any>(this.draftKey);
     if (draft) {
-      // Confirm target finding draft matches the active finding ID
-      this.findingForm.patchValue(draft, { emitEvent: false });
-      this.findingForm.markAsDirty();
+      // BUG FIX #2: Deep-compare draft vs pristine server data.
+      // If they're identical, this is a "ghost draft" created by Bug #1.
+      // Delete it immediately instead of marking the form dirty.
+      const pristineValue = this.findingForm.getRawValue();
+
+      const normalize = (val: any): any => {
+        if (val === '' || val === null || val === undefined) return null;
+        if (Array.isArray(val)) return val.map(normalize);
+        if (typeof val === 'object') {
+          const res: any = {};
+          for (const k of Object.keys(val).sort()) res[k] = normalize(val[k]);
+          return res;
+        }
+        return val;
+      };
+
+      const isDifferent = JSON.stringify(normalize(draft)) !== JSON.stringify(normalize(pristineValue));
+
+      if (isDifferent) {
+        this.findingForm.patchValue(draft, { emitEvent: false });
+        this.findingForm.markAsDirty();
+      } else {
+        // Ghost draft — identical to server state. Kill it.
+        this.draftService.clear(this.draftKey);
+      }
     }
   }
 
@@ -333,12 +365,13 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
         if (!existingGroup.get('caption')?.dirty) {
           existingGroup.get('caption')?.setValue(p.caption || '', { emitEvent: false });
         }
-        this.photoCaptions.push(existingGroup);
+        // BUG FIX #1: push() without emitEvent triggers valueChanges → ghost draft → phantom PATCH
+        this.photoCaptions.push(existingGroup, { emitEvent: false });
       } else {
         this.photoCaptions.push(this.fb.group({
           id: [p.id],
           caption: [p.caption || '', [Validators.maxLength(100)]]
-        }));
+        }), { emitEvent: false });
       }
     });
   }
@@ -721,10 +754,14 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
     // Mark as pristine so we don't trigger redundant updates until next change
     this.findingForm.markAsPristine();
 
-    // Show saved micro-interaction
+    // Show saved micro-interaction — scoped to the target finding ID
+    // so it can't bleed into a different finding if the user switches
+    const savedForId = targetFindingId;
     setTimeout(() => {
-      this.isSaving.set(false);
-      this.isSaved.set(true);
+      if (this._finding()?.id === savedForId) {
+        this.isSaving.set(false);
+        this.isSaved.set(true);
+      }
     }, 800);
   }
 

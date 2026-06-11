@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, signal, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { Title, Meta } from '@angular/platform-browser';
@@ -25,7 +25,7 @@ import {
   DollarSign
 } from 'lucide-angular';
 import { environment } from '../../../environments/environment';
-import { inject as injectAnalytics } from '@vercel/analytics';
+import { inject as injectAnalytics, track } from '@vercel/analytics';
 
 interface Testimonial {
   quote: string;
@@ -65,7 +65,7 @@ interface Testimonial {
     }
   ]
 })
-export class LandingComponent implements OnInit {
+export class LandingComponent implements OnInit, OnDestroy {
   constructor() {
     injectAnalytics();
   }
@@ -103,8 +103,37 @@ export class LandingComponent implements OnInit {
   footerEmailSubmitted = signal<boolean>(false);
   isFooterSubmitting = signal<boolean>(false);
 
+  // Analytics
+  private pageEnteredAt = Date.now();
+  private maxScrollDepth = 0;
+  private scrollTracked = new Set<number>();
+
   ngOnInit() {
     this.setSEO();
+  }
+
+  ngOnDestroy() {
+    const timeSpent = Math.round((Date.now() - this.pageEnteredAt) / 1000);
+    track('landing_session', {
+      duration_seconds: timeSpent,
+      max_scroll_depth: this.maxScrollDepth
+    });
+  }
+
+  @HostListener('window:scroll')
+  onScroll() {
+    const scrollTop = window.scrollY;
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    if (docHeight <= 0) return;
+    const depth = Math.round((scrollTop / docHeight) * 100);
+    this.maxScrollDepth = Math.max(this.maxScrollDepth, depth);
+
+    for (const milestone of [25, 50, 75, 100]) {
+      if (depth >= milestone && !this.scrollTracked.has(milestone)) {
+        this.scrollTracked.add(milestone);
+        track('landing_scroll', { depth_percent: milestone });
+      }
+    }
   }
 
   private setSEO() {
@@ -141,6 +170,7 @@ export class LandingComponent implements OnInit {
       
       if (response.ok) {
         this.emailSubmitted.set(true);
+        track('landing_cta_submit', { location: 'hero', email: this.email() });
       }
     } catch (error) {
       console.error('Failed to submit beta request', error);
@@ -165,6 +195,7 @@ export class LandingComponent implements OnInit {
       
       if (response.ok) {
         this.footerEmailSubmitted.set(true);
+        track('landing_cta_submit', { location: 'footer', email: this.footerEmail() });
       }
     } catch (error) {
       console.error('Failed to submit beta request', error);
@@ -174,6 +205,11 @@ export class LandingComponent implements OnInit {
   }
 
   goToDashboard() {
+    track('landing_go_to_dashboard');
     this.router.navigate(['/home']);
+  }
+
+  onSamplePdfClick() {
+    track('landing_sample_pdf_click');
   }
 }
