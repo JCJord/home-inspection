@@ -19,6 +19,7 @@ import { SelectInputComponent } from '../../../../shared/components/inputs/selec
 import { SummaryDashboardComponent } from '../../components/summary-dashboard/summary-dashboard.component';
 import { MutationQueueService, MutationType, TaskCompletion } from '../../../../core/services/mutation-queue.service';
 import { DraftService } from '../../../../core/services/draft.service';
+import { ImageCacheService } from '../../../../core/services/image-cache.service';
 import { debounceTime, Subject, switchMap, catchError, of } from 'rxjs';
 
 @Component({
@@ -35,6 +36,7 @@ export class FindingDetailsComponent implements OnInit {
   private inspectionsService = inject(InspectionsService);
   private mutationQueueService = inject(MutationQueueService);
   private draftService = inject(DraftService);
+  private imageCacheService = inject(ImageCacheService);
   private destroyRef = inject(DestroyRef);
 
   rawInspection = signal<Inspection | null>(null);
@@ -211,6 +213,7 @@ export class FindingDetailsComponent implements OnInit {
     // We use forceNetworkOnly = true to skip the cached-first emission (which causes textbox resets).
     // switchMap automatically cancels any pending requests if a new completion fires in the meantime.
     this.mutationQueueService.taskCompleted$.pipe(
+      debounceTime(1000), // Delay 1 second to ensure DB transaction commits and R2 propagates
       switchMap(() => {
         const currentId = this.inspectionId();
         if (currentId) {
@@ -227,6 +230,9 @@ export class FindingDetailsComponent implements OnInit {
     ).subscribe((insp) => {
       if (insp) {
         this.rawInspection.set(insp);
+        this.imageCacheService.prefetchInspection(insp).catch(err => {
+          console.warn('Image prefetch failed during background hydration:', err);
+        });
       }
     });
 

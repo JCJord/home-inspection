@@ -284,29 +284,53 @@ export class MutationQueueService {
           })
         );
       case MutationType.UPLOAD_PHOTO:
-        return this.inspectionsService.uploadPhoto(task.inspectionId, task.findingId!, task.file!, task.payload.caption);
+        return this.inspectionsService.uploadPhoto(task.inspectionId, task.findingId!, task.file!, task.payload.caption).pipe(
+          tap(photo => {
+            this.taskCompleted$.next({ type: task.type, result: photo, clientFindingId: task.clientFindingId });
+          })
+        );
       case MutationType.UPDATE_PHOTO: {
         const { photoId, ...dto } = task.payload;
-        return this.inspectionsService.updatePhoto(task.inspectionId, task.findingId!, photoId, dto);
+        return this.inspectionsService.updatePhoto(task.inspectionId, task.findingId!, photoId, dto).pipe(
+          tap(photo => {
+            this.taskCompleted$.next({ type: task.type, result: photo });
+          })
+        );
       }
       case MutationType.DELETE_PHOTO:
         return this.inspectionsService.deletePhoto(task.inspectionId, task.findingId!, task.payload.photoId).pipe(
+          tap(() => {
+            this.taskCompleted$.next({ type: task.type, result: null });
+          }),
           map(() => null),
           catchError(err => {
-            if (err.status === 404) return of(null); // Already deleted
+            if (err.status === 404) {
+              this.taskCompleted$.next({ type: task.type, result: null });
+              return of(null);
+            }
             throw err;
           })
         );
       case MutationType.DELETE_FINDING:
         return this.inspectionsService.deleteFinding(task.inspectionId, task.findingId!).pipe(
+          tap(() => {
+            this.taskCompleted$.next({ type: task.type, result: null });
+          }),
           map(() => null),
           catchError(err => {
-            if (err.status === 404) return of(null); // Already deleted
+            if (err.status === 404) {
+              this.taskCompleted$.next({ type: task.type, result: null });
+              return of(null);
+            }
             throw err;
           })
         );
       case MutationType.UPDATE_INSPECTION:
-        return this.inspectionsService.updateInspection(task.inspectionId, task.payload);
+        return this.inspectionsService.updateInspection(task.inspectionId, task.payload).pipe(
+          tap(inspection => {
+            this.taskCompleted$.next({ type: task.type, result: inspection });
+          })
+        );
       default:
         return of(null);
     }
@@ -470,8 +494,8 @@ export class MutationQueueService {
 
 
   private async handleTaskError(task: MutationTask, error: any) {
-    const maxRetries = 5;
-    const isNetworkError = !navigator.onLine || error.status === 0 || error.status >= 500;
+    const maxRetries = 3;
+    const isNetworkError = !navigator.onLine || error.status === 0 || error.status >= 500 || error?.message === 'Timeout';
     
     if (isNetworkError && task.retries < maxRetries) {
       // Retryable

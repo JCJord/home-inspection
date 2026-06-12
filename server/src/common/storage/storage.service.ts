@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand, ListObjectsV2Command, DeleteObjectsCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { NodeHttpHandler } from '@smithy/node-http-handler';
 
 @Injectable()
 export class StorageService {
@@ -27,8 +28,12 @@ export class StorageService {
         forcePathStyle: true,
         requestChecksumCalculation: 'WHEN_REQUIRED',
         responseChecksumValidation: 'WHEN_REQUIRED',
+        requestHandler: new NodeHttpHandler({
+          connectionTimeout: 10000,
+          socketTimeout: 15000,
+        }),
       });
-      this.logger.log('S3/R2 Client initialized successfully');
+      this.logger.log('S3/R2 Client initialized successfully with timeout handlers');
     } else {
       this.logger.warn('Missing R2 configuration in environment variables');
     }
@@ -102,8 +107,11 @@ export class StorageService {
     try {
       let isTruncated = true;
       let continuationToken: string | undefined = undefined;
+      let safetyCounter = 0;
+      const maxPages = 100;
 
-      while (isTruncated) {
+      while (isTruncated && safetyCounter < maxPages) {
+        safetyCounter++;
         const listRes = await this.s3Client.send(new ListObjectsV2Command({
           Bucket: this.bucketName,
           Prefix: prefix,
@@ -121,8 +129,12 @@ export class StorageService {
           this.logger.log(`Deleted ${listRes.Contents.length} files from R2 directory: ${prefix}`);
         }
 
-        isTruncated = listRes.IsTruncated ?? false;
+        isTruncated = !!listRes.IsTruncated && !!listRes.NextContinuationToken;
         continuationToken = listRes.NextContinuationToken;
+      }
+
+      if (safetyCounter >= maxPages) {
+        this.logger.warn(`deleteDirectory reached safety limit of ${maxPages} pages for prefix: ${prefix}`);
       }
     } catch (error) {
       this.logger.error(`Failed to delete directory ${prefix}: ${error.message}`);

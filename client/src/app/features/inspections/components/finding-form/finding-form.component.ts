@@ -81,6 +81,7 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
   deleted = output<Finding>();
   
   private idSwaps = new Map<string, string>();
+  private currentResolvingFindingId: string | null = null;
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['inspectionId']) this._inspectionId.set(this.inspectionId);
@@ -101,7 +102,7 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
         this.idSwaps.delete(prevId);
         // Sync photos and resolve URLs without wiping input values, focus, or active file selections
         this.syncPhotoCaptions(curr?.photos || []);
-        this.resolveExistingPhotos(curr?.photos || []);
+        this.resolveExistingPhotos(curr?.photos || [], false);
         return;
       }
 
@@ -110,7 +111,7 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
         // But we must gracefully synchronize the photoCaptions FormArray with the new photos
         // to handle temp ID swaps without losing typed data.
         this.syncPhotoCaptions(curr?.photos || []);
-        this.resolveExistingPhotos(curr?.photos || []);
+        this.resolveExistingPhotos(curr?.photos || [], false);
         return;
       }
 
@@ -136,7 +137,7 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
       }
 
       this.populateForm();
-      this.resolveExistingPhotos(this.finding?.photos || []);
+      this.resolveExistingPhotos(this.finding?.photos || [], prev?.id !== curr?.id);
     }
     if (changes['isPublished']) this._isPublished.set(this.isPublished);
   }
@@ -311,10 +312,28 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
     }
   }
 
-  async resolveExistingPhotos(photos: Photo[]) {
+  async resolveExistingPhotos(photos: Photo[], clearFirst = false) {
+    const findingId = this._finding()?.id || null;
+    this.currentResolvingFindingId = findingId;
+    
+    // Clear instantly only if switching findings
+    if (clearFirst) {
+      this.resolvedExistingPhotos.set([]);
+    }
+
     const resolved = await Promise.all(photos.map(async p => {
       let resolvedUrl = p.storage_url;
-      if (p.storage_url) {
+      
+      // Check if there is an active/completed task in the queue for this photo to reuse local preview URL
+      const idStr = p.id?.toString();
+      const matchingTask = idStr ? this.mutationQueueService.allTasks().find(t => 
+        t.type === MutationType.UPLOAD_PHOTO && 
+        (t.id === idStr || `temp-${t.id}` === idStr || (t as any).result?.id?.toString() === idStr)
+      ) : null;
+
+      if (matchingTask && (matchingTask as any).tempPreviewUrl) {
+        resolvedUrl = (matchingTask as any).tempPreviewUrl;
+      } else if (p.storage_url) {
         try {
           resolvedUrl = await this.imageCache.getImageUrl(p.storage_url);
         } catch (e) {
@@ -323,7 +342,30 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
       }
       return { ...p, resolvedUrl };
     }));
-    this.resolvedExistingPhotos.set(resolved);
+
+    // Ensure we only apply if the finding has not switched during the async operations
+    if ((this._finding()?.id || null) === findingId && this.currentResolvingFindingId === findingId) {
+      this.resolvedExistingPhotos.set(resolved);
+    }
+  }
+
+  trackPhoto(index: number, photo: any): string {
+    if (photo.id) {
+      const idStr = photo.id.toString();
+      if (idStr.startsWith('temp-')) {
+        return idStr;
+      }
+      const completedTask = this.mutationQueueService.allTasks().find(t => 
+        t.type === MutationType.UPLOAD_PHOTO && 
+        t.status === 'COMPLETED' && 
+        (t as any).result?.id?.toString() === idStr
+      );
+      if (completedTask) {
+        return `temp-${completedTask.id}`;
+      }
+      return idStr;
+    }
+    return index.toString();
   }
 
   syncPhotoCaptions(photos: Photo[]) {

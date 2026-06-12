@@ -7,8 +7,12 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.use(json({ limit: '200mb' }));
   app.use(urlencoded({ limit: '200mb', extended: true }));
+  const corsOrigins = process.env.CORS_ORIGIN
+    ? process.env.CORS_ORIGIN.split(',')
+    : '*';
+
   app.enableCors({
-    origin: process.env.CORS_ORIGIN,
+    origin: corsOrigins,
     credentials: true,
   });
   app.useGlobalPipes(

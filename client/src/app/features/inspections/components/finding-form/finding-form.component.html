@@ -31,7 +31,7 @@
         
         <!-- Unified Existing Photos (Server & Pending Syncing, bound to FormArray photo_captions) -->
         <ng-container formArrayName="photo_captions">
-          @for (photo of resolvedExistingPhotos(); track photo.id; let i = $index) {
+          @for (photo of resolvedExistingPhotos(); track trackPhoto(i, photo); let i = $index) {
           <div class="existing-photo-item" [formGroupName]="i">
             <div class="photo-thumbnail">
               <img [src]="photo.resolvedUrl" alt="Finding photo" crossorigin="anonymous">
