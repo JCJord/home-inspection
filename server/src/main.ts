@@ -9,7 +9,7 @@ async function bootstrap() {
   app.use(urlencoded({ limit: '200mb', extended: true }));
   const corsOrigins = process.env.CORS_ORIGIN
     ? process.env.CORS_ORIGIN.split(',')
-    : '*';
+    : ['http://localhost:4200'];
 
   app.enableCors({
     origin: corsOrigins,

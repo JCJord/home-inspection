@@ -22,7 +22,7 @@
            (drop)="onDrop($event)">
         <lucide-icon [name]="icons.Upload" [size]="24"></lucide-icon>
         <span class="upload-text">Click to browse or drag and drop images</span>
-        <input #fileInput type="file" multiple accept="image/*" style="display: none" (change)="onFileSelected($event)">
+        <input #fileInput type="file" accept="image/*" capture="environment" style="display: none" (change)="onFileSelected($event)">
       </div>
 
       <!-- Single Unified Photos Grid -->
