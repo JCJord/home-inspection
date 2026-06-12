@@ -76,12 +76,23 @@
         }
       </div>
 
-      <!-- Sample Report Link -->
-      <div class="flex items-center gap-3 mt-2">
-        <a href="/uploads/reports/sample.pdf" download (click)="onSamplePdfClick()"
-          class="inline-flex items-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-700 hover:underline">
-          <lucide-icon [name]="icons.FileText" class="w-4 h-4"></lucide-icon>
-          See a Sample PDF Report
+      <!-- Live & PDF Demo Buttons -->
+      <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 mt-4 w-full max-w-lg">
+        <a href="https://www.inspectlyhq.com/report/ce0a2290-803f-4721-9aed-21a46c5a3f4a" 
+           target="_blank" 
+           rel="noopener noreferrer"
+           (click)="onLiveReportClick()"
+           class="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-md hover:shadow-lg transition-all active:scale-[0.98] border border-transparent">
+          <lucide-icon [name]="icons.Zap" class="w-4 h-4 text-blue-200"></lucide-icon>
+          View Live Report
+        </a>
+        <a href="https://fd3a3c210a1a56f4e4f4a826d2e9f0b5.r2.cloudflarestorage.com/inspectly-storage/users/a948a681-84e1-4b1b-b319-f9cf977414de/inspections/ce0a2290-803f-4721-9aed-21a46c5a3f4a/reports/report.pdf?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=330927e1370900532965e8767853d748%2F20260612%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20260612T021709Z&X-Amz-Expires=900&X-Amz-Signature=640e11d47ecc20b970099841cd774470770ea7d70e8c7d28b9039279ed250ecf&X-Amz-SignedHeaders=host&x-id=GetObject" 
+           target="_blank" 
+           rel="noopener noreferrer"
+           (click)="onPdfReportClick()"
+           class="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl bg-white border border-slate-300 text-slate-800 font-bold text-sm shadow-sm hover:bg-slate-50 hover:border-slate-400 transition-all active:scale-[0.98]">
+          <lucide-icon [name]="icons.FileText" class="w-4 h-4 text-slate-500"></lucide-icon>
+          View PDF Report
         </a>
       </div>
     </div>

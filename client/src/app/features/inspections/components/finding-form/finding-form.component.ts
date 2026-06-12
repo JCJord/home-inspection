@@ -561,13 +561,18 @@ export class FindingFormComponent implements OnDestroy, OnChanges {
         const caption = index > -1 ? this.photoCaptions.at(index).get('caption')?.value || '' : '';
 
         // OFFLINE-RESILIENT workflow: 
-        // 1. Enqueue Delete for the old one
-        this.mutationQueueService.enqueue({
-          type: MutationType.DELETE_PHOTO,
-          inspectionId,
-          findingId,
-          payload: { photoId: oldPhoto.id }
-        });
+        if (oldPhoto.id.startsWith('temp-')) {
+          const oldTaskId = oldPhoto.id.replace('temp-', '');
+          await this.mutationQueueService.cancelTask(oldTaskId);
+        } else {
+          // 1. Enqueue Delete for the old one
+          this.mutationQueueService.enqueue({
+            type: MutationType.DELETE_PHOTO,
+            inspectionId,
+            findingId,
+            payload: { photoId: oldPhoto.id }
+          });
+        }
 
         // 2. Enqueue Upload for the new one (preserving caption)
         const taskId = crypto.randomUUID();

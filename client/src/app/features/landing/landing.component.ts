@@ -212,4 +212,18 @@ export class LandingComponent implements OnInit, OnDestroy {
   onSamplePdfClick() {
     track('landing_sample_pdf_click');
   }
+
+  onLiveReportClick() {
+    track('landing_demo_live_report_click');
+    if ((window as any).gtag) {
+      (window as any).gtag('event', 'click_live_report_demo');
+    }
+  }
+
+  onPdfReportClick() {
+    track('landing_demo_pdf_report_click');
+    if ((window as any).gtag) {
+      (window as any).gtag('event', 'click_pdf_report_demo');
+    }
+  }
 }

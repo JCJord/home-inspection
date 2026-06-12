@@ -404,6 +404,23 @@ export class MutationQueueService {
         return;
       }
 
+      // If a photo was uploaded, check if the user modified the caption while syncing.
+      // If the server-saved caption does not match the final target caption, enqueue an UPDATE_PHOTO task.
+      if (updatedTask.type === MutationType.UPLOAD_PHOTO) {
+        const serverPhotoId = (result || (updatedTask as any).result)?.id;
+        const serverCaption = (result || (updatedTask as any).result)?.caption || '';
+        const targetCaption = updatedTask.payload.caption || '';
+        
+        if (serverPhotoId && serverCaption !== targetCaption) {
+          this.enqueue({
+            type: MutationType.UPDATE_PHOTO,
+            inspectionId: updatedTask.inspectionId,
+            findingId: updatedTask.findingId || updatedTask.clientFindingId,
+            payload: { photoId: serverPhotoId.toString(), caption: targetCaption }
+          });
+        }
+      }
+
       // BUFFER PERIOD: Keep the task in the signal for 30 seconds after completion
       // This ensures mergePendingMutations continues to apply the change while SWR refreshes.
       // Smart Deduplication will hide the duplicate once the server actually confirms it.
