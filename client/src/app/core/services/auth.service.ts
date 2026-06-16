@@ -132,6 +132,22 @@ export class AuthService {
   }
 
   /**
+   * Handles OAuth login by setting tokens and fetching the user profile.
+   */
+  handleOAuthTokens(accessToken: string, refreshToken: string): Observable<Pick<Inspector, 'id' | 'email' | 'name'>> {
+    localStorage.setItem('access_token', accessToken);
+    localStorage.setItem('refresh_token', refreshToken);
+    
+    this.token.set(accessToken);
+    this.refreshTokenSignal.set(refreshToken);
+
+    this.scheduleRefresh();
+    
+    // Fetch the user data now that tokens are set
+    return this.loadCurrentUser();
+  }
+
+  /**
    * Clears the session and navigates to login.
    */
   logout() {

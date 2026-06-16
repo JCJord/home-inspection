@@ -18,6 +18,10 @@ export const AUTH_ROUTES: Routes = [
     loadComponent: () => import('./pages/confirm-email/confirm-email.component').then(m => m.ConfirmEmailComponent),
   },
   {
+    path: 'oauth-callback',
+    loadComponent: () => import('./pages/oauth-callback/oauth-callback.component').then(m => m.OAuthCallbackComponent),
+  },
+  {
     path: '',
     redirectTo: 'login',
     pathMatch: 'full',

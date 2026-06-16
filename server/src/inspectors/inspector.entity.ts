@@ -17,8 +17,11 @@ export class Inspector {
   @Column({ unique: true })
   email: string;
 
-  @Column()
+  @Column({ nullable: true })
   password_hash: string;
+
+  @Column({ nullable: true })
+  google_id: string;
 
   @Column({ type: 'boolean', default: false })
   is_email_verified: boolean;

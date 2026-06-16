@@ -7,7 +7,10 @@ import {
   Get,
   UseGuards,
   Headers,
+  Req,
+  Res,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
 import { AuthRegisterDto } from './dto/register.dto';
@@ -15,11 +18,32 @@ import { LoginDto } from './dto/login.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { AuthGuard } from './guards/auth.guard';
+import { GoogleAuthGuard } from './guards/google-auth.guard';
 import { GetUser } from './decorators/get-user.decorator';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly configService: ConfigService
+  ) {}
+
+  @Get('google')
+  @UseGuards(GoogleAuthGuard)
+  async googleAuth(@Req() req) {
+    // Starts the Google OAuth flow
+  }
+
+  @Get('google/callback')
+  @UseGuards(GoogleAuthGuard)
+  async googleAuthRedirect(@Req() req, @Res() res) {
+    const user = req.user;
+    const tokens = await this.authService.generateTokens(user);
+    const frontendUrl = this.configService.get<string>('FRONTEND_URL', 'http://localhost:4200');
+    
+    // Redirect to frontend with tokens in URL
+    res.redirect(`${frontendUrl}/auth/oauth-callback?accessToken=${tokens.access_token}&refreshToken=${tokens.refresh_token}`);
+  }
 
   @Post('register')
   @HttpCode(HttpStatus.CREATED)

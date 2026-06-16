@@ -170,6 +170,32 @@ export class AuthService {
     };
   }
 
+  async validateOAuthUser(profile: any) {
+    const { email, firstName, lastName, googleId } = profile;
+    const existingUser = await this.inspectorsService.findByEmail(email);
+
+    if (existingUser) {
+      if (!existingUser.google_id) {
+        existingUser.google_id = googleId;
+        await this.inspectorRepository.save(existingUser);
+      }
+      if (!existingUser.is_email_verified) {
+        existingUser.is_email_verified = true;
+        await this.inspectorRepository.save(existingUser);
+      }
+      return existingUser;
+    }
+
+    const newInspector = this.inspectorRepository.create({
+      email,
+      name: `${firstName} ${lastName}`.trim(),
+      google_id: googleId,
+      is_email_verified: true,
+    });
+    
+    return await this.inspectorRepository.save(newInspector);
+  }
+
   async resendVerificationEmail(email: string) {
     const inspector = await this.inspectorsService.findByEmail(email);
     if (!inspector) {

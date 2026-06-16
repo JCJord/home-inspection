@@ -10,6 +10,7 @@ import { Inspector } from '../inspectors/inspector.entity';
 import { InviteCode } from './invite-code.entity';
 import { InviteCodeService } from './invite-code.service';
 import { AdminInviteCodeController } from './admin-invite-code.controller';
+import { GoogleStrategy } from './strategies/google.strategy';
 
 @Module({
   imports: [
@@ -27,7 +28,7 @@ import { AdminInviteCodeController } from './admin-invite-code.controller';
     }),
   ],
   controllers: [AuthController, AdminInviteCodeController],
-  providers: [AuthService, InviteCodeService],
+  providers: [AuthService, InviteCodeService, GoogleStrategy],
   exports: [AuthService, JwtModule, InviteCodeService],
 })
 export class AuthModule {}

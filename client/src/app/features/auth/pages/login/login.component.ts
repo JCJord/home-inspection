@@ -8,6 +8,7 @@ import { ButtonComponent } from '../../../../shared/components/button/button.com
 import { AuthService } from '../../../../core/services/auth.service';
 import { LoginRequestDto } from '../../../../core/dtos/login-request.dto';
 import { inject as injectAnalytics } from '@vercel/analytics';
+import { environment } from '../../../../../environments/environment';
 
 @Component({
   selector: 'app-login',
@@ -113,5 +114,9 @@ export class LoginComponent {
     } else {
       this.loginForm.reset();
     }
+  }
+
+  loginWithGoogle() {
+    window.location.href = `${environment.apiUrl}/auth/google`;
   }
 }

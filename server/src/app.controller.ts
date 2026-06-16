@@ -35,4 +35,25 @@ export class AppController {
 
     return { success: true, message: 'Beta request received.' };
   }
+
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
+  @Post('public/capture-lead')
+  @HttpCode(HttpStatus.OK)
+  async handleCaptureLead(@Body('email') email: string) {
+    if (!email) {
+      return { success: false, message: 'Email is required' };
+    }
+
+    try {
+      await this.mailService.sendGenericEmail(
+        'juliojc.jord@gmail.com',
+        'New Demo Report Viewer!',
+        `<p>A new lead just entered their email to view your sample reports:</p><p><strong>Email:</strong> ${email}</p>`
+      );
+    } catch (e) {
+      console.error('Failed to send lead capture email', e);
+    }
+
+    return { success: true, message: 'Lead captured.' };
+  }
 }

@@ -4,6 +4,7 @@ import { Router, RouterModule } from '@angular/router';
 import { Title, Meta } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
 import { ButtonComponent } from '../../shared/components/button/button.component';
+import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../core/services/auth.service';
 import {
   LucideAngularModule,
@@ -21,6 +22,7 @@ import {
   AlertTriangle,
   Heart,
   CheckCircle,
+  XCircle,
   FileText,
   DollarSign
 } from 'lucide-angular';
@@ -59,6 +61,7 @@ interface Testimonial {
         AlertTriangle,
         Heart,
         CheckCircle,
+        XCircle,
         FileText,
         DollarSign
       }
@@ -73,6 +76,7 @@ export class LandingComponent implements OnInit, OnDestroy {
   private titleService = inject(Title);
   private metaService = inject(Meta);
   private router = inject(Router);
+  private http = inject(HttpClient);
   authService = inject(AuthService);
 
   readonly icons = {
@@ -90,18 +94,12 @@ export class LandingComponent implements OnInit, OnDestroy {
     AlertTriangle,
     Heart,
     CheckCircle,
+    XCircle,
     FileText,
     DollarSign
   };
 
-  // Email capture state
-  email = signal<string>('');
-  emailSubmitted = signal<boolean>(false);
-  isSubmitting = signal<boolean>(false);
 
-  footerEmail = signal<string>('');
-  footerEmailSubmitted = signal<boolean>(false);
-  isFooterSubmitting = signal<boolean>(false);
 
   // Analytics
   private pageEnteredAt = Date.now();
@@ -154,76 +152,43 @@ export class LandingComponent implements OnInit, OnDestroy {
     this.metaService.updateTag({ property: 'og:image', content: `${window.location.origin}/assets/images/og-image.jpg` });
   }
 
-  async submitBetaRequest(event: Event) {
-    event.preventDefault();
-    if (!this.email().trim()) return;
 
-    this.isSubmitting.set(true);
-    try {
-      const response = await fetch(`${environment.apiUrl}/public/beta-request`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ email: this.email() })
-      });
-      
-      if (response.ok) {
-        this.emailSubmitted.set(true);
-        track('landing_cta_submit', { location: 'hero', email: this.email() });
-      }
-    } catch (error) {
-      console.error('Failed to submit beta request', error);
-    } finally {
-      this.isSubmitting.set(false);
-    }
-  }
 
-  async submitFooterBetaRequest(event: Event) {
-    event.preventDefault();
-    if (!this.footerEmail().trim()) return;
-
-    this.isFooterSubmitting.set(true);
-    try {
-      const response = await fetch(`${environment.apiUrl}/public/beta-request`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ email: this.footerEmail() })
-      });
-      
-      if (response.ok) {
-        this.footerEmailSubmitted.set(true);
-        track('landing_cta_submit', { location: 'footer', email: this.footerEmail() });
-      }
-    } catch (error) {
-      console.error('Failed to submit beta request', error);
-    } finally {
-      this.isFooterSubmitting.set(false);
-    }
-  }
+  isEmailModalOpen = signal<boolean>(false);
+  targetReportUrl = signal<string>('');
+  captureEmail = signal<string>('');
 
   goToDashboard() {
     track('landing_go_to_dashboard');
     this.router.navigate(['/home']);
   }
 
-  onSamplePdfClick() {
-    track('landing_sample_pdf_click');
-  }
-
-  onLiveReportClick() {
-    track('landing_demo_live_report_click');
+  openReportModal(url: string, event: Event, trackName: string) {
+    event.preventDefault();
+    track(trackName);
     if ((window as any).gtag) {
-      (window as any).gtag('event', 'click_live_report_demo');
+      (window as any).gtag('event', trackName);
     }
+    this.targetReportUrl.set(url);
+    this.isEmailModalOpen.set(true);
   }
 
-  onPdfReportClick() {
-    track('landing_demo_pdf_report_click');
-    if ((window as any).gtag) {
-      (window as any).gtag('event', 'click_pdf_report_demo');
+  closeModal() {
+    this.isEmailModalOpen.set(false);
+    this.targetReportUrl.set('');
+    this.captureEmail.set('');
+  }
+
+  submitEmail(event: Event) {
+    event.preventDefault();
+    const email = this.captureEmail();
+    if (email) {
+      this.http.post(`${environment.apiUrl}/public/capture-lead`, { email }).subscribe({
+        error: (err) => console.error('Failed to capture lead:', err)
+      });
+      
+      window.open(this.targetReportUrl(), '_blank');
+      this.closeModal();
     }
   }
 }

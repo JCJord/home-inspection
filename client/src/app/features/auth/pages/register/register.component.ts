@@ -9,6 +9,7 @@ import { AuthService } from '../../../../core/services/auth.service';
 import { RegisterRequestDto } from '../../../../core/dtos/register-request.dto';
 import { LucideAngularModule, MailCheck } from 'lucide-angular';
 import { inject as injectAnalytics } from '@vercel/analytics';
+import { environment } from '../../../../../environments/environment';
 
 /**
  * Custom validator to check if password and confirmPassword fields match.
@@ -156,5 +157,9 @@ export class RegisterComponent {
     if (this.resendTimer) {
       clearInterval(this.resendTimer);
     }
+  }
+
+  loginWithGoogle() {
+    window.location.href = `${environment.apiUrl}/auth/google`;
   }
 }
