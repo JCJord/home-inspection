@@ -27,6 +27,11 @@ export const routes: Routes = [
     loadComponent: () => import('./features/landing/landing.component').then(m => m.LandingComponent),
   },
   {
+    path: 'alternative-to-spectora',
+    canActivate: [guestGuard],
+    loadComponent: () => import('./features/public-pages/alternative-to-spectora/alternative-to-spectora.component').then(m => m.AlternativeToSpectoraComponent),
+  },
+  {
     path: '',
     canActivate: [authGuard],
     children: [

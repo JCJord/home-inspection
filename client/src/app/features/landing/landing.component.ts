@@ -1,5 +1,5 @@
-import { Component, inject, OnInit, OnDestroy, signal, HostListener } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, inject, OnInit, OnDestroy, signal, HostListener, Renderer2 } from '@angular/core';
+import { CommonModule, DOCUMENT } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { Title, Meta } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
@@ -24,8 +24,10 @@ import {
   CheckCircle,
   XCircle,
   FileText,
-  DollarSign
+  DollarSign,
+  Maximize
 } from 'lucide-angular';
+import { ImageLightboxComponent } from '../../shared/components/image-lightbox/image-lightbox.component';
 import { environment } from '../../../environments/environment';
 import { inject as injectAnalytics, track } from '@vercel/analytics';
 
@@ -40,7 +42,7 @@ interface Testimonial {
 @Component({
   selector: 'app-landing',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, ButtonComponent, LucideAngularModule],
+  imports: [CommonModule, FormsModule, RouterModule, ButtonComponent, LucideAngularModule, ImageLightboxComponent],
   templateUrl: './landing.component.html',
   styleUrls: ['./landing.component.scss'],
   providers: [
@@ -63,7 +65,8 @@ interface Testimonial {
         CheckCircle,
         XCircle,
         FileText,
-        DollarSign
+        DollarSign,
+        Maximize
       }
     }
   ]
@@ -96,18 +99,23 @@ export class LandingComponent implements OnInit, OnDestroy {
     CheckCircle,
     XCircle,
     FileText,
-    DollarSign
+    DollarSign,
+    Maximize
   };
 
 
 
   // Analytics
   private pageEnteredAt = Date.now();
+  user: any = null;
   private maxScrollDepth = 0;
   private scrollTracked = new Set<number>();
+  private renderer = inject(Renderer2);
+  private document = inject(DOCUMENT);
 
   ngOnInit() {
     this.setSEO();
+    this.injectFAQSchema();
   }
 
   ngOnDestroy() {
@@ -135,60 +143,102 @@ export class LandingComponent implements OnInit, OnDestroy {
   }
 
   private setSEO() {
-    this.titleService.setTitle('Home Inspection Report Software for Solo Inspectors | Inspectly');
+    this.titleService.setTitle('Inspectly: The Fast, Offline-First Report Software for Solo Inspectors. Stop Overpaying for Bloatware.');
     
     // Core SEO tags
     this.metaService.updateTag({ 
       name: 'description', 
-      content: 'Inspectly is home inspection report software built for solo inspectors. Generate clean PDF reports on-site, work offline, and stop overpaying for Spectora.' 
+      content: 'Inspectly is the lean, fast alternative designed for solo inspectors. Generate clean, professional PDFs on-site as you work. No layout cleanups, no formatting errors.' 
     });
     this.metaService.updateTag({ name: 'robots', content: 'index, follow' });
 
     // Open Graph Tags for sharing
-    this.metaService.updateTag({ property: 'og:title', content: 'Home Inspection Report Software for Solo Inspectors | Inspectly' });
-    this.metaService.updateTag({ property: 'og:description', content: 'Inspectly is home inspection report software built for solo inspectors. Generate clean PDF reports on-site, work offline, and stop overpaying for Spectora.' });
+    this.metaService.updateTag({ property: 'og:title', content: 'Inspectly: The Fast, Offline-First Report Software for Solo Inspectors. Stop Overpaying for Bloatware.' });
+    this.metaService.updateTag({ property: 'og:description', content: 'Inspectly is the lean, fast alternative designed for solo inspectors. Generate clean, professional PDFs on-site as you work. No layout cleanups, no formatting errors.' });
     this.metaService.updateTag({ property: 'og:type', content: 'website' });
     this.metaService.updateTag({ property: 'og:url', content: window.location.origin });
     this.metaService.updateTag({ property: 'og:image', content: `${window.location.origin}/assets/images/og-image.jpg` });
   }
 
+  private injectFAQSchema() {
+    const script = this.renderer.createElement('script');
+    this.renderer.setAttribute(script, 'type', 'application/ld+json');
+    
+    const faqSchema = {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [{
+        "@type": "Question",
+        "name": "Is Inspectly offline-first?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, Inspectly is built offline-first. You can conduct your entire inspection, take photos, and write narratives without an internet connection. The app will sync automatically when you're back online."
+        }
+      }, {
+        "@type": "Question",
+        "name": "How long does it take to migrate my templates?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Most inspectors can migrate their existing templates in under an hour. We provide intuitive tools to customize sections, items, and defect narratives to match your exact workflow."
+        }
+      }, {
+        "@type": "Question",
+        "name": "Is it compatible with mobile?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Absolutely. Inspectly is designed specifically for mobile and tablet use on-site, with a clean interface that eliminates the need for 'fat-finger' corrections or endless scrolling."
+        }
+      }]
+    };
+    
+    this.renderer.setProperty(script, 'text', JSON.stringify(faqSchema));
+    this.renderer.appendChild(this.document.head, script);
+  }
 
+  // Carousel State
+  imageBaseUrl = 'https://pub-4a444b708e4e4f4f9a88a53b374f4c00.r2.dev/'; // Replace with correct R2 domain if needed
+  reportPages = [
+    { file: '11.jpg', alt: 'Clean Home Inspection Cover Page Example' },
+    { file: '13.jpg', alt: 'Professional Home Inspection Summary Page' },
+    { file: '14.jpg', alt: 'Clean Home Inspection Summary Page Example' },
+    { file: '15.jpg', alt: 'Professional Defect Narrative Report Format' },
+    { file: '113.jpg', alt: 'Home Inspection Report Roof Findings' },
+    { file: '114.jpg', alt: 'Exterior Inspection Report Template Example' },
+    { file: '115.jpg', alt: 'Electrical Panel Inspection Reporting Format' },
+    { file: '116.jpg', alt: 'Plumbing System Inspection Findings Page' },
+    { file: '117.jpg', alt: 'HVAC Inspection Report Template Example' },
+    { file: '118.jpg', alt: 'Interior Inspection Report Findings Page' }
+  ];
 
-  isEmailModalOpen = signal<boolean>(false);
-  targetReportUrl = signal<string>('');
-  captureEmail = signal<string>('');
+  isLightboxOpen = signal<boolean>(false);
+  currentLightboxIndex = signal<number>(0);
+
+  get fullImageUrls() {
+    return this.reportPages.map(page => ({
+      url: `${this.imageBaseUrl}${page.file}`,
+      alt: page.alt
+    }));
+  }
+
+  openLightbox(index: number) {
+    this.currentLightboxIndex.set(index);
+    this.isLightboxOpen.set(true);
+    this.trackEvent('landing_lightbox_opened');
+  }
+
+  closeLightbox() {
+    this.isLightboxOpen.set(false);
+  }
 
   goToDashboard() {
     track('landing_go_to_dashboard');
     this.router.navigate(['/home']);
   }
 
-  openReportModal(url: string, event: Event, trackName: string) {
-    event.preventDefault();
-    track(trackName);
+  trackEvent(eventName: string) {
+    track(eventName);
     if ((window as any).gtag) {
-      (window as any).gtag('event', trackName);
-    }
-    this.targetReportUrl.set(url);
-    this.isEmailModalOpen.set(true);
-  }
-
-  closeModal() {
-    this.isEmailModalOpen.set(false);
-    this.targetReportUrl.set('');
-    this.captureEmail.set('');
-  }
-
-  submitEmail(event: Event) {
-    event.preventDefault();
-    const email = this.captureEmail();
-    if (email) {
-      this.http.post(`${environment.apiUrl}/public/capture-lead`, { email }).subscribe({
-        error: (err) => console.error('Failed to capture lead:', err)
-      });
-      
-      window.open(this.targetReportUrl(), '_blank');
-      this.closeModal();
+      (window as any).gtag('event', eventName);
     }
   }
 }

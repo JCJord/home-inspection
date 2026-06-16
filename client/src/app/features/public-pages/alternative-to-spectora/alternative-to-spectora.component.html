@@ -1,0 +1,133 @@
+<div class="min-h-screen bg-slate-50 font-sans selection:bg-blue-100 selection:text-blue-900 flex flex-col">
+  <!-- Navbar -->
+  <nav class="sticky top-0 z-50 w-full bg-white/80 backdrop-blur-md border-b border-slate-200">
+    <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+      <a routerLink="/" class="flex items-center gap-2 group cursor-pointer hover:opacity-80 transition-opacity">
+        <div class="bg-blue-600 rounded-lg p-1.5 shadow-sm group-hover:shadow transition-all">
+          <img src="assets/icons/inspectly-logo.svg" alt="Inspectly Logo" class="w-5 h-5 brightness-0 invert" />
+        </div>
+        <span class="font-extrabold text-xl tracking-tight text-slate-900">Inspectly</span>
+      </a>
+      <div class="flex items-center gap-4">
+        <a routerLink="/auth/login" class="text-sm font-semibold text-slate-600 hover:text-slate-900 hidden sm:block">Log in</a>
+        <app-button variant="solid" size="sm" routerLink="/auth/register" (click)="trackEvent('alternative_header_register_click')">
+          Try for Free
+        </app-button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <header class="pt-20 pb-16 px-6 text-center max-w-4xl mx-auto">
+    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-sm font-bold mb-6 border border-blue-200">
+      <lucide-icon [name]="icons.Shield" class="w-4 h-4"></lucide-icon>
+      The #1 Spectora Alternative for Solo Inspectors
+    </div>
+    <h1 class="text-4xl md:text-5xl lg:text-6xl font-extrabold text-slate-900 leading-tight mb-6">
+      Stop Paying Corporate Prices for Features You Don't Need.
+    </h1>
+    <p class="text-lg md:text-xl text-slate-600 max-w-2xl mx-auto mb-10">
+      If you're a solo home inspector tired of Spectora's bloated interface, high monthly fees, and complex template setups, you've found your new home.
+    </p>
+    <div class="flex flex-col sm:flex-row justify-center gap-4">
+      <app-button variant="solid" size="lg" routerLink="/auth/register" (click)="trackEvent('alternative_hero_register_click')" class="shadow-lg hover:shadow-xl">
+        Start Free Trial
+      </app-button>
+      <a routerLink="/" class="inline-flex justify-center items-center gap-2 px-6 py-3 rounded-xl bg-white border border-slate-300 text-slate-700 font-bold hover:bg-slate-50 transition-colors">
+        See How It Works
+      </a>
+    </div>
+  </header>
+
+  <!-- Comparison Table Section -->
+  <section class="py-16 px-6 max-w-5xl mx-auto w-full">
+    <div class="text-center mb-12">
+      <h2 class="text-3xl font-extrabold text-slate-900 mb-4">Why inspectors are switching to Inspectly</h2>
+      <p class="text-slate-600">A side-by-side comparison of the core features solo inspectors actually care about.</p>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
+      <div class="grid grid-cols-3 bg-slate-50 border-b border-slate-200 p-6">
+        <div class="font-bold text-slate-500 uppercase text-sm tracking-wider">Feature</div>
+        <div class="font-extrabold text-slate-900 text-center text-lg">Inspectly</div>
+        <div class="font-bold text-slate-500 text-center text-lg">Spectora</div>
+      </div>
+      
+      <!-- Row 1: Price -->
+      <div class="grid grid-cols-3 border-b border-slate-100 p-6 items-center hover:bg-slate-50 transition-colors">
+        <div class="font-bold text-slate-800">Monthly Cost</div>
+        <div class="text-center">
+          <div class="font-extrabold text-blue-600 text-xl">Affordable</div>
+          <div class="text-sm text-slate-500 mt-1">Built for solo operators</div>
+        </div>
+        <div class="text-center text-slate-600">
+          <div class="font-bold text-slate-800">$100+ / month</div>
+          <div class="text-sm text-slate-500 mt-1">Plus expensive templates</div>
+        </div>
+      </div>
+
+      <!-- Row 2: Offline Mode -->
+      <div class="grid grid-cols-3 border-b border-slate-100 p-6 items-center hover:bg-slate-50 transition-colors">
+        <div class="font-bold text-slate-800">Offline Mode</div>
+        <div class="flex flex-col items-center text-center">
+          <lucide-icon [name]="icons.CheckCircle" class="w-6 h-6 text-emerald-500 mb-2"></lucide-icon>
+          <span class="font-bold text-slate-700">Native Offline-First</span>
+          <span class="text-xs text-slate-500 mt-1">Never lose data in basements</span>
+        </div>
+        <div class="flex flex-col items-center text-center">
+          <lucide-icon [name]="icons.XCircle" class="w-6 h-6 text-rose-500 mb-2"></lucide-icon>
+          <span class="text-slate-600">Cloud-Dependent</span>
+          <span class="text-xs text-slate-500 mt-1">Struggles with bad signal</span>
+        </div>
+      </div>
+
+      <!-- Row 3: Speed -->
+      <div class="grid grid-cols-3 border-b border-slate-100 p-6 items-center hover:bg-slate-50 transition-colors">
+        <div class="font-bold text-slate-800">Report Generation</div>
+        <div class="flex flex-col items-center text-center">
+          <lucide-icon [name]="icons.CheckCircle" class="w-6 h-6 text-emerald-500 mb-2"></lucide-icon>
+          <span class="font-bold text-slate-700">Instant PDFs On-Site</span>
+        </div>
+        <div class="flex flex-col items-center text-center">
+          <lucide-icon [name]="icons.XCircle" class="w-6 h-6 text-rose-500 mb-2"></lucide-icon>
+          <span class="text-slate-600">Requires Nightly Cleanup</span>
+        </div>
+      </div>
+
+      <!-- Row 4: Setup -->
+      <div class="grid grid-cols-3 p-6 items-center hover:bg-slate-50 transition-colors">
+        <div class="font-bold text-slate-800">Template Setup</div>
+        <div class="flex flex-col items-center text-center">
+          <lucide-icon [name]="icons.Zap" class="w-6 h-6 text-amber-500 mb-2"></lucide-icon>
+          <span class="font-bold text-slate-700">Under 1 Hour</span>
+          <span class="text-xs text-slate-500 mt-1">Simple, intuitive builder</span>
+        </div>
+        <div class="flex flex-col items-center text-center">
+          <lucide-icon [name]="icons.XCircle" class="w-6 h-6 text-rose-500 mb-2"></lucide-icon>
+          <span class="text-slate-600">Weeks of Learning</span>
+          <span class="text-xs text-slate-500 mt-1">Complex logic & macros</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="py-20 px-6 max-w-4xl mx-auto text-center">
+    <h2 class="text-3xl font-extrabold text-slate-900 mb-6">Ready to take back your evenings?</h2>
+    <p class="text-lg text-slate-600 mb-8">Join the growing community of solo inspectors who have ditched the bloatware and switched to Inspectly.</p>
+    <app-button variant="solid" size="lg" routerLink="/auth/register" (click)="trackEvent('alternative_footer_register_click')" class="shadow-xl">
+      Create Your Free Account
+    </app-button>
+  </section>
+
+  <!-- Footer -->
+  <footer class="mt-auto bg-white border-t border-slate-200 py-12 px-6">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-slate-500">
+      <div>&copy; 2026 Inspectly. All rights reserved.</div>
+      <div class="flex gap-6">
+        <a routerLink="/privacy" class="hover:underline hover:text-slate-800 transition-colors">Privacy Policy</a>
+        <a routerLink="/terms" class="hover:underline hover:text-slate-800 transition-colors">Terms of Service</a>
+      </div>
+    </div>
+  </footer>
+</div>
