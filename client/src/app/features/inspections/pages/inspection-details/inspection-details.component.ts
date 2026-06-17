@@ -163,8 +163,6 @@ export class InspectionDetailsComponent implements OnInit, OnDestroy {
     this.errorMessage.set(null);
     this.inspectionsService.getInspectionById(id).subscribe({
       next: async (data) => {
-        console.log('=== LOADED INSPECTION FROM SWR/DB ===', data);
-        
         if (data.cover_photo_url) {
           try {
             const cached = await this.imageCache.getImageUrl(data.cover_photo_url);
@@ -267,7 +265,6 @@ export class InspectionDetailsComponent implements OnInit, OnDestroy {
 
     this.inspectionsService.publishInspection(inspection.id, html).subscribe({
       next: (updated) => {
-        console.log('=== RETURNED INSPECTION AFTER PUBLISH ===', updated);
         this.clearUploadInterval();
         this.combinedProgress.set(100);
         this.combinedMessage.set('Report successfully published!');

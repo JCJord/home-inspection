@@ -47,4 +47,24 @@
   .border-t-amber-500 {
     border-top-color: $color-minor !important;
   }
+
+  // Product showcase screenshot cards
+  .showcase-card {
+    cursor: default;
+    transition: transform 0.3s ease;
+
+    &:hover {
+      transform: translateY(-4px);
+    }
+  }
+
+  // Pricing card subtle glow effect
+  .pricing-card {
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+
+    &:hover {
+      box-shadow: 0 20px 60px rgba(37, 99, 235, 0.15), 0 8px 20px rgba(0, 0, 0, 0.08);
+      transform: translateY(-2px);
+    }
+  }
 }

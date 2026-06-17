@@ -15,6 +15,9 @@
         Go to Dashboard
       </app-button>
       } @else {
+      <a routerLink="/auth/login"
+        class="text-sm font-semibold text-slate-600 hover:text-slate-900 hidden sm:block transition-colors">Log
+        in</a>
       <app-button variant="solid" size="sm" routerLink="/auth/register">
         Get Started
       </app-button>
@@ -29,15 +32,27 @@
       <h1 class="sr-only">
         Home Inspection Report Software for Solo Inspectors
       </h1>
+      <div class="flex flex-wrap gap-2 shrink-0">
+        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold uppercase tracking-wide border border-emerald-200">
+          <lucide-icon [name]="icons.Smartphone" class="w-3.5 h-3.5 text-emerald-600"></lucide-icon>
+          100% Mobile & Tablet Compatible
+        </span>
+        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-bold uppercase tracking-wide border border-blue-200">
+          <lucide-icon [name]="icons.Zap" class="w-3.5 h-3.5 text-blue-600"></lucide-icon>
+          Offline-First App
+        </span>
+      </div>
       <h2 class="text-4xl md:text-5xl lg:text-6xl font-extrabold text-slate-900 leading-tight">
         Stop Spending Your Nights Fighting Your Report Software.
       </h2>
 
       <p class="text-lg md:text-xl text-slate-600 font-normal">
-        Inspectly is the fast, lean alternative built for solo inspectors. Generate clean, client-ready reports on-site, offline, and in seconds—not hours.
+        Inspectly is the fast, lean alternative built for solo inspectors. Generate clean, client-ready reports on-site,
+        offline, and in seconds—not hours.
       </p>
 
-      <div class="bg-amber-50 text-amber-900 text-sm font-bold p-3 rounded-lg border border-amber-200 flex items-center gap-2">
+      <div
+        class="bg-amber-50 text-amber-900 text-sm font-bold p-3 rounded-lg border border-amber-200 flex items-center gap-2">
         <lucide-icon [name]="icons.Star" class="w-4 h-4 text-amber-600 shrink-0"></lucide-icon>
         Finally, a professional-grade tool built for solo operators—not big firms.
       </div>
@@ -45,14 +60,14 @@
       <!-- Desktop Only Live & PDF Demo Buttons -->
       <div class="hidden lg:flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 mt-2 w-full max-w-lg">
         <a href="https://www.inspectlyhq.com/report/ce0a2290-803f-4721-9aed-21a46c5a3f4a" target="_blank"
-           (click)="trackEvent('landing_demo_live_report_click_desktop')"
-           class="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-md hover:shadow-lg transition-all active:scale-[0.98] border border-transparent cursor-pointer">
+          (click)="trackEvent('landing_demo_live_report_click_desktop')"
+          class="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-md hover:shadow-lg transition-all active:scale-[0.98] border border-transparent cursor-pointer">
           <lucide-icon [name]="icons.Zap" class="w-4 h-4 text-blue-200"></lucide-icon>
           View Live Report
         </a>
-        <a href="https://pub-4a444b708e4e4f4f9a88a53b374f4c00.r2.dev/Report-123_Demo_Street,_Sample_City,_ST_12345.pdf" target="_blank"
-           (click)="trackEvent('landing_demo_pdf_report_click_desktop')"
-           class="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl bg-white border border-slate-300 text-slate-800 font-bold text-sm shadow-sm hover:bg-slate-50 hover:border-slate-400 transition-all active:scale-[0.98] cursor-pointer">
+        <a href="https://pub-4a444b708e4e4f4f9a88a53b374f4c00.r2.dev/Report-123_Demo_Street,_Sample_City,_ST_12345.pdf"
+          target="_blank" (click)="trackEvent('landing_demo_pdf_report_click_desktop')"
+          class="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl bg-white border border-slate-300 text-slate-800 font-bold text-sm shadow-sm hover:bg-slate-50 hover:border-slate-400 transition-all active:scale-[0.98] cursor-pointer">
           <lucide-icon [name]="icons.FileText" class="w-4 h-4 text-slate-500"></lucide-icon>
           View PDF Report
         </a>
@@ -60,30 +75,38 @@
     </div>
 
     <!-- Thumbnail Stack Column -->
-    <div class="hero-visual lg:col-span-7 flex flex-col items-center justify-center mt-3 lg:mt-0 relative w-[90vw] sm:w-full max-w-[400px] mx-auto group gap-4 lg:gap-0">
+    <div
+      class="hero-visual lg:col-span-7 flex flex-col items-center justify-center mt-3 lg:mt-0 relative w-[90vw] sm:w-full max-w-[400px] mx-auto group gap-4 lg:gap-0">
       <!-- Stack effect -->
-      <div class="w-full relative aspect-[8.5/11] cursor-pointer" (click)="openLightbox(0); trackEvent('landing_mobile_gallery_tap')">
+      <div class="w-full relative aspect-[8.5/11] cursor-pointer"
+        (click)="openLightbox(0); trackEvent('landing_mobile_gallery_tap')">
         <!-- Bottom Card (Page 3) -->
-        <div class="absolute inset-0 bg-white rounded-2xl shadow-md border border-slate-200 transform translate-y-6 scale-90 opacity-60"></div>
+        <div
+          class="absolute inset-0 bg-white rounded-2xl shadow-md border border-slate-200 transform translate-y-6 scale-90 opacity-60">
+        </div>
         <!-- Middle Card (Page 2) -->
-        <div class="absolute inset-0 bg-white rounded-2xl shadow-lg border border-slate-200 transform translate-y-3 scale-95 opacity-80"></div>
+        <div
+          class="absolute inset-0 bg-white rounded-2xl shadow-lg border border-slate-200 transform translate-y-3 scale-95 opacity-80">
+        </div>
         <!-- Top Card (Page 1) -->
-        <div class="absolute inset-0 bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden transform group-hover:-translate-y-2 transition-transform duration-300">
-          <img [src]="fullImageUrls[0].url" 
-               [alt]="fullImageUrls[0].alt" 
-               class="w-full h-full object-cover" />
-          
+        <div
+          class="absolute inset-0 bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden transform group-hover:-translate-y-2 transition-transform duration-300">
+          <img [src]="fullImageUrls[0].url" [alt]="fullImageUrls[0].alt" class="w-full h-full object-cover" />
+
           <!-- Expand Trigger Overlay (Desktop Hover) -->
-          <div class="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/20 transition-all duration-300 hidden md:flex items-center justify-center">
-            <div class="bg-white/95 text-slate-900 font-bold px-6 py-3 rounded-full shadow-lg transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 flex items-center gap-2 border border-slate-100">
+          <div
+            class="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/20 transition-all duration-300 hidden md:flex items-center justify-center">
+            <div
+              class="bg-white/95 text-slate-900 font-bold px-6 py-3 rounded-full shadow-lg transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 flex items-center gap-2 border border-slate-100">
               <lucide-icon [name]="icons.Maximize" class="w-5 h-5 text-slate-700"></lucide-icon>
               View Full Report
             </div>
           </div>
-          
+
           <!-- Expand Trigger Overlay (Mobile Persistent) -->
           <div class="absolute inset-x-0 bottom-6 md:hidden flex justify-center pointer-events-none z-10">
-            <div class="bg-slate-900/90 backdrop-blur-sm text-white font-bold px-5 py-2.5 rounded-full shadow-[0_10px_30px_rgba(0,0,0,0.3)] flex items-center gap-2 border border-slate-700/80 animate-bounce">
+            <div
+              class="bg-slate-900/90 backdrop-blur-sm text-white font-bold px-5 py-2.5 rounded-full shadow-[0_10px_30px_rgba(0,0,0,0.3)] flex items-center gap-2 border border-slate-700/80">
               <lucide-icon [name]="icons.Maximize" class="w-4 h-4 text-blue-400"></lucide-icon>
               Tap to View Sample Report Images
             </div>
@@ -94,14 +117,14 @@
       <!-- Mobile Only Live & PDF Demo Buttons -->
       <div class="flex lg:hidden flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full mt-2">
         <a href="https://www.inspectlyhq.com/report/ce0a2290-803f-4721-9aed-21a46c5a3f4a" target="_blank"
-           (click)="trackEvent('landing_demo_live_report_click_mobile')"
-           class="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-md hover:shadow-lg transition-all active:scale-[0.98] border border-transparent cursor-pointer">
+          (click)="trackEvent('landing_demo_live_report_click_mobile')"
+          class="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-md hover:shadow-lg transition-all active:scale-[0.98] border border-transparent cursor-pointer">
           <lucide-icon [name]="icons.Zap" class="w-4 h-4 text-blue-200"></lucide-icon>
           View Live Report
         </a>
-        <a href="https://pub-4a444b708e4e4f4f9a88a53b374f4c00.r2.dev/Report-123_Demo_Street,_Sample_City,_ST_12345.pdf" target="_blank"
-           (click)="trackEvent('landing_demo_pdf_report_click_mobile')"
-           class="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl bg-white border border-slate-300 text-slate-800 font-bold text-sm shadow-sm hover:bg-slate-50 hover:border-slate-400 transition-all active:scale-[0.98] cursor-pointer">
+        <a href="https://pub-4a444b708e4e4f4f9a88a53b374f4c00.r2.dev/Report-123_Demo_Street,_Sample_City,_ST_12345.pdf"
+          target="_blank" (click)="trackEvent('landing_demo_pdf_report_click_mobile')"
+          class="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl bg-white border border-slate-300 text-slate-800 font-bold text-sm shadow-sm hover:bg-slate-50 hover:border-slate-400 transition-all active:scale-[0.98] cursor-pointer">
           <lucide-icon [name]="icons.FileText" class="w-4 h-4 text-slate-500"></lucide-icon>
           View PDF Report
         </a>
@@ -109,8 +132,272 @@
     </div>
   </section>
 
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- NEW: "See It In Action" — Product Showcase Section -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- NEW: "See It In Action" — Product Showcase Section -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <section id="product-showcase" class="bg-white border-y border-slate-200 py-20 px-6 md:px-12 w-full">
+    <div class="max-w-7xl mx-auto flex flex-col gap-10">
+      <div class="text-center space-y-3">
+        <div
+          class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-bold uppercase tracking-wide border border-blue-200 mx-auto">
+          <lucide-icon [name]="icons.Monitor" class="w-3.5 h-3.5"></lucide-icon>
+          Product Preview
+        </div>
+        <h2 class="text-3xl md:text-4xl font-extrabold text-slate-900">See What You'll Actually Use Every Day</h2>
+        <p class="text-slate-600 max-w-2xl mx-auto text-lg">
+          Not just the report output — this is the tool you'll spend 3 hours a day working in. Clean, fast, and built
+          for the field.
+        </p>
+      </div>
+
+      <!-- Tab Buttons Selector -->
+      <div class="flex items-center justify-start md:justify-center border-b border-slate-200 overflow-x-auto gap-1 sm:gap-4 no-scrollbar scroll-smooth">
+        @for (tab of showcaseTabs; track tab.id) {
+        <button
+          type="button"
+          (click)="setActiveTab(tab.id)"
+          [class]="activeTab() === tab.id 
+            ? 'flex items-center gap-2 py-4 px-6 border-b-2 border-blue-600 text-blue-600 font-bold text-sm sm:text-base whitespace-nowrap transition-all'
+            : 'flex items-center gap-2 py-4 px-6 border-b-2 border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-300 font-medium text-sm sm:text-base whitespace-nowrap transition-all'"
+        >
+          <lucide-icon [name]="tab.icon" class="w-4 h-4"></lucide-icon>
+          {{ tab.label }}
+        </button>
+        }
+      </div>
+
+      <!-- Tab Panels -->
+      <div class="mt-4 min-h-[600px] w-full">
+        @for (tab of showcaseTabs; track tab.id) {
+          @if (activeTab() === tab.id) {
+          <div class="flex flex-col gap-8 text-left animate-in fade-in duration-300 w-full">
+            
+            <!-- Tab Text Header (Wide Layout) -->
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-start border-b border-slate-100 pb-6 w-full">
+              <div class="md:col-span-5">
+                <h3 class="text-2xl md:text-3xl font-extrabold text-slate-900 leading-tight">
+                  {{ tab.title }}
+                </h3>
+              </div>
+              <div class="md:col-span-7 flex flex-col gap-3">
+                <p class="text-base md:text-lg text-slate-600 font-normal leading-relaxed">
+                  {{ tab.description }}
+                </p>
+
+                <!-- Bullet Points Grid -->
+                <div class="flex flex-wrap gap-x-6 gap-y-2 mt-1">
+                  @if (tab.id === 'details') {
+                    <div class="flex items-center gap-2 text-xs font-semibold text-slate-700">
+                      <lucide-icon [name]="icons.CheckCircle" class="w-4 h-4 text-emerald-500 shrink-0"></lucide-icon>
+                      <span>Weather & Specs Audit</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-xs font-semibold text-slate-700">
+                      <lucide-icon [name]="icons.CheckCircle" class="w-4 h-4 text-emerald-500 shrink-0"></lucide-icon>
+                      <span>Hero Cover Photo Uploads</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-xs font-semibold text-slate-700">
+                      <lucide-icon [name]="icons.CheckCircle" class="w-4 h-4 text-emerald-500 shrink-0"></lucide-icon>
+                      <span>Executive Findings List</span>
+                    </div>
+                  } @else if (tab.id === 'schedule') {
+                    <div class="flex items-center gap-2 text-xs font-semibold text-slate-700">
+                      <lucide-icon [name]="icons.CheckCircle" class="w-4 h-4 text-emerald-500 shrink-0"></lucide-icon>
+                      <span>Calendar Operations Dashboard</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-xs font-semibold text-slate-700">
+                      <lucide-icon [name]="icons.CheckCircle" class="w-4 h-4 text-emerald-500 shrink-0"></lucide-icon>
+                      <span>Client & Contract Records</span>
+                    </div>
+                  } @else if (tab.id === 'workbench') {
+                    <div class="flex items-center gap-2 text-xs font-semibold text-slate-700">
+                      <lucide-icon [name]="icons.CheckCircle" class="w-4 h-4 text-emerald-500 shrink-0"></lucide-icon>
+                      <span>Rapid Checklist Systems</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-xs font-semibold text-slate-700">
+                      <lucide-icon [name]="icons.CheckCircle" class="w-4 h-4 text-emerald-500 shrink-0"></lucide-icon>
+                      <span>✨ AI Narrative Generation</span>
+                    </div>
+                  } @else if (tab.id === 'templates') {
+                    <div class="flex items-center gap-2 text-xs font-semibold text-slate-700">
+                      <lucide-icon [name]="icons.CheckCircle" class="w-4 h-4 text-emerald-500 shrink-0"></lucide-icon>
+                      <span>Quick-Tap Narrative Presets</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-xs font-semibold text-slate-700">
+                      <lucide-icon [name]="icons.CheckCircle" class="w-4 h-4 text-emerald-500 shrink-0"></lucide-icon>
+                      <span>Dynamic Section Customization</span>
+                    </div>
+                  }
+                </div>
+              </div>
+            </div>
+
+            <!-- Full-Width Mockup Display Area -->
+            <div class="w-full flex justify-center items-center mt-2">
+              @if (tab.id === 'details') {
+                <!-- Side-by-side Layout with Large Dimensions -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-6xl">
+                  
+                  <!-- Left Image: General Info Details -->
+                  <div class="rounded-2xl border border-slate-200 shadow-lg bg-white overflow-hidden flex flex-col transition-all duration-300 hover:shadow-xl hover:scale-[1.01]">
+                    <div class="bg-slate-100 px-4 py-2.5 border-b border-slate-200 flex items-center justify-between shrink-0">
+                      <div class="flex items-center gap-1.5">
+                        <span class="w-2.5 h-2.5 rounded-full bg-slate-300"></span>
+                        <span class="w-2.5 h-2.5 rounded-full bg-slate-300"></span>
+                        <span class="w-2.5 h-2.5 rounded-full bg-slate-300"></span>
+                      </div>
+                      <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider select-none">General Details</span>
+                    </div>
+                    <div class="p-2 bg-slate-50 flex items-center justify-center">
+                      <img src="assets/images/inspection-details-header.png" alt="Inspection General Info and Specs Screen" class="w-full h-auto rounded-lg shadow-sm" />
+                    </div>
+                  </div>
+
+                  <!-- Right Image: Executive Summary List -->
+                  <div class="rounded-2xl border border-slate-200 shadow-lg bg-white overflow-hidden flex flex-col transition-all duration-300 hover:shadow-xl hover:scale-[1.01]">
+                    <div class="bg-slate-100 px-4 py-2.5 border-b border-slate-200 flex items-center justify-between shrink-0">
+                      <div class="flex items-center gap-1.5">
+                        <span class="w-2.5 h-2.5 rounded-full bg-slate-300"></span>
+                        <span class="w-2.5 h-2.5 rounded-full bg-slate-300"></span>
+                        <span class="w-2.5 h-2.5 rounded-full bg-slate-300"></span>
+                      </div>
+                      <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider select-none">Findings Summary</span>
+                    </div>
+                    <div class="p-2 bg-slate-50 flex items-center justify-center">
+                      <img src="assets/images/inspection-details-findings.png" alt="Inspection Summary and Findings Screen" class="w-full h-auto rounded-lg shadow-sm" />
+                    </div>
+                  </div>
+
+                </div>
+              } @else if (tab.id === 'schedule') {
+                <!-- Single Large Schedule Screenshot -->
+                <div class="w-full max-w-5xl rounded-2xl border border-slate-200 shadow-lg bg-white overflow-hidden flex flex-col transition-all duration-300 hover:shadow-xl hover:scale-[1.01]">
+                  <div class="bg-slate-100 px-4 py-2.5 border-b border-slate-200 flex items-center justify-between shrink-0">
+                    <div class="flex items-center gap-1.5">
+                      <span class="w-2.5 h-2.5 rounded-full bg-slate-300"></span>
+                      <span class="w-2.5 h-2.5 rounded-full bg-slate-300"></span>
+                      <span class="w-2.5 h-2.5 rounded-full bg-slate-300"></span>
+                    </div>
+                    <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider select-none">inspections/schedule</span>
+                  </div>
+                  <div class="p-3 bg-slate-50">
+                    <img src="assets/images/product-schedule.png" alt="Inspection Schedule Dashboard" class="w-full h-auto rounded-lg shadow-sm" />
+                  </div>
+                </div>
+              } @else if (tab.id === 'workbench') {
+                <!-- 3-Column Grid for Finding Workbench screenshots -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-7xl animate-in fade-in duration-300">
+                  
+                  <!-- First Image: Workbench Top & Photos -->
+                  <div class="rounded-2xl border border-slate-200 shadow-lg bg-white overflow-hidden flex flex-col transition-all duration-300 hover:shadow-xl hover:scale-[1.01]">
+                    <div class="bg-slate-100 px-4 py-2.5 border-b border-slate-200 flex items-center justify-between shrink-0">
+                      <div class="flex items-center gap-1.5">
+                        <span class="w-2.5 h-2.5 rounded-full bg-slate-300"></span>
+                        <span class="w-2.5 h-2.5 rounded-full bg-slate-300"></span>
+                        <span class="w-2.5 h-2.5 rounded-full bg-slate-300"></span>
+                      </div>
+                      <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider select-none">1. Specs & Photos</span>
+                    </div>
+                    <div class="p-2 bg-slate-50 flex-1 flex items-center justify-center">
+                      <img src="assets/images/workbench-top.png" alt="Finding Workbench Metadata & Photos" class="w-full h-auto rounded-lg shadow-sm" />
+                    </div>
+                  </div>
+
+                  <!-- Second Image: Workbench Presets -->
+                  <div class="rounded-2xl border border-slate-200 shadow-lg bg-white overflow-hidden flex flex-col transition-all duration-300 hover:shadow-xl hover:scale-[1.01]">
+                    <div class="bg-slate-100 px-4 py-2.5 border-b border-slate-200 flex items-center justify-between shrink-0">
+                      <div class="flex items-center gap-1.5">
+                        <span class="w-2.5 h-2.5 rounded-full bg-slate-300"></span>
+                        <span class="w-2.5 h-2.5 rounded-full bg-slate-300"></span>
+                        <span class="w-2.5 h-2.5 rounded-full bg-slate-300"></span>
+                      </div>
+                      <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider select-none">2. Narrative Presets</span>
+                    </div>
+                    <div class="p-2 bg-slate-50 flex-1 flex items-center justify-center">
+                      <img src="assets/images/workbench-presets.png" alt="Finding Workbench Quick Presets" class="w-full h-auto rounded-lg shadow-sm" />
+                    </div>
+                  </div>
+
+                  <!-- Third Image: Workbench Details & Done -->
+                  <div class="rounded-2xl border border-slate-200 shadow-lg bg-white overflow-hidden flex flex-col transition-all duration-300 hover:shadow-xl hover:scale-[1.01]">
+                    <div class="bg-slate-100 px-4 py-2.5 border-b border-slate-200 flex items-center justify-between shrink-0">
+                      <div class="flex items-center gap-1.5">
+                        <span class="w-2.5 h-2.5 rounded-full bg-slate-300"></span>
+                        <span class="w-2.5 h-2.5 rounded-full bg-slate-300"></span>
+                        <span class="w-2.5 h-2.5 rounded-full bg-slate-300"></span>
+                      </div>
+                      <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider select-none">3. Severity & Observations</span>
+                    </div>
+                    <div class="p-2 bg-slate-50 flex-1 flex items-center justify-center">
+                      <img src="assets/images/workbench-bottom.png" alt="Finding Workbench Form Details" class="w-full h-auto rounded-lg shadow-sm" />
+                    </div>
+                  </div>
+
+                </div>
+              } @else if (tab.id === 'templates') {
+                <!-- 3-Column Grid for Template Editor screenshots -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-7xl animate-in fade-in duration-300">
+                  
+                  <!-- First Image: Sections & Items -->
+                  <div class="rounded-2xl border border-slate-200 shadow-lg bg-white overflow-hidden flex flex-col transition-all duration-300 hover:shadow-xl hover:scale-[1.01]">
+                    <div class="bg-slate-100 px-4 py-2.5 border-b border-slate-200 flex items-center justify-between shrink-0">
+                      <div class="flex items-center gap-1.5">
+                        <span class="w-2.5 h-2.5 rounded-full bg-slate-300"></span>
+                        <span class="w-2.5 h-2.5 rounded-full bg-slate-300"></span>
+                        <span class="w-2.5 h-2.5 rounded-full bg-slate-300"></span>
+                      </div>
+                      <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider select-none">1. Sections & Items</span>
+                    </div>
+                    <div class="p-2 bg-slate-50 flex-1 flex items-center justify-center">
+                      <img src="assets/images/template-fields-top.png" alt="Template Sections & Checklist Items Editor" class="w-full h-auto rounded-lg shadow-sm" />
+                    </div>
+                  </div>
+
+                  <!-- Second Image: Form Fields -->
+                  <div class="rounded-2xl border border-slate-200 shadow-lg bg-white overflow-hidden flex flex-col transition-all duration-300 hover:shadow-xl hover:scale-[1.01]">
+                    <div class="bg-slate-100 px-4 py-2.5 border-b border-slate-200 flex items-center justify-between shrink-0">
+                      <div class="flex items-center gap-1.5">
+                        <span class="w-2.5 h-2.5 rounded-full bg-slate-300"></span>
+                        <span class="w-2.5 h-2.5 rounded-full bg-slate-300"></span>
+                        <span class="w-2.5 h-2.5 rounded-full bg-slate-300"></span>
+                      </div>
+                      <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider select-none">2. Form Fields</span>
+                    </div>
+                    <div class="p-2 bg-slate-50 flex-1 flex items-center justify-center">
+                      <img src="assets/images/template-fields-bottom.png" alt="Custom Fields Editor" class="w-full h-auto rounded-lg shadow-sm" />
+                    </div>
+                  </div>
+
+                  <!-- Third Image: Quick Presets -->
+                  <div class="rounded-2xl border border-slate-200 shadow-lg bg-white overflow-hidden flex flex-col transition-all duration-300 hover:shadow-xl hover:scale-[1.01]">
+                    <div class="bg-slate-100 px-4 py-2.5 border-b border-slate-200 flex items-center justify-between shrink-0">
+                      <div class="flex items-center gap-1.5">
+                        <span class="w-2.5 h-2.5 rounded-full bg-slate-300"></span>
+                        <span class="w-2.5 h-2.5 rounded-full bg-slate-300"></span>
+                        <span class="w-2.5 h-2.5 rounded-full bg-slate-300"></span>
+                      </div>
+                      <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider select-none">3. Quick Presets</span>
+                    </div>
+                    <div class="p-2 bg-slate-50 flex-1 flex items-center justify-center">
+                      <img src="assets/images/template-presets.png" alt="Quick-Tap Presets Editor" class="w-full h-auto rounded-lg shadow-sm" />
+                    </div>
+                  </div>
+
+                </div>
+              }
+            </div>
+
+          </div>
+          }
+        }
+      </div>
+    </div>
+  </section>
+
   <!-- Setup Pathways Section -->
-  <section class="bg-slate-100 border-y border-slate-200 py-16 px-6 md:px-12 w-full">
+  <section class="bg-slate-50 py-16 px-6 md:px-12 w-full">
     <div class="max-w-6xl mx-auto flex flex-col gap-10">
       <div class="text-center space-y-2">
         <h2 class="text-3xl font-extrabold text-slate-900">Get Started in Minutes</h2>
@@ -159,6 +446,14 @@
                 reports using your personalized layout instantly.</p>
             </div>
           </div>
+
+          <!-- Migration CTA -->
+          <a href="mailto:support@inspectlyhq.com?subject=Template%20Migration%20Request"
+            (click)="trackEvent('landing_migration_email_click')"
+            class="mt-2 inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-md hover:shadow-lg transition-all active:scale-[0.98] w-full">
+            <lucide-icon [name]="icons.Mail" class="w-4 h-4"></lucide-icon>
+            Email Us Your Template
+          </a>
         </div>
 
         <!-- Pathway B: Default Templates -->
@@ -191,6 +486,13 @@
               <span class="text-sm font-semibold text-slate-800">Wind Mitigation (OIR-B1-1802)</span>
             </div>
           </div>
+
+          <!-- Template CTA -->
+          <a routerLink="/auth/register" (click)="trackEvent('landing_pathway_b_register_click')"
+            class="mt-2 inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-white border border-slate-300 text-slate-800 font-bold text-sm shadow-sm hover:bg-slate-50 hover:border-slate-400 transition-all active:scale-[0.98] w-full relative z-10">
+            <lucide-icon [name]="icons.ArrowRight" class="w-4 h-4"></lucide-icon>
+            Start With Templates
+          </a>
         </div>
 
       </div>
@@ -245,44 +547,170 @@
     </div>
   </section>
 
-  <!-- Transparency / Social Proof Section -->
-  <section class="py-20 px-6 md:px-12 w-full" style="background-color: #0f172a; color: #ffffff;">
-    <div class="max-w-4xl mx-auto flex flex-col gap-8 text-center items-center">
-      <h2 class="text-3xl md:text-5xl font-extrabold leading-tight" style="color: #ffffff;">
-        Built for the 50,000+ solo inspectors in the US who are overpaying for software they don't fully use.
-      </h2>
-      <p class="text-xl text-slate-400 max-w-2xl mt-4">
-        Join the inspectors using a product built strictly for speed and simplicity.
-      </p>
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- NEW: Pricing / Early Access Section        -->
+  <!-- ═══════════════════════════════════════════ -->
+  <section id="pricing" class="bg-white border-y border-slate-200 py-20 px-6 md:px-12 w-full">
+    <div class="max-w-4xl mx-auto flex flex-col items-center gap-10">
+      <div class="text-center space-y-3">
+        <h2 class="text-3xl md:text-4xl font-extrabold text-slate-900">Simple, Transparent Pricing</h2>
+        <p class="text-slate-600 text-lg max-w-xl mx-auto">
+          No complex tiers. No per-report fees. Just one plan that gives you everything.
+        </p>
+      </div>
+
+      <!-- Pricing Card -->
+      <div
+        class="pricing-card w-full max-w-md bg-white rounded-2xl border-2 border-blue-600 shadow-xl p-8 flex flex-col items-center gap-6 relative overflow-hidden">
+        <!-- Early Access Badge -->
+        <div
+          class="absolute top-0 right-0 bg-blue-600 text-white text-xs font-bold uppercase tracking-wider px-4 py-1.5 rounded-bl-xl">
+          Early Access
+        </div>
+
+        <div class="text-center space-y-2 mt-2">
+          <div class="flex items-baseline justify-center gap-1">
+            <span class="text-5xl font-black text-slate-900">$0</span>
+            <span class="text-slate-500 font-semibold text-lg">/month</span>
+          </div>
+          <p class="text-sm text-blue-600 font-bold">Free while in Early Access</p>
+        </div>
+
+        <div class="w-full border-t border-slate-100"></div>
+
+        <!-- Feature List -->
+        <div class="flex flex-col gap-3.5 w-full">
+          <div class="flex items-center gap-3">
+            <lucide-icon [name]="icons.CheckCircle" class="w-5 h-5 text-emerald-500 shrink-0"></lucide-icon>
+            <span class="text-sm text-slate-700 font-medium">Unlimited inspections & reports</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <lucide-icon [name]="icons.CheckCircle" class="w-5 h-5 text-emerald-500 shrink-0"></lucide-icon>
+            <span class="text-sm text-slate-700 font-medium">Offline-first with auto sync</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <lucide-icon [name]="icons.CheckCircle" class="w-5 h-5 text-emerald-500 shrink-0"></lucide-icon>
+            <span class="text-sm text-slate-700 font-medium">Custom branding (logo, colors, signature)</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <lucide-icon [name]="icons.CheckCircle" class="w-5 h-5 text-emerald-500 shrink-0"></lucide-icon>
+            <span class="text-sm text-slate-700 font-medium">PDF & live web reports</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <lucide-icon [name]="icons.CheckCircle" class="w-5 h-5 text-emerald-500 shrink-0"></lucide-icon>
+            <span class="text-sm text-slate-700 font-medium">Custom legal disclaimers & liability protection</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <lucide-icon [name]="icons.CheckCircle" class="w-5 h-5 text-emerald-500 shrink-0"></lucide-icon>
+            <span class="text-sm text-slate-700 font-medium">Template migration support</span>
+          </div>
+        </div>
+
+        <app-button variant="solid" size="lg" routerLink="/auth/register"
+          (click)="trackEvent('landing_pricing_register_click')" class="w-full">
+          Create Your Free Account
+        </app-button>
+
+        <div class="flex items-center gap-4 text-xs text-slate-400">
+          <div class="flex items-center gap-1">
+            <lucide-icon [name]="icons.CreditCard" class="w-3.5 h-3.5"></lucide-icon>
+            No credit card required
+          </div>
+          <div class="flex items-center gap-1">
+            <lucide-icon [name]="icons.Lock" class="w-3.5 h-3.5"></lucide-icon>
+            Cancel anytime
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
-  <!-- Footer Area -->
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- NEW: Early Access Transparency Section     -->
+  <!-- ═══════════════════════════════════════════ -->
+  <section class="py-20 px-6 md:px-12 w-full" style="background-color: #0f172a; color: #ffffff;">
+    <div class="max-w-3xl mx-auto flex flex-col gap-8 text-center items-center">
+      <div
+        class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 text-blue-300 text-xs font-bold uppercase tracking-wider border border-blue-500/30">
+        <lucide-icon [name]="icons.Sparkles" class="w-3.5 h-3.5"></lucide-icon>
+        Early Access
+      </div>
+      <h2 class="text-3xl md:text-4xl font-extrabold leading-tight" style="color: #ffffff;">
+        We're Actively Onboarding Our First Users
+      </h2>
+      <p class="text-lg text-slate-400 max-w-2xl">
+        Inspectly is a new product built by a developer who saw solo inspectors overpaying for bloated software. We're
+        onboarding our first users and building features based on real feedback. If you want a tool that actually
+        listens — now is the time to get in.
+      </p>
+      <div class="flex flex-col sm:flex-row gap-4 mt-2">
+        <a routerLink="/auth/register" (click)="trackEvent('landing_early_access_register_click')"
+          class="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm shadow-lg hover:shadow-xl transition-all active:scale-[0.98] border border-blue-500">
+          <lucide-icon [name]="icons.ArrowRight" class="w-4 h-4"></lucide-icon>
+          Be One of the First
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ Section -->
   <section class="py-24 bg-white px-6 md:px-12 w-full max-w-7xl mx-auto border-t border-slate-200">
     <div class="text-center max-w-3xl mx-auto mb-16">
       <h2 class="text-3xl md:text-4xl font-extrabold text-slate-900 mb-4">Frequently Asked Questions</h2>
       <p class="text-lg text-slate-600">Everything you need to know about switching to Inspectly.</p>
     </div>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-5xl mx-auto">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-10 max-w-5xl mx-auto">
       <div>
         <h3 class="text-xl font-bold text-slate-900 mb-2">Is Inspectly offline-first?</h3>
-        <p class="text-slate-600">Yes, Inspectly is built offline-first. You can conduct your entire inspection, take photos, and write narratives without an internet connection. The app will sync automatically when you're back online.</p>
+        <p class="text-slate-600">Yes, Inspectly is built offline-first. You can conduct your entire inspection, take
+          photos, and write narratives without an internet connection. The app will sync automatically when you're back
+          online.</p>
       </div>
       <div>
         <h3 class="text-xl font-bold text-slate-900 mb-2">How long does it take to migrate my templates?</h3>
-        <p class="text-slate-600">Most inspectors can migrate their existing templates in under an hour. We provide intuitive tools to customize sections, items, and defect narratives to match your exact workflow.</p>
+        <p class="text-slate-600">Most inspectors can migrate their existing templates in under an hour. We provide
+          intuitive tools to customize sections, items, and defect narratives to match your exact workflow.</p>
       </div>
       <div>
         <h3 class="text-xl font-bold text-slate-900 mb-2">Is it compatible with mobile?</h3>
-        <p class="text-slate-600">Absolutely. Inspectly is designed specifically for mobile and tablet use on-site, with a clean interface that eliminates the need for 'fat-finger' corrections or endless scrolling.</p>
+        <p class="text-slate-600">Absolutely. Inspectly is designed specifically for mobile and tablet use on-site, with
+          a clean interface that eliminates the need for 'fat-finger' corrections or endless scrolling.</p>
       </div>
       <div>
         <h3 class="text-xl font-bold text-slate-900 mb-2">Can I customize my reports?</h3>
-        <p class="text-slate-600">Yes, you have full control over the layout, colors, and branding of your final PDF reports, ensuring they match your professional image perfectly.</p>
+        <p class="text-slate-600">Yes, you have full control over the layout, colors, and branding of your final PDF
+          reports, ensuring they match your professional image perfectly.</p>
+      </div>
+      <div>
+        <h3 class="text-xl font-bold text-slate-900 mb-2">How much does Inspectly cost?</h3>
+        <p class="text-slate-600">Inspectly is free during our Early Access period. No credit card, no contracts. When
+          we introduce pricing, early adopters will be grandfathered into the best rate.</p>
+      </div>
+      <div>
+        <h3 class="text-xl font-bold text-slate-900 mb-2">Is my data safe? Can I export my reports?</h3>
+        <p class="text-slate-600">Yes. Your inspection data is yours. Reports are exported as standard PDFs and can be
+          downloaded at any time. We use industry-standard encryption and never share your data.</p>
       </div>
     </div>
   </section>
 
+  <!-- ═══════════════════════════════════ -->
+  <!-- NEW: Final CTA Banner              -->
+  <!-- ═══════════════════════════════════ -->
+  <section class="py-20 px-6 md:px-12 w-full bg-slate-100 border-t border-slate-200">
+    <div class="max-w-3xl mx-auto text-center flex flex-col items-center gap-6">
+      <h2 class="text-3xl md:text-4xl font-extrabold text-slate-900">Ready to take back your evenings?</h2>
+      <p class="text-lg text-slate-600 max-w-xl">
+        Create your free account and generate your first report today. No credit card required.
+      </p>
+      <app-button variant="solid" size="lg" routerLink="/auth/register"
+        (click)="trackEvent('landing_final_cta_register_click')" class="shadow-xl">
+        Get Started Free
+      </app-button>
+    </div>
+  </section>
+
+  <!-- Footer -->
   <footer class="bg-slate-50 border-t border-slate-200 py-16 px-6 md:px-12 w-full">
     <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-12 items-center">
       <div class="md:col-span-12 space-y-4 flex flex-col items-center text-center">
@@ -295,6 +723,10 @@
         <p class="text-slate-500 text-sm max-w-md">
           A fast, simple, offline-first home inspection platform designed specifically for solo inspectors.
         </p>
+        <a href="mailto:support@inspectlyhq.com"
+          class="text-slate-500 text-sm hover:text-slate-700 hover:underline transition-colors">
+          support&#64;inspectlyhq.com
+        </a>
       </div>
     </div>
 
@@ -312,9 +744,6 @@
 
 
 @if (isLightboxOpen()) {
-  <app-image-lightbox 
-    [images]="fullImageUrls" 
-    [initialIndex]="currentLightboxIndex()" 
-    (close)="closeLightbox()">
-  </app-image-lightbox>
+<app-image-lightbox [images]="fullImageUrls" [initialIndex]="currentLightboxIndex()" (close)="closeLightbox()">
+</app-image-lightbox>
 }

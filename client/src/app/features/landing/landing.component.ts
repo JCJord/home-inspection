@@ -25,7 +25,18 @@ import {
   XCircle,
   FileText,
   DollarSign,
-  Maximize
+  Maximize,
+  Monitor,
+  Camera,
+  CreditCard,
+  Lock,
+  ArrowRight,
+  Sparkles,
+  Globe,
+  ClipboardList,
+  Calendar,
+  Users,
+  Smartphone
 } from 'lucide-angular';
 import { ImageLightboxComponent } from '../../shared/components/image-lightbox/image-lightbox.component';
 import { environment } from '../../../environments/environment';
@@ -66,7 +77,18 @@ interface Testimonial {
         XCircle,
         FileText,
         DollarSign,
-        Maximize
+        Maximize,
+        Monitor,
+        Camera,
+        CreditCard,
+        Lock,
+        ArrowRight,
+        Sparkles,
+        Globe,
+        ClipboardList,
+        Calendar,
+        Users,
+        Smartphone
       }
     }
   ]
@@ -100,8 +122,57 @@ export class LandingComponent implements OnInit, OnDestroy {
     XCircle,
     FileText,
     DollarSign,
-    Maximize
+    Maximize,
+    Monitor,
+    Camera,
+    CreditCard,
+    Lock,
+    ArrowRight,
+    Sparkles,
+    Globe,
+    ClipboardList,
+    Calendar,
+    Users,
+    Smartphone
   };
+
+  activeTab = signal<string>('details');
+
+  readonly showcaseTabs = [
+    {
+      id: 'details',
+      label: 'Inspection Details',
+      icon: ClipboardList,
+      title: 'Review Everything in One Place',
+      description: 'Your inspection dashboard gives you an instant overview. See property details, track section statuses, upload cover photos, and view the executive summary of findings before publishing.'
+    },
+    {
+      id: 'schedule',
+      label: 'Schedule & Jobs',
+      icon: Calendar,
+      title: 'Manage Your Business Operations',
+      description: 'Track your calendar, set fees, collect client info, and view all scheduled, draft, or published reports at a glance. It is a full CRM built for solo operators.'
+    },
+    {
+      id: 'workbench',
+      label: 'Finding Workbench',
+      icon: Zap,
+      title: 'Rapid Field Checklist & Finding Form',
+      description: 'Log defects on-site in seconds. Navigate sections, select color-coded severities, attach captioned photos, and generate professional descriptions with the AI Assistant.'
+    },
+    {
+      id: 'templates',
+      label: 'Template Editor',
+      icon: LayoutTemplate,
+      title: 'Customize Checklists Without the Bloat',
+      description: 'Modify your checklists, set default text, customize locations, and define quick-tap presets in minutes. No complex configuration, no firm-level overhead.'
+    }
+  ];
+
+  setActiveTab(tabId: string) {
+    this.activeTab.set(tabId);
+    this.trackEvent(`landing_showcase_tab_${tabId}_click`);
+  }
 
 
 
@@ -187,6 +258,20 @@ export class LandingComponent implements OnInit, OnDestroy {
         "acceptedAnswer": {
           "@type": "Answer",
           "text": "Absolutely. Inspectly is designed specifically for mobile and tablet use on-site, with a clean interface that eliminates the need for 'fat-finger' corrections or endless scrolling."
+        }
+      }, {
+        "@type": "Question",
+        "name": "How much does Inspectly cost?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Inspectly is free during our Early Access period. No credit card required, no contracts. When we introduce pricing, early adopters will be grandfathered into the best rate."
+        }
+      }, {
+        "@type": "Question",
+        "name": "Is my data safe? Can I export my reports?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. Your inspection data is yours. Reports are exported as standard PDFs and can be downloaded at any time. We use industry-standard encryption and never share your data."
         }
       }]
     };
