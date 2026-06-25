@@ -32,6 +32,16 @@ export const routes: Routes = [
     loadComponent: () => import('./features/public-pages/alternative-to-spectora/alternative-to-spectora.component').then(m => m.AlternativeToSpectoraComponent),
   },
   {
+    path: 'pricing',
+    canActivate: [guestGuard],
+    loadComponent: () => import('./features/pricing/pricing.component').then(m => m.PricingComponent),
+  },
+  {
+    path: 'features',
+    canActivate: [guestGuard],
+    loadComponent: () => import('./features/features-page/features-page.component').then(m => m.FeaturesPageComponent),
+  },
+  {
     path: '',
     canActivate: [authGuard],
     children: [
@@ -68,4 +78,9 @@ export const routes: Routes = [
       },
     ],
   },
+  {
+    path: '**',
+    loadComponent: () => import('./features/not-found/not-found.component').then(m => m.NotFoundComponent),
+  },
 ];
+

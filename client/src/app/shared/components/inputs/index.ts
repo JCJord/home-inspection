@@ -4,3 +4,4 @@ export * from './textarea-input/textarea-input.component';
 export * from './select-input/select-input.component';
 export * from './search-input/search-input.component';
 export * from './toggle-switch/toggle-switch.component';
+export * from './chips-input/chips-input.component';

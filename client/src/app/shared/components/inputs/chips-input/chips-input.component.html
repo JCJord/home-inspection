@@ -1,0 +1,45 @@
+<div class="input-container">
+  @if (label()) {
+    <label [for]="name()" class="input-label">
+      {{ label() }}
+    </label>
+  }
+
+  <div class="chips-input-wrapper flex flex-wrap items-center gap-1.5 p-2 bg-surface-standard border border-standard rounded-xl min-h-[46px] transition-all focus-within:border-primary focus-within:ring-1 focus-within:ring-primary focus-within:ring-opacity-50"
+    [class.border-red-500]="isInvalid"
+    [class.opacity-60]="isDisabled">
+    
+    @for (chip of chips(); track $index; let i = $index) {
+      <span class="flex items-center gap-1 bg-light-standard border border-standard text-standard text-xs font-semibold px-2.5 py-1 rounded-lg">
+        {{ chip }}
+        @if (!isDisabled) {
+          <button type="button" (click)="removeChip(i)" 
+            class="text-standard-muted hover:text-red-500 rounded-md transition-colors flex items-center justify-center p-0.5 cursor-pointer">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        }
+      </span>
+    }
+
+    <input
+      #inputEl
+      [id]="name()"
+      [name]="name()"
+      type="text"
+      [placeholder]="chips().length === 0 ? placeholder() : ''"
+      [disabled]="isDisabled"
+      (keydown)="onKeyDown($event)"
+      (blur)="onBlur($event)"
+      class="flex-1 min-w-[120px] bg-transparent border-0 outline-none text-sm text-standard placeholder-standard-muted/50 p-1"
+    />
+  </div>
+
+  @if (isInvalid) {
+    <span class="text-xs text-red-500 mt-1">
+      {{ getFirstError() }}
+    </span>
+  }
+</div>

@@ -1,0 +1,28 @@
+@use 'variables' as *;
+@use '../input-base' as *;
+
+.input-container {
+  @include input-container;
+}
+
+.input-label {
+  @include label-style;
+}
+
+.chips-input-wrapper {
+  background-color: $color-surface;
+  border-color: $color-border;
+  color: $color-text;
+
+  &:focus-within {
+    border-color: $color-primary;
+    box-shadow: 0 0 0 4px $color-primary-glow;
+  }
+  
+  &.border-red-500 {
+    border-color: $color-error !important;
+    &:focus-within {
+      box-shadow: 0 0 0 4px rgba($color-error, 0.15) !important;
+    }
+  }
+}

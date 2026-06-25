@@ -2,6 +2,7 @@ import { Component, inject, OnInit, OnDestroy, signal, HostListener, Renderer2 }
 import { CommonModule, DOCUMENT } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { Title, Meta } from '@angular/platform-browser';
+import { SeoService } from '../../core/services/seo.service';
 import { FormsModule } from '@angular/forms';
 import { ButtonComponent } from '../../shared/components/button/button.component';
 import { HttpClient } from '@angular/common/http';
@@ -40,7 +41,7 @@ import {
 } from 'lucide-angular';
 import { ImageLightboxComponent } from '../../shared/components/image-lightbox/image-lightbox.component';
 import { environment } from '../../../environments/environment';
-import { inject as injectAnalytics, track } from '@vercel/analytics';
+
 
 interface Testimonial {
   quote: string;
@@ -94,12 +95,9 @@ interface Testimonial {
   ]
 })
 export class LandingComponent implements OnInit, OnDestroy {
-  constructor() {
-    injectAnalytics();
-  }
 
-  private titleService = inject(Title);
-  private metaService = inject(Meta);
+
+  private seoService = inject(SeoService);
   private router = inject(Router);
   private http = inject(HttpClient);
   authService = inject(AuthService);
@@ -185,16 +183,133 @@ export class LandingComponent implements OnInit, OnDestroy {
   private document = inject(DOCUMENT);
 
   ngOnInit() {
-    this.setSEO();
-    this.injectFAQSchema();
+    this.seoService.generateTags({
+      title: 'Inspectly: Fast Offline-First Home Inspection Software for Solo Inspectors',
+      description: 'Stop taking work home. Inspectly is the fast, native offline-first home inspection software built for solo inspectors. Create clean reports on-site with zero layout cleanup or formatting errors. Try free.'
+    });
+
+    // 1. Organization Schema
+    this.seoService.injectSchema({
+      '@context': 'https://schema.org',
+      '@type': 'Organization',
+      'name': 'Inspectly',
+      'url': 'https://www.inspectlyhq.com',
+      'logo': 'https://www.inspectlyhq.com/assets/icons/inspectly-logo.png',
+      'sameAs': [
+        'https://twitter.com/inspectlyhq',
+        'https://www.linkedin.com/company/inspectlyhq'
+      ]
+    }, 'org-schema');
+
+    // 2. WebSite Schema with SearchAction
+    this.seoService.injectSchema({
+      '@context': 'https://schema.org',
+      '@type': 'WebSite',
+      'name': 'Inspectly',
+      'url': 'https://www.inspectlyhq.com',
+      'potentialAction': {
+        '@type': 'SearchAction',
+        'target': {
+          '@type': 'EntryPoint',
+          'urlTemplate': 'https://www.inspectlyhq.com/search?q={search_term_string}'
+        },
+        'query-input': 'required name=search_term_string'
+      }
+    }, 'website-schema');
+
+    // 3. SoftwareApplication Schema (omitting aggregateRating)
+    this.seoService.injectSchema({
+      '@context': 'https://schema.org',
+      '@type': 'SoftwareApplication',
+      'name': 'Inspectly',
+      'operatingSystem': 'Web, Mobile, iOS, Android',
+      'applicationCategory': 'BusinessApplication',
+      'offers': {
+        '@type': 'Offer',
+        'price': '0.00',
+        'priceCurrency': 'USD',
+        'description': 'Free during early access'
+      }
+    }, 'software-schema');
+
+    // 4. FAQ Schema
+    this.seoService.injectSchema({
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      'mainEntity': [{
+        '@type': 'Question',
+        'name': 'Is Inspectly offline-first?',
+        'acceptedAnswer': {
+          '@type': 'Answer',
+          'text': 'Yes, Inspectly is built offline-first. You can conduct your entire inspection, take photos, and write narratives without an internet connection. The app will sync automatically when you\'re back online.'
+        }
+      }, {
+        '@type': 'Question',
+        'name': 'How long does it take to migrate my templates?',
+        'acceptedAnswer': {
+          '@type': 'Answer',
+          'text': 'Most inspectors can migrate their existing templates in under an hour. We provide intuitive tools to customize sections, items, and defect narratives to match your exact workflow.'
+        }
+      }, {
+        '@type': 'Question',
+        'name': 'Is it compatible with mobile?',
+        'acceptedAnswer': {
+          '@type': 'Answer',
+          'text': 'Absolutely. Inspectly is designed specifically for mobile and tablet use on-site, with a clean interface that eliminates the need for \'fat-finger\' corrections or endless scrolling.'
+        }
+      }, {
+        '@type': 'Question',
+        'name': 'How much does Inspectly cost?',
+        'acceptedAnswer': {
+          '@type': 'Answer',
+          'text': 'Inspectly is free during our Early Access period. No credit card required, no contracts. When we introduce pricing, early adopters will be grandfathered into the best rate.'
+        }
+      }, {
+        '@type': 'Question',
+        'name': 'Is my data safe? Can I export my reports?',
+        'acceptedAnswer': {
+          '@type': 'Answer',
+          'text': 'Yes. Your inspection data is yours. Reports are exported as standard PDFs and can be downloaded at any time. We use industry-standard encryption and never share your data.'
+        }
+      }]
+    }, 'faq-schema');
+
+    // 5. HowTo Schema targeting "how to write inspection reports faster"
+    this.seoService.injectSchema({
+      '@context': 'https://schema.org',
+      '@type': 'HowTo',
+      'name': 'How to Write Home Inspection Reports Faster',
+      'description': 'Learn the optimal workflow to finish your home inspection reports on-site and save your evenings.',
+      'step': [
+        {
+          '@type': 'HowToStep',
+          'position': 1,
+          'name': 'Set Up Custom Presets & Checklists',
+          'text': 'Before the job, customize your template checklists with color-coded severity controls and default observation presets.'
+        },
+        {
+          '@type': 'HowToStep',
+          'position': 2,
+          'name': 'Record Findings Offline in the Field',
+          'text': 'Inspect without internet connection. Log defects instantly and capture photos as you work on-site.'
+        },
+        {
+          '@type': 'HowToStep',
+          'position': 3,
+          'name': 'Use AI to Write Defect Narratives',
+          'text': 'Use the built-in AI Assistant to translate shorthand field notes into professional, polished observations.'
+        },
+        {
+          '@type': 'HowToStep',
+          'position': 4,
+          'name': 'Export and Deliver the PDF Immediately',
+          'text': 'Verify the executive summary and export a clean PDF report immediately after inspection with zero nightly cleanup.'
+        }
+      ]
+    }, 'howto-schema');
   }
 
   ngOnDestroy() {
-    const timeSpent = Math.round((Date.now() - this.pageEnteredAt) / 1000);
-    track('landing_session', {
-      duration_seconds: timeSpent,
-      max_scroll_depth: this.maxScrollDepth
-    });
   }
 
   @HostListener('window:scroll')
@@ -208,76 +323,8 @@ export class LandingComponent implements OnInit, OnDestroy {
     for (const milestone of [25, 50, 75, 100]) {
       if (depth >= milestone && !this.scrollTracked.has(milestone)) {
         this.scrollTracked.add(milestone);
-        track('landing_scroll', { depth_percent: milestone });
       }
     }
-  }
-
-  private setSEO() {
-    this.titleService.setTitle('Inspectly: The Fast, Offline-First Report Software for Solo Inspectors. Stop Overpaying for Bloatware.');
-    
-    // Core SEO tags
-    this.metaService.updateTag({ 
-      name: 'description', 
-      content: 'Inspectly is the lean, fast alternative designed for solo inspectors. Generate clean, professional PDFs on-site as you work. No layout cleanups, no formatting errors.' 
-    });
-    this.metaService.updateTag({ name: 'robots', content: 'index, follow' });
-
-    // Open Graph Tags for sharing
-    this.metaService.updateTag({ property: 'og:title', content: 'Inspectly: The Fast, Offline-First Report Software for Solo Inspectors. Stop Overpaying for Bloatware.' });
-    this.metaService.updateTag({ property: 'og:description', content: 'Inspectly is the lean, fast alternative designed for solo inspectors. Generate clean, professional PDFs on-site as you work. No layout cleanups, no formatting errors.' });
-    this.metaService.updateTag({ property: 'og:type', content: 'website' });
-    this.metaService.updateTag({ property: 'og:url', content: window.location.origin });
-    this.metaService.updateTag({ property: 'og:image', content: `${window.location.origin}/assets/images/og-image.jpg` });
-  }
-
-  private injectFAQSchema() {
-    const script = this.renderer.createElement('script');
-    this.renderer.setAttribute(script, 'type', 'application/ld+json');
-    
-    const faqSchema = {
-      "@context": "https://schema.org",
-      "@type": "FAQPage",
-      "mainEntity": [{
-        "@type": "Question",
-        "name": "Is Inspectly offline-first?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Yes, Inspectly is built offline-first. You can conduct your entire inspection, take photos, and write narratives without an internet connection. The app will sync automatically when you're back online."
-        }
-      }, {
-        "@type": "Question",
-        "name": "How long does it take to migrate my templates?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Most inspectors can migrate their existing templates in under an hour. We provide intuitive tools to customize sections, items, and defect narratives to match your exact workflow."
-        }
-      }, {
-        "@type": "Question",
-        "name": "Is it compatible with mobile?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Absolutely. Inspectly is designed specifically for mobile and tablet use on-site, with a clean interface that eliminates the need for 'fat-finger' corrections or endless scrolling."
-        }
-      }, {
-        "@type": "Question",
-        "name": "How much does Inspectly cost?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Inspectly is free during our Early Access period. No credit card required, no contracts. When we introduce pricing, early adopters will be grandfathered into the best rate."
-        }
-      }, {
-        "@type": "Question",
-        "name": "Is my data safe? Can I export my reports?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Yes. Your inspection data is yours. Reports are exported as standard PDFs and can be downloaded at any time. We use industry-standard encryption and never share your data."
-        }
-      }]
-    };
-    
-    this.renderer.setProperty(script, 'text', JSON.stringify(faqSchema));
-    this.renderer.appendChild(this.document.head, script);
   }
 
   // Carousel State
@@ -316,12 +363,10 @@ export class LandingComponent implements OnInit, OnDestroy {
   }
 
   goToDashboard() {
-    track('landing_go_to_dashboard');
     this.router.navigate(['/home']);
   }
 
   trackEvent(eventName: string) {
-    track(eventName);
     if ((window as any).gtag) {
       (window as any).gtag('event', eventName);
     }

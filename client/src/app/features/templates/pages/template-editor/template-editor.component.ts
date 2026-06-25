@@ -14,11 +14,12 @@ import { SelectInputComponent } from '../../../../shared/components/inputs/selec
 import { BackButtonComponent } from '../../../../shared/components/back-button/back-button.component';
 import { ConfirmPillComponent } from '../../../../shared/components/confirm-pill/confirm-pill.component';
 import { WorkbenchLayoutComponent } from '../../../../shared/components/workbench-layout/workbench-layout.component';
+import { ChipsInputComponent } from '../../../../shared/components/inputs/chips-input/chips-input.component';
 
 @Component({
   selector: 'app-template-editor',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, LucideAngularModule, ButtonComponent, TextInputComponent, TextareaInputComponent, SelectInputComponent, BackButtonComponent, ConfirmPillComponent, WorkbenchLayoutComponent],
+  imports: [CommonModule, ReactiveFormsModule, LucideAngularModule, ButtonComponent, TextInputComponent, TextareaInputComponent, SelectInputComponent, BackButtonComponent, ConfirmPillComponent, WorkbenchLayoutComponent, ChipsInputComponent],
   providers: [{ provide: 'lucideIcons', useValue: { Home, ChevronUp, ChevronDown, Hammer, Zap, Droplets, Wind, Flame, Box, Grid, Monitor, Car, Shield, Search, Info, AlertTriangle, Copy, Edit2, Trash2, Plus, Save, Lock, Unlock, ArrowLeft, Wrench, Thermometer, Lightbulb, Paintbrush, Sun, Key, Eye, Power, FileCheck, HardHat, Construction, Ruler, ShieldCheck, ShieldAlert, BrickWall, Trees, Fan, Sparkles, Wifi, WifiOff, Trash, Settings, Check, X, Users, FileText, Image, Cloud, CloudRain, CloudLightning, Snowflake, Umbrella, Compass, MapPin, Clock, Calendar, Activity, Scissors, Heart, AlertCircle, HelpCircle, Ban, LockOpen, Send, Download, Loader2, CheckCircle2, Layers, Menu } }],
   templateUrl: './template-editor.component.html',
   styleUrl: './template-editor.component.scss'
@@ -38,6 +39,10 @@ export class TemplateEditorComponent implements OnInit, OnDestroy {
   errorMessage = signal<string | null>(null);
 
   selectedSectionIndex = signal<number>(0);
+  activeTab = signal<'presets' | 'fields' | 'settings'>('presets');
+  expandedPresetIndex = signal<number | null>(null);
+  expandedFieldIndex = signal<number | null>(null);
+  presetSearchQuery = signal<string>('');
   availableIcons = this.templatesService.icons;
   showIconPicker = signal<boolean>(false);
   deletingIndex = signal<number | null>(null);
@@ -240,6 +245,9 @@ export class TemplateEditorComponent implements OnInit, OnDestroy {
     this.selectedSectionIndex.set(index);
     this.showIconPicker.set(false);
     this.workbench?.closeSidebar();
+    this.expandedPresetIndex.set(null);
+    this.expandedFieldIndex.set(null);
+    this.presetSearchQuery.set('');
   }
 
   toggleSidebar(): void {
@@ -334,6 +342,7 @@ export class TemplateEditorComponent implements OnInit, OnDestroy {
     const fields = this.getFieldsFormArray(this.selectedSectionIndex());
     fields.push(this.createFieldGroup('New Field', 'new_field'));
 
+    this.expandedFieldIndex.set(fields.length - 1);
     this.addingFieldIndex.set(fields.length - 1);
     setTimeout(() => this.addingFieldIndex.set(null), 1000);
   }
@@ -355,6 +364,9 @@ export class TemplateEditorComponent implements OnInit, OnDestroy {
     setTimeout(() => {
       this.getFieldsFormArray(this.selectedSectionIndex()).removeAt(index);
       this.deletingFieldIndex.set(null);
+      if (this.expandedFieldIndex() === index) {
+        this.expandedFieldIndex.set(null);
+      }
     }, 250);
   }
 
@@ -375,6 +387,7 @@ export class TemplateEditorComponent implements OnInit, OnDestroy {
       severity: ['Minor', Validators.required]
     }));
 
+    this.expandedPresetIndex.set(presets.length - 1);
     this.addingPresetIndex.set(presets.length - 1);
     setTimeout(() => this.addingPresetIndex.set(null), 1000);
   }
@@ -396,6 +409,9 @@ export class TemplateEditorComponent implements OnInit, OnDestroy {
     setTimeout(() => {
       this.getPresetsFormArray(this.selectedSectionIndex()).removeAt(index);
       this.deletingPresetIndex.set(null);
+      if (this.expandedPresetIndex() === index) {
+        this.expandedPresetIndex.set(null);
+      }
     }, 250);
   }
 
@@ -404,6 +420,79 @@ export class TemplateEditorComponent implements OnInit, OnDestroy {
     if (!currentTemplate) return;
 
     this.router.navigate(['/templates/new'], { queryParams: { cloneOf: currentTemplate.id } });
+  }
+
+  togglePresetExpand(index: number): void {
+    if (this.expandedPresetIndex() === index) {
+      this.expandedPresetIndex.set(null);
+    } else {
+      this.expandedPresetIndex.set(index);
+    }
+  }
+
+  toggleFieldExpand(index: number): void {
+    if (this.expandedFieldIndex() === index) {
+      this.expandedFieldIndex.set(null);
+    } else {
+      this.expandedFieldIndex.set(index);
+    }
+  }
+
+  onPresetSearchInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.presetSearchQuery.set(input.value);
+    this.expandedPresetIndex.set(null);
+  }
+
+  clearPresetSearch(): void {
+    this.presetSearchQuery.set('');
+  }
+
+  shouldShowPreset(preset: any, index: number): boolean {
+    const query = this.presetSearchQuery().toLowerCase().trim();
+    if (!query) return true;
+    const title = preset.get('title')?.value || '';
+    const description = preset.get('description')?.value || '';
+    const recommendation = preset.get('recommendation')?.value || '';
+    return title.toLowerCase().includes(query) ||
+           description.toLowerCase().includes(query) ||
+           recommendation.toLowerCase().includes(query);
+  }
+
+  hasMatchingPresets(): boolean {
+    const presets = this.getPresetsFormArray(this.selectedSectionIndex());
+    if (!presets) return false;
+    for (let i = 0; i < presets.length; i++) {
+      if (this.shouldShowPreset(presets.at(i), i)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  getSeverityBadgeClass(severity: string): string {
+    const s = (severity || '').toLowerCase();
+    switch (s) {
+      case 'safety':
+        return 'bg-red-50 text-red-700 border border-red-200';
+      case 'major':
+        return 'bg-orange-50 text-orange-700 border border-orange-200';
+      case 'minor':
+        return 'bg-yellow-50 text-yellow-700 border border-yellow-200';
+      case 'maintenance':
+        return 'bg-green-50 text-green-700 border border-green-200';
+      case 'informational':
+      case 'info':
+        return 'bg-blue-50 text-blue-700 border border-blue-200';
+      default:
+        return 'bg-slate-50 text-slate-700 border border-slate-200';
+    }
+  }
+
+  setFieldType(fieldIndex: number, type: string): void {
+    if (this.isSystemDefault()) return;
+    const fields = this.getFieldsFormArray(this.selectedSectionIndex());
+    fields.at(fieldIndex).get('type')?.setValue(type);
   }
 
 }

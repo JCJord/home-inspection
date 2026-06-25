@@ -1,8 +1,8 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Title, Meta } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
 import { LucideAngularModule, ArrowLeft } from 'lucide-angular';
+import { SeoService } from '../../../core/services/seo.service';
 
 @Component({
   selector: 'app-privacy',
@@ -17,11 +17,13 @@ import { LucideAngularModule, ArrowLeft } from 'lucide-angular';
   ]
 })
 export class PrivacyComponent implements OnInit {
-  private titleService = inject(Title);
-  private metaService = inject(Meta);
+  private seoService = inject(SeoService);
 
   ngOnInit() {
-    this.titleService.setTitle('Privacy Policy | Inspectly');
-    this.metaService.updateTag({ name: 'description', content: 'Inspectly Privacy Policy' });
+    this.seoService.generateTags({
+      title: 'Privacy Policy | Inspectly',
+      description: 'Read the Privacy Policy of Inspectly. We are committed to protecting the privacy of home inspectors and their clients.',
+      url: `${window.location.origin}/privacy`
+    });
   }
 }

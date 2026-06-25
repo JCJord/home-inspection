@@ -1,0 +1,186 @@
+<div class="min-h-screen bg-slate-50 font-sans selection:bg-blue-100 selection:text-blue-900 flex flex-col justify-between features-bg">
+  <!-- Navbar -->
+  <nav class="sticky top-0 z-50 w-full bg-white/80 backdrop-blur-md border-b border-slate-200">
+    <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+      <a routerLink="/" class="flex items-center gap-2 group cursor-pointer hover:opacity-80 transition-opacity" title="Inspectly Homepage">
+        <div class="flex items-center justify-center p-1">
+          <img src="assets/icons/inspectly-logo.png" alt="Inspectly Logo" width="32" height="32" class="w-8 h-8" />
+        </div>
+        <span class="font-extrabold text-xl tracking-tight text-slate-900">Inspectly</span>
+      </a>
+      <div class="flex items-center gap-6">
+        <a routerLink="/pricing" class="text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors">Pricing</a>
+        <a routerLink="/alternative-to-spectora" class="text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors">Spectora Alternative</a>
+        <a routerLink="/auth/login" class="text-sm font-semibold text-slate-600 hover:text-slate-900 hidden sm:block transition-colors">Log in</a>
+        <app-button variant="solid" size="sm" routerLink="/auth/register" (click)="trackEvent('features_header_register_click')">
+          Try for Free
+        </app-button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="flex-grow">
+    <!-- Hero Header -->
+    <header class="pt-20 pb-16 px-6 text-center max-w-4xl mx-auto">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-sm font-bold mb-6 border border-blue-200">
+        <lucide-icon [name]="icons.Zap" class="w-4 h-4"></lucide-icon>
+        Built for Speed, Reliability, and Simplicity
+      </div>
+      <h1 class="text-4xl md:text-5xl font-extrabold text-slate-900 leading-tight mb-6">
+        The Modern Toolkit for Solo Home Inspectors
+      </h1>
+      <p class="text-lg md:text-xl text-slate-600 max-w-2xl mx-auto">
+        Inspectly eliminates the friction of typical report software. Take photos, record findings, and compile professional summaries directly on-site—no network required.
+      </p>
+    </header>
+
+    <!-- Key Features Grid -->
+    <section class="py-12 px-6 max-w-7xl mx-auto">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        
+        <!-- Feature 1: Offline-First -->
+        <div class="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+          <div class="bg-blue-50 text-blue-600 rounded-2xl w-12 h-12 flex items-center justify-center mb-6">
+            <lucide-icon [name]="icons.CloudLightning" class="w-6 h-6"></lucide-icon>
+          </div>
+          <h3 class="text-xl font-bold text-slate-900 mb-3">Native Offline-First App</h3>
+          <p class="text-slate-600 text-sm leading-relaxed">
+            Basements, crawlspaces, or rural districts with zero cellular service are no problem. Inspectly works entirely local, automatically backing up your findings when you reconnect.
+          </p>
+        </div>
+
+        <!-- Feature 2: Speed / Workbench -->
+        <div class="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+          <div class="bg-amber-50 text-amber-600 rounded-2xl w-12 h-12 flex items-center justify-center mb-6">
+            <lucide-icon [name]="icons.Smartphone" class="w-6 h-6"></lucide-icon>
+          </div>
+          <h3 class="text-xl font-bold text-slate-900 mb-3">Rapid Finding Workbench</h3>
+          <p class="text-slate-600 text-sm leading-relaxed">
+            Record defect observations in seconds. Color-coded severity controls, pre-set description macros, and dynamic visual layouts ensure you finish compilation on-site.
+          </p>
+        </div>
+
+        <!-- Feature 3: Custom templates -->
+        <div class="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+          <div class="bg-emerald-50 text-emerald-600 rounded-2xl w-12 h-12 flex items-center justify-center mb-6">
+            <lucide-icon [name]="icons.LayoutTemplate" class="w-6 h-6"></lucide-icon>
+          </div>
+          <h3 class="text-xl font-bold text-slate-900 mb-3">Custom Checklist Editor</h3>
+          <p class="text-slate-600 text-sm leading-relaxed">
+            Modify default checklists, add sections, and define observation shortcuts in under an hour. Avoid the bloated configs and rigid frameworks of legacy software.
+          </p>
+        </div>
+
+        <!-- Feature 4: AI narratives -->
+        <div class="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+          <div class="bg-purple-50 text-purple-600 rounded-2xl w-12 h-12 flex items-center justify-center mb-6">
+            <lucide-icon [name]="icons.Edit3" class="w-6 h-6"></lucide-icon>
+          </div>
+          <h3 class="text-xl font-bold text-slate-900 mb-3">AI Narrative Assistant</h3>
+          <p class="text-slate-600 text-sm leading-relaxed">
+            Draft clear, articulate observations on the fly. The built-in AI assistant refines your field shorthand notes into cohesive, professional descriptions ready for the client.
+          </p>
+        </div>
+
+        <!-- Feature 5: Clean PDFs -->
+        <div class="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+          <div class="bg-rose-50 text-rose-600 rounded-2xl w-12 h-12 flex items-center justify-center mb-6">
+            <lucide-icon [name]="icons.Shield" class="w-6 h-6"></lucide-icon>
+          </div>
+          <h3 class="text-xl font-bold text-slate-900 mb-3">No Layout Cleanups</h3>
+          <p class="text-slate-600 text-sm leading-relaxed">
+            What you see is what the client gets. Our compiler creates standard, clean PDFs automatically. Stop spending your evenings editing white spaces, sizing photos, or fixing layouts.
+          </p>
+        </div>
+
+        <!-- Feature 6: Operations Dashboard -->
+        <div class="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+          <div class="bg-indigo-50 text-indigo-600 rounded-2xl w-12 h-12 flex items-center justify-center mb-6">
+            <lucide-icon [name]="icons.Check" class="w-6 h-6"></lucide-icon>
+          </div>
+          <h3 class="text-xl font-bold text-slate-900 mb-3">Operations Dashboard</h3>
+          <p class="text-slate-600 text-sm leading-relaxed">
+            Track schedules, fee collection status, client contacts, and document histories from a unified workspace designed specifically for a single inspector.
+          </p>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- How-To Guide Section (Targets: "how to create a home inspection template") -->
+    <section class="bg-white border-y border-slate-200 py-20 px-6">
+      <div class="max-w-4xl mx-auto">
+        <div class="text-center mb-12">
+          <h2 class="text-3xl font-extrabold text-slate-900">How to Create Custom Inspection Templates</h2>
+          <p class="text-slate-600 mt-2">Get up and running with your own personalized templates in under 15 minutes.</p>
+        </div>
+        
+        <div class="space-y-8">
+          <div class="flex items-start gap-4">
+            <div class="bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold shrink-0 mt-1">1</div>
+            <div>
+              <h3 class="font-bold text-slate-900 text-lg">Access the Template Editor</h3>
+              <p class="text-slate-600 text-sm leading-relaxed mt-1">
+                Log into your Inspectly dashboard, open the "Templates" route, and click "Create Template" to spin up a clean editor shell.
+              </p>
+            </div>
+          </div>
+
+          <div class="flex items-start gap-4">
+            <div class="bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold shrink-0 mt-1">2</div>
+            <div>
+              <h3 class="font-bold text-slate-900 text-lg">Define Categories & Sections</h3>
+              <p class="text-slate-600 text-sm leading-relaxed mt-1">
+                Create sections matching standard property systems (Roofing, Structure, Exterior, Electrical, HVAC). Add subsections for specific components.
+              </p>
+            </div>
+          </div>
+
+          <div class="flex items-start gap-4">
+            <div class="bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold shrink-0 mt-1">3</div>
+            <div>
+              <h3 class="font-bold text-slate-900 text-lg">Add Default Descriptions & Quick Presets</h3>
+              <p class="text-slate-600 text-sm leading-relaxed mt-1">
+                Pre-populate common observation narratives and default severity levels to minimize manual typing while working in the field.
+              </p>
+            </div>
+          </div>
+
+          <div class="flex items-start gap-4">
+            <div class="bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold shrink-0 mt-1">4</div>
+            <div>
+              <h3 class="font-bold text-slate-900 text-lg">Save and Sync</h3>
+              <p class="text-slate-600 text-sm leading-relaxed mt-1">
+                Save the template. It immediately registers under your account and automatically syncs to your tablet or smartphone for offline use.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Bottom CTA -->
+    <section class="py-20 px-6 max-w-4xl mx-auto text-center">
+      <h2 class="text-3xl font-extrabold text-slate-900 mb-6">Write Reports on Site, Not at Home.</h2>
+      <p class="text-lg text-slate-600 mb-8 max-w-xl mx-auto">
+        Join solo home inspectors who save hours on every job. Try Inspectly for free today.
+      </p>
+      <app-button variant="solid" size="lg" routerLink="/auth/register" (click)="trackEvent('features_bottom_register_click')">
+        Create Your Free Account <lucide-icon [name]="icons.ArrowRight" class="w-4 h-4 ml-1"></lucide-icon>
+      </app-button>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-white border-t border-slate-200 py-12 px-6">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-slate-500">
+      <div>&copy; 2026 Inspectly. All rights reserved.</div>
+      <div class="flex gap-6">
+        <a routerLink="/pricing" class="hover:underline hover:text-slate-800 transition-colors">Pricing</a>
+        <a routerLink="/alternative-to-spectora" class="hover:underline hover:text-slate-800 transition-colors">Spectora Alternative</a>
+        <a routerLink="/privacy" class="hover:underline hover:text-slate-800 transition-colors">Privacy Policy</a>
+        <a routerLink="/terms" class="hover:underline hover:text-slate-800 transition-colors">Terms of Service</a>
+      </div>
+    </div>
+  </footer>
+</div>

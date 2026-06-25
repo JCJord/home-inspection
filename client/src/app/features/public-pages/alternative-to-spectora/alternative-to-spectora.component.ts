@@ -1,10 +1,10 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Title, Meta } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
 import { LucideAngularModule, CheckCircle, XCircle, Zap, Shield, ChevronRight } from 'lucide-angular';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
-import { track } from '@vercel/analytics';
+import { SeoService } from '../../../core/services/seo.service';
+
 
 @Component({
   selector: 'app-alternative-to-spectora',
@@ -13,22 +13,55 @@ import { track } from '@vercel/analytics';
   templateUrl: './alternative-to-spectora.component.html',
 })
 export class AlternativeToSpectoraComponent implements OnInit {
-  private titleService = inject(Title);
-  private metaService = inject(Meta);
+  private seoService = inject(SeoService);
 
   readonly icons = { CheckCircle, XCircle, Zap, Shield, ChevronRight };
 
   ngOnInit() {
-    this.titleService.setTitle('Best Spectora Alternative for Solo Home Inspectors | Inspectly');
-    this.metaService.updateTag({ 
-      name: 'description', 
-      content: 'Looking for an alternative to Spectora? Discover why solo home inspectors are switching to Inspectly for a faster, offline-first, and more affordable reporting solution.' 
+    this.seoService.generateTags({
+      title: 'Best Spectora Alternative for Solo Home Inspectors | Inspectly',
+      description: 'Tired of Spectora\'s price, complex template setups, and slow basements sync? Switch to Inspectly — the fast, offline-first home inspection report software designed for solo operators.',
+      url: `${window.location.origin}/alternative-to-spectora`
     });
-    track('page_view_spectora_alternative');
+
+    // BreadcrumbList Schema
+    this.seoService.injectSchema({
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      'itemListElement': [
+        {
+          '@type': 'ListItem',
+          'position': 1,
+          'name': 'Home',
+          'item': window.location.origin
+        },
+        {
+          '@type': 'ListItem',
+          'position': 2,
+          'name': 'Spectora Alternative',
+          'item': `${window.location.origin}/alternative-to-spectora`
+        }
+      ]
+    }, 'breadcrumb-schema');
+
+    // SoftwareApplication Schema (omitting aggregateRating)
+    this.seoService.injectSchema({
+      '@context': 'https://schema.org',
+      '@type': 'SoftwareApplication',
+      'name': 'Inspectly',
+      'operatingSystem': 'Web, Mobile, iOS, Android',
+      'applicationCategory': 'BusinessApplication',
+      'offers': {
+        '@type': 'Offer',
+        'price': '0.00',
+        'priceCurrency': 'USD',
+        'description': 'Free during early access'
+      }
+    }, 'software-schema');
+
   }
 
   trackEvent(eventName: string) {
-    track(eventName);
     if ((window as any).gtag) {
       (window as any).gtag('event', eventName);
     }

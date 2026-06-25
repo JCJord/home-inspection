@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -6,8 +6,9 @@ import { finalize } from 'rxjs';
 import { TextInputComponent, PasswordInputComponent } from '../../../../shared';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { AuthService } from '../../../../core/services/auth.service';
+import { SeoService } from '../../../../core/services/seo.service';
 import { LoginRequestDto } from '../../../../core/dtos/login-request.dto';
-import { inject as injectAnalytics } from '@vercel/analytics';
+
 import { environment } from '../../../../../environments/environment';
 
 @Component({
@@ -24,13 +25,20 @@ import { environment } from '../../../../../environments/environment';
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss',
 })
-export class LoginComponent {
-  constructor() {
-    injectAnalytics();
-  }
+export class LoginComponent implements OnInit {
+
 
   private authService = inject(AuthService);
   private router = inject(Router);
+  private seoService = inject(SeoService);
+
+  ngOnInit() {
+    this.seoService.generateTags({
+      title: 'Log In | Inspectly',
+      description: 'Log into your Inspectly account to access your operations dashboard, template builder, and home inspection reports.',
+      noindex: true
+    });
+  }
 
   isLoading = signal(false);
   view = signal<'login' | 'forgot-password' | 'email-sent'>('login');

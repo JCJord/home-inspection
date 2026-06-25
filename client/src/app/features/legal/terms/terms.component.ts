@@ -1,8 +1,8 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Title, Meta } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
 import { LucideAngularModule, ArrowLeft } from 'lucide-angular';
+import { SeoService } from '../../../core/services/seo.service';
 
 @Component({
   selector: 'app-terms',
@@ -17,11 +17,13 @@ import { LucideAngularModule, ArrowLeft } from 'lucide-angular';
   ]
 })
 export class TermsComponent implements OnInit {
-  private titleService = inject(Title);
-  private metaService = inject(Meta);
+  private seoService = inject(SeoService);
 
   ngOnInit() {
-    this.titleService.setTitle('Terms of Service | Inspectly');
-    this.metaService.updateTag({ name: 'description', content: 'Inspectly Terms of Service' });
+    this.seoService.generateTags({
+      title: 'Terms of Service | Inspectly',
+      description: 'Read the Terms of Service of Inspectly. Understand the terms, guidelines, and agreements for using the home inspection software.',
+      url: `${window.location.origin}/terms`
+    });
   }
 }

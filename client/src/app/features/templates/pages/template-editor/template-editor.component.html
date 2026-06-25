@@ -92,7 +92,7 @@
       @if (!isLoading() && template() && sectionsFormArray) {
         <div class="p-4 md:p-8 relative min-h-full">
           @if (currentSection) {
-          <div class="max-w-3xl mx-auto space-y-8">
+          <div class="max-w-3xl mx-auto space-y-6">
             
             <!-- Read-Only Alert -->
             @if (isSystemDefault()) {
@@ -105,194 +105,376 @@
             </div>
             }
 
-            <!-- Section Info / Icon Picker -->
-            <div class="bg-surface-standard p-6 rounded-xl border border-standard shadow-sm space-y-4">
-              <div class="responsive-stack items-start gap-6">
-                <!-- Icon Picker Section -->
-                <div class="flex flex-col gap-1.5">
-                  <label class="text-[11px] font-bold uppercase tracking-wider text-standard-muted ml-1">Icon</label>
-                  <div class="relative">
-                    <button type="button" (click)="toggleIconPicker()" [disabled]="isSystemDefault()"
-                      class="w-12 h-12 rounded-xl border-2 border-dashed border-standard-muted flex items-center justify-center bg-light-standard hover:border-solid hover:border-primary hover:bg-primary/5 transition-all cursor-pointer relative group">
-                      <lucide-icon [name]="iconMap[currentSection.get('icon_key')?.value] || iconMap['Home']" [size]="22"
-                        class="text-primary transition-colors"></lucide-icon>
-
-                      @if (!isSystemDefault()) {
-                      <div
-                        class="absolute -bottom-1.5 -right-1.5 bg-white text-primary rounded-full p-1 shadow-md border-2 border-standard group-hover:scale-110 transition-transform flex items-center justify-center">
-                        <lucide-icon [name]="iconMap['ChevronDown']" [size]="10" class="stroke-[3px]"></lucide-icon>
-                      </div>
-                      }
-                    </button>
-
-                    <!-- Icon Picker Grid Dropdown -->
-                    @if (showIconPicker()) {
-                    <div
-                      class="absolute left-0 top-14 bg-surface-standard border border-standard shadow-2xl p-3 rounded-2xl z-30 grid grid-cols-4 gap-2 w-64 max-h-72 overflow-y-auto animate-in fade-in zoom-in duration-200">
-                      @for (iconKey of availableIcons(); track iconKey) {
-                      <button type="button" (click)="selectIcon(iconKey)"
-                        [class.bg-primary/10]="currentSection.get('icon_key')?.value === iconKey"
-                        [class.text-primary]="currentSection.get('icon_key')?.value === iconKey"
-                        class="p-2.5 rounded-xl hover:bg-light-standard flex items-center justify-center text-standard-muted hover:text-primary transition-all">
-                        <lucide-icon [name]="iconMap[iconKey] || iconMap['Home']" [size]="20"></lucide-icon>
-                      </button>
-                      }
-                    </div>
-                    }
-                  </div>
-                </div>
-
-                <!-- Section Name Section -->
-                <div class="flex-1 flex flex-col gap-4">
-                  <app-text-input [name]="'structure.sections.' + selectedSectionIndex() + '.name'" label="Section Name"
-                    placeholder="e.g., Exterior, Roofing">
-                  </app-text-input>
-                  
-                  <app-text-input [name]="'structure.sections.' + selectedSectionIndex() + '.location_presets_raw'" label="Location Presets (Comma-Separated)"
-                    placeholder="e.g., Master Bath, Kitchen, Hallway">
-                  </app-text-input>
-                </div>
+            <!-- Modern Segmented Tabs Bar -->
+            <div class="flex items-center justify-between border-b border-standard pb-4">
+              <div class="flex bg-light-standard p-1 rounded-xl border border-standard">
+                <button type="button" (click)="activeTab.set('presets')"
+                  [class.bg-surface-standard]="activeTab() === 'presets'"
+                  [class.shadow-sm]="activeTab() === 'presets'"
+                  [class.text-primary]="activeTab() === 'presets'"
+                  class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-standard-muted hover:text-standard transition-all cursor-pointer">
+                  <lucide-icon [name]="iconMap['Zap']" [size]="16"></lucide-icon>
+                  Presets
+                  <span class="ml-1 px-1.5 py-0.5 text-xs rounded-full bg-standard/5 text-standard-muted font-normal">
+                    {{ getPresetsFormArray(selectedSectionIndex()).length }}
+                  </span>
+                </button>
+                <button type="button" (click)="activeTab.set('fields')"
+                  [class.bg-surface-standard]="activeTab() === 'fields'"
+                  [class.shadow-sm]="activeTab() === 'fields'"
+                  [class.text-primary]="activeTab() === 'fields'"
+                  class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-standard-muted hover:text-standard transition-all cursor-pointer">
+                  <lucide-icon [name]="iconMap['Grid']" [size]="16"></lucide-icon>
+                  Fields
+                  <span class="ml-1 px-1.5 py-0.5 text-xs rounded-full bg-standard/5 text-standard-muted font-normal">
+                    {{ getFieldsFormArray(selectedSectionIndex()).length }}
+                  </span>
+                </button>
+                <button type="button" (click)="activeTab.set('settings')"
+                  [class.bg-surface-standard]="activeTab() === 'settings'"
+                  [class.shadow-sm]="activeTab() === 'settings'"
+                  [class.text-primary]="activeTab() === 'settings'"
+                  class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-standard-muted hover:text-standard transition-all cursor-pointer">
+                  <lucide-icon [name]="iconMap['Settings']" [size]="16"></lucide-icon>
+                  Info
+                </button>
               </div>
-            </div>
 
-            <!-- Metadata Fields Management -->
-            <div class="bg-surface-standard p-6 rounded-xl border border-standard shadow-sm space-y-4">
+              <!-- Tab Actions -->
               <div>
-                <h3 class="text-base font-bold text-standard">Metadata Fields</h3>
-                <p class="text-xs text-standard-muted mt-1">Define inspection attributes (e.g., Materials, Setup methods).
-                </p>
-              </div>
-
-              <div class="space-y-3">
-                @for (field of getFieldsFormArray(selectedSectionIndex()).controls; track $index; let fi = $index) {
-                <div class="bg-light-standard rounded-xl border border-standard overflow-hidden editor-item-anim"
-                  [class.adding]="addingFieldIndex() === fi"
-                  [class.deleting]="deletingFieldIndex() === fi">
-                  <div class="flex justify-between items-center px-4 py-2 border-b border-standard bg-standard/5 min-h-[51px]">
-                    <span class="text-[10px] font-bold uppercase tracking-wider text-standard-muted">Field #{{ fi + 1
-                      }}</span>
-                    @if (!isSystemDefault()) {
-                      <div class="flex items-center">
-                        @if (confirmingDeleteFieldIndex() === fi) {
-                          <app-confirm-pill (confirm)="confirmRemoveField(fi)" (cancel)="cancelDeleteField()"></app-confirm-pill>
-                        } @else {
-                          <button type="button" (click)="removeField(fi)"
-                            class="text-standard-muted hover:text-red-500 hover:bg-red-50 rounded-lg cursor-pointer transition-all p-2">
-                            <lucide-icon [name]="iconMap['Trash2']" [size]="18"></lucide-icon>
-                          </button>
-                        }
-                      </div>
-                    }
-                  </div>
-                  <div class="p-4 responsive-stack items-start flex-wrap gap-4">
-                    <div class="flex-1 min-w-[200px]">
-                      <app-text-input [name]="'structure.sections.' + selectedSectionIndex() + '.fields.' + fi + '.label'"
-                        label="Field Label" placeholder="e.g., Siding Material">
-                      </app-text-input>
-                    </div>
-                    <div class="flex-1 min-w-[200px]">
-                      <app-text-input [name]="'structure.sections.' + selectedSectionIndex() + '.fields.' + fi + '.key'"
-                        label="Key Slug (Auto-Generated)" placeholder="siding_material">
-                      </app-text-input>
-                    </div>
-                    <div class="flex-1 min-w-[200px]">
-                      <app-select-input [name]="'structure.sections.' + selectedSectionIndex() + '.fields.' + fi + '.type'"
-                        label="Field Type"
-                        [options]="[{label: 'Text Input', value: 'text'}, {label: 'Dropdown / Select', value: 'select'}]">
-                      </app-select-input>
-                    </div>
-                    @if (field.get('type')?.value === 'select') {
-                    <div class="w-full">
-                      <app-text-input [name]="'structure.sections.' + selectedSectionIndex() + '.fields.' + fi + '.options_raw'"
-                        label="Dropdown Options (Comma-Separated)" placeholder="e.g., Brick, Vinyl, Stucco, Wood">
-                      </app-text-input>
-                    </div>
-                    }
-                  </div>
-                </div>
+                @if (!isSystemDefault()) {
+                  @if (activeTab() === 'presets') {
+                    <app-button type="button" (click)="addPreset()" variant="solid" size="sm">
+                      <lucide-icon [name]="iconMap['Plus']" [size]="16" class="mr-1"></lucide-icon>
+                      Add Preset
+                    </app-button>
+                  } @else if (activeTab() === 'fields') {
+                    <app-button type="button" (click)="addField()" variant="solid" size="sm">
+                      <lucide-icon [name]="iconMap['Plus']" [size]="16" class="mr-1"></lucide-icon>
+                      Add Field
+                    </app-button>
+                  }
                 }
               </div>
-
-              @if (!isSystemDefault()) {
-              <app-button type="button" (click)="addField()" variant="subtle" [full]="true">
-                <lucide-icon [name]="iconMap['Plus']" [size]="16"></lucide-icon>
-                Add Metadata Field
-              </app-button>
-              }
             </div>
 
-            <!-- Presets Management -->
-            <div class="bg-surface-standard p-6 rounded-xl border border-standard shadow-sm space-y-4 ">
-              <div>
-                <h3 class="text-base font-bold text-standard">Quick-Tap Presets</h3>
-                <p class="text-xs text-standard-muted mt-1">Standard defect findings templates inspectors use on-site.</p>
-              </div>
-
+            <!-- Tab 1: Findings Presets -->
+            @if (activeTab() === 'presets') {
               <div class="space-y-4">
-                @for (preset of getPresetsFormArray(selectedSectionIndex()).controls; track $index; let pi = $index) {
-                <div class="border border-standard rounded-xl overflow-hidden bg-surface-standard editor-item-anim"
-                  [class.adding]="addingPresetIndex() === pi"
-                  [class.deleting]="deletingPresetIndex() === pi">
-                  <div class="flex justify-between items-center px-4 py-2 border-b border-standard bg-standard/5 min-h-[51px]">
-                    <span class="text-[10px] font-bold uppercase tracking-wider text-standard-muted">Preset #{{ pi + 1
-                      }}</span>
+                @if (getPresetsFormArray(selectedSectionIndex()).length > 0) {
+                  <!-- Search Presets Bar -->
+                  <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <lucide-icon [name]="iconMap['Search']" [size]="16" class="text-standard-muted"></lucide-icon>
+                    </div>
+                    <input type="text" [value]="presetSearchQuery()" (input)="onPresetSearchInput($event)"
+                      placeholder="Search presets by title or description..."
+                      class="block w-full pl-9 pr-9 py-2 bg-surface-standard border border-standard rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary placeholder-standard-muted/50 text-standard">
+                    @if (presetSearchQuery()) {
+                      <button type="button" (click)="clearPresetSearch()"
+                        class="absolute inset-y-0 right-0 pr-3 flex items-center text-standard-muted hover:text-standard cursor-pointer">
+                        <lucide-icon [name]="iconMap['X']" [size]="16"></lucide-icon>
+                      </button>
+                    }
+                  </div>
+
+                  <!-- Presets Accordion List -->
+                  <div class="space-y-3">
+                    @for (preset of getPresetsFormArray(selectedSectionIndex()).controls; track $index; let pi = $index) {
+                      @if (shouldShowPreset(preset, pi)) {
+                        <div class="border border-standard rounded-xl overflow-hidden bg-surface-standard editor-item-anim shadow-sm"
+                          [class.adding]="addingPresetIndex() === pi"
+                          [class.deleting]="deletingPresetIndex() === pi">
+                          
+                          <!-- Accordion Header -->
+                          <div (click)="togglePresetExpand(pi)"
+                            class="flex items-center justify-between px-4 py-3.5 cursor-pointer hover:bg-light-standard transition-all select-none">
+                            <div class="flex items-center gap-3 min-w-0 flex-1">
+                              <lucide-icon [name]="iconMap[expandedPresetIndex() === pi ? 'ChevronUp' : 'ChevronDown']"
+                                [size]="16" class="text-standard-muted flex-shrink-0"></lucide-icon>
+                              <div class="truncate min-w-0 flex-1">
+                                <div class="flex items-center gap-2 flex-wrap">
+                                  <span class="font-bold text-sm text-standard truncate">
+                                    {{ preset.get('title')?.value || 'Unnamed Preset' }}
+                                  </span>
+                                  <span [class]="getSeverityBadgeClass(preset.get('severity')?.value)"
+                                    class="text-[9px] px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider">
+                                    {{ preset.get('severity')?.value }}
+                                  </span>
+                                </div>
+                                @if (expandedPresetIndex() !== pi) {
+                                  <p class="text-xs text-standard-muted truncate mt-0.5">
+                                    {{ preset.get('description')?.value || 'No description provided' }}
+                                  </p>
+                                }
+                              </div>
+                            </div>
+
+                            <div class="flex items-center gap-1 ml-2" (click)="$event.stopPropagation()">
+                              @if (!isSystemDefault()) {
+                                @if (confirmingDeletePresetIndex() === pi) {
+                                  <app-confirm-pill (confirm)="confirmRemovePreset(pi)" (cancel)="cancelDeletePreset()"></app-confirm-pill>
+                                } @else {
+                                  <button type="button" (click)="removePreset(pi)"
+                                    class="text-standard-muted hover:text-red-500 hover:bg-red-50 p-2 rounded-lg cursor-pointer transition-all">
+                                    <lucide-icon [name]="iconMap['Trash2']" [size]="16"></lucide-icon>
+                                  </button>
+                                }
+                              }
+                            </div>
+                          </div>
+
+                          <!-- Accordion Content -->
+                          @if (expandedPresetIndex() === pi) {
+                            <div class="px-4 pb-4 pt-2 border-t border-standard bg-light-standard/30 space-y-4">
+                              <div class="responsive-stack justify-between items-start gap-4">
+                                <div class="flex-1">
+                                  <app-text-input
+                                    [name]="'structure.sections.' + selectedSectionIndex() + '.presets.' + pi + '.title'"
+                                    label="Preset Title" placeholder="e.g., Missing Shingles">
+                                  </app-text-input>
+                                </div>
+                                <div class="w-48">
+                                  <app-select-input
+                                    [name]="'structure.sections.' + selectedSectionIndex() + '.presets.' + pi + '.severity'"
+                                    label="Severity" [options]="severityOptions">
+                                  </app-select-input>
+                                </div>
+                              </div>
+                              <div>
+                                <app-textarea-input
+                                  [name]="'structure.sections.' + selectedSectionIndex() + '.presets.' + pi + '.description'"
+                                  label="Default Description" [rows]="3" placeholder="Add standard defect findings description...">
+                                  </app-textarea-input>
+                              </div>
+                              <div>
+                                <app-textarea-input
+                                  [name]="'structure.sections.' + selectedSectionIndex() + '.presets.' + pi + '.recommendation'"
+                                  label="Default Recommendation" [rows]="2" placeholder="e.g., Recommend evaluation by a licensed electrician...">
+                                </app-textarea-input>
+                              </div>
+                            </div>
+                          }
+                        </div>
+                      }
+                    }
+
+                    <!-- Search No Matches -->
+                    @if (presetSearchQuery() && !hasMatchingPresets()) {
+                      <div class="flex flex-col items-center justify-center py-12 px-4 text-center border border-standard rounded-2xl bg-surface-standard">
+                        <div class="w-12 h-12 bg-light-standard rounded-xl flex items-center justify-center mb-4 text-standard-muted">
+                          <lucide-icon [name]="iconMap['Search']" [size]="24"></lucide-icon>
+                        </div>
+                        <h4 class="text-sm font-bold text-standard mb-1">No Matches Found</h4>
+                        <p class="text-xs text-standard-muted max-w-xs mb-4">
+                          We couldn't find any presets matching "{{ presetSearchQuery() }}". Try a different search term.
+                        </p>
+                        <app-button type="button" (click)="clearPresetSearch()" variant="subtle" size="sm">
+                          Clear Search
+                        </app-button>
+                      </div>
+                    }
+                  </div>
+                } @else {
+                  <!-- Empty Presets -->
+                  <div class="flex flex-col items-center justify-center py-16 px-4 text-center border-2 border-dashed border-standard rounded-2xl bg-surface-standard">
+                    <div class="w-12 h-12 bg-light-standard rounded-xl flex items-center justify-center mb-4 text-standard-muted">
+                      <lucide-icon [name]="iconMap['Zap']" [size]="24"></lucide-icon>
+                    </div>
+                    <h4 class="text-sm font-bold text-standard mb-1">No Presets Yet</h4>
+                    <p class="text-xs text-standard-muted max-w-xs mb-4">
+                      Presets are quick defect templates you can tap on-site (e.g., "Missing Shingles", "Cracked Window").
+                    </p>
                     @if (!isSystemDefault()) {
-                      <div class="flex items-center">
-                        @if (confirmingDeletePresetIndex() === pi) {
-                          <app-confirm-pill (confirm)="confirmRemovePreset(pi)" (cancel)="cancelDeletePreset()"></app-confirm-pill>
-                        } @else {
-                          <button type="button" (click)="removePreset(pi)"
-                            class="text-standard-muted hover:text-red-500 hover:bg-red-50 rounded-lg cursor-pointer transition-all p-2">
-                            <lucide-icon [name]="iconMap['Trash2']" [size]="18"></lucide-icon>
-                          </button>
+                      <app-button type="button" (click)="addPreset()" variant="solid" size="sm">
+                        <lucide-icon [name]="iconMap['Plus']" [size]="16" class="mr-1"></lucide-icon>
+                        Create First Preset
+                      </app-button>
+                    }
+                  </div>
+                }
+              </div>
+            }
+
+            <!-- Tab 2: Metadata Fields -->
+            @if (activeTab() === 'fields') {
+              <div class="space-y-4">
+                @if (getFieldsFormArray(selectedSectionIndex()).length > 0) {
+                  <div class="space-y-3">
+                    @for (field of getFieldsFormArray(selectedSectionIndex()).controls; track $index; let fi = $index) {
+                      <div class="border border-standard rounded-xl overflow-hidden bg-surface-standard editor-item-anim shadow-sm"
+                        [class.adding]="addingFieldIndex() === fi"
+                        [class.deleting]="deletingFieldIndex() === fi">
+                        
+                        <!-- Accordion Header -->
+                        <div (click)="toggleFieldExpand(fi)"
+                          class="flex items-center justify-between px-4 py-3.5 cursor-pointer hover:bg-light-standard transition-all select-none">
+                          <div class="flex items-center gap-3 min-w-0 flex-1">
+                            <lucide-icon [name]="iconMap[expandedFieldIndex() === fi ? 'ChevronUp' : 'ChevronDown']"
+                              [size]="16" class="text-standard-muted flex-shrink-0"></lucide-icon>
+                            <div class="truncate min-w-0 flex-1">
+                              <div class="flex items-center gap-2">
+                                <span class="font-bold text-sm text-standard truncate">
+                                  {{ field.get('label')?.value || 'Unnamed Field' }}
+                                </span>
+                                <span class="text-[9px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider border border-slate-200">
+                                  {{ field.get('type')?.value === 'select' ? 'Multiple Choice' : 'Free Text' }}
+                                </span>
+                              </div>
+                              @if (expandedFieldIndex() !== fi) {
+                                <p class="text-xs text-standard-muted truncate mt-0.5">
+                                  Key: {{ field.get('key')?.value || 'none' }}
+                                  @if (field.get('type')?.value === 'select') {
+                                    &middot; Options: {{ field.get('options_raw')?.value || 'none' }}
+                                  }
+                                </p>
+                              }
+                            </div>
+                          </div>
+
+                          <div class="flex items-center gap-1 ml-2" (click)="$event.stopPropagation()">
+                            @if (!isSystemDefault()) {
+                              @if (confirmingDeleteFieldIndex() === fi) {
+                                <app-confirm-pill (confirm)="confirmRemoveField(fi)" (cancel)="cancelDeleteField()"></app-confirm-pill>
+                              } @else {
+                                <button type="button" (click)="removeField(fi)"
+                                  class="text-standard-muted hover:text-red-500 hover:bg-red-50 p-2 rounded-lg cursor-pointer transition-all">
+                                  <lucide-icon [name]="iconMap['Trash2']" [size]="16"></lucide-icon>
+                                </button>
+                              }
+                            }
+                          </div>
+                        </div>
+
+                        <!-- Accordion Content -->
+                        @if (expandedFieldIndex() === fi) {
+                          <div class="px-4 pb-4 pt-2 border-t border-standard bg-light-standard/30 space-y-4">
+                            <div class="responsive-stack items-start gap-4">
+                              <div class="flex-1 min-w-[200px] flex flex-col gap-1">
+                                <app-text-input [name]="'structure.sections.' + selectedSectionIndex() + '.fields.' + fi + '.label'"
+                                  label="Field Label" placeholder="e.g., Siding Material">
+                                </app-text-input>
+                                <span class="text-[10px] text-standard-muted/80 italic ml-1">
+                                  Silently generates key: <strong>{{ field.get('key')?.value || 'none' }}</strong>
+                                </span>
+                              </div>
+                              
+                              <div class="flex-1 min-w-[250px] flex flex-col gap-1.5">
+                                <label class="text-[11px] font-bold uppercase tracking-wider text-standard-muted ml-1">Friendly Field Type</label>
+                                <div class="flex gap-2">
+                                  <button type="button" 
+                                    (click)="setFieldType(fi, 'text')"
+                                    [disabled]="isSystemDefault()"
+                                    [class.bg-primary/10]="field.get('type')?.value === 'text'"
+                                    [class.border-primary]="field.get('type')?.value === 'text'"
+                                    [class.text-primary]="field.get('type')?.value === 'text'"
+                                    class="flex-1 flex items-center justify-center gap-1.5 py-2.5 border border-standard rounded-xl bg-surface-standard hover:bg-light-standard text-xs font-bold transition-all cursor-pointer disabled:opacity-50">
+                                    <lucide-icon [name]="iconMap['FileText']" [size]="14"></lucide-icon>
+                                    Free text answer
+                                  </button>
+                                  <button type="button" 
+                                    (click)="setFieldType(fi, 'select')"
+                                    [disabled]="isSystemDefault()"
+                                    [class.bg-primary/10]="field.get('type')?.value === 'select'"
+                                    [class.border-primary]="field.get('type')?.value === 'select'"
+                                    [class.text-primary]="field.get('type')?.value === 'select'"
+                                    class="flex-1 flex items-center justify-center gap-1.5 py-2.5 border border-standard rounded-xl bg-surface-standard hover:bg-light-standard text-xs font-bold transition-all cursor-pointer disabled:opacity-50">
+                                    <lucide-icon [name]="iconMap['Layers']" [size]="14"></lucide-icon>
+                                    Multiple choice
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+
+                            @if (field.get('type')?.value === 'select') {
+                              <div class="w-full animate-in fade-in slide-in-from-top-1 duration-200">
+                                <app-chips-input [name]="'structure.sections.' + selectedSectionIndex() + '.fields.' + fi + '.options_raw'"
+                                  [disabled]="isSystemDefault()"
+                                  label="Dropdown Options" placeholder="Add option (e.g. Brick, Vinyl, Stucco) and press Enter">
+                                </app-chips-input>
+                              </div>
+                            }
+                          </div>
                         }
                       </div>
                     }
                   </div>
-
-                  <div class="p-4 space-y-4">
-                    <div class="responsive-stack justify-between items-start">
-                      <div class="flex-1">
-                        <app-text-input
-                          [name]="'structure.sections.' + selectedSectionIndex() + '.presets.' + pi + '.title'"
-                          label="Preset Title" placeholder="e.g., Missing Shingles">
-                        </app-text-input>
-                      </div>
-
-                      <div class="w-40">
-                        <app-select-input
-                          [name]="'structure.sections.' + selectedSectionIndex() + '.presets.' + pi + '.severity'"
-                          label="Severity" [options]="severityOptions">
-                        </app-select-input>
-                      </div>
+                } @else {
+                  <!-- Empty Fields -->
+                  <div class="flex flex-col items-center justify-center py-16 px-4 text-center border-2 border-dashed border-standard rounded-2xl bg-surface-standard">
+                    <div class="w-12 h-12 bg-light-standard rounded-xl flex items-center justify-center mb-4 text-standard-muted">
+                      <lucide-icon [name]="iconMap['Grid']" [size]="24"></lucide-icon>
                     </div>
-
-                    <div>
-                      <app-textarea-input
-                        [name]="'structure.sections.' + selectedSectionIndex() + '.presets.' + pi + '.description'"
-                        label="Default Description" [rows]="3" placeholder="Add standard defect findings description...">
-                      </app-textarea-input>
-                    </div>
-
-                    <div>
-                      <app-textarea-input
-                        [name]="'structure.sections.' + selectedSectionIndex() + '.presets.' + pi + '.recommendation'"
-                        label="Default Recommendation" [rows]="2" placeholder="e.g., Recommend evaluation by a licensed electrician...">
-                      </app-textarea-input>
-                    </div>
+                    <h4 class="text-sm font-bold text-standard mb-1">No Metadata Fields</h4>
+                    <p class="text-xs text-standard-muted max-w-xs mb-4">
+                      Define custom properties to collect for this section (e.g., "Roofing Material", "Method of Inspection").
+                    </p>
+                    @if (!isSystemDefault()) {
+                      <app-button type="button" (click)="addField()" variant="solid" size="sm">
+                        <lucide-icon [name]="iconMap['Plus']" [size]="16" class="mr-1"></lucide-icon>
+                        Create First Field
+                      </app-button>
+                    }
                   </div>
-                </div>
                 }
               </div>
+            }
 
-              @if (!isSystemDefault()) {
-              <app-button type="button" (click)="addPreset()" variant="subtle" [full]="true">
-                <lucide-icon [name]="iconMap['Plus']" [size]="16"></lucide-icon>
-                Add Preset
-              </app-button>
-              }
-            </div>
-            
+            <!-- Tab 3: Section Info & General Settings -->
+            @if (activeTab() === 'settings') {
+              <div class="bg-surface-standard p-6 rounded-xl border border-standard shadow-sm space-y-6 animate-in fade-in duration-200">
+                <h3 class="text-base font-bold text-standard">Section Details</h3>
+                
+                <div class="responsive-stack items-start gap-6">
+                  <!-- Icon Picker Section -->
+                  <div class="flex flex-col gap-1.5">
+                    <label class="text-[11px] font-bold uppercase tracking-wider text-standard-muted ml-1">Icon</label>
+                    <div class="relative">
+                      <button type="button" (click)="toggleIconPicker()" [disabled]="isSystemDefault()"
+                        class="w-12 h-12 rounded-xl border-2 border-dashed border-standard-muted flex items-center justify-center bg-light-standard hover:border-solid hover:border-primary hover:bg-primary/5 transition-all cursor-pointer relative group">
+                        <lucide-icon [name]="iconMap[currentSection.get('icon_key')?.value] || iconMap['Home']" [size]="22"
+                          class="text-primary transition-colors"></lucide-icon>
+
+                        @if (!isSystemDefault()) {
+                        <div
+                          class="absolute -bottom-1.5 -right-1.5 bg-white text-primary rounded-full p-1 shadow-md border-2 border-standard group-hover:scale-110 transition-transform flex items-center justify-center">
+                          <lucide-icon [name]="iconMap['ChevronDown']" [size]="10" class="stroke-[3px]"></lucide-icon>
+                        </div>
+                        }
+                      </button>
+
+                      <!-- Icon Picker Grid Dropdown -->
+                      @if (showIconPicker()) {
+                      <div
+                        class="absolute left-0 top-14 bg-surface-standard border border-standard shadow-2xl p-3 rounded-2xl z-30 grid grid-cols-4 gap-2 w-64 max-h-72 overflow-y-auto animate-in fade-in zoom-in duration-200">
+                        @for (iconKey of availableIcons(); track iconKey) {
+                        <button type="button" (click)="selectIcon(iconKey)"
+                          [class.bg-primary/10]="currentSection.get('icon_key')?.value === iconKey"
+                          [class.text-primary]="currentSection.get('icon_key')?.value === iconKey"
+                          class="p-2.5 rounded-xl hover:bg-light-standard flex items-center justify-center text-standard-muted hover:text-primary transition-all">
+                          <lucide-icon [name]="iconMap[iconKey] || iconMap['Home']" [size]="20"></lucide-icon>
+                        </button>
+                        }
+                      </div>
+                      }
+                    </div>
+                  </div>
+
+                  <!-- Section Name Section -->
+                  <div class="flex-1 flex flex-col gap-4">
+                    <app-text-input [name]="'structure.sections.' + selectedSectionIndex() + '.name'" label="Section Name"
+                      placeholder="e.g., Exterior, Roofing">
+                    </app-text-input>
+                    
+                    <app-chips-input [name]="'structure.sections.' + selectedSectionIndex() + '.location_presets_raw'"
+                      [disabled]="isSystemDefault()"
+                      label="Location Presets" placeholder="Type location (e.g. Master Bath, Kitchen) and press Enter">
+                    </app-chips-input>
+                  </div>
+                </div>
+              </div>
+            }
+
             <div class="pb-20 md:pb-5"></div>
           </div>
           } @else {

@@ -2,11 +2,11 @@ import { Component, inject, OnInit, OnDestroy, AfterViewInit, signal, HostListen
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule, Menu, X, Check, Calendar, Users, Home, Image as ImageIcon, Download, ChevronLeft, ChevronRight } from 'lucide-angular';
 import { ActivatedRoute } from '@angular/router';
-import { Title, Meta } from '@angular/platform-browser';
+import { SeoService } from '../../core/services/seo.service';
 import { PublicReportService } from '../../core/services/public-report.service';
 import { Inspection, Finding } from '../../core/models/inspection.interface';
 import { environment } from '../../../environments/environment';
-import { inject as injectAnalytics, track } from '@vercel/analytics';
+
 
 interface SectionGroup {
   name: string;
@@ -21,14 +21,11 @@ interface SectionGroup {
   styleUrls: ['./public-report.component.scss']
 })
 export class PublicReportComponent implements OnInit, OnDestroy, AfterViewInit {
-  constructor() {
-    injectAnalytics();
-  }
+
 
   private route = inject(ActivatedRoute);
   private publicReportService = inject(PublicReportService);
-  private title = inject(Title);
-  private meta = inject(Meta);
+  private seoService = inject(SeoService);
 
   // Analytics
   private pageEnteredAt = Date.now();
@@ -82,14 +79,6 @@ export class PublicReportComponent implements OnInit, OnDestroy, AfterViewInit {
     if (this.observer) {
       this.observer.disconnect();
     }
-
-    // Track total time spent on page
-    const timeSpent = Math.round((Date.now() - this.pageEnteredAt) / 1000);
-    track('live_report_session', {
-      duration_seconds: timeSpent,
-      max_scroll_depth: this.maxScrollDepth,
-      report_id: this.route.snapshot.paramMap.get('id') || 'unknown'
-    });
   }
 
   @HostListener('window:scroll')
@@ -104,10 +93,6 @@ export class PublicReportComponent implements OnInit, OnDestroy, AfterViewInit {
     for (const milestone of [25, 50, 75, 100]) {
       if (depth >= milestone && !this.scrollTracked.has(milestone)) {
         this.scrollTracked.add(milestone);
-        track('live_report_scroll', {
-          depth_percent: milestone,
-          report_id: this.route.snapshot.paramMap.get('id') || 'unknown'
-        });
       }
     }
   }
@@ -144,10 +129,7 @@ export class PublicReportComponent implements OnInit, OnDestroy, AfterViewInit {
     this.isMobileMenuOpen.set(false);
     this.activeSection.set(sectionName);
 
-    track('live_report_section_click', {
-      section: sectionName,
-      report_id: this.route.snapshot.paramMap.get('id') || 'unknown'
-    });
+
     
     setTimeout(() => {
       const element = document.getElementById(`section-${sectionName}`);
@@ -208,10 +190,7 @@ export class PublicReportComponent implements OnInit, OnDestroy, AfterViewInit {
   openLightbox(photos: any[], startIndex: number) {
     if (!photos || photos.length === 0) return;
 
-    track('live_report_lightbox_open', {
-      photo_count: photos.length,
-      report_id: this.route.snapshot.paramMap.get('id') || 'unknown'
-    });
+
 
     this.lightboxPhotos.set(photos.map(p => ({ 
       url: this.getAbsoluteImageUrl(p.storage_url),
@@ -262,16 +241,20 @@ export class PublicReportComponent implements OnInit, OnDestroy, AfterViewInit {
     const companyName = inspection.inspector?.company_name || 'Inspection Company';
     const reportDesc = `Home inspection report by ${inspectorName} from ${companyName}.`;
 
-    this.title.setTitle(reportTitle);
-    this.meta.updateTag({ property: 'og:title', content: reportTitle });
-    this.meta.updateTag({ property: 'og:description', content: reportDesc });
-
+    let coverUrl = '';
     if (inspection.cover_photo_url) {
-      const coverUrl = inspection.cover_photo_url.startsWith('http') 
+      coverUrl = inspection.cover_photo_url.startsWith('http') 
         ? inspection.cover_photo_url 
         : `${environment.apiUrl}${inspection.cover_photo_url}`;
-      this.meta.updateTag({ property: 'og:image', content: coverUrl });
     }
+
+    this.seoService.generateTags({
+      title: reportTitle,
+      description: reportDesc,
+      image: coverUrl || undefined,
+      url: `${window.location.origin}/report/${inspection.id}`,
+      noindex: true
+    });
   }
 
   private groupFindings(findings: Finding[]) {
@@ -349,9 +332,5 @@ export class PublicReportComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   onDownloadPdfClick() {
-    track('live_report_download_pdf', {
-      report_id: this.route.snapshot.paramMap.get('id') || 'unknown',
-      address: this.inspection()?.address || 'unknown'
-    });
   }
 }

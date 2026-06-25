@@ -1,0 +1,160 @@
+<div class="min-h-screen bg-slate-50 font-sans selection:bg-blue-100 selection:text-blue-900 flex flex-col justify-between">
+  <!-- Navbar -->
+  <nav class="sticky top-0 z-50 w-full bg-white/80 backdrop-blur-md border-b border-slate-200">
+    <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+      <a routerLink="/" class="flex items-center gap-2 group cursor-pointer hover:opacity-80 transition-opacity" title="Inspectly Homepage">
+        <div class="flex items-center justify-center p-1">
+          <img src="assets/icons/inspectly-logo.png" alt="Inspectly Logo" width="32" height="32" class="w-8 h-8" />
+        </div>
+        <span class="font-extrabold text-xl tracking-tight text-slate-900">Inspectly</span>
+      </a>
+      <div class="flex items-center gap-6">
+        <a routerLink="/features" class="text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors">Features</a>
+        <a routerLink="/alternative-to-spectora" class="text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors">Spectora Alternative</a>
+        <a routerLink="/auth/login" class="text-sm font-semibold text-slate-600 hover:text-slate-900 hidden sm:block transition-colors">Log in</a>
+        <app-button variant="solid" size="sm" routerLink="/auth/register" (click)="trackEvent('pricing_header_register_click')">
+          Try for Free
+        </app-button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="flex-grow">
+    <!-- Hero Header -->
+    <section class="pt-20 pb-16 px-6 text-center max-w-4xl mx-auto">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-sm font-bold mb-6 border border-blue-200">
+        <lucide-icon [name]="icons.ShieldCheck" class="w-4 h-4"></lucide-icon>
+        Simple, Transparent Pricing. No Hidden Fees.
+      </div>
+      <h1 class="text-4xl md:text-5xl font-extrabold text-slate-900 leading-tight mb-6">
+        Professional Reporting Without the Corporate Price Tag.
+      </h1>
+      <p class="text-lg md:text-xl text-slate-600 max-w-2xl mx-auto">
+        Inspectly is designed specifically for solo home inspectors. We prioritize lean, fast software with reasonable pricing so you can scale your inspection business.
+      </p>
+    </section>
+
+    <!-- Pricing Card Section -->
+    <section class="pb-24 px-6 max-w-5xl mx-auto">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
+        
+        <!-- Value Prop Box -->
+        <div class="bg-slate-900 text-white rounded-3xl p-8 md:p-12 flex flex-col justify-between shadow-2xl relative overflow-hidden">
+          <div class="absolute top-0 right-0 transform translate-x-10 -translate-y-10 w-40 h-40 bg-blue-500/10 rounded-full blur-2xl"></div>
+          
+          <div>
+            <span class="text-blue-400 font-bold text-xs uppercase tracking-widest">Built for Solo Operators</span>
+            <h2 class="text-3xl font-extrabold mt-2 mb-6">Why switch to Inspectly?</h2>
+            
+            <ul class="space-y-4">
+              <li class="flex items-start gap-3">
+                <lucide-icon [name]="icons.CheckCircle" class="w-5 h-5 text-emerald-400 shrink-0 mt-0.5"></lucide-icon>
+                <span><strong>No Locked Features</strong> — Get full mobile access, offline mode, and template customizations on every tier.</span>
+              </li>
+              <li class="flex items-start gap-3">
+                <lucide-icon [name]="icons.CheckCircle" class="w-5 h-5 text-emerald-400 shrink-0 mt-0.5"></lucide-icon>
+                <span><strong>Zero-Bloat Guarantee</strong> — No unnecessary scheduling layers or complicated dashboards you'll never use.</span>
+              </li>
+              <li class="flex items-start gap-3">
+                <lucide-icon [name]="icons.CheckCircle" class="w-5 h-5 text-emerald-400 shrink-0 mt-0.5"></lucide-icon>
+                <span><strong>Instant Deliveries</strong> — Generate clean PDF reports on-site immediately after finishing the crawl.</span>
+              </li>
+            </ul>
+          </div>
+
+          <div class="mt-8 pt-8 border-t border-slate-800">
+            <p class="text-slate-400 text-sm">
+              Tired of monthly bills over $100? Join the growing roster of solo home inspectors taking back their evenings.
+            </p>
+          </div>
+        </div>
+
+        <!-- Early Access Card -->
+        <div class="bg-white rounded-3xl p-8 md:p-12 border border-slate-200 shadow-xl flex flex-col justify-between relative">
+          <div class="absolute -top-4 left-6 bg-blue-600 text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-md">
+            Active Campaign
+          </div>
+          
+          <div>
+            <div class="flex justify-between items-start">
+              <div>
+                <h3 class="text-2xl font-extrabold text-slate-900">Early Access</h3>
+                <p class="text-slate-500 text-sm mt-1">Full access to the reporting platform</p>
+              </div>
+              <lucide-icon [name]="icons.Zap" class="w-8 h-8 text-blue-600"></lucide-icon>
+            </div>
+
+            <div class="my-8">
+              <span class="text-5xl font-extrabold text-slate-900">$0</span>
+              <span class="text-slate-500 font-medium ml-1">/ forever</span>
+              <div class="text-sm font-semibold text-emerald-600 bg-emerald-50 inline-block px-3 py-1 rounded-md mt-3 border border-emerald-100">
+                100% Free During Beta
+              </div>
+            </div>
+
+            <ul class="space-y-3.5 text-slate-600">
+              <li class="flex items-center gap-3">
+                <lucide-icon [name]="icons.CheckCircle" class="w-4 h-4 text-blue-600"></lucide-icon>
+                <span>Unlimited dynamic inspection reports</span>
+              </li>
+              <li class="flex items-center gap-3">
+                <lucide-icon [name]="icons.CheckCircle" class="w-4 h-4 text-blue-600"></lucide-icon>
+                <span>Full custom template checklist editor</span>
+              </li>
+              <li class="flex items-center gap-3">
+                <lucide-icon [name]="icons.CheckCircle" class="w-4 h-4 text-blue-600"></lucide-icon>
+                <span>Offline-first native mobile entry</span>
+              </li>
+              <li class="flex items-center gap-3">
+                <lucide-icon [name]="icons.CheckCircle" class="w-4 h-4 text-blue-600"></lucide-icon>
+                <span>AI defect narrative writer assistance</span>
+              </li>
+              <li class="flex items-center gap-3">
+                <lucide-icon [name]="icons.CheckCircle" class="w-4 h-4 text-blue-600"></lucide-icon>
+                <span>Sleek client PDF export options</span>
+              </li>
+            </ul>
+          </div>
+
+          <div class="mt-8">
+            <app-button variant="solid" size="lg" routerLink="/auth/register" (click)="trackEvent('pricing_card_register_click')" class="w-full justify-center">
+              Get Started Now <lucide-icon [name]="icons.ArrowRight" class="w-4 h-4 ml-1"></lucide-icon>
+            </app-button>
+            <p class="text-xs text-slate-400 text-center mt-3">No credit card required. Cancel any time.</p>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="bg-white border-y border-slate-200 py-20 px-6">
+      <div class="max-w-4xl mx-auto">
+        <h2 class="text-3xl font-extrabold text-slate-900 text-center mb-12">Frequently Asked Questions</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div *ngFor="let faq of faqs" class="space-y-2">
+            <h3 class="font-bold text-slate-900 text-lg flex items-start gap-2">
+              <lucide-icon [name]="icons.HelpCircle" class="w-5 h-5 text-blue-500 shrink-0 mt-0.5"></lucide-icon>
+              {{ faq.question }}
+            </h3>
+            <p class="text-slate-600 text-sm leading-relaxed pl-7">{{ faq.answer }}</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-white border-t border-slate-200 py-12 px-6">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-slate-500">
+      <div>&copy; 2026 Inspectly. All rights reserved.</div>
+      <div class="flex gap-6">
+        <a routerLink="/features" class="hover:underline hover:text-slate-800 transition-colors">Features</a>
+        <a routerLink="/alternative-to-spectora" class="hover:underline hover:text-slate-800 transition-colors">Spectora Alternative</a>
+        <a routerLink="/privacy" class="hover:underline hover:text-slate-800 transition-colors">Privacy Policy</a>
+        <a routerLink="/terms" class="hover:underline hover:text-slate-800 transition-colors">Terms of Service</a>
+      </div>
+    </div>
+  </footer>
+</div>

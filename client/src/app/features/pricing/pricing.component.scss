@@ -1,0 +1,6 @@
+@use '/variables' as *;
+
+// Pricing specific styles if any (utilizing Tailwind primarily, SCSS for custom gradient/effects)
+.pricing-gradient {
+  background: linear-gradient(135deg, rgba(30, 64, 175, 0.05) 0%, rgba(59, 130, 246, 0.02) 100%);
+}

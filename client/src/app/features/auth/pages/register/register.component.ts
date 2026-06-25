@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AbstractControl, FormControl, FormGroup, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -6,9 +6,10 @@ import { finalize } from 'rxjs';
 import { TextInputComponent, PasswordInputComponent } from '../../../../shared';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { AuthService } from '../../../../core/services/auth.service';
+import { SeoService } from '../../../../core/services/seo.service';
 import { RegisterRequestDto } from '../../../../core/dtos/register-request.dto';
 import { LucideAngularModule, MailCheck } from 'lucide-angular';
-import { inject as injectAnalytics } from '@vercel/analytics';
+
 import { environment } from '../../../../../environments/environment';
 
 /**
@@ -48,13 +49,20 @@ export const passwordMatchValidator: ValidatorFn = (control: AbstractControl): V
   templateUrl: './register.component.html',
   styleUrl: './register.component.scss',
 })
-export class RegisterComponent {
-  constructor() {
-    injectAnalytics();
-  }
+export class RegisterComponent implements OnInit {
+
 
   private authService = inject(AuthService);
   private router = inject(Router);
+  private seoService = inject(SeoService);
+
+  ngOnInit() {
+    this.seoService.generateTags({
+      title: 'Sign Up | Inspectly',
+      description: 'Create your free Inspectly account to write home inspection reports faster, offline-first, and save your evenings.',
+      noindex: true
+    });
+  }
 
   readonly MailCheckIcon = MailCheck;
 

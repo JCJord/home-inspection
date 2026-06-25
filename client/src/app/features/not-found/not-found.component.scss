@@ -1,0 +1,5 @@
+@use '/variables' as *;
+
+.not-found-gradient {
+  background: radial-gradient(circle at center, rgba(239, 68, 68, 0.05) 0%, transparent 60%);
+}

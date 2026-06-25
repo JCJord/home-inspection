@@ -21,10 +21,15 @@ export class AuthService {
   private apiUrl = `${environment.apiUrl}/auth`;
 
   // --- State ---
-  token = signal<string | null>(localStorage.getItem('access_token'));
-  refreshTokenSignal = signal<string | null>(localStorage.getItem('refresh_token'));
+  token = signal<string | null>(
+    typeof window !== 'undefined' ? localStorage.getItem('access_token') : null
+  );
+  refreshTokenSignal = signal<string | null>(
+    typeof window !== 'undefined' ? localStorage.getItem('refresh_token') : null
+  );
   currentUser = signal<Pick<Inspector, 'id' | 'email' | 'name'> | null>(
     (() => {
+      if (typeof window === 'undefined') return null;
       try {
         const saved = localStorage.getItem('current_user');
         if (!saved || saved === 'undefined' || saved === 'null') return null;
@@ -40,27 +45,29 @@ export class AuthService {
   private clockSkew = 0;
 
   constructor() {
-    // Initialize clock skew on boot if a token exists
-    const token = this.token();
-    if (token) {
-      const payload = decodeJwt(token);
-      if (payload && payload.iat) {
-        this.clockSkew = Date.now() - (payload.iat * 1000);
-      }
-    }
-
-    this.scheduleRefresh();
-    this.listenToStorageEvents();
-    
-    // Proactive Recovery/Refresh: Always try to refresh user data if we have a token
-    // to ensure subscription status is accurate (avoiding stale localStorage).
-    if (this.token()) {
-      this.loadCurrentUser().subscribe({
-        error: () => {
-          // If profile fetch fails, we might have an invalid token
-          if (this.isTokenExpired()) this.logout();
+    if (isPlatformBrowser(this.platformId)) {
+      // Initialize clock skew on boot if a token exists
+      const token = this.token();
+      if (token) {
+        const payload = decodeJwt(token);
+        if (payload && payload.iat) {
+          this.clockSkew = Date.now() - (payload.iat * 1000);
         }
-      });
+      }
+
+      this.scheduleRefresh();
+      this.listenToStorageEvents();
+      
+      // Proactive Recovery/Refresh: Always try to refresh user data if we have a token
+      // to ensure subscription status is accurate (avoiding stale localStorage).
+      if (this.token()) {
+        this.loadCurrentUser().subscribe({
+          error: () => {
+            // If profile fetch fails, we might have an invalid token
+            if (this.isTokenExpired()) this.logout();
+          }
+        });
+      }
     }
   }
 
