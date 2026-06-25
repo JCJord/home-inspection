@@ -10,6 +10,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, LessThan } from 'typeorm';
 import { Session } from './session.entity';
 import { Inspector } from '../inspectors/inspector.entity';
+import { Inspection } from '../inspections/inspection.entity';
+import { Finding } from '../findings/finding.entity';
+import { Template } from '../templates/template.entity';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
@@ -76,6 +79,9 @@ export class AuthService {
         const frontendUrl = this.configService.get<string>('FRONTEND_URL', 'http://localhost:4200');
         const verifyLink = `${frontendUrl}/auth/confirm-email?token=${rawToken}&email=${encodeURIComponent(email)}`;
         await this.mailService.sendEmailVerification(email, verifyLink, name);
+
+        // Seed default inspection for this new inspector
+        await this.createDefaultInspection(manager, saved.id);
 
         return saved;
       });
@@ -186,14 +192,17 @@ export class AuthService {
       return existingUser;
     }
 
-    const newInspector = this.inspectorRepository.create({
-      email,
-      name: `${firstName} ${lastName}`.trim(),
-      google_id: googleId,
-      is_email_verified: true,
+    return await this.inspectorRepository.manager.transaction(async (manager) => {
+      const newInspector = manager.create(Inspector, {
+        email,
+        name: `${firstName} ${lastName}`.trim(),
+        google_id: googleId,
+        is_email_verified: true,
+      });
+      const saved = await manager.save(Inspector, newInspector);
+      await this.createDefaultInspection(manager, saved.id);
+      return saved;
     });
-    
-    return await this.inspectorRepository.save(newInspector);
   }
 
   async resendVerificationEmail(email: string) {
@@ -410,6 +419,83 @@ export class AuthService {
     await this.inspectorRepository.save(inspector);
 
     return { message: 'Password has been reset successfully' };
+  }
+
+  private async createDefaultInspection(manager: any, inspectorId: string) {
+    try {
+      // Find template
+      let template = await manager.findOne(Template, { where: { name: 'Full Residential (InterNACHI)' } });
+      if (!template) {
+        template = await manager.findOne(Template, { where: {} });
+      }
+
+      const address = "1 Happy Trails, Pleasantville FL";
+      const clientName = "Happy Customer";
+      const yearBuilt = 1976;
+      const status = "in_progress";
+
+      const newInspection = manager.create(Inspection, {
+        inspector_id: inspectorId,
+        client_name: clientName,
+        address: address,
+        year_built: yearBuilt,
+        status: status,
+        template_id: template ? template.id : null,
+        template_snapshot: template ? template.structure : null,
+        metadata_values: {},
+        section_statuses: {}
+      });
+
+      const savedInspection = await manager.save(Inspection, newInspection);
+
+      const findingsData = [
+        {
+          section: "Electrical",
+          location: "Exterior / Roof Line",
+          severity: "Major Defect",
+          description: "The electrical service conductors are rubbing against the roof, presenting a serious mechanical damage and fire risk. Trees are also growing directly into the electric service lines."
+        },
+        {
+          section: "Foundation and Structure",
+          location: "Florida Room (North Side)",
+          severity: "Major Defect",
+          description: "The foundation on the Florida room (north side) has visibly settled. Some floor tiles are cracked and patched with concrete filler."
+        },
+        {
+          section: "Plumbing",
+          location: "Exterior Yard",
+          severity: "Safety Hazard / Defect",
+          description: "A metal cap was observed at ground level that appears to belong to a buried, abandoned fuel storage tank. The metal is deteriorating and there is a noticeable smell of fuel still present."
+        },
+        {
+          section: "Roofing",
+          location: "Roof / Chimney",
+          severity: "Defect",
+          description: "The chimney crown is cracked and the protective sealant around the chimney base is actively deteriorating in multiple areas, creating a high risk for water intrusion."
+        },
+        {
+          section: "Exterior",
+          location: "Exterior Siding & Eaves",
+          severity: "Defect",
+          description: "Significant wood rot and water damage was observed in multiple areas along the exterior siding, eaves, and fascias."
+        }
+      ];
+
+      const findings = findingsData.map((f, i) => {
+        return manager.create(Finding, {
+          inspection_id: savedInspection.id,
+          section: f.section,
+          location: f.location,
+          severity: f.severity,
+          description: f.description,
+          sort_order: i
+        });
+      });
+
+      await manager.save(Finding, findings);
+    } catch (error) {
+      console.error('Failed to seed default inspection on registration:', error);
+    }
   }
 }
 
